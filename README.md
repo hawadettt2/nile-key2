@@ -61,9 +61,8 @@ nile-key2/
 
 
 
-Backend (FastAPI) — 8 خدمات
-Table
-الخدمة	الملف	الوصف
+ ## Backend (FastAPI) خدمات
+
 🔐 Auth	routers/auth.py	تسجيل دخول، JWT، أدوار
 🏭 Suppliers	routers/suppliers.py	CRUD + شهادات
 👥 Customers	routers/customers.py	CRUD + استيراد CSV
@@ -72,6 +71,7 @@ Table
 🛃 Customs	routers/customs.py	HS Codes، حساب رسوم
 📄 Documents	routers/documents.py	رفع، قوالب
 🌐 Resources	routers/resources.py	أدلة، فرص
+
 Frontend (React) — صفحات كاملة
 📊 Dashboard — إحصائيات + رسوم بيانية
 🔐 Login — تسجيل دخول/حساب جديد
