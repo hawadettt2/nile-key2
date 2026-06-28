@@ -1,0 +1,14 @@
+{
+  "app": { "name": "مفتاح النيل", "tagline": "المنصة الرقمية للتصدير", "logout": "تسجيل الخروج" },
+  "nav": { "dashboard": "لوحة التحكم", "suppliers": "الموردون", "customers": "العملاء", "shipments": "الشحنات", "invoices": "الفواتير", "customs": "الجمارك", "documents": "المستندات", "resources": "الموارد" },
+  "auth": { "login": "تسجيل الدخول", "register": "إنشاء حساب", "username": "اسم المستخدم", "password": "كلمة المرور", "email": "البريد الإلكتروني", "fullName": "الاسم الكامل", "noAccount": "ليس لديك حساب؟", "hasAccount": "لديك حساب بالفعل؟" },
+  "common": { "search": "بحث", "add": "إضافة", "edit": "تعديل", "delete": "حذف", "save": "حفظ", "cancel": "إلغاء", "view": "عرض", "actions": "إجراءات", "status": "الحالة", "active": "نشط", "pending": "معلق", "loading": "جاري التحميل...", "noData": "لا توجد بيانات", "welcome": "مرحباً", "overview": "نظرة عامة" },
+  "dashboard": { "title": "لوحة التحكم", "totalSuppliers": "إجمالي الموردين", "totalCustomers": "إجمالي العملاء", "activeShipments": "الشحنات النشطة", "totalInvoices": "إجمالي الفواتير" },
+  "supplier": { "title": "الموردون", "name": "الاسم", "contact": "الشخص المسؤول", "email": "البريد الإلكتروني", "phone": "الهاتف", "city": "المدينة", "country": "الدولة", "addSupplier": "إضافة مورد", "editSupplier": "تعديل مورد" },
+  "customer": { "title": "العملاء", "name": "الاسم", "contact": "الشخص المسؤول", "country": "الدولة", "category": "التصنيف", "addCustomer": "إضافة عميل", "editCustomer": "تعديل عميل", "importCSV": "استيراد CSV" },
+  "shipment": { "title": "الشحنات", "tracking": "رقم التتبع", "origin": "المصدر", "destination": "الوجهة", "carrier": "الناقل", "weight": "الوزن", "value": "القيمة", "addShipment": "إضافة شحنة", "getRates": "الحصول على الأسعار" },
+  "invoice": { "title": "الفواتير", "number": "رقم الفاتورة", "subtotal": "المجموع الفرعي", "tax": "الضريبة", "total": "الإجمالي", "issueDate": "تاريخ الإصدار", "addInvoice": "إضافة فاتورة" },
+  "customs": { "title": "الجمارك", "hsCode": "رمز النظام المنسق", "description": "الوصف", "dutyRate": "نسبة الرسم", "taxRate": "نسبة الضريبة", "calculateDuties": "حساب الرسوم", "declarations": "التصريحات", "addDeclaration": "إضافة تصريح" },
+  "document": { "title": "المستندات", "type": "النوع", "upload": "رفع" },
+  "resource": { "title": "الموارد", "type": "النوع", "category": "التصنيف", "country": "الدولة" }
+}

@@ -1,0 +1,14 @@
+{
+  "app": { "name": "Nile Key", "tagline": "Digital Export Platform", "logout": "Logout" },
+  "nav": { "dashboard": "Dashboard", "suppliers": "Suppliers", "customers": "Customers", "shipments": "Shipments", "invoices": "Invoices", "customs": "Customs", "documents": "Documents", "resources": "Resources" },
+  "auth": { "login": "Login", "register": "Register", "username": "Username", "password": "Password", "email": "Email", "fullName": "Full Name", "noAccount": "Don't have an account?", "hasAccount": "Already have an account?" },
+  "common": { "search": "Search", "add": "Add", "edit": "Edit", "delete": "Delete", "save": "Save", "cancel": "Cancel", "view": "View", "actions": "Actions", "status": "Status", "active": "Active", "pending": "Pending", "loading": "Loading...", "noData": "No data available", "welcome": "Welcome", "overview": "Overview" },
+  "dashboard": { "title": "Dashboard", "totalSuppliers": "Total Suppliers", "totalCustomers": "Total Customers", "activeShipments": "Active Shipments", "totalInvoices": "Total Invoices" },
+  "supplier": { "title": "Suppliers", "name": "Name", "contact": "Contact Person", "email": "Email", "phone": "Phone", "city": "City", "country": "Country", "addSupplier": "Add Supplier", "editSupplier": "Edit Supplier" },
+  "customer": { "title": "Customers", "name": "Name", "contact": "Contact Person", "country": "Country", "category": "Category", "addCustomer": "Add Customer", "editCustomer": "Edit Customer", "importCSV": "Import CSV" },
+  "shipment": { "title": "Shipments", "tracking": "Tracking #", "origin": "Origin", "destination": "Destination", "carrier": "Carrier", "weight": "Weight", "value": "Value", "addShipment": "Add Shipment", "getRates": "Get Rates" },
+  "invoice": { "title": "Invoices", "number": "Invoice #", "subtotal": "Subtotal", "tax": "Tax", "total": "Total", "issueDate": "Issue Date", "addInvoice": "Add Invoice" },
+  "customs": { "title": "Customs", "hsCode": "HS Code", "description": "Description", "dutyRate": "Duty Rate", "taxRate": "Tax Rate", "calculateDuties": "Calculate Duties", "declarations": "Declarations", "addDeclaration": "Add Declaration" },
+  "document": { "title": "Documents", "type": "Type", "upload": "Upload" },
+  "resource": { "title": "Resources", "type": "Type", "category": "Category", "country": "Country" }
+}
