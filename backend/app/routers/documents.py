@@ -1,0 +1,138 @@
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from datetime import datetime
+from typing import Optional
+
+from app.core.database import get_db
+from app.routers.auth import get_current_user, require_role
+from app.schemas.document import DocumentCreate, DocumentUpdate
+
+router = APIRouter(prefix="/api/v1/documents", tags=["Documents"])
+
+
+@router.get("/", response_model=list)
+def list_documents(
+    document_type: Optional[str] = None,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user)
+):
+    conn = get_db()
+    cursor = conn.cursor()
+    query = "SELECT * FROM documents WHERE 1=1"
+    params = []
+    if document_type:
+        query += " AND document_type = ?"
+        params.append(document_type)
+    if entity_type:
+        query += " AND entity_type = ?"
+        params.append(entity_type)
+    if entity_id:
+        query += " AND entity_id = ?"
+        params.append(entity_id)
+    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    params.extend([limit, skip])
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+@router.get("/{document_id}", response_model=dict)
+def get_document(document_id: int, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents WHERE id = ?", (document_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return dict(row)
+
+
+@router.post("/", response_model=dict)
+def create_document(data: DocumentCreate, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    now = datetime.utcnow().isoformat()
+    cursor.execute(
+        """INSERT INTO documents (title, document_type, template_type, entity_type, entity_id,
+           content, metadata, created_at, created_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (data.title, data.document_type, data.template_type, data.entity_type,
+         data.entity_id, data.content, str(data.metadata) if data.metadata else "{}", now, current_user["id"])
+    )
+    conn.commit()
+    doc_id = cursor.lastrowid
+    conn.close()
+    return {"id": doc_id, "message": "Document created successfully"}
+
+
+@router.post("/upload", response_model=dict)
+def upload_document(
+    file: UploadFile = File(...),
+    title: Optional[str] = None,
+    entity_type: Optional[str] = None,
+    entity_id: Optional[int] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    allowed_types = ["application/pdf", "image/jpeg", "image/png"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Only PDF, JPG, PNG files allowed (max 10MB)")
+    content = file.file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+    now = datetime.utcnow().isoformat()
+    filename = f"{now}_{file.filename}"
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """INSERT INTO documents (title, file_name, file_type, file_size, document_type,
+           entity_type, entity_id, created_at, created_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (title or file.filename, filename, file.content_type, len(content), "uploaded",
+         entity_type, entity_id, now, current_user["id"])
+    )
+    conn.commit()
+    doc_id = cursor.lastrowid
+    conn.close()
+    return {"id": doc_id, "filename": filename, "message": "File uploaded successfully"}
+
+
+@router.put("/{document_id}", response_model=dict)
+def update_document(document_id: int, data: DocumentUpdate, current_user: dict = Depends(get_current_user)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM documents WHERE id = ?", (document_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="Document not found")
+    fields = []
+    values = []
+    for field, value in data.model_dump(exclude_unset=True).items():
+        if value is not None:
+            fields.append(f"{field} = ?")
+            if field == "metadata" and isinstance(value, dict):
+                values.append(str(value))
+            else:
+                values.append(value)
+    if not fields:
+        conn.close()
+        return {"message": "No changes"}
+    values.append(document_id)
+    cursor.execute(f"UPDATE documents SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
+                   (*values, datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+    return {"message": "Document updated successfully"}
+
+
+@router.delete("/{document_id}", response_model=dict)
+def delete_document(document_id: int, current_user: dict = Depends(require_role(["Owner", "Manager"]))):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM documents WHERE id = ?", (document_id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Document deleted successfully"}
