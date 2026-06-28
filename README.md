@@ -59,6 +59,33 @@ nile-key2/
 7. **Documents** — Upload, templates
 8. **Resources** — Guides, regulations, opportunities
 
+
+
+Backend (FastAPI) — 8 خدمات
+Table
+الخدمة	الملف	الوصف
+🔐 Auth	routers/auth.py	تسجيل دخول، JWT، أدوار
+🏭 Suppliers	routers/suppliers.py	CRUD + شهادات
+👥 Customers	routers/customers.py	CRUD + استيراد CSV
+🚢 Shipping	routers/shipping.py	أسعار، تتبع، شحنات
+🧾 Invoices	routers/invoice.py	إنشاء، تحقق، إلغاء
+🛃 Customs	routers/customs.py	HS Codes، حساب رسوم
+📄 Documents	routers/documents.py	رفع، قوالب
+🌐 Resources	routers/resources.py	أدلة، فرص
+Frontend (React) — صفحات كاملة
+📊 Dashboard — إحصائيات + رسوم بيانية
+🔐 Login — تسجيل دخول/حساب جديد
+🏭 Suppliers — إدارة الموردين
+👥 Customers — إدارة العملاء + CSV
+🚢 Shipments — شحنات + أسعار
+🧾 Invoices — فواتير + أصناف
+🛃 Customs — جمارك + HS Codes
+📄 Documents — مستندات
+🌐 Resources — موارد
+
+
+
+
 ## Quick Start
 
 ### Backend
