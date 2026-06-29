@@ -1,128 +1,322 @@
+"""
+إدارة قاعدة البيانات SQLite:
+- إنشاء الجداول
+- Seed Data (بيانات أولية)
+"""
+
 import sqlite3
-import os
-from datetime import datetime
-from app.core.config import get_settings
+from contextlib import contextmanager
 
-settings = get_settings()
-DB_PATH = settings.DATABASE_URL.replace("sqlite:///", "")
+from app.core.config import settings
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+
+# ========== إدارة الاتصال ==========
+
+@contextmanager
+def get_db_connection():
+    """
+    سياق إدارة الاتصال بقاعدة البيانات
+    - يفتح الاتصال تلقائياً
+    - يغلقه تلقائياً حتى لو حدث خطأ
+    """
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    
+    conn = sqlite3.connect(
+        db_path,
+        check_same_thread=False,  # ضروري لـ FastAPI (multi-threaded)
+        timeout=20.0,             # انتظار 20 ثانية قبل Timeout
+    )
+    conn.row_factory = sqlite3.Row  # للوصول للأعمدة بالاسم
+    conn.execute("PRAGMA foreign_keys = ON")  # تفعيل المفاتيح الأجنبية
+    
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+# ========== تهيئة قاعدة البيانات ==========
 
 def init_db():
-    os.makedirs(os.path.dirname(DB_PATH) if os.path.dirname(DB_PATH) else ".", exist_ok=True)
-    conn = get_db()
-    cursor = conn.cursor()
+    """إنشاء الجداول وإدخال البيانات الأولية"""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        _create_tables(cursor)
+        _seed_data(cursor, conn)
+        conn.commit()
 
-    tables = [
-        """CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL,
-            full_name TEXT NOT NULL, hashed_password TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'Customer',
-            is_active INTEGER NOT NULL DEFAULT 1, phone TEXT, company TEXT, created_at TEXT NOT NULL, updated_at TEXT)""",
-        """CREATE TABLE IF NOT EXISTS roles (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL, description TEXT, permissions TEXT NOT NULL DEFAULT '[]')""",
-        """CREATE TABLE IF NOT EXISTS suppliers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, name_en TEXT, contact_person TEXT,
-            email TEXT, phone TEXT, address TEXT, city TEXT, country TEXT DEFAULT 'Egypt', tax_id TEXT,
-            commercial_registry TEXT, certificates TEXT DEFAULT '[]', status TEXT NOT NULL DEFAULT 'active',
-            notes TEXT, created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS customers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, name_en TEXT, contact_person TEXT,
-            email TEXT, phone TEXT, address TEXT, city TEXT, country TEXT NOT NULL, tax_id TEXT,
-            import_license TEXT, category TEXT, status TEXT NOT NULL DEFAULT 'active', notes TEXT,
-            created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS shipments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, tracking_number TEXT UNIQUE, reference TEXT,
-            supplier_id INTEGER, customer_id INTEGER, origin TEXT NOT NULL, destination TEXT NOT NULL,
-            carrier TEXT, service_type TEXT, status TEXT NOT NULL DEFAULT 'pending', weight REAL,
-            weight_unit TEXT DEFAULT 'kg', dimensions TEXT, value REAL, currency TEXT DEFAULT 'USD',
-            items_count INTEGER DEFAULT 1, description TEXT, eta TEXT, shipped_at TEXT, delivered_at TEXT,
-            created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS invoices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, invoice_number TEXT UNIQUE NOT NULL, internal_id TEXT,
-            eta_uuid TEXT, eta_status TEXT, customer_id INTEGER, supplier_id INTEGER, shipment_id INTEGER,
-            subtotal REAL NOT NULL, tax_rate REAL DEFAULT 14.0, tax_amount REAL, total REAL NOT NULL,
-            currency TEXT DEFAULT 'EGP', issue_date TEXT NOT NULL, due_date TEXT, status TEXT NOT NULL DEFAULT 'draft',
-            items TEXT NOT NULL DEFAULT '[]', notes TEXT, created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (customer_id) REFERENCES customers(id),
-            FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
-            FOREIGN KEY (shipment_id) REFERENCES shipments(id),
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS customs_declarations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, declaration_number TEXT UNIQUE, shipment_id INTEGER,
-            hs_code_id INTEGER, origin_country TEXT DEFAULT 'EG', destination_country TEXT NOT NULL,
-            total_value REAL, currency TEXT DEFAULT 'USD', duty_amount REAL, tax_amount REAL,
-            total_duties REAL, status TEXT NOT NULL DEFAULT 'draft', documents TEXT DEFAULT '[]',
-            submitted_at TEXT, approved_at TEXT, created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (shipment_id) REFERENCES shipments(id),
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS hs_codes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT UNIQUE NOT NULL, description TEXT NOT NULL,
-            description_ar TEXT, category TEXT, duty_rate REAL DEFAULT 0, tax_rate REAL DEFAULT 14.0,
-            restrictions TEXT, created_at TEXT NOT NULL)""",
-        """CREATE TABLE IF NOT EXISTS documents (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, file_name TEXT, file_path TEXT,
-            file_type TEXT, file_size INTEGER, document_type TEXT NOT NULL DEFAULT 'uploaded', template_type TEXT,
-            entity_type TEXT, entity_id INTEGER, content TEXT, metadata TEXT DEFAULT '{}',
-            created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS resources (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_ar TEXT, description TEXT,
-            description_ar TEXT, resource_type TEXT NOT NULL, category TEXT, url TEXT, file_path TEXT,
-            country TEXT, is_active INTEGER NOT NULL DEFAULT 1, metadata TEXT DEFAULT '{}',
-            created_at TEXT NOT NULL, updated_at TEXT, created_by INTEGER,
-            FOREIGN KEY (created_by) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, action TEXT NOT NULL, entity_type TEXT,
-            entity_id INTEGER, details TEXT, ip_address TEXT, created_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id))""",
-        """CREATE TABLE IF NOT EXISTS system_settings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT UNIQUE NOT NULL, value TEXT, description TEXT,
-            updated_at TEXT, updated_by INTEGER)""",
-    ]
-    for sql in tables:
-        cursor.execute(sql)
 
-    now = datetime.utcnow().isoformat()
+def _create_tables(c: sqlite3.Cursor):
+    """إنشاء كل جداول المشروع"""
+    
+    # ========== جدول المستخدمين ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            full_name TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'staff',
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول الأدوار ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS roles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            permissions TEXT NOT NULL,
+            description TEXT
+        )
+    """)
+    
+    # ========== جدول الموردين ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS suppliers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            farm_code TEXT,
+            tax_id TEXT,
+            address TEXT,
+            city TEXT,
+            governorate TEXT,
+            phone TEXT,
+            email TEXT,
+            products TEXT,
+            certificates TEXT,
+            status TEXT DEFAULT 'active',
+            rating REAL DEFAULT 0.0,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول العملاء (المستوردين) ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_name TEXT NOT NULL,
+            country TEXT NOT NULL,
+            contact_name TEXT,
+            email TEXT,
+            phone TEXT,
+            website TEXT,
+            products_of_interest TEXT,
+            source TEXT DEFAULT 'manual',
+            trust_score INTEGER DEFAULT 5,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول الشحنات ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS shipments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tracking_number TEXT,
+            carrier TEXT,
+            service_name TEXT,
+            status TEXT DEFAULT 'pending',
+            label_url TEXT,
+            cost REAL,
+            currency TEXT,
+            provider TEXT,
+            pickup_address TEXT,
+            delivery_address TEXT,
+            parcels TEXT,
+            raw_response TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول الفواتير الإلكترونية ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS invoices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            uuid TEXT UNIQUE NOT NULL,
+            issuer_tax_id TEXT NOT NULL,
+            receiver_tax_id TEXT,
+            receiver_name TEXT,
+            total REAL,
+            tax_total REAL,
+            status TEXT DEFAULT 'draft',
+            eta_status TEXT,
+            signed_data TEXT,
+            raw_response TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول البيانات الجمركية ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS customs_declarations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shipment_id INTEGER,
+            hs_code TEXT,
+            origin_country TEXT,
+            value REAL,
+            currency TEXT,
+            duties_estimate REAL,
+            status TEXT DEFAULT 'draft',
+            documents TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول أكواد HS ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS hs_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT UNIQUE NOT NULL,
+            description TEXT,
+            category TEXT,
+            duty_rate REAL DEFAULT 0.0,
+            vat_rate REAL DEFAULT 14.0
+        )
+    """)
+    
+    # ========== جدول المستندات ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            type TEXT NOT NULL,
+            description TEXT,
+            file_path TEXT,
+            template_id INTEGER,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول الموارد ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS resources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            url TEXT,
+            description TEXT,
+            category TEXT NOT NULL,
+            country TEXT,
+            tags TEXT,
+            is_verified INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # ========== جدول سجل التدقيق ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            action TEXT NOT NULL,
+            entity_type TEXT,
+            entity_id INTEGER,
+            details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+
+def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
+    """
+    إدخال البيانات الأولية (Seed Data)
+    - المستخدم الافتراضي (Owner)
+    - الأدوار
+    - أكواد HS
+    - الموارد
+    """
+    
+    # ===== استيراد داخلي لتجنب Circular Import =====
+    from app.core.security import get_password_hash
+    
+    # ===== إنشاء المستخدم الافتراضي (Owner) =====
+    c.execute("SELECT id FROM users WHERE email = ?", ("owner@nile-key.com",))
+    if not c.fetchone():
+        c.execute("""
+            INSERT INTO users (email, password_hash, full_name, role)
+            VALUES (?, ?, ?, ?)
+        """, (
+            "owner@nile-key.com",
+            get_password_hash("NileKey2024!"),
+            "المالك",
+            "owner"
+        ))
+    
+    # ===== إنشاء الأدوار =====
     roles = [
-        ("Owner", "Full access", '["*"]'),
-        ("Manager", "Manage teams", '["suppliers.*", "customers.*", "shipments.*", "invoices.*"]'),
-        ("Sales", "Manage customers", '["customers.*", "shipments.*"]'),
-        ("Admin Staff", "Admin tasks", '["documents.*", "suppliers.read", "customers.read"]'),
-        ("Accountant", "Financial ops", '["invoices.*", "reports.*"]'),
-        ("Logistics", "Shipping ops", '["shipments.*", "customs.*"]'),
-        ("Supplier", "Supplier portal", '["suppliers.own", "shipments.read"]'),
-        ("Customer", "Customer portal", '["customers.own", "shipments.read", "invoices.read"]'),
+        ("owner", "all", "المالك — كل الصلاحيات بدون قيود"),
+        ("manager", "users:read,users:write,suppliers:all,customers:all,shipments:all,invoices:all,documents:all,resources:all,customs:all", "المدير"),
+        ("sales", "customers:read,customers:write,shipments:read,documents:read,invoices:read", "مندوب مبيعات"),
+        ("admin_staff", "suppliers:read,suppliers:write,documents:all,resources:all,customs:read", "موظف إداري"),
+        ("accountant", "invoices:all,documents:read,suppliers:read,customers:read", "محاسب"),
+        ("logistics", "shipments:all,customs:all,suppliers:read,documents:read", "لوجستيك"),
+        ("supplier", "profile:read,profile:write", "مورد"),
+        ("customer", "profile:read,invoices:read,shipments:read", "عميل"),
     ]
-    cursor.executemany("INSERT OR IGNORE INTO roles (name, description, permissions) VALUES (?, ?, ?)", roles)
-
-    cursor.execute("""INSERT OR IGNORE INTO users (id, email, username, full_name, hashed_password, role, is_active, created_at)
-        VALUES (1, 'admin@nile-key.com', 'admin', 'System Administrator',
-                '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiAYMyzJ/I1K', 'Owner', 1, ?)""", (now,))
-
+    
+    for name, permissions, description in roles:
+        c.execute("SELECT id FROM roles WHERE name = ?", (name,))
+        if not c.fetchone():
+            c.execute("""
+                INSERT INTO roles (name, permissions, description)
+                VALUES (?, ?, ?)
+            """, (name, permissions, description))
+    
+    # ===== أكواد HS للمنتجات المصرية =====
     hs_codes = [
-        ("0703.10", "Onions", "بصل", "Vegetables", 5.0, 14.0),
-        ("0707.00", "Cucumbers", "خيار", "Vegetables", 5.0, 14.0),
-        ("0804.10", "Dates", "تمر", "Fruits", 2.0, 14.0),
-        ("0805.10", "Oranges", "برتقال", "Fruits", 10.0, 14.0),
-        ("0806.10", "Grapes", "عنب", "Fruits", 8.0, 14.0),
-        ("0808.10", "Apples", "تفاح", "Fruits", 10.0, 14.0),
-        ("0902.10", "Green tea", "شاي أخضر", "Beverages", 5.0, 14.0),
-        ("1905.90", "Bread & pastry", "خبز", "Food", 20.0, 14.0),
-        ("2009.90", "Fruit juices", "عصائر", "Beverages", 15.0, 14.0),
-        ("2201.10", "Mineral waters", "مياه معدنية", "Beverages", 20.0, 14.0),
+        ("0701.90", "بطاطس طازجة أو مبردة", "خضار", 0.0, 14.0),
+        ("0703.10", "بصل وكراث طازج أو مبرد", "خضار", 0.0, 14.0),
+        ("0707.00", "خيار وكمثرى شائك (خيار) طازج أو مبرد", "خضار", 0.0, 14.0),
+        ("0709.60", "فلفل حلو (فليفلة) طازج أو مبرد", "خضار", 0.0, 14.0),
+        ("0804.50", "جوافة، مانجو ومنجوستين طازج أو مجفف", "فاكهة", 0.0, 14.0),
+        ("0805.10", "برتقال طازج أو مجفف", "فاكهة", 0.0, 14.0),
+        ("0805.21", "اليوسفي (ماندرين) طازج أو مجفف", "فاكهة", 0.0, 14.0),
+        ("0805.50", "ليمون (ليمون حامض) طازج أو مجفف", "فاكهة", 0.0, 14.0),
+        ("0806.10", "عنب طازج", "فاكهة", 0.0, 14.0),
+        ("0808.10", "تفاح طازج", "فاكهة", 0.0, 14.0),
+        ("0809.10", "موز طازج أو مجفف", "فاكهة", 0.0, 14.0),
+        ("0810.10", "فراولة", "فاكهة", 0.0, 14.0),
+        ("1211.90", "نباتات وأجزاؤها المستخدمة في الصناعات الدوائية", "زراعة", 0.0, 14.0),
     ]
-    cursor.executemany("INSERT OR IGNORE INTO hs_codes (code, description, description_ar, category, duty_rate, tax_rate, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                       [(c[0], c[1], c[2], c[3], c[4], c[5], now) for c in hs_codes])
-
-    conn.commit()
-    conn.close()
-    print("Database initialized successfully.")
+    
+    for code, description, category, duty_rate, vat_rate in hs_codes:
+        c.execute("SELECT id FROM hs_codes WHERE code = ?", (code,))
+        if not c.fetchone():
+            c.execute("""
+                INSERT INTO hs_codes (code, description, category, duty_rate, vat_rate)
+                VALUES (?, ?, ?, ?, ?)
+            """, (code, description, category, duty_rate, vat_rate))
+    
+    # ===== الموارد والفرص =====
+    resources = [
+        ("ITC Trade Map", "https://www.trademap.org", "منصة بيانات تجارية عالمية — إحصائيات الاستيراد والتصدير", "b2b_platform", None, "trade,data,export,statistics", 1),
+        ("Egyptian Export Council", "https://www.eec.org.eg", "المجلس التصديري المصري — دعم المصدرين المصريين", "government", "Egypt", "export,government,support", 1),
+        ("GAFI", "https://www.gafi.gov.eg", "الهيئة العامة للاستثمار والمناطق الحرة", "government", "Egypt", "investment,government,license", 1),
+        ("GOEIC", "https://www.goeic.gov.eg", "الهيئة العامة للرقابة على الصادرات والواردات", "government", "Egypt", "export,inspection,certificate", 1),
+        ("ETA Egypt", "https://invoicing.eta.gov.eg", "مصلحة الضرائب المصرية — الفاتورة الإلكترونية", "government", "Egypt", "tax,e-invoice,government", 1),
+        ("Nafeza", "https://www.nafeza.gov.eg", "منظومة نافذة الجمركية المصرية", "government", "Egypt", "customs,clearance,government", 1),
+        ("Alibaba B2B", "https://www.alibaba.com", "أكبر منصة B2B في العالم", "b2b_platform", None, "b2b,global,marketplace", 1),
+        ("TradeKey", "https://www.tradekey.com", "منصة B2B للتصدير والاستيراد", "b2b_platform", None, "b2b,export,import", 1),
+        ("Europages", "https://www.europages.com", "دليل الشركات الأوروبية B2B", "b2b_platform", "EU", "b2b,europe,directory", 1),
+        ("Kompass", "https://www.kompass.com", "قاعدة بيانات الشركات العالمية", "b2b_platform", None, "b2b,database,companies", 1),
+        ("Fruit Logistica", "https://www.fruitlogistica.com", "أكبر معرض عالمي للخضار والفاكهة — برلين", "trade_fair", "Germany", "fair,fruits,vegetables,berlin", 1),
+        ("Gulfood", "https://www.gulfood.com", "أكبر معرض للأغذية في الشرق الأوسط — دبي", "trade_fair", "UAE", "fair,food,dubai,meat", 1),
+        ("Anuga", "https://www.anuga.com", "معرض كولون الدولي للأغذية — ألمانيا", "trade_fair", "Germany", "fair,food,cologne,germany", 1),
+        ("SIAL Paris", "https://www.sialparis.com", "معرض باريس الدولي للأغذية", "trade_fair", "France", "fair,food,paris,france", 1),
+        ("Foodex Japan", "https://www.foodex.net", "معرض طوكيو للأغذية والمشروبات", "trade_fair", "Japan", "fair,food,tokyo,japan", 1),
+        ("ICC Egypt", "https://icc-egypt.org", "الغرفة التجارية الدولية — مصر", "chamber_of_commerce", "Egypt", "chamber,trade,international", 1),
+        ("Cairo Chamber", "https://www.cairochamber.org.eg", "الغرفة التجارية بالقاهرة", "chamber_of_commerce", "Egypt", "chamber,cairo,trade", 1),
+        ("Alexandria Chamber", "https://www.alexcham.org", "الغرفة التجارية بالإسكندرية", "chamber_of_commerce", "Egypt", "chamber,alexandria,port", 1),
+    ]
+    
+    for title, url, description, category, country, tags, is_verified in resources:
+        c.execute("SELECT id FROM resources WHERE url = ?", (url,))
+        if not c.fetchone():
+            c.execute("""
+                INSERT INTO resources (title, url, description, category, country, tags, is_verified)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (title, url, description, category, country, tags, is_verified))
