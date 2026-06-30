@@ -40,6 +40,7 @@
 4. **No business logic in routers** (charter Section 10) - must move to services layer
 5. **Code duplication prohibited** (charter Section 8) - must extract SQL helpers
 6. **Legacy Compatibility Policy** - When a legacy database column is still required for compatibility, it may receive a temporary default value. New business logic must never depend on that column. Removal is deferred to the dedicated Database Cleanup phase.
+7. **ADR-0001: Shipments Legacy Columns** - Legacy columns are NOT fallback pairs; they are excluded entirely from API contract. Pydantic schema is authoritative. See docs/architecture/ADR-0001-shipments-legacy-columns.md
 
 ---
 

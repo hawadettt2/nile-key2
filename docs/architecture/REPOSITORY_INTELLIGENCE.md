@@ -36,6 +36,14 @@ nile-key-project/
 │       ├── schemas/                 # Pydantic models
 │       ├── models/                  # Empty stub
 │       └── services/                # Empty stub
+├── docs/
+│   └── architecture/
+│       ├── ARCHITECTURE_CHARTER.md  # Architecture document
+│       ├── ADR-0001-shipments-legacy-columns.md  # Architecture decisions
+│       ├── ENGINEERING_MEMORY.md    # Current state
+│       ├── WORK_PACKAGE_PLAN.md       # Execution roadmap
+│       ├── PROJECT_BASELINE.md      # Project snapshot
+│       └── REPOSITORY_INTELLIGENCE.md  # Repository analysis
 └── frontend/
     ├── package.json                 # 75 dependencies
     ├── vite.config.ts               # Vite + React

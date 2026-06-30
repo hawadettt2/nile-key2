@@ -102,6 +102,29 @@ def _ensure_customers_schema(c: sqlite3.Cursor):
     })
 
 
+def _ensure_shipments_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "shipments", {
+        "reference": "TEXT",
+        "supplier_id": "INTEGER",
+        "customer_id": "INTEGER",
+        "origin": "TEXT",
+        "destination": "TEXT",
+        "service_type": "TEXT",
+        "weight": "REAL",
+        "weight_unit": "TEXT",
+        "dimensions": "TEXT",
+        "value": "REAL",
+        "items_count": "INTEGER",
+        "description": "TEXT",
+        "eta": "TIMESTAMP",
+        "customs_declaration_id": "INTEGER",
+        "shipped_at": "TIMESTAMP",
+        "delivered_at": "TIMESTAMP",
+        "created_by": "INTEGER",
+        "updated_at": "TIMESTAMP"
+    })
+
+
 def _create_tables(c: sqlite3.Cursor):
     """إنشاء كل جداول المشروع"""
     
@@ -194,6 +217,9 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    _ensure_shipments_schema(c)
+    
+    # ========== جدول الفواتير الإلكترونية ==========
     
     # ========== جدول الفواتير الإلكترونية ==========
     c.execute("""
