@@ -59,20 +59,20 @@ def init_db():
         conn.commit()
 
 
+def ensure_columns(c: sqlite3.Cursor, table_name: str, expected_columns: dict[str, str]) -> None:
+    existing = {row[1] for row in c.execute(f"PRAGMA table_info({table_name})").fetchall()}
+    for col, col_type in expected_columns.items():
+        if col not in existing:
+            c.execute(f"ALTER TABLE {table_name} ADD COLUMN {col} {col_type}")
+
+
 def _ensure_users_schema(c: sqlite3.Cursor):
-    existing = c.execute("PRAGMA table_info(users)").fetchall()
-    columns = {row[1] for row in existing}
-    to_add = []
-    if "username" not in columns:
-        to_add.append(("username", "TEXT"))
-    if "phone" not in columns:
-        to_add.append(("phone", "TEXT"))
-    if "company" not in columns:
-        to_add.append(("company", "TEXT"))
-    if "updated_at" not in columns:
-        to_add.append(("updated_at", "TIMESTAMP"))
-    for col, type_ in to_add:
-        c.execute(f"ALTER TABLE users ADD COLUMN {col} {type_}")
+    ensure_columns(c, "users", {
+        "username": "TEXT",
+        "phone": "TEXT",
+        "company": "TEXT",
+        "updated_at": "TIMESTAMP"
+    })
 
 
 def _create_tables(c: sqlite3.Cursor):
