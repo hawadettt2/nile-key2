@@ -42,7 +42,7 @@
 
 ## WP-02: Database Contract Alignment
 
-**Status:** ⏸ Partial (WP-02A/B/C complete, D-H pending)
+**Status:** ✅ Complete (WP-02A-H complete)
 
 **Decomposition:**
 | Sub-package | Status | Entity |
@@ -50,11 +50,11 @@
 | WP-02A | ✅ Complete | users |
 | WP-02B | ✅ Complete | suppliers |
 | WP-02C | ✅ Complete | customers |
-| WP-02D | ⏸ Partial | shipments |
-| WP-02E | ⏸ Partial | invoices |
-| WP-02F | ⏸ Partial | customs_declarations |
-| WP-02G | ⏸ Partial | resources |
-| WP-02H | ⏸ Partial | documents |
+| WP-02D | ✅ Complete | shipments |
+| WP-02E | ✅ Complete | invoices |
+| WP-02F | ✅ Complete | customs_declarations |
+| WP-02G | ✅ Complete | resources |
+| WP-02H | ✅ Complete | documents |
 
 **Dependencies:** WP-01
 
@@ -349,7 +349,7 @@
 
 ## Execution Sequence
 
-WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 
@@ -357,8 +357,9 @@ WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05
 
 | WP | Rollback Command |
 |----|------------------|
+| WP-02A-H | `git checkout 3219904 -- backend/app/core/database.py` |
 | WP-02A | `git checkout a0e87e7 -- backend/app/core/database.py` |
-| WP-02B | `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/suppliers.py` |
-| WP-02C | `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/customers.py` |
+| WP-02B | `git checkout 94ae639 -- backend/app/core/database.py backend/app/routers/suppliers.py` |
+| WP-02C | `git checkout 5cec3ca -- backend/app/core/database.py backend/app/routers/customers.py` |
 
 *End of Plan*
