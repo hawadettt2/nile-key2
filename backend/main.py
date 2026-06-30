@@ -20,12 +20,12 @@ async def lifespan(app: FastAPI):
     - Shutdown: تنظيف الموارد (إن وجد)
     """
     # ========== STARTUP ==========
-    print("🚀 Starting Nile Key API...")
+    print("[STARTUP] Starting Nile Key API...")
     init_db()
-    print("✅ Database initialized")
+    print("[SUCCESS] Database initialized")
     yield
     # ========== SHUTDOWN ==========
-    print("🛑 Shutting down Nile Key API...")
+    print("[SHUTDOWN] Shutting down Nile Key API...")
 
 
 # إنشاء تطبيق FastAPI
