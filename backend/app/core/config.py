@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # ========== App ==========
     APP_NAME: str = "Nile Key API"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = False
+    DEBUG: str = "False"
     
     # ========== Security ==========
     SECRET_KEY: str = "change-this-in-production-immediately"

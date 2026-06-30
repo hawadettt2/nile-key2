@@ -37,6 +37,19 @@ def get_db_connection():
 
 # ========== تهيئة قاعدة البيانات ==========
 
+def get_db():
+    """Return a raw SQLite connection for existing router code."""
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    conn = sqlite3.connect(
+        db_path,
+        check_same_thread=False,
+        timeout=20.0,
+    )
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
 def init_db():
     """إنشاء الجداول وإدخال البيانات الأولية"""
     with get_db_connection() as conn:
