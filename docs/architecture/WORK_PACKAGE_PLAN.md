@@ -1,0 +1,354 @@
+# Work Package Plan (Software Lifecycle Order)
+
+**Version:** 1.2
+**Generated:** 2026-06-30
+**Based on:** ARCHITECTURE_CHARTER.md, REPOSITORY_INTELLIGENCE.md, RECOVERY_CHECKPOINT_REPORT.md
+
+---
+
+## WP-01: Backend Runtime Stability
+
+**Objective:** Ensure backend starts without runtime blockers.
+
+**Why It Exists:** Recovery checkpoint requires verification before any changes.
+
+**Scope:** Verify backend starts, health endpoint works, no import errors.
+
+**Files In Scope:**
+- backend/main.py
+- backend/app/core/config.py
+- backend/app/core/database.py
+- backend/app/core/security.py
+- backend/app/routers/__init__.py
+- backend/app/routers/auth.py
+- backend/app/routers/shipping.py
+- backend/app/routers/invoice.py
+- backend/app/routers/suppliers.py
+- backend/app/routers/customers.py
+- backend/app/routers/customs.py
+- backend/app/routers/resources.py
+- backend/app/routers/documents.py
+
+**Dependencies:** None
+
+**Validation:**
+1. `uvicorn backend.main:app --port 8000` starts
+2. GET /health returns {"status":"healthy"}
+3. No import errors from core modules
+
+**Rollback:** N/A
+
+---
+
+## WP-02: Database Contract Alignment
+
+**Objective:** Align SQLite schema with Pydantic schemas per charter Section 9.
+
+**Why It Exists:** CRITICAL violation - database columns don't match schema definitions.
+
+**Scope:** Update `_create_tables()` to create columns matching all 9 Pydantic schemas.
+
+**Files In Scope:**
+- backend/app/core/database.py
+- backend/app/schemas/user.py
+- backend/app/schemas/supplier.py
+- backend/app/schemas/customer.py
+- backend/app/schemas/shipment.py
+- backend/app/schemas/invoice.py
+- backend/app/schemas/customs.py
+- backend/app/schemas/resource.py
+- backend/app/schemas/document.py
+
+**Dependencies:** WP-01
+
+**Validation:**
+1. `python -c "from app.core.database import init_db; init_db()"`
+2. Verify all schema fields exist as DB columns
+3. No missing columns (username, phone, address, etc.)
+
+**Rollback:** `git checkout backend/app/core/database.py`
+
+---
+
+## WP-03: Authentication Stability
+
+**Objective:** Ensure authentication system works with correct password algorithm.
+
+**Why It Exists:** Security.py changed from bcrypt to pbkdf2_sha256 (verify intent).
+
+**Scope:** Verify/fix password hashing to match requirements.txt (bcrypt).
+
+**Files In Scope:**
+- backend/app/core/security.py
+- backend/app/schemas/user.py
+- backend/app/routers/auth.py
+
+**Dependencies:** WP-01
+
+**Validation:**
+1. Register user, verify password stored
+2. Login works with correct password
+3. Algorithm is bcrypt per requirements.txt
+
+**Rollback:** `git checkout backend/app/core/security.py`
+
+---
+
+## WP-04: CRUD Integrity
+
+**Objective:** Fix all CRUD operations to work with aligned schema.
+
+**Why It Exists:** Routes use schema fields that don't exist in DB.
+
+**Scope:** Update router handlers to use correct column names after WP-02.
+
+**Files In Scope:**
+- backend/app/routers/suppliers.py
+- backend/app/routers/customers.py
+- backend/app/routers/shipping.py
+- backend/app/routers/invoice.py
+- backend/app/schemas/supplier.py
+- backend/app/schemas/customer.py
+- backend/app/schemas/shipment.py
+- backend/app/schemas/invoice.py
+
+**Dependencies:** WP-02
+
+**Validation:**
+1. All CRUD endpoints return data successfully
+2. No SQLite errors on insert/select/update/delete
+3. Data persists correctly
+
+**Rollback:** `git checkout backend/app/routers/`
+
+---
+
+## WP-05: Frontend Build Stability
+
+**Objective:** Ensure frontend builds with current API contract.
+
+**Why It Exists:** Frontend depends on backend; verify after schema changes.
+
+**Scope:** Verify TypeScript compiles, dev server starts.
+
+**Files In Scope:**
+- frontend/package.json
+- frontend/tsconfig.json
+- frontend/vite.config.ts
+- frontend/src/main.tsx
+- frontend/src/App.tsx
+- frontend/src/services/api.ts
+- frontend/src/pages/Login.tsx
+- frontend/src/pages/Dashboard.tsx
+- frontend/src/pages/Suppliers.tsx
+- frontend/src/pages/Customers.tsx
+- frontend/src/pages/Shipments.tsx
+- frontend/src/pages/Invoices.tsx
+- frontend/src/pages/Customs.tsx
+- frontend/src/pages/Documents.tsx
+- frontend/src/pages/Resources.tsx
+
+**Dependencies:** WP-02, WP-04
+
+**Validation:**
+1. `npm run build` in frontend completes
+2. No TypeScript errors
+3. Login page renders
+
+**Rollback:** N/A
+
+---
+
+## WP-06: Integration Testing
+
+**Objective:** Validate all API endpoints work end-to-end.
+
+**Why It Exists:** Charter Section 18 requires core routes work.
+
+**Scope:** Test each router endpoint with valid requests against running backend.
+
+**Files In Scope:**
+- backend/app/routers/auth.py
+- backend/app/routers/shipping.py
+- backend/app/routers/invoice.py
+- backend/app/routers/suppliers.py
+- backend/app/routers/customers.py
+- backend/app/routers/customs.py
+- backend/app/routers/resources.py
+- backend/app/routers/documents.py
+- backend/app/schemas/* (all schema files)
+
+**Dependencies:** WP-04
+
+**Validation:**
+1. Auth endpoints work
+2. Suppliers/Customers CRUD work
+3. Shipments/Invoices CRUD work
+4. Customs endpoints work
+5. Resources/Documents endpoints work
+
+**Rollback:** N/A
+
+---
+
+## WP-07: Security Hardening
+
+**Objective:** Fix all security violations per charter Section 12.
+
+**Why It Exists:** Hardcoded secrets and wildcard CORS are critical risks.
+
+**Scope:** Externalize SECRET_KEY, fix CORS configuration.
+
+**Files In Scope:**
+- backend/app/core/config.py
+- backend/.env.example
+- backend/main.py
+
+**Dependencies:** WP-01
+
+**Validation:**
+1. App fails without SECRET_KEY in production
+2. CORS restricts to ALLOWED_ORIGINS
+3. No hardcoded defaults in config
+
+**Rollback:** `git checkout backend/app/core/config.py backend/main.py backend/.env.example`
+
+---
+
+## WP-08: Architecture Cleanup
+
+**Objective:** Prepare architecture for refactoring.
+
+**Why It Exists:** Charter requires cleanup before refactoring (Sections 8, 10, 16).
+
+**Scope:** Initialize services layer, create SQL helper, align .env.example.
+
+**Files In Scope:**
+- backend/app/services/__init__.py
+- backend/app/core/database.py
+- backend/.env.example
+- backend/requirements.txt
+
+**Dependencies:** WP-01, WP-02
+
+**Validation:**
+1. `from app.services import *` imports cleanly
+2. Helper function works for UPDATE queries
+3. .env.example has all config variables
+
+**Rollback:** Remove added functions, revert .env.example
+
+---
+
+## WP-09: Refactoring
+
+**Objective:** Extract duplicated logic into reusable components.
+
+**Why It Exists:** Charter Section 8 prohibits code duplication.
+
+**Scope:** Refactor 8 routers to use shared SQL query builder.
+
+**Files In Scope:**
+- backend/app/routers/auth.py
+- backend/app/routers/shipping.py
+- backend/app/routers/invoice.py
+- backend/app/routers/suppliers.py
+- backend/app/routers/customers.py
+- backend/app/routers/customs.py
+- backend/app/routers/resources.py
+- backend/app/routers/documents.py
+- backend/app/core/database.py
+
+**Dependencies:** WP-08
+
+**Validation:**
+1. All endpoints still work
+2. No code duplication in UPDATE patterns
+3. Cleaner router code
+
+**Rollback:** `git checkout backend/app/routers/`
+
+---
+
+## WP-10: Database Migration System
+
+**Objective:** Add Alembic migrations per charter Phase 3.
+
+**Why It Exists:** Charter requires migrations as legal evolution mechanism.
+
+**Scope:** Initialize Alembic, capture current schema as initial migration.
+
+**Files In Scope:**
+- alembic/ directory
+- alembic.ini
+- requirements.txt
+- backend/app/core/database.py
+
+**Dependencies:** WP-02
+
+**Validation:**
+1. `alembic upgrade head` applies migration
+2. Migration reversible
+3. Migration matches current schema
+
+**Rollback:** Remove alembic directory
+
+---
+
+## WP-11: Deployment Validation
+
+**Objective:** Validate deployment configuration.
+
+**Why It Exists:** Charter Phase 6 requires deployment validation.
+
+**Scope:** Add Dockerfile, verify containerization.
+
+**Files In Scope:**
+- Dockerfile
+- docker-compose.yml
+- .dockerignore
+- backend/requirements.txt
+- frontend/package.json
+- backend/app/core/config.py
+
+**Dependencies:** WP-09
+
+**Validation:**
+1. `docker compose up` starts both services
+2. Health endpoint accessible in container
+3. No volume/mount errors
+
+**Rollback:** Remove Docker files
+
+---
+
+## WP-12: Production Readiness
+
+**Objective:** Final production hardening per charter Phase 7.
+
+**Why It Exists:** Charter requires production readiness before completion.
+
+**Scope:** Generate frontend types, finalize documentation, verify quality gates.
+
+**Files In Scope:**
+- frontend/src/types/
+- frontend/src/services/api.ts
+- docs/architecture/REPOSITORY_INTELLIGENCE.md
+- docs/architecture/WORK_PACKAGE_PLAN.md
+
+**Dependencies:** WP-10, WP-11
+
+**Validation:**
+1. All quality gates pass (charter Section 18)
+2. Frontend types match API
+3. Documentation updated
+
+**Rollback:** Remove generated types
+
+---
+
+## Execution Sequence
+
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+
+*End of Plan*
