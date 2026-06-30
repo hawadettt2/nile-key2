@@ -75,6 +75,17 @@ def _ensure_users_schema(c: sqlite3.Cursor):
     })
 
 
+def _ensure_suppliers_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "suppliers", {
+        "name_en": "TEXT",
+        "contact_person": "TEXT",
+        "country": "TEXT",
+        "commercial_registry": "TEXT",
+        "updated_at": "TIMESTAMP",
+        "created_by": "INTEGER"
+    })
+
+
 def _create_tables(c: sqlite3.Cursor):
     """إنشاء كل جداول المشروع"""
     
@@ -127,8 +138,9 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
-    # ========== جدول العملاء (المستوردين) ==========
+    _ensure_suppliers_schema(c)
+
+    # ========== جدول العملاء (المستوردين) =======
     c.execute("""
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -279,7 +291,7 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
             get_password_hash("NileKey2024!"),
             "المالك",
             "owner",
-            "owner"
+            "Owner"
         ))
     elif not owner_row[1]:
         c.execute("UPDATE users SET username = ? WHERE email = ?", ("owner", "owner@nile-key.com"))

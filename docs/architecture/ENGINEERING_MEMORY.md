@@ -9,6 +9,7 @@
 | WP-01A | ✅ Complete | 3597c67 | Unicode emoji fix in main.py lifespan for Windows compatibility |
 | WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passlib compatibility |
 | WP-02A | ✅ Complete | a0e87e7 | Added username, phone, company, updated_at columns to users table; fixed auth.py column reference |
+| WP-02B | ✅ Complete | pending commit | Added name_en, contact_person, country, commercial_registry, updated_at, created_by columns to suppliers table |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
@@ -35,6 +36,7 @@
 3. **bcrypt is required password algorithm** - passlib[bcrypt] in requirements.txt
 4. **No business logic in routers** (charter Section 10) - must move to services layer
 5. **Code duplication prohibited** (charter Section 8) - must extract SQL helpers
+6. **Legacy Compatibility Policy** - When a legacy database column is still required for compatibility, it may receive a temporary default value. New business logic must never depend on that column. Removal is deferred to the dedicated Database Cleanup phase.
 
 ---
 
@@ -91,7 +93,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Sub-package | Status | Entity |
 |-------------|--------|--------|
 | WP-02A | ✅ Complete | users |
-| WP-02B | Pending | suppliers |
+| WP-02B | ✅ Complete | suppliers |
 | WP-02C | Pending | customers |
 | WP-02D | Pending | shipments |
 | WP-02E | Pending | invoices |
@@ -115,15 +117,28 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
+## WP-02B Verification Results
+
+| Test | Result |
+|------|--------|
+| Fresh DB init | ✅ Success - all 22 columns present |
+| Existing DB upgrade | ✅ Success - columns added, data preserved |
+| Backend startup | ✅ Healthy (port 8001) |
+| Login works | ✅ Token returned |
+| Supplier CRUD | ✅ Create, Read, Update work |
+| Legacy compatibility | ✅ `type` column receives default "general" value |
+
+---
+
 ## Remaining Work Packages
 
-WP-02B → WP-02C → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-02C → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 
 ## Next Approved Work Package
 
-**WP-02B: Supplier Table Alignment**
+**WP-02C: Customer Table Alignment**
 
 - **Objective:** Align suppliers table with Supplier schema
 - **Files:** backend/app/core/database.py (suppliers table only)

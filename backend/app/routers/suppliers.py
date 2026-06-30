@@ -56,11 +56,16 @@ def create_supplier(data: SupplierCreate, current_user: dict = Depends(require_r
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
+    # LEGACY COMPATIBILITY:
+    # The "type" column is not part of the backend contract.
+    # It is written only because the existing SQLite schema still requires a NOT NULL value.
+    # This column must not be used by new business logic.
+    # Removal is allowed only during the future Database Cleanup phase.
     cursor.execute(
-        """INSERT INTO suppliers (name, name_en, contact_person, email, phone, address, city, country,
+        """INSERT INTO suppliers (name, type, name_en, contact_person, email, phone, address, city, country,
            tax_id, commercial_registry, certificates, notes, status, created_at, created_by)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (data.name, data.name_en, data.contact_person, data.email, data.phone,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (data.name, "general", data.name_en, data.contact_person, data.email, data.phone,
          data.address, data.city, data.country, data.tax_id, data.commercial_registry,
          str(data.certificates) if data.certificates else "[]", data.notes, "active", now, current_user["id"])
     )
