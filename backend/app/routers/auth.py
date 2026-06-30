@@ -8,10 +8,12 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     token = credentials.credentials
     payload = decode_token(token)
     if not payload or payload.get("type") != "access":
