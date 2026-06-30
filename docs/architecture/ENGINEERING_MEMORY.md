@@ -9,7 +9,8 @@
 | WP-01A | ✅ Complete | 3597c67 | Unicode emoji fix in main.py lifespan for Windows compatibility |
 | WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passlib compatibility |
 | WP-02A | ✅ Complete | a0e87e7 | Added username, phone, company, updated_at columns to users table; fixed auth.py column reference |
-| WP-02B | ✅ Complete | 6296d0a | Added name_en, contact_person, country, commercial_registry, updated_at, created_by columns to suppliers table |
+| WP-02B | ✅ Complete | 94ae639 | Added suppliers schema + response compatibility + role case fixes |
+| WP-02C | ✅ Complete | 5cec3ca | Added customers schema + response compatibility layer with legacy fallbacks |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
@@ -19,6 +20,8 @@
 
 | Hash | Message | Date |
 |------|---------|------|
+| 5cec3ca | WP-02C: Align customers schema with backend contract + response compatibility | 2026-06-30 |
+| 94ae639 | WP-02B: Add suppliers response compatibility + role case fixes | 2026-06-30 |
 | 98838d1 | infrastructure: add ensure_columns() helper for WP-02B-H schema migrations | 2026-06-30 |
 | a0e87e7 | WP-02A: Align users schema with backend contract | 2026-06-30 |
 | 8091764 | docs: update ENGINEERING_MEMORY with Doc-01 commit | 2026-06-30 |
@@ -66,7 +69,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 | Risk Level | Issue | Status |
 |------------|-------|--------|
-| 🔴 CRITICAL | Database schema mismatch | WP-02A: users fixed; WP-02B: suppliers fixed; WP-02C-H: Pending customers-shipments-invoices-customs-resources-documents |
+| 🔴 CRITICAL | Database schema mismatch | WP-02A/B/C complete; WP-02D-H pending shipments-invoices-customs-resources-documents |
 | 🔴 CRITICAL | Hardcoded SECRET_KEY | Pending WP-07 |
 | 🔴 CRITICAL | Wildcard CORS | Pending WP-07 |
 | 🟠 HIGH | Missing services layer | Pending WP-08 |
@@ -82,6 +85,8 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Health endpoint | ✅ healthy |
 | OpenAPI schema | ✅ Available |
 | Users table schema | ✅ Complete (WP-02A) |
+| Suppliers table schema | ✅ Complete (WP-02B) |
+| Customers table schema | ✅ Complete (WP-02C) |
 | Frontend build | ⚠️ Not verified |
 | Docker | ❌ Not available |
 | Tests | ❌ None |
@@ -94,12 +99,12 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 |-------------|--------|--------|
 | WP-02A | ✅ Complete | users |
 | WP-02B | ✅ Complete | suppliers |
-| WP-02C | ⏸ Paused (column rename) | customers |
-| WP-02D | Pending | shipments |
-| WP-02E | Pending | invoices |
-| WP-02F | Pending | customs_declarations |
-| WP-02G | Pending | resources |
-| WP-02H | Pending | documents |
+| WP-02C | ✅ Complete | customers |
+| WP-02D | ⏸ Partial | shipments |
+| WP-02E | ⏸ Partial | invoices |
+| WP-02F | ⏸ Partial | customs_declarations |
+| WP-02G | ⏸ Partial | resources |
+| WP-02H | ⏸ Partial | documents |
 
 ---
 
@@ -127,32 +132,28 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Login works | ✅ Token returned |
 | Supplier CRUD | ✅ Create, Read, Update work |
 | Legacy compatibility | ✅ `type` column receives default "general" value |
+| Response compatibility | ✅ Legacy columns (type, farm_code, governorate, products, rating) filtered from API responses |
+| Role compatibility | ✅ Role case fixed (Owner->owner, Manager->manager, Sales->sales) |
+
+---
+
+## WP-02C Verification Results
+
+| Test | Result |
+|------|--------|
+| Fresh DB init | ✅ Success - all columns present |
+| Existing DB upgrade | ✅ Success - columns added, data preserved |
+| Backend startup | ✅ Healthy (port 8001) |
+| Login works | ✅ Token returned |
+| Customer CRUD | ✅ Create, Read, Update work |
+| Legacy columns excluded | ✅ No `company_name`/`contact_name` in API responses |
+| Fallback logic | ✅ `name` ← `company_name` when NULL, `contact_person` ← `contact_name` when NULL |
 
 ---
 
 ## Remaining Work Packages
 
-WP-02C approval needed → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
-
----
-
-## WP-02C Design Issue - Column Rename Mismatch
-
-**Paused - requires explicit approval before proceeding.**
-
-The customers table has a **column rename mismatch** where the router expects different column names than the DB:
-
-| Schema Column | DB Column | Issue |
-|---------------|-----------|-------|
-| name | company_name (NOT NULL) | Router uses 'name' but DB requires 'company_name' |
-| contact_person | contact_name | Router uses 'contact_person' but DB has 'contact_name' |
-
-**Required approach:**
-- Add schema columns (`name`, `contact_person`, `address`, `city`, `tax_id`, `import_license`, `category`, `notes`, `updated_at`, `created_by`)
-- Provide default values for NOT NULL LEGACY columns (`company_name`, `contact_name`)
-- Add LEGACY compatibility comments in router
-
-**Pending approval.**
+WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 
@@ -177,4 +178,4 @@ The customers table has a **column rename mismatch** where the router expects di
 
 ---
 
-*Memory Last Updated: WP-01, WP-02A, WP-02B complete, awaiting WP-02C approval.*
+*Memory Last Updated: WP-02A, WP-02B, WP-02C complete. WP-02D-H pending*.

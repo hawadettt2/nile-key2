@@ -42,22 +42,19 @@
 
 ## WP-02: Database Contract Alignment
 
-**Objective:** Align SQLite schema with Pydantic schemas per charter Section 9.
+**Status:** ⏸ Partial (WP-02A/B/C complete, D-H pending)
 
-**Why It Exists:** CRITICAL violation - database columns don't match schema definitions.
-
-**Scope:** Update `_create_tables()` to create columns matching all 9 Pydantic schemas.
-
-**Files In Scope:**
-- backend/app/core/database.py
-- backend/app/schemas/user.py
-- backend/app/schemas/supplier.py
-- backend/app/schemas/customer.py
-- backend/app/schemas/shipment.py
-- backend/app/schemas/invoice.py
-- backend/app/schemas/customs.py
-- backend/app/schemas/resource.py
-- backend/app/schemas/document.py
+**Decomposition:**
+| Sub-package | Status | Entity |
+|-------------|--------|--------|
+| WP-02A | ✅ Complete | users |
+| WP-02B | ✅ Complete | suppliers |
+| WP-02C | ✅ Complete | customers |
+| WP-02D | ⏸ Partial | shipments |
+| WP-02E | ⏸ Partial | invoices |
+| WP-02F | ⏸ Partial | customs_declarations |
+| WP-02G | ⏸ Partial | resources |
+| WP-02H | ⏸ Partial | documents |
 
 **Dependencies:** WP-01
 
@@ -66,7 +63,10 @@
 2. Verify all schema fields exist as DB columns
 3. No missing columns (username, phone, address, etc.)
 
-**Rollback:** `git checkout backend/app/core/database.py`
+**Rollback:** 
+- WP-02A: `git checkout a0e87e7 -- backend/app/core/database.py`
+- WP-02B: `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/suppliers.py`
+- WP-02C: `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/customers.py`
 
 ---
 
@@ -349,6 +349,16 @@
 
 ## Execution Sequence
 
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+
+---
+
+## WP-02 Rollback Points
+
+| WP | Rollback Command |
+|----|------------------|
+| WP-02A | `git checkout a0e87e7 -- backend/app/core/database.py` |
+| WP-02B | `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/suppliers.py` |
+| WP-02C | `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/customers.py` |
 
 *End of Plan*
