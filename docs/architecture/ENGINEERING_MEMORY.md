@@ -9,7 +9,7 @@
 | WP-01A | ✅ Complete | 3597c67 | Unicode emoji fix in main.py lifespan for Windows compatibility |
 | WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passlib compatibility |
 | WP-02A | ✅ Complete | a0e87e7 | Added username, phone, company, updated_at columns to users table; fixed auth.py column reference |
-| WP-02B | ✅ Complete | pending commit | Added name_en, contact_person, country, commercial_registry, updated_at, created_by columns to suppliers table |
+| WP-02B | ✅ Complete | 6296d0a | Added name_en, contact_person, country, commercial_registry, updated_at, created_by columns to suppliers table |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
@@ -66,7 +66,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 | Risk Level | Issue | Status |
 |------------|-------|--------|
-| 🔴 CRITICAL | Database schema mismatch | WP-02A: users fixed; WP-02B-H: Pending suppliers-customers-shipments-invoices-customs-resources-documents |
+| 🔴 CRITICAL | Database schema mismatch | WP-02A: users fixed; WP-02B: suppliers fixed; WP-02C-H: Pending customers-shipments-invoices-customs-resources-documents |
 | 🔴 CRITICAL | Hardcoded SECRET_KEY | Pending WP-07 |
 | 🔴 CRITICAL | Wildcard CORS | Pending WP-07 |
 | 🟠 HIGH | Missing services layer | Pending WP-08 |
@@ -140,8 +140,8 @@ WP-02C → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-0
 
 **WP-02C: Customer Table Alignment**
 
-- **Objective:** Align suppliers table with Supplier schema
-- **Files:** backend/app/core/database.py (suppliers table only)
+- **Objective:** Align customers table with Customer schema
+- **Files:** backend/app/core/database.py, backend/app/routers/customers.py
 - **Risk:** High
 - **Depends on:** WP-01
 
@@ -168,4 +168,4 @@ WP-02C → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-0
 
 ---
 
-*Memory Last Updated: WP-01, WP-02A, and documentation complete, awaiting WP-02B approval.*
+*Memory Last Updated: WP-01, WP-02A, WP-02B complete, awaiting WP-02C approval.*
