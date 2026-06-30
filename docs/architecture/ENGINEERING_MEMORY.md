@@ -8,6 +8,7 @@
 |----|--------|--------|-------|
 | WP-01A | ✅ Complete | 3597c67 | Unicode emoji fix in main.py lifespan for Windows compatibility |
 | WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passlib compatibility |
+| WP-02A | ✅ Complete | 7227a53 | Added username, phone, company, updated_at columns to users table |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
 ---
@@ -16,6 +17,8 @@
 
 | Hash | Message | Date |
 |------|---------|------|
+| 7227a53 | WP-02A: Add missing columns to users table for schema alignment | 2026-06-30 |
+| 8091764 | docs: update ENGINEERING_MEMORY with Doc-01 commit | 2026-06-30 |
 | 9a1682d | docs: establish architecture documentation and engineering memory | 2026-06-30 |
 | d036c06 | WP-01: Backend Runtime Stability completed | 2026-06-30 |
 | 3597c67 | WP-01A: Backend runtime startup stabilized | 2026-06-30 |
@@ -59,7 +62,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 | Risk Level | Issue | Status |
 |------------|-------|--------|
-| 🔴 CRITICAL | Database schema mismatch | Pending WP-02 |
+| 🔴 CRITICAL | Database schema mismatch | WP-02A: users fixed; WP-02B-H: Pending suppliers-customers-shipments-invoices-customs-resources-documents |
 | 🔴 CRITICAL | Hardcoded SECRET_KEY | Pending WP-07 |
 | 🔴 CRITICAL | Wildcard CORS | Pending WP-07 |
 | 🟠 HIGH | Missing services layer | Pending WP-08 |
@@ -74,18 +77,54 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Backend | ✅ Running (port 8001) |
 | Health endpoint | ✅ healthy |
 | OpenAPI schema | ✅ Available |
+| Users table schema | ✅ Complete (WP-02A) |
 | Frontend build | ⚠️ Not verified |
 | Docker | ❌ Not available |
 | Tests | ❌ None |
 
 ---
 
+## WP-02 Decomposition Status
+
+| Sub-package | Status | Entity |
+|-------------|--------|--------|
+| WP-02A | ✅ Complete | users |
+| WP-02B | Pending | suppliers |
+| WP-02C | Pending | customers |
+| WP-02D | Pending | shipments |
+| WP-02E | Pending | invoices |
+| WP-02F | Pending | customs_declarations |
+| WP-02G | Pending | resources |
+| WP-02H | Pending | documents |
+
+---
+
+## WP-02A Verification Results
+
+| Test | Result |
+|------|--------|
+| Fresh DB init | ✅ Success - all columns present |
+| Existing DB upgrade | ✅ Success - columns added, data preserved |
+| Backend startup | ✅ Healthy (port 8001) |
+| Login works | ✅ Token returned for owner user |
+| Password hashes intact | ✅ bcrypt `$2b$12$` format preserved |
+| User IDs intact | ✅ Auto-increment preserved |
+| Authenticated routes work | ✅ `/api/v1/auth/me` accessible with token |
+
+---
+
+## Remaining Work Packages
+
+WP-02B → WP-02C → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+
+---
+
 ## Next Approved Work Package
 
-**WP-02: Database Contract Alignment**
+**WP-02B: Supplier Table Alignment**
 
-- **Objective:** Align SQLite schema with Pydantic schemas (charter Section 9)
-- **Files:** database.py + all schemas
+- **Objective:** Align suppliers table with Supplier schema
+- **Files:** backend/app/core/database.py (suppliers table only)
 - **Risk:** High
 - **Depends on:** WP-01
 
@@ -112,4 +151,4 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
-*Memory Last Updated: WP-01 and documentation complete, awaiting WP-02 approval.*
+*Memory Last Updated: WP-01, WP-02A, and documentation complete, awaiting WP-02B approval.*

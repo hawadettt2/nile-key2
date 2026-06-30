@@ -59,6 +59,22 @@ def init_db():
         conn.commit()
 
 
+def _ensure_users_schema(c: sqlite3.Cursor):
+    existing = c.execute("PRAGMA table_info(users)").fetchall()
+    columns = {row[1] for row in existing}
+    to_add = []
+    if "username" not in columns:
+        to_add.append(("username", "TEXT"))
+    if "phone" not in columns:
+        to_add.append(("phone", "TEXT"))
+    if "company" not in columns:
+        to_add.append(("company", "TEXT"))
+    if "updated_at" not in columns:
+        to_add.append(("updated_at", "TIMESTAMP"))
+    for col, type_ in to_add:
+        c.execute(f"ALTER TABLE users ADD COLUMN {col} {type_}")
+
+
 def _create_tables(c: sqlite3.Cursor):
     """إنشاء كل جداول المشروع"""
     
@@ -69,11 +85,16 @@ def _create_tables(c: sqlite3.Cursor):
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             full_name TEXT NOT NULL,
+            username TEXT UNIQUE,
+            phone TEXT,
+            company TEXT,
             role TEXT NOT NULL DEFAULT 'staff',
             is_active INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
         )
     """)
+    _ensure_users_schema(c)
     
     # ========== جدول الأدوار ==========
     c.execute("""
@@ -247,17 +268,21 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     from app.core.security import get_password_hash
     
     # ===== إنشاء المستخدم الافتراضي (Owner) =====
-    c.execute("SELECT id FROM users WHERE email = ?", ("owner@nile-key.com",))
-    if not c.fetchone():
+    c.execute("SELECT id, username FROM users WHERE email = ?", ("owner@nile-key.com",))
+    owner_row = c.fetchone()
+    if not owner_row:
         c.execute("""
-            INSERT INTO users (email, password_hash, full_name, role)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO users (email, password_hash, full_name, username, role)
+            VALUES (?, ?, ?, ?, ?)
         """, (
             "owner@nile-key.com",
             get_password_hash("NileKey2024!"),
             "المالك",
+            "owner",
             "owner"
         ))
+    elif not owner_row[1]:
+        c.execute("UPDATE users SET username = ? WHERE email = ?", ("owner", "owner@nile-key.com"))
     
     # ===== إنشاء الأدوار =====
     roles = [

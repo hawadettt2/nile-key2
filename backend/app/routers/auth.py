@@ -48,7 +48,7 @@ def register(user_data: UserCreate):
     hashed = get_password_hash(user_data.password)
     now = datetime.utcnow().isoformat()
     cursor.execute(
-        """INSERT INTO users (email, username, full_name, hashed_password, role, phone, company, created_at)
+        """INSERT INTO users (email, username, full_name, password_hash, role, phone, company, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         (user_data.email, user_data.username, user_data.full_name, hashed,
          user_data.role, user_data.phone, user_data.company, now)
@@ -69,7 +69,7 @@ def login(credentials: UserLogin):
     if not row:
         raise HTTPException(status_code=401, detail="Invalid username or password")
     user = dict(row)
-    if not verify_password(credentials.password, user["hashed_password"]):
+    if not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     access = create_access_token({"sub": str(user["id"]), "role": user["role"]})
     refresh = create_refresh_token({"sub": str(user["id"])})
