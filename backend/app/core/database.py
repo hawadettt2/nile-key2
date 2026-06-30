@@ -125,6 +125,78 @@ def _ensure_shipments_schema(c: sqlite3.Cursor):
     })
 
 
+def _ensure_invoices_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "invoices", {
+        "invoice_number": "TEXT",
+        "customer_id": "INTEGER",
+        "supplier_id": "INTEGER",
+        "shipment_id": "INTEGER",
+        "subtotal": "REAL",
+        "tax_rate": "REAL",
+        "tax_amount": "REAL",
+        "currency": "TEXT",
+        "issue_date": "TIMESTAMP",
+        "due_date": "TIMESTAMP",
+        "items": "TEXT",
+        "notes": "TEXT",
+        "created_by": "INTEGER",
+        "updated_at": "TIMESTAMP",
+        "internal_id": "TEXT",
+        "eta_uuid": "TEXT",
+        "eta_status": "TEXT",
+        "signed_data": "TEXT"
+    })
+
+
+def _ensure_customs_declarations_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "customs_declarations", {
+        "declaration_number": "TEXT",
+        "hs_code_id": "INTEGER",
+        "destination_country": "TEXT",
+        "total_value": "REAL",
+        "tax_amount": "REAL",
+        "total_duties": "REAL",
+        "created_by": "INTEGER",
+        "updated_at": "TIMESTAMP",
+        "submitted_at": "TIMESTAMP",
+        "approved_at": "TIMESTAMP"
+    })
+
+
+def _ensure_hs_codes_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "hs_codes", {
+        "description_ar": "TEXT",
+        "restrictions": "TEXT"
+    })
+
+
+def _ensure_resources_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "resources", {
+        "title_ar": "TEXT",
+        "description_ar": "TEXT",
+        "resource_type": "TEXT",
+        "metadata": "TEXT",
+        "is_active": "INTEGER",
+        "created_by": "INTEGER",
+        "updated_at": "TIMESTAMP",
+        "file_path": "TEXT"
+    })
+
+
+def _ensure_documents_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "documents", {
+        "document_type": "TEXT",
+        "metadata": "TEXT",
+        "file_name": "TEXT",
+        "file_type": "TEXT",
+        "file_size": "INTEGER",
+        "entity_type": "TEXT",
+        "entity_id": "INTEGER",
+        "updated_at": "TIMESTAMP",
+        "template_type": "TEXT"
+    })
+
+
 def _create_tables(c: sqlite3.Cursor):
     """إنشاء كل جداول المشروع"""
     
@@ -219,9 +291,6 @@ def _create_tables(c: sqlite3.Cursor):
     """)
     _ensure_shipments_schema(c)
     
-    # ========== جدول الفواتير الإلكترونية ==========
-    
-    # ========== جدول الفواتير الإلكترونية ==========
     c.execute("""
         CREATE TABLE IF NOT EXISTS invoices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -238,7 +307,8 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+    _ensure_invoices_schema(c)
+
     # ========== جدول البيانات الجمركية ==========
     c.execute("""
         CREATE TABLE IF NOT EXISTS customs_declarations (
@@ -254,7 +324,8 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+    _ensure_customs_declarations_schema(c)
+
     # ========== جدول أكواد HS ==========
     c.execute("""
         CREATE TABLE IF NOT EXISTS hs_codes (
@@ -266,7 +337,8 @@ def _create_tables(c: sqlite3.Cursor):
             vat_rate REAL DEFAULT 14.0
         )
     """)
-    
+    _ensure_hs_codes_schema(c)
+
     # ========== جدول المستندات ==========
     c.execute("""
         CREATE TABLE IF NOT EXISTS documents (
@@ -280,7 +352,8 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
-    
+    _ensure_documents_schema(c)
+
     # ========== جدول الموارد ==========
     c.execute("""
         CREATE TABLE IF NOT EXISTS resources (
@@ -295,6 +368,7 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    _ensure_resources_schema(c)
     
     # ========== جدول سجل التدقيق ==========
     c.execute("""

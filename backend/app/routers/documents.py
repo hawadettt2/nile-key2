@@ -9,6 +9,33 @@ from app.schemas.document import DocumentCreate, DocumentUpdate
 router = APIRouter(prefix="/api/v1/documents", tags=["Documents"])
 
 
+def _document_row_to_response(row: dict) -> dict:
+    """Compatibility layer: map DB row to API contract fields.
+    
+    LEGACY COMPATIBILITY:
+    - Returns only backend contract fields
+    - Legacy column `type` maps to `document_type`
+    - Deferred cleanup to WP-10
+    """
+    return {
+        "id": row.get("id"),
+        "title": row.get("title"),
+        "document_type": row.get("document_type") or row.get("type"),
+        "template_type": row.get("template_type"),
+        "entity_type": row.get("entity_type"),
+        "entity_id": row.get("entity_id"),
+        "content": row.get("content"),
+        "metadata": dict(row.get("metadata", {})) if isinstance(row.get("metadata"), str) else row.get("metadata", {}),
+        "file_name": row.get("file_name"),
+        "file_path": row.get("file_path"),
+        "file_type": row.get("file_type"),
+        "file_size": row.get("file_size"),
+        "created_at": row.get("created_at"),
+        "updated_at": row.get("updated_at"),
+        "created_by": row.get("created_by"),
+    }
+
+
 @router.get("/", response_model=list)
 def list_documents(
     document_type: Optional[str] = None,
@@ -23,8 +50,8 @@ def list_documents(
     query = "SELECT * FROM documents WHERE 1=1"
     params = []
     if document_type:
-        query += " AND document_type = ?"
-        params.append(document_type)
+        query += " AND (document_type = ? OR type = ?)"
+        params.extend([document_type, document_type])
     if entity_type:
         query += " AND entity_type = ?"
         params.append(entity_type)
@@ -36,7 +63,7 @@ def list_documents(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_document_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/{document_id}", response_model=dict)
@@ -48,7 +75,7 @@ def get_document(document_id: int, current_user: dict = Depends(get_current_user
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Document not found")
-    return dict(row)
+    return _document_row_to_response(dict(row))
 
 
 @router.post("/", response_model=dict)

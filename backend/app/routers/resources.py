@@ -9,6 +9,33 @@ from app.schemas.resource import ResourceCreate, ResourceUpdate
 router = APIRouter(prefix="/api/v1/resources", tags=["Resources"])
 
 
+def _resource_row_to_response(row: dict) -> dict:
+    """Compatibility layer: map DB row to API contract fields.
+    
+    LEGACY COMPATIBILITY:
+    - Returns only backend contract fields
+    - Legacy column `is_verified` maps to `is_active` (inverted logic)
+    - Legacy column `tags` maps to `metadata` as dict
+    """
+    return {
+        "id": row.get("id"),
+        "title": row.get("title"),
+        "title_ar": row.get("title_ar"),
+        "description": row.get("description"),
+        "description_ar": row.get("description_ar"),
+        "resource_type": row.get("category") or row.get("resource_type"),
+        "category": row.get("category"),
+        "url": row.get("url"),
+        "country": row.get("country"),
+        "metadata": {"tags": row.get("tags")} if row.get("tags") else {},
+        "is_active": row.get("is_active") if row.get("is_active") is not None else (0 if row.get("is_verified") else 1),
+        "file_path": row.get("file_path"),
+        "created_at": row.get("created_at"),
+        "updated_at": row.get("updated_at"),
+        "created_by": row.get("created_by"),
+    }
+
+
 @router.get("/", response_model=list)
 def list_resources(
     resource_type: Optional[str] = None,
@@ -21,7 +48,7 @@ def list_resources(
 ):
     conn = get_db()
     cursor = conn.cursor()
-    query = "SELECT * FROM resources WHERE is_active = 1"
+    query = "SELECT * FROM resources WHERE (is_active = 1 OR is_verified = 1)"
     params = []
     if resource_type:
         query += " AND resource_type = ?"
@@ -40,7 +67,7 @@ def list_resources(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_resource_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/search", response_model=list)
@@ -51,26 +78,26 @@ def search_resources(
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        """SELECT * FROM resources WHERE is_active = 1 AND 
+        """SELECT * FROM resources WHERE (is_active = 1 OR is_verified = 1) AND 
            (title LIKE ? OR title_ar LIKE ? OR description LIKE ? OR description_ar LIKE ?
             OR category LIKE ? OR country LIKE ?)""",
         [f"%{q}%"] * 6
     )
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_resource_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/{resource_id}", response_model=dict)
 def get_resource(resource_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM resources WHERE id = ?", (resource_id,))
+    cursor.execute("SELECT * FROM resources WHERE id = ? AND (is_active = 1 OR is_verified = 1)", (resource_id,))
     row = cursor.fetchone()
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Resource not found")
-    return dict(row)
+    return _resource_row_to_response(dict(row))
 
 
 @router.post("/", response_model=dict)

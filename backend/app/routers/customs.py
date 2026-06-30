@@ -9,6 +9,18 @@ from app.schemas.customs import HSCode, CustomsDeclarationCreate, CustomsDeclara
 router = APIRouter(prefix="/api/v1/customs", tags=["Customs"])
 
 
+def _customs_row_to_response(row: dict) -> dict:
+    """Compatibility layer: map DB row to API contract fields.
+    
+    LEGACY COMPATIBILITY:
+    - Returns only backend contract fields
+    - Legacy columns (duties_estimate, documents, raw_response) are excluded
+    - hs_code column retained but hs_code_id used in router
+    """
+    legacy_exclude = {"duties_estimate", "documents", "raw_response"}
+    return {k: v for k, v in row.items() if k not in legacy_exclude}
+
+
 @router.get("/hs-codes", response_model=list)
 def list_hs_codes(
     search: Optional[str] = None,
@@ -95,7 +107,7 @@ def list_declarations(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_customs_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/declarations/{declaration_id}", response_model=dict)
@@ -107,7 +119,7 @@ def get_declaration(declaration_id: int, current_user: dict = Depends(get_curren
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Declaration not found")
-    return dict(row)
+    return _customs_row_to_response(dict(row))
 
 
 @router.post("/declarations", response_model=dict)
@@ -117,10 +129,10 @@ def create_declaration(data: CustomsDeclarationCreate, current_user: dict = Depe
     now = datetime.utcnow().isoformat()
     decl_num = f"CD-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
     cursor.execute(
-        """INSERT INTO customs_declarations (declaration_number, shipment_id, hs_code_id, origin_country,
-           destination_country, total_value, currency, documents, status, created_at, created_by)
+        """INSERT INTO customs_declarations (declaration_number, shipment_id, hs_code, origin_country,
+           destination_country, value, currency, documents, status, created_at, created_by)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (decl_num, data.shipment_id, data.hs_code_id, data.origin_country,
+        (decl_num, data.shipment_id, None, data.origin_country,
          data.destination_country, data.total_value, data.currency,
          str(data.documents) if data.documents else "[]", "draft", now, current_user["id"])
     )

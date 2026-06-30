@@ -9,6 +9,18 @@ from app.schemas.invoice import InvoiceCreate, InvoiceUpdate
 router = APIRouter(prefix="/api/v1/invoices", tags=["E-Invoicing"])
 
 
+def _invoice_row_to_response(row: dict) -> dict:
+    """Compatibility layer: map DB row to API contract fields.
+    
+    LEGACY COMPATIBILITY:
+    - Returns only backend contract fields
+    - Legacy columns uuid, issuer_tax_id, receiver_tax_id, receiver_name, tax_total, signed_data are retained for internal use but not exposed
+    - Full cleanup deferred to WP-10
+    """
+    legacy_exclude = {"uuid", "issuer_tax_id", "receiver_tax_id", "receiver_name", "tax_total", "signed_data", "raw_response"}
+    return {k: v for k, v in row.items() if k not in legacy_exclude}
+
+
 @router.get("/", response_model=list)
 def list_invoices(
     status: Optional[str] = None,
@@ -32,7 +44,7 @@ def list_invoices(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_invoice_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/{invoice_id}", response_model=dict)
@@ -44,7 +56,7 @@ def get_invoice(invoice_id: int, current_user: dict = Depends(get_current_user))
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    return dict(row)
+    return _invoice_row_to_response(dict(row))
 
 
 @router.post("/", response_model=dict)
