@@ -4,11 +4,9 @@
 **Project:** Nile Key Platform
 **Architecture Charter:** Governing document (must not be violated)
 
-| WP | Status | Commit | Notes |
-|----|--------|--------|-------|
 | WP-01A | ✅ Complete | 3597c67 | Unicode emoji fix in main.py lifespan for Windows compatibility |
 | WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passlib compatibility |
-| WP-02A | ✅ Complete | 7227a53 | Added username, phone, company, updated_at columns to users table |
+| WP-02A | ✅ Complete | a0e87e7 | Added username, phone, company, updated_at columns to users table; fixed auth.py column reference |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
 ---
@@ -17,7 +15,7 @@
 
 | Hash | Message | Date |
 |------|---------|------|
-| 7227a53 | WP-02A: Add missing columns to users table for schema alignment | 2026-06-30 |
+| a0e87e7 | WP-02A: Align users schema with backend contract | 2026-06-30 |
 | 8091764 | docs: update ENGINEERING_MEMORY with Doc-01 commit | 2026-06-30 |
 | 9a1682d | docs: establish architecture documentation and engineering memory | 2026-06-30 |
 | d036c06 | WP-01: Backend Runtime Stability completed | 2026-06-30 |
