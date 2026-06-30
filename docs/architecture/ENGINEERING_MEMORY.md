@@ -118,6 +118,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | WP-02F | ✅ Complete | customs_declarations |
 | WP-02G | ✅ Complete | resources |
 | WP-02H | ✅ Complete | documents |
+| WP-02G-Correction | ✅ Complete | resources - fixed is_active fallback logic |
 
 ---
 

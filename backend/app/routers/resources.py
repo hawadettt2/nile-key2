@@ -14,21 +14,24 @@ def _resource_row_to_response(row: dict) -> dict:
     
     LEGACY COMPATIBILITY:
     - Returns only backend contract fields
-    - Legacy column `is_verified` maps to `is_active` (inverted logic)
+    - Legacy column `is_verified` maps to `is_active` when is_active is NULL
     - Legacy column `tags` maps to `metadata` as dict
     """
+    is_active = row.get("is_active")
+    if is_active is None:
+        is_active = bool(row.get("is_verified", 0))
     return {
         "id": row.get("id"),
         "title": row.get("title"),
         "title_ar": row.get("title_ar"),
         "description": row.get("description"),
         "description_ar": row.get("description_ar"),
-        "resource_type": row.get("category") or row.get("resource_type"),
+        "resource_type": row.get("resource_type") or row.get("category"),
         "category": row.get("category"),
         "url": row.get("url"),
         "country": row.get("country"),
-        "metadata": {"tags": row.get("tags")} if row.get("tags") else {},
-        "is_active": row.get("is_active") if row.get("is_active") is not None else (0 if row.get("is_verified") else 1),
+        "metadata": {"tags": row.get("tags")} if row.get("tags") else (row.get("metadata") if row.get("metadata") else {}),
+        "is_active": is_active,
         "file_path": row.get("file_path"),
         "created_at": row.get("created_at"),
         "updated_at": row.get("updated_at"),
