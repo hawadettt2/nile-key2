@@ -104,7 +104,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Customs table schema | ✅ Complete (WP-02F) |
 | Resources table schema | ✅ Complete (WP-02G) |
 | Documents table schema | ✅ Complete (WP-02H) |
-| Frontend build | ⚠️ Not verified |
+| Frontend build | ✅ **COMPLETE (WP-05)** - Build passes, 0 errors |
 | Docker | ❌ Not available |
 | Tests | ❌ None |
 

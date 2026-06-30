@@ -128,6 +128,8 @@
 
 ## WP-05: Frontend Build Stability
 
+**Status:** ✅ Complete
+
 **Objective:** Ensure frontend builds with current API contract.
 
 **Why It Exists:** Frontend depends on backend; verify after schema changes.

@@ -14,4 +14,4 @@ function PopoverContent({ className, align = "center", sideOffset = 4, ...props 
     </PopoverPrimitive.Portal>
   )
 }
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor }
+export { Popover, PopoverTrigger, PopoverContent }
