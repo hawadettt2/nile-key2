@@ -48,7 +48,7 @@ def get_invoice(invoice_id: int, current_user: dict = Depends(get_current_user))
 
 
 @router.post("/", response_model=dict)
-def create_invoice(data: InvoiceCreate, current_user: dict = Depends(require_role(["Owner", "Manager", "Accountant", "Sales"]))):
+def create_invoice(data: InvoiceCreate, current_user: dict = Depends(require_role(["owner", "manager", "accountant", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
@@ -72,7 +72,7 @@ def create_invoice(data: InvoiceCreate, current_user: dict = Depends(require_rol
 
 
 @router.put("/{invoice_id}", response_model=dict)
-def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict = Depends(require_role(["Owner", "Manager", "Accountant"]))):
+def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict = Depends(require_role(["owner", "manager", "accountant"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM invoices WHERE id = ?", (invoice_id,))
@@ -102,7 +102,7 @@ def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict = De
 
 
 @router.post("/{invoice_id}/validate", response_model=dict)
-def validate_invoice(invoice_id: int, current_user: dict = Depends(require_role(["Owner", "Manager", "Accountant"]))):
+def validate_invoice(invoice_id: int, current_user: dict = Depends(require_role(["owner", "manager", "accountant"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM invoices WHERE id = ?", (invoice_id,))
@@ -118,7 +118,7 @@ def validate_invoice(invoice_id: int, current_user: dict = Depends(require_role(
 
 
 @router.post("/{invoice_id}/cancel", response_model=dict)
-def cancel_invoice(invoice_id: int, current_user: dict = Depends(require_role(["Owner", "Manager", "Accountant"]))):
+def cancel_invoice(invoice_id: int, current_user: dict = Depends(require_role(["owner", "manager", "accountant"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT status FROM invoices WHERE id = ?", (invoice_id,))

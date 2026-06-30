@@ -129,7 +129,7 @@ def update_document(document_id: int, data: DocumentUpdate, current_user: dict =
 
 
 @router.delete("/{document_id}", response_model=dict)
-def delete_document(document_id: int, current_user: dict = Depends(require_role(["Owner", "Manager"]))):
+def delete_document(document_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM documents WHERE id = ?", (document_id,))

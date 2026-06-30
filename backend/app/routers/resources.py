@@ -74,7 +74,7 @@ def get_resource(resource_id: int, current_user: dict = Depends(get_current_user
 
 
 @router.post("/", response_model=dict)
-def create_resource(data: ResourceCreate, current_user: dict = Depends(require_role(["Owner", "Manager", "Admin Staff"]))):
+def create_resource(data: ResourceCreate, current_user: dict = Depends(require_role(["owner", "manager", "admin_staff"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
@@ -92,7 +92,7 @@ def create_resource(data: ResourceCreate, current_user: dict = Depends(require_r
 
 
 @router.put("/{resource_id}", response_model=dict)
-def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict = Depends(require_role(["Owner", "Manager", "Admin Staff"]))):
+def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict = Depends(require_role(["owner", "manager", "admin_staff"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM resources WHERE id = ?", (resource_id,))
@@ -120,7 +120,7 @@ def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict =
 
 
 @router.delete("/{resource_id}", response_model=dict)
-def delete_resource(resource_id: int, current_user: dict = Depends(require_role(["Owner", "Manager"]))):
+def delete_resource(resource_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("UPDATE resources SET is_active = 0, updated_at = ? WHERE id = ?",

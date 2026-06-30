@@ -111,7 +111,7 @@ def get_declaration(declaration_id: int, current_user: dict = Depends(get_curren
 
 
 @router.post("/declarations", response_model=dict)
-def create_declaration(data: CustomsDeclarationCreate, current_user: dict = Depends(require_role(["Owner", "Manager", "Logistics"]))):
+def create_declaration(data: CustomsDeclarationCreate, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
@@ -131,7 +131,7 @@ def create_declaration(data: CustomsDeclarationCreate, current_user: dict = Depe
 
 
 @router.put("/declarations/{declaration_id}", response_model=dict)
-def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, current_user: dict = Depends(require_role(["Owner", "Manager", "Logistics"]))):
+def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM customs_declarations WHERE id = ?", (declaration_id,))
@@ -159,7 +159,7 @@ def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, curr
 
 
 @router.post("/declarations/{declaration_id}/submit", response_model=dict)
-def submit_declaration(declaration_id: int, current_user: dict = Depends(require_role(["Owner", "Manager", "Logistics"]))):
+def submit_declaration(declaration_id: int, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()

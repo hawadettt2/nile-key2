@@ -9,6 +9,18 @@ from app.schemas.supplier import SupplierCreate, SupplierUpdate, Supplier
 router = APIRouter(prefix="/api/v1/suppliers", tags=["Suppliers"])
 
 
+def _supplier_row_to_response(row: dict) -> dict:
+    """Compatibility layer: map DB row to API contract fields.
+    
+    LEGACY COMPATIBILITY:
+    - Returns only backend contract fields
+    - Filters out legacy columns (type)
+    - Full removal deferred to WP-10
+    """
+    legacy_exclude = {"type", "farm_code", "governorate", "products", "rating"}
+    return {k: v for k, v in row.items() if k not in legacy_exclude}
+
+
 @router.get("/", response_model=list)
 def list_suppliers(
     search: Optional[str] = None,
@@ -36,7 +48,7 @@ def list_suppliers(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_supplier_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/{supplier_id}", response_model=dict)
@@ -48,11 +60,11 @@ def get_supplier(supplier_id: int, current_user: dict = Depends(get_current_user
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Supplier not found")
-    return dict(row)
+    return _supplier_row_to_response(dict(row))
 
 
 @router.post("/", response_model=dict)
-def create_supplier(data: SupplierCreate, current_user: dict = Depends(require_role(["Owner", "Manager", "Sales"]))):
+def create_supplier(data: SupplierCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
@@ -76,7 +88,7 @@ def create_supplier(data: SupplierCreate, current_user: dict = Depends(require_r
 
 
 @router.put("/{supplier_id}", response_model=dict)
-def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict = Depends(require_role(["Owner", "Manager", "Sales"]))):
+def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM suppliers WHERE id = ?", (supplier_id,))
@@ -104,7 +116,7 @@ def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict =
 
 
 @router.delete("/{supplier_id}", response_model=dict)
-def delete_supplier(supplier_id: int, current_user: dict = Depends(require_role(["Owner", "Manager"]))):
+def delete_supplier(supplier_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("UPDATE suppliers SET status = 'inactive', updated_at = ? WHERE id = ?",

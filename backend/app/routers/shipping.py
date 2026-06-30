@@ -94,7 +94,7 @@ def get_shipment(shipment_id: int, current_user: dict = Depends(get_current_user
 
 
 @router.post("/shipments", response_model=dict)
-def create_shipment(data: ShipmentCreate, current_user: dict = Depends(require_role(["Owner", "Manager", "Sales", "Logistics"]))):
+def create_shipment(data: ShipmentCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
@@ -116,7 +116,7 @@ def create_shipment(data: ShipmentCreate, current_user: dict = Depends(require_r
 
 
 @router.put("/shipments/{shipment_id}", response_model=dict)
-def update_shipment(shipment_id: int, data: ShipmentUpdate, current_user: dict = Depends(require_role(["Owner", "Manager", "Sales", "Logistics"]))):
+def update_shipment(shipment_id: int, data: ShipmentUpdate, current_user: dict = Depends(require_role(["owner", "manager", "sales", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM shipments WHERE id = ?", (shipment_id,))
