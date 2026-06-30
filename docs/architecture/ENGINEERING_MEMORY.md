@@ -16,6 +16,7 @@
 | WP-02F | ✅ Complete | 3219904 | Added customs_declarations schema + response compatibility layer |
 | WP-02G | ✅ Complete | 3219904 | Added resources schema + response compatibility layer |
 | WP-02H | ✅ Complete | 3219904 | Added documents schema + response compatibility layer |
+| WP-03 | ✅ Complete | dbe1ef4 | Aligned OAuth2 status codes: 401 for missing auth, 403 for missing role |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
@@ -25,7 +26,10 @@
 
 | Hash | Message | Date |
 |------|---------|------|
-| 3219904 | WP-02E-H: Add schema helpers and compatibility layers for invoices, customs, resources, documents | 2026-06-30 |
+| dbe1ef4 | WP-03: Align authentication status codes with OAuth2 standard | 2026-06-30 |
+| 48e6e46 | chore(frontend): track npm package-lock.json | 2026-06-30 |
+| b6510ab | Cleanup: Remove superseded .kilo/plans documentation | 2026-06-30 |
+| 155b040 | WP-02: Finalize resources.py compatibility layer fix and completion report | 2026-06-30 |
 | 5cec3ca | WP-02C: Align customers schema with backend contract + response compatibility | 2026-06-30 |
 | 94ae639 | WP-02B: Add suppliers response compatibility + role case fixes | 2026-06-30 |
 | 547aa13 | WP-02D: Align shipments schema + response compatibility | 2026-06-30 |

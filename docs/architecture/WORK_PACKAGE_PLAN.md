@@ -72,11 +72,13 @@
 
 ## WP-03: Authentication Stability
 
+**Status:** ✅ Complete
+
 **Objective:** Ensure authentication system works with correct password algorithm.
 
 **Why It Exists:** Security.py changed from bcrypt to pbkdf2_sha256 (verify intent).
 
-**Scope:** Verify/fix password hashing to match requirements.txt (bcrypt).
+**Scope:** Verify/fix password hashing to match requirements.txt (bcrypt) and OAuth2 status codes.
 
 **Files In Scope:**
 - backend/app/core/security.py
@@ -86,11 +88,12 @@
 **Dependencies:** WP-01
 
 **Validation:**
-1. Register user, verify password stored
-2. Login works with correct password
-3. Algorithm is bcrypt per requirements.txt
+1. Register user, verify password stored ✅
+2. Login works with correct password ✅
+3. Algorithm is bcrypt per requirements.txt ✅
+4. OAuth2 status codes: 401 for missing auth, 403 for missing role ✅
 
-**Rollback:** `git checkout backend/app/core/security.py`
+**Rollback:** `git checkout dbe1ef4 -- backend/app/routers/auth.py`
 
 ---
 
@@ -349,7 +352,15 @@
 
 ## Execution Sequence
 
-WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+
+---
+
+## WP-03 Rollback Points
+
+| WP | Rollback Command |
+|----|------------------|
+| WP-03 | `git checkout dbe1ef4 -- backend/app/routers/auth.py` |
 
 ---
 
