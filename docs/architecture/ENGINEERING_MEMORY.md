@@ -11,6 +11,11 @@
 | WP-02A | ✅ Complete | a0e87e7 | Added username, phone, company, updated_at columns to users table; fixed auth.py column reference |
 | WP-02B | ✅ Complete | 94ae639 | Added suppliers schema + response compatibility + role case fixes |
 | WP-02C | ✅ Complete | 5cec3ca | Added customers schema + response compatibility layer with legacy fallbacks |
+| WP-02D | ✅ Complete | 547aa13 | Added shipments schema + response compatibility layer (ADR-0001) |
+| WP-02E | ✅ Complete | 3219904 | Added invoices schema + response compatibility layer |
+| WP-02F | ✅ Complete | 3219904 | Added customs_declarations schema + response compatibility layer |
+| WP-02G | ✅ Complete | 3219904 | Added resources schema + response compatibility layer |
+| WP-02H | ✅ Complete | 3219904 | Added documents schema + response compatibility layer |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 
@@ -20,8 +25,10 @@
 
 | Hash | Message | Date |
 |------|---------|------|
+| 3219904 | WP-02E-H: Add schema helpers and compatibility layers for invoices, customs, resources, documents | 2026-06-30 |
 | 5cec3ca | WP-02C: Align customers schema with backend contract + response compatibility | 2026-06-30 |
 | 94ae639 | WP-02B: Add suppliers response compatibility + role case fixes | 2026-06-30 |
+| 547aa13 | WP-02D: Align shipments schema + response compatibility | 2026-06-30 |
 | 98838d1 | infrastructure: add ensure_columns() helper for WP-02B-H schema migrations | 2026-06-30 |
 | a0e87e7 | WP-02A: Align users schema with backend contract | 2026-06-30 |
 | 8091764 | docs: update ENGINEERING_MEMORY with Doc-01 commit | 2026-06-30 |
@@ -70,7 +77,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 | Risk Level | Issue | Status |
 |------------|-------|--------|
-| 🔴 CRITICAL | Database schema mismatch | WP-02A/B/C complete; WP-02D-H pending shipments-invoices-customs-resources-documents |
+| 🔴 CRITICAL | Database schema mismatch | ✅ WP-02A-H complete - all entities aligned |
 | 🔴 CRITICAL | Hardcoded SECRET_KEY | Pending WP-07 |
 | 🔴 CRITICAL | Wildcard CORS | Pending WP-07 |
 | 🟠 HIGH | Missing services layer | Pending WP-08 |
@@ -88,6 +95,11 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Users table schema | ✅ Complete (WP-02A) |
 | Suppliers table schema | ✅ Complete (WP-02B) |
 | Customers table schema | ✅ Complete (WP-02C) |
+| Shipments table schema | ✅ Complete (WP-02D) |
+| Invoices table schema | ✅ Complete (WP-02E) |
+| Customs table schema | ✅ Complete (WP-02F) |
+| Resources table schema | ✅ Complete (WP-02G) |
+| Documents table schema | ✅ Complete (WP-02H) |
 | Frontend build | ⚠️ Not verified |
 | Docker | ❌ Not available |
 | Tests | ❌ None |
@@ -101,11 +113,11 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | WP-02A | ✅ Complete | users |
 | WP-02B | ✅ Complete | suppliers |
 | WP-02C | ✅ Complete | customers |
-| WP-02D | ⏸ Partial | shipments |
-| WP-02E | ⏸ Partial | invoices |
-| WP-02F | ⏸ Partial | customs_declarations |
-| WP-02G | ⏸ Partial | resources |
-| WP-02H | ⏸ Partial | documents |
+| WP-02D | ✅ Complete | shipments |
+| WP-02E | ✅ Complete | invoices |
+| WP-02F | ✅ Complete | customs_declarations |
+| WP-02G | ✅ Complete | resources |
+| WP-02H | ✅ Complete | documents |
 
 ---
 
@@ -152,9 +164,27 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
+## WP-02D Verification Results
+
+| Test | Result |
+|------|--------|
+| Fresh DB init | ✅ Success - all schema columns present |
+| Existing DB upgrade | ✅ Success - columns added, data preserved |
+| Backend startup | ✅ Healthy (port 8001) |
+| Login works | ✅ Token returned |
+| Shipment CRUD | ✅ Create, Read, Update work |
+| Legacy columns excluded | ✅ No `service_name`, `label_url`, `cost`, `provider`, `pickup_address`, `delivery_address`, `parcels`, `raw_response` in API responses |
+| ADR-0001 applied | ✅ Legacy columns are not fallback pairs, fully excluded |
+
+---
+
 ## Remaining Work Packages
 
-WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+
+---
+
+*Memory Last Updated: WP-02A-H complete. All entities now aligned.*
 
 ---
 
@@ -176,7 +206,3 @@ WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05
 | Is bcrypt<4.0 acceptable long-term? | Pending dependency review |
 | Should services layer use repository pattern? | To decide during WP-08 |
 | What test framework for integration? | Pending WP-06 planning |
-
----
-
-*Memory Last Updated: WP-02A, WP-02B, WP-02C complete. WP-02D-H pending*.
