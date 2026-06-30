@@ -11,6 +11,28 @@ from app.schemas.customer import CustomerCreate, CustomerUpdate
 router = APIRouter(prefix="/api/v1/customers", tags=["Customers"])
 
 
+def _customer_row_to_response(row: dict) -> dict:
+    """Compatibility layer: map DB row to API contract fields.
+    
+    LEGACY COMPATIBILITY:
+    - Returns only backend contract fields (name, contact_person, etc.)
+    - Falls back to legacy columns (company_name, contact_name) when new columns are NULL
+    - Legacy columns must not appear in API responses
+    - Full removal deferred to WP-10
+    """
+    response = {}
+    # Copy schema fields
+    for key in ["id", "email", "phone", "address", "city", "country", "tax_id", "import_license", "category", "notes", "status", "created_at", "updated_at", "created_by"]:
+        response[key] = row.get(key)
+    # name: contract field, fallback to legacy
+    response["name"] = row.get("name") if row.get("name") is not None else row.get("company_name")
+    # contact_person: contract field, fallback to legacy
+    response["contact_person"] = row.get("contact_person") if row.get("contact_person") is not None else row.get("contact_name")
+    # name_en (optional)
+    response["name_en"] = row.get("name_en")
+    return response
+
+
 @router.get("/", response_model=list)
 def list_customers(
     search: Optional[str] = None,
@@ -42,7 +64,7 @@ def list_customers(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_customer_row_to_response(dict(r)) for r in rows]
 
 
 @router.get("/{customer_id}", response_model=dict)
@@ -54,19 +76,24 @@ def get_customer(customer_id: int, current_user: dict = Depends(get_current_user
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Customer not found")
-    return dict(row)
+    return _customer_row_to_response(dict(row))
 
 
 @router.post("/", response_model=dict)
-def create_customer(data: CustomerCreate, current_user: dict = Depends(require_role(["Owner", "Manager", "Sales"]))):
+def create_customer(data: CustomerCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
+    # LEGACY COMPATIBILITY:
+    # The "company_name" and "contact_name" columns are not part of the backend contract.
+    # They are written only because the existing SQLite schema still requires them.
+    # "name" and "contact_person" are the authoritative columns.
+    # Removal is allowed only during the future Database Cleanup phase (WP-10).
     cursor.execute(
-        """INSERT INTO customers (name, name_en, contact_person, email, phone, address, city, country,
+        """INSERT INTO customers (company_name, name, contact_name, contact_person, email, phone, address, city, country,
            tax_id, import_license, category, notes, status, created_at, created_by)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (data.name, data.name_en, data.contact_person, data.email, data.phone,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (data.name, data.name, data.contact_person, data.contact_person, data.email, data.phone,
          data.address, data.city, data.country, data.tax_id, data.import_license,
          data.category, data.notes, "active", now, current_user["id"])
     )
@@ -77,7 +104,7 @@ def create_customer(data: CustomerCreate, current_user: dict = Depends(require_r
 
 
 @router.put("/{customer_id}", response_model=dict)
-def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict = Depends(require_role(["Owner", "Manager", "Sales"]))):
+def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM customers WHERE id = ?", (customer_id,))
@@ -102,7 +129,7 @@ def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict =
 
 
 @router.delete("/{customer_id}", response_model=dict)
-def delete_customer(customer_id: int, current_user: dict = Depends(require_role(["Owner", "Manager"]))):
+def delete_customer(customer_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("UPDATE customers SET status = 'inactive', updated_at = ? WHERE id = ?",
@@ -115,7 +142,7 @@ def delete_customer(customer_id: int, current_user: dict = Depends(require_role(
 @router.post("/import", response_model=dict)
 def import_customers(
     file: UploadFile = File(...),
-    current_user: dict = Depends(require_role(["Owner", "Manager", "Sales"]))
+    current_user: dict = Depends(require_role(["owner", "manager", "sales"]))
 ):
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
@@ -126,13 +153,18 @@ def import_customers(
     now = datetime.utcnow().isoformat()
     imported = 0
     for row in reader:
+        # LEGACY COMPATIBILITY:
+        # The "company_name" and "contact_name" columns are not part of the backend contract.
+        # They are written only because the existing SQLite schema still requires them.
+        # "name" and "contact_person" are the authoritative columns.
+        # Removal is allowed only during the future Database Cleanup phase (WP-10).
         cursor.execute(
-            """INSERT INTO customers (name, name_en, contact_person, email, phone, address, city, country,
+            """INSERT INTO customers (company_name, name, contact_name, contact_person, email, phone, address, city, country,
                category, status, created_at, created_by)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (row.get("name", ""), row.get("name_en"), row.get("contact_person"), row.get("email"),
-             row.get("phone"), row.get("address"), row.get("city"), row.get("country", ""),
-             row.get("category"), "active", now, current_user["id"])
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (row.get("name", ""), row.get("name_en"), row.get("contact_person"), row.get("contact_person"),
+             row.get("email"), row.get("phone"), row.get("address"), row.get("city"),
+             row.get("country", ""), row.get("category"), "active", now, current_user["id"])
         )
         imported += 1
     conn.commit()
