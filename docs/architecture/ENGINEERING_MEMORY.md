@@ -94,7 +94,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 |-------------|--------|--------|
 | WP-02A | ✅ Complete | users |
 | WP-02B | ✅ Complete | suppliers |
-| WP-02C | Pending | customers |
+| WP-02C | ⏸ Paused (column rename) | customers |
 | WP-02D | Pending | shipments |
 | WP-02E | Pending | invoices |
 | WP-02F | Pending | customs_declarations |
@@ -132,18 +132,27 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ## Remaining Work Packages
 
-WP-02C → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-02C approval needed → WP-02D → WP-02E → WP-02F → WP-02G → WP-02H → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 
-## Next Approved Work Package
+## WP-02C Design Issue - Column Rename Mismatch
 
-**WP-02C: Customer Table Alignment**
+**Paused - requires explicit approval before proceeding.**
 
-- **Objective:** Align customers table with Customer schema
-- **Files:** backend/app/core/database.py, backend/app/routers/customers.py
-- **Risk:** High
-- **Depends on:** WP-01
+The customers table has a **column rename mismatch** where the router expects different column names than the DB:
+
+| Schema Column | DB Column | Issue |
+|---------------|-----------|-------|
+| name | company_name (NOT NULL) | Router uses 'name' but DB requires 'company_name' |
+| contact_person | contact_name | Router uses 'contact_person' but DB has 'contact_name' |
+
+**Required approach:**
+- Add schema columns (`name`, `contact_person`, `address`, `city`, `tax_id`, `import_license`, `category`, `notes`, `updated_at`, `created_by`)
+- Provide default values for NOT NULL LEGACY columns (`company_name`, `contact_name`)
+- Add LEGACY compatibility comments in router
+
+**Pending approval.**
 
 ---
 
