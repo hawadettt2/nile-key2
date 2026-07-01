@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from datetime import datetime
 from typing import Optional
+import json
 
 from app.core.database import get_db
 from app.routers.auth import get_current_user, require_role
@@ -24,8 +25,8 @@ def _document_row_to_response(row: dict) -> dict:
         "template_type": row.get("template_type"),
         "entity_type": row.get("entity_type"),
         "entity_id": row.get("entity_id"),
-        "content": row.get("content"),
-        "metadata": dict(row.get("metadata", {})) if isinstance(row.get("metadata"), str) else row.get("metadata", {}),
+        "content": row.get("description"),
+        "metadata": json.loads(row.get("metadata")) if row.get("metadata") else {},
         "file_name": row.get("file_name"),
         "file_path": row.get("file_path"),
         "file_type": row.get("file_type"),
@@ -84,10 +85,10 @@ def create_document(data: DocumentCreate, current_user: dict = Depends(get_curre
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
     cursor.execute(
-        """INSERT INTO documents (title, document_type, template_type, entity_type, entity_id,
-           content, metadata, created_at, created_by)
+        """INSERT INTO documents (title, type, template_type, entity_type, entity_id,
+           description, metadata, created_at, created_by)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (data.title, data.document_type, data.template_type, data.entity_type,
+        (data.title, data.document_type or "uploaded", data.template_type, data.entity_type,
          data.entity_id, data.content, str(data.metadata) if data.metadata else "{}", now, current_user["id"])
     )
     conn.commit()

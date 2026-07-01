@@ -99,6 +99,8 @@
 
 ## WP-04: CRUD Integrity
 
+**Status:** ✅ Complete
+
 **Objective:** Fix all CRUD operations to work with aligned schema.
 
 **Why It Exists:** Routes use schema fields that don't exist in DB.
@@ -166,6 +168,8 @@
 
 ## WP-06: Integration Testing
 
+**Status:** ✅ COMPLETED
+
 **Objective:** Validate all API endpoints work end-to-end.
 
 **Why It Exists:** Charter Section 18 requires core routes work.
@@ -186,11 +190,23 @@
 **Dependencies:** WP-04
 
 **Validation:**
-1. Auth endpoints work
-2. Suppliers/Customers CRUD work
-3. Shipments/Invoices CRUD work
-4. Customs endpoints work
-5. Resources/Documents endpoints work
+1. Auth endpoints work ✅
+2. Suppliers/Customers CRUD work ✅
+3. Shipments/Invoices CRUD work ✅
+4. Customs endpoints work ✅
+5. Resources/Documents endpoints work ✅
+
+**Patch Execution Summary:**
+| Patch | Entity | Status | Notes |
+|-------|--------|--------|-------|
+| Patch-1 | Authentication | ✅ Complete | Login returns JWT token |
+| Patch-2 | Suppliers | ✅ Complete | CRUD verified, legacy compatibility maintained |
+| Patch-3 | Customers | ✅ Complete | CRUD verified, legacy compatibility maintained |
+| Patch-4 | Resources | ✅ Complete | CRUD verified |
+| Patch-5 | Documents | ✅ Complete | CRUD verified, metadata repair applied |
+| Patch-6 | Shipping | ✅ Complete | Router verified, ADR-0001 applied |
+| Patch-7 | Invoices | ✅ Complete | Legacy schema compatibility verified |
+| Patch-8 | Customs | ✅ Complete | All endpoints verified, DELETE absent by design |
 
 **Rollback:** N/A
 

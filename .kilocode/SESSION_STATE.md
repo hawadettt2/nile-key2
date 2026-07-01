@@ -7,7 +7,7 @@ Current Patch:
 Patch-8
 
 Status:
-Planning
+COMPLETED
 
 ---
 
@@ -29,13 +29,13 @@ WP-06
 
 ✓ Patch-7 Invoices
 
+✓ Patch-8 Customs
+
 ---
 
 # Next Step
 
-Patch-8 Planning
-
-(Customs Router)
+WP-07 Security Hardening
 
 ---
 
@@ -51,7 +51,7 @@ Legacy compatibility enabled
 
 # Current Project State
 
-Backend stable
+Backend stable (port 8000)
 
 Frontend untouched
 

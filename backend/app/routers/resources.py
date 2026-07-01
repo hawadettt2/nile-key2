@@ -112,8 +112,8 @@ def create_resource(data: ResourceCreate, current_user: dict = Depends(require_r
         """INSERT INTO resources (title, title_ar, description, description_ar, resource_type, category,
            url, country, metadata, is_active, created_at, created_by)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (data.title, data.title_ar, data.description, data.description_ar, data.resource_type,
-         data.category, data.url, data.country, str(data.metadata) if data.metadata else "{}", 1, now, current_user["id"])
+(data.title, data.title_ar, data.description, data.description_ar, data.resource_type,
+          data.category or "other", data.url, data.country, str(data.metadata) if data.metadata else "{}", 1, now, current_user["id"])
     )
     conn.commit()
     res_id = cursor.lastrowid

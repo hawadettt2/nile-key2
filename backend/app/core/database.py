@@ -294,8 +294,8 @@ def _create_tables(c: sqlite3.Cursor):
     c.execute("""
         CREATE TABLE IF NOT EXISTS invoices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid TEXT UNIQUE NOT NULL,
-            issuer_tax_id TEXT NOT NULL,
+            uuid TEXT UNIQUE,
+            issuer_tax_id TEXT,
             receiver_tax_id TEXT,
             receiver_name TEXT,
             total REAL,
