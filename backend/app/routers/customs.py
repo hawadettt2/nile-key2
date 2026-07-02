@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
 
-from app.core.database import get_db
+from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.customs import HSCode, CustomsDeclarationCreate, CustomsDeclarationUpdate, DutyCalculationRequest, DutyCalculationResponse
 
@@ -150,23 +150,14 @@ def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, curr
     if not cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=404, detail="Declaration not found")
-    fields = []
-    values = []
-    for field, value in data.model_dump(exclude_unset=True).items():
-        if value is not None:
-            fields.append(f"{field} = ?")
-            if field == "documents" and isinstance(value, list):
-                values.append(str(value))
-            else:
-                values.append(value)
-    if not fields:
-        conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="customs_declarations",
+        record_id=declaration_id,
+        data=data,
+        coerce_fields={"documents": lambda v: str(v) if isinstance(v, list) else v},
+    ):
         return {"message": "No changes"}
-    values.append(declaration_id)
-    cursor.execute(f"UPDATE customs_declarations SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-                   (*values, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
     return {"message": "Declaration updated successfully"}
 
 

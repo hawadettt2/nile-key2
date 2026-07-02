@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
 
-from app.core.database import get_db
+from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.invoice import InvoiceCreate, InvoiceUpdate
 
@@ -91,25 +91,16 @@ def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict = De
     if not cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=404, detail="Invoice not found")
-    fields = []
-    values = []
-    for field, value in data.model_dump(exclude_unset=True).items():
-        if value is not None:
-            fields.append(f"{field} = ?")
-            if field == "items" and isinstance(value, list):
-                values.append(str([i.model_dump() for i in value]))
-            elif hasattr(value, 'isoformat'):
-                values.append(value.isoformat())
-            else:
-                values.append(value)
-    if not fields:
-        conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="invoices",
+        record_id=invoice_id,
+        data=data,
+        coerce_fields={
+            "items": lambda v: str([i.model_dump() for i in v]) if isinstance(v, list) else v,
+        },
+    ):
         return {"message": "No changes"}
-    values.append(invoice_id)
-    cursor.execute(f"UPDATE invoices SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-                   (*values, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
     return {"message": "Invoice updated successfully"}
 
 

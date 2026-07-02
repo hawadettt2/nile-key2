@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from datetime import datetime
 from typing import Optional
 
-from app.core.database import get_db
+from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.supplier import SupplierCreate, SupplierUpdate, Supplier
 
@@ -95,23 +95,14 @@ def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict =
     if not cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=404, detail="Supplier not found")
-    fields = []
-    values = []
-    for field, value in data.model_dump(exclude_unset=True).items():
-        if value is not None:
-            fields.append(f"{field} = ?")
-            if field == "certificates" and isinstance(value, list):
-                values.append(str(value))
-            else:
-                values.append(value)
-    if not fields:
-        conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="suppliers",
+        record_id=supplier_id,
+        data=data,
+        coerce_fields={"certificates": lambda v: str(v) if isinstance(v, list) else v},
+    ):
         return {"message": "No changes"}
-    values.append(supplier_id)
-    cursor.execute(f"UPDATE suppliers SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-                   (*values, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
     return {"message": "Supplier updated successfully"}
 
 

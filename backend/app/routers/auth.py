@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from datetime import datetime
 import sqlite3
 
-from app.core.database import get_db
+from app.core.database import get_db, execute_update
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
 from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token
 
@@ -108,18 +108,11 @@ def get_me(current_user: dict = Depends(get_current_user)):
 def update_me(update: UserUpdate, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
-    fields = []
-    values = []
-    for field, value in update.model_dump(exclude_unset=True).items():
-        if value is not None:
-            fields.append(f"{field} = ?")
-            values.append(value)
-    if not fields:
-        conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="users",
+        record_id=current_user["id"],
+        data=update,
+    ):
         return {"message": "No changes"}
-    values.append(current_user["id"])
-    cursor.execute(f"UPDATE users SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-                   (*values, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
     return {"message": "Profile updated successfully"}

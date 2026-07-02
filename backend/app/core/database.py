@@ -5,6 +5,7 @@
 """
 
 import sqlite3
+from datetime import datetime
 from contextlib import contextmanager
 
 from app.core.config import settings
@@ -48,6 +49,35 @@ def get_db():
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
+
+def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict | None = None) -> bool:
+    """Build SET clause from model_dump(exclude_unset=True), append updated_at, commit and close.
+
+    Returns True if the row was updated, False if no fields were set (conn is still closed).
+    """
+    fields = []
+    values = []
+    coerce = coerce_fields or {}
+    for field, value in data.model_dump(exclude_unset=True).items():
+        if value is not None:
+            fields.append(f"{field} = ?")
+            if field in coerce:
+                values.append(coerce[field](value))
+            else:
+                values.append(value)
+    if not fields:
+        conn.close()
+        return False
+    values.append(record_id)
+    cursor = conn.cursor()
+    cursor.execute(
+        f"UPDATE {table_name} SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
+        (*values, datetime.utcnow().isoformat()),
+    )
+    conn.commit()
+    conn.close()
+    return True
 
 
 def init_db():

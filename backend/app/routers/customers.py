@@ -4,7 +4,7 @@ from typing import Optional
 import csv
 import io
 
-from app.core.database import get_db
+from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 
@@ -111,20 +111,13 @@ def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict =
     if not cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=404, detail="Customer not found")
-    fields = []
-    values = []
-    for field, value in data.model_dump(exclude_unset=True).items():
-        if value is not None:
-            fields.append(f"{field} = ?")
-            values.append(value)
-    if not fields:
-        conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="customers",
+        record_id=customer_id,
+        data=data,
+    ):
         return {"message": "No changes"}
-    values.append(customer_id)
-    cursor.execute(f"UPDATE customers SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-                   (*values, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
     return {"message": "Customer updated successfully"}
 
 

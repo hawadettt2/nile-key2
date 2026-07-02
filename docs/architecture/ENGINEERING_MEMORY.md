@@ -7,7 +7,7 @@
 | WP | Status | Commit | Notes |
 |----|--------|--------|-------|
 | WP-01A | ✅ Complete | 3597c67 | Unicode emoji fix in main.py lifespan for Windows compatibility |
-| WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passlib compatibility |
+| WP-01B | ✅ Complete | d036c06 (recovery) | Reverted to bcrypt, installed bcrypt<4.0 for passport compatibility |
 | WP-02A | ✅ Complete | a0e87e7 | Added username, phone, company, updated_at columns to users table; fixed auth.py column reference |
 | WP-02B | ✅ Complete | 94ae639 | Added suppliers schema + response compatibility + role case fixes |
 | WP-02C | ✅ Complete | 5cec3ca | Added customers schema + response compatibility layer with legacy fallbacks |
@@ -21,6 +21,8 @@
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
 | WP-07 | ✅ Complete | - | SECRET_KEY externalized, CORS configuration replaced with settings.ALLOWED_ORIGINS |
+| WP-08 | ✅ Complete | - | .env.example aligned with config.py: ACCESS_TOKEN_EXPIRE_MINUTES, ALLOWED_ORIGINS format, removed orphaned vars |
+| WP-09 | ✅ Complete | - | Extracted execute_update() helper to database.py; integrated into 8 routers eliminating UPDATE duplication |
 
 ---
 
@@ -123,7 +125,6 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Risk Level | Issue | Status |
 |------------|-------|--------|
 | 🔴 CRITICAL | Database schema mismatch | ✅ WP-02A-H complete - all entities aligned |
-| 🟠 HIGH | Missing services layer | Pending WP-08 |
 | 🟡 MEDIUM | No migrations | Pending WP-10 |
 
 ---
@@ -146,6 +147,8 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Frontend build | ✅ **COMPLETE (WP-05)** - Build passes, 0 errors |
 | WP-06 Integration Testing | ✅ **COMPLETE** - All 8 patches verified |
 | WP-07 Security Hardening | ✅ **COMPLETE** - SECRET_KEY externalized, CORS configurable |
+| WP-08 .env Alignment | ✅ **COMPLETE** - .env.example aligned with config.py |
+| WP-09 Duplication Elimination | ✅ **COMPLETE** - execute_update() helper integrated |
 | Docker | ❌ Not available |
 | Tests | ❌ None |
 
@@ -239,9 +242,36 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
+## WP-08 Completion Summary
+
+- `.env.example` aligned with `config.py` fields:
+  - Renamed `ACCESS_TOKEN_EXPIRE_HOURS` → `ACCESS_TOKEN_EXPIRE_MINUTES` (matching config)
+  - Fixed `ALLOWED_ORIGINS` format: comma-separated string → JSON array format
+  - Removed orphaned variables: `RATE_LIMIT_PER_MINUTE`, `ENVIRONMENT`, `DEBUG`
+
+---
+
+## WP-09 Completion Summary
+
+- Created `execute_update(conn, table_name, record_id, data, coerce_fields)` helper in `database.py`
+- Performs: model_dump loop, None filter, optional field coercion, updated_at stamp, commit, close
+- Integrated into 8 routers:
+  - `auth.py` — users table (no coercion)
+  - `customers.py` — customers table (no coercion)
+  - `customs.py` — customs_declarations table (documents: list→str)
+  - `documents.py` — documents table (metadata: dict→str)
+  - `invoice.py` — invoices table (items: list→model_dump str)
+  - `resources.py` — resources table (metadata: dict→str)
+  - `shipping.py` — shipments table (eta: isoformat)
+  - `suppliers.py` — suppliers table (certificates: list→str)
+
+- Code duplication eliminated: ~120 lines removed across 8 routers
+
+---
+
 ## Remaining Work Packages
 
-WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-06 → WP-07 → WP-08 → WP-09 → **WP-10 → WP-11 → WP-12**
 
 ---
 
@@ -286,7 +316,7 @@ WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 
-*Memory Last Updated: WP-07 complete - SECRET_KEY externalized, CORS configurable.*
+*Memory Last Updated: WP-08/09 complete - .env.example aligned, execute_update() extracted.*
 
 ---
 

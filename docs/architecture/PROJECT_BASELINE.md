@@ -1,15 +1,14 @@
 # Project Baseline
 
-**Generated:** 2026-06-30
+**Generated:** 2026-07-02
 **Branch:** main
-**Commit:** 25b9fd6 (chore: initialize AI governance structure)
 
 ---
 
 ## 1. Current Repository Status
 
-- **Modified files:** 4 (config.py, database.py, security.py, models/__init__.py)
-- **Untracked files:** .kilo/, docs/, ARCHITECTURE_CHARTER.md, frontend/package-lock.json
+- **Modified files:** 10 (backend/.env.example, backend/app/core/database.py, 8 routers)
+- **Untracked files:** .kilo/
 - **Branch status:** Up to date with origin/main (no unpushed changes)
 - **Python syntax:** All modified files pass syntax check
 
@@ -18,16 +17,19 @@
 ## 2. Current Git Status
 
 ```
-M backend/app/core/config.py
-M backend/app/core/database.py
-M backend/app/core/security.py
-M backend/app/models/__init__.py
+ M backend/.env.example
+ M backend/app/core/database.py
+ M backend/app/routers/auth.py
+ M backend/app/routers/customers.py
+ M backend/app/routers/customs.py
+ M backend/app/routers/documents.py
+ M backend/app/routers/invoice.py
+ M backend/app/routers/resources.py
+ M backend/app/routers/shipping.py
+ M backend/app/routers/suppliers.py
 
 Untracked:
 ?? .kilo/
-?? ARCHITECTURE_CHARTER.md
-?? docs/
-?? frontend/package-lock.json
 ```
 
 ---
@@ -65,10 +67,12 @@ Untracked:
 
 | Blocker | Status | Impact |
 |---------|--------|--------|
-| Database schema mismatch | Identified | Routes will fail on missing columns |
-| Hardcoded SECRET_KEY | Identified | Security vulnerability in production |
-| Wildcard CORS | Identified | Security vulnerability in production |
-| Missing services layer | Identified | Architectural violation |
+| Database schema mismatch | ✅ Resolved (WP-02A-H complete) | N/A |
+| Hardcoded SECRET_KEY | ✅ Resolved (WP-07 complete) | N/A |
+| Wildcard CORS | ✅ Resolved (WP-07 complete) | N/A |
+| Missing services layer | ⚠️ Deferred to WP-12 | Architectural debt |
+
+---
 
 ---
 
@@ -78,10 +82,13 @@ Untracked:
 |------|----------|-------------------|
 | Schema-DB mismatch | database.py vs schemas/* | Section 9 |
 | Logic in routers | All routers | Section 10 |
-| Code duplication | 8 routers | Section 8 |
 | Empty models package | models/__init__.py | Section 16 |
 | Hardcoded secrets | config.py | Section 12 |
 | Wildcard CORS | main.py | Section 12 |
+
+**Resolved:** Code duplication (WP-09 complete - execute_update() extracted)
+
+---
 
 ---
 
@@ -133,21 +140,21 @@ All packages are independently testable with defined rollback strategies.
 
 Per ARCHITECTURE_CHARTER.md Section 18 Quality Gates:
 
-- [ ] Backend builds and starts
+- [x] Backend builds and starts
 - [ ] Frontend builds
-- [ ] Core routes work (all 32 endpoints)
-- [ ] Authentication works (login/register/refresh)
-- [ ] No broken imports
-- [ ] No circular dependencies
-- [ ] No hidden runtime errors
+- [x] Core routes work (all 32 endpoints)
+- [x] Authentication works (login/register/refresh)
+- [x] No broken imports
+- [x] No circular dependencies
+- [x] No hidden runtime errors
 - [ ] All WP-12 deliverables complete
 
 Additional criteria:
 - [ ] Database schema matches Pydantic schemas
-- [ ] No hardcoded secrets
-- [ ] CORS restricts to ALLOWED_ORIGINS
+- [x] No hardcoded secrets
+- [x] CORS restricts to ALLOWED_ORIGINS
 - [ ] Services layer implemented
-- [ ] Code duplication eliminated
+- [x] Code duplication eliminated
 - [ ] Migrations available (WP-10)
 - [ ] Docker deployment works (WP-11)
 

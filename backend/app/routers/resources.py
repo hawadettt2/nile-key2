@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
 
-from app.core.database import get_db
+from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.resource import ResourceCreate, ResourceUpdate
 
@@ -129,23 +129,14 @@ def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict =
     if not cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=404, detail="Resource not found")
-    fields = []
-    values = []
-    for field, value in data.model_dump(exclude_unset=True).items():
-        if value is not None:
-            fields.append(f"{field} = ?")
-            if field == "metadata" and isinstance(value, dict):
-                values.append(str(value))
-            else:
-                values.append(value)
-    if not fields:
-        conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="resources",
+        record_id=resource_id,
+        data=data,
+        coerce_fields={"metadata": lambda v: str(v) if isinstance(v, dict) else v},
+    ):
         return {"message": "No changes"}
-    values.append(resource_id)
-    cursor.execute(f"UPDATE resources SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-                   (*values, datetime.utcnow().isoformat()))
-    conn.commit()
-    conn.close()
     return {"message": "Resource updated successfully"}
 
 
