@@ -1,0 +1,10 @@
+.git
+.kilo
+.kilocode
+.venv
+__pycache__
+*.pyc
+node_modules
+dist
+.pytest_cache
+.mypy_cache
