@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.config import settings
 from app.core.database import init_db
 from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents
 
@@ -42,7 +43,7 @@ app = FastAPI(
 # إعداد CORS — يُعدل في الإنتاج ليكون أكثر تحديداً
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: حدد في الإنتاج: ["https://nile-key.com", "https://www.nile-key.com"]
+    allow_origins=settings.ALLOWED_ORIGINS,  # TODO: حدد في الإنتاج: ["https://nile-key.com", "https://www.nile-key.com"]
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

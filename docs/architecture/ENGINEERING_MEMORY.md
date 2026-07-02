@@ -1,6 +1,6 @@
 ﻿# Engineering Memory
 
-**Last Updated:** 2026-06-30
+**Last Updated:** 2026-07-02
 **Project:** Nile Key Platform
 **Architecture Charter:** Governing document (must not be violated)
 
@@ -12,7 +12,7 @@
 | WP-02B | ✅ Complete | 94ae639 | Added suppliers schema + response compatibility + role case fixes |
 | WP-02C | ✅ Complete | 5cec3ca | Added customers schema + response compatibility layer with legacy fallbacks |
 | WP-02D | ✅ Complete | 547aa13 | Added shipments schema + response compatibility layer (ADR-0001) |
-| WP-02E | ✅ Complete | 3219904 | Added invoices schema + response compatibility layer |
+| WP-02D | ✅ Complete | 3219904 | Added invoices schema + response compatibility layer |
 | WP-02F | ✅ Complete | 3219904 | Added customs_declarations schema + response compatibility layer |
 | WP-02G | ✅ Complete | 3219904 | Added resources schema + response compatibility layer |
 | WP-02H | ✅ Complete | 3219904 | Added documents schema + response compatibility layer |
@@ -20,6 +20,7 @@
 | WP-04 | ✅ Complete | - | All CRUD operations verified working against aligned schema |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
 | Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
+| WP-07 | ✅ Complete | - | SECRET_KEY externalized, CORS configuration replaced with settings.ALLOWED_ORIGINS |
 
 ---
 
@@ -122,8 +123,6 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Risk Level | Issue | Status |
 |------------|-------|--------|
 | 🔴 CRITICAL | Database schema mismatch | ✅ WP-02A-H complete - all entities aligned |
-| 🔴 CRITICAL | Hardcoded SECRET_KEY | Pending WP-07 |
-| 🔴 CRITICAL | Wildcard CORS | Pending WP-07 |
 | 🟠 HIGH | Missing services layer | Pending WP-08 |
 | 🟡 MEDIUM | No migrations | Pending WP-10 |
 
@@ -146,6 +145,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Documents table schema | ✅ Complete (WP-02H) |
 | Frontend build | ✅ **COMPLETE (WP-05)** - Build passes, 0 errors |
 | WP-06 Integration Testing | ✅ **COMPLETE** - All 8 patches verified |
+| WP-07 Security Hardening | ✅ **COMPLETE** - SECRET_KEY externalized, CORS configurable |
 | Docker | ❌ Not available |
 | Tests | ❌ None |
 
@@ -261,7 +261,32 @@ WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 
-*Memory Last Updated: WP-02A-H complete. All entities now aligned.*
+## WP-07 Security Hardening
+
+### Patch-1: SECRET_KEY Externalization
+- Removed hardcoded default `"change-this-in-production-immediately"` from config.py
+- SECRET_KEY now required; application fails with ValidationError if not provided
+- BACKWARD COMPATIBILITY WARNING: Environments without SECRET_KEY will fail to start
+
+### Patch-2: CORS Configuration
+- Replaced hardcoded `allow_origins=["*"]` with `allow_origins=settings.ALLOWED_ORIGINS` in main.py
+- CORS now reads from config; defaults to `["*"]` when ALLOWED_ORIGINS not set in environment
+- No changes to allow_credentials, allow_methods, or allow_headers
+
+### WP-07 Verification Results
+
+| Test | Result |
+|------|--------|
+| App starts with SECRET_KEY provided | ✅ PASS |
+| App fails without SECRET_KEY | ✅ PASS (ValidationError) |
+| CORS uses settings.ALLOWED_ORIGINS | ✅ PASS |
+| Wildcard default preserved when ALLOWED_ORIGINS unset | ✅ PASS (["*"]) |
+| Health endpoint no regression | ✅ PASS (200 OK) |
+| Other CORS options unchanged | ✅ PASS (credentials, methods, headers all preserved)
+
+---
+
+*Memory Last Updated: WP-07 complete - SECRET_KEY externalized, CORS configurable.*
 
 ---
 

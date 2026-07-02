@@ -1,10 +1,10 @@
 # Current Work Package
 
 Current:
-WP-06
+WP-08
 
 Current Patch:
-Patch-8
+Patch-1
 
 Status:
 COMPLETED
@@ -14,22 +14,18 @@ COMPLETED
 # Completed
 
 WP-06
+WP-07
 
 ✓ Patch-1 Authentication
-
 ✓ Patch-2 Suppliers
-
 ✓ Patch-3 Customers
-
 ✓ Patch-4 Resources
-
 ✓ Patch-5 Documents
-
 ✓ Patch-6 Shipping
-
 ✓ Patch-7 Invoices
-
 ✓ Patch-8 Customs
+✓ Patch-1 Security Hardening (SECRET_KEY externalized)
+✓ Patch-2 Security Hardening (CORS configuration)
 
 ---
 

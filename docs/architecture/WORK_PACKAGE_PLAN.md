@@ -214,6 +214,8 @@
 
 ## WP-07: Security Hardening
 
+**Status:** ✅ COMPLETED
+
 **Objective:** Fix all security violations per charter Section 12.
 
 **Why It Exists:** Hardcoded secrets and wildcard CORS are critical risks.
@@ -228,9 +230,9 @@
 **Dependencies:** WP-01
 
 **Validation:**
-1. App fails without SECRET_KEY in production
-2. CORS restricts to ALLOWED_ORIGINS
-3. No hardcoded defaults in config
+1. App fails without SECRET_KEY in production ✅
+2. CORS restricts to ALLOWED_ORIGINS ✅
+3. No hardcoded defaults in config ✅
 
 **Rollback:** `git checkout backend/app/core/config.py backend/main.py backend/.env.example`
 
@@ -370,7 +372,7 @@
 
 ## Execution Sequence
 
-WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-04 → WP-05 → WP-06 → **WP-07 COMPLETE** → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
 
 ---
 

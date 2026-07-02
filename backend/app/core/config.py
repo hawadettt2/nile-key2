@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DEBUG: str = "False"
     
     # ========== Security ==========
-    SECRET_KEY: str = "change-this-in-production-immediately"
+    SECRET_KEY: str
     
     # ========== Database ==========
     DATABASE_URL: str = "sqlite:///./nile_key.db"
