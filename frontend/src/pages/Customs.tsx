@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { listHSCodes, calculateDuties, listDeclarations, createDeclaration } from '@/services/api';
-import { Search, Plus, X, Calculator } from 'lucide-react';
+import { listHSCodes, calculateDuties, listDeclarations, createDeclaration, getDeclaration, updateDeclaration, submitDeclaration } from '@/services/api';
+import { Search, Plus, X, Calculator, Edit, CheckCircle } from 'lucide-react';
 
 interface HSCode { id: number; code: string; description: string; duty_rate: number; tax_rate: number; }
 interface Declaration { id: number; declaration_number: string; status: string; destination_country: string; total_value?: number; }
@@ -14,6 +14,13 @@ export function Customs() {
   const [loading, setLoading] = useState(true);
   const [showCalc, setShowCalc] = useState(false);
   const [showDecl, setShowDecl] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Declaration | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [calcResult, setCalcResult] = useState<Record<string, number> | null>(null);
   const [calcForm, setCalcForm] = useState({ hs_code: '', value: 0, currency: 'USD', destination_country: '' });
   const [declForm, setDeclForm] = useState({ destination_country: '', total_value: 0, currency: 'USD' });
@@ -22,7 +29,71 @@ export function Customs() {
   useEffect(() => { load(); }, []);
 
   const handleCalc = async () => { try { const res = await calculateDuties(calcForm); setCalcResult(res.data); } catch { alert('Error'); } };
-  const handleCreateDecl = async (e: React.FormEvent) => { e.preventDefault(); try { await createDeclaration(declForm); setShowDecl(false); load(); } catch { alert('Error'); } };
+
+  const openEdit = async (id: number) => {
+    setEditLoading(true);
+    try {
+      const res = await getDeclaration(id);
+      const data = res.data;
+      setDeclForm({
+        destination_country: data.destination_country || '',
+        total_value: data.total_value || 0,
+        currency: 'USD'
+      });
+      setEditingId(id);
+      setShowDecl(true);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDeclForm({ destination_country: '', total_value: 0, currency: 'USD' });
+    setShowDecl(false);
+  };
+
+  const openDetails = async (id: number) => {
+    setDetailLoading(true);
+    setShowDetails(true);
+    try {
+      const res = await getDeclaration(id);
+      setSelectedItem(res.data);
+      setSelectedId(id);
+    } catch { alert('Error loading declaration'); }
+    setDetailLoading(false);
+  };
+  const closeDetails = () => { setShowDetails(false); setSelectedItem(null); setSelectedId(null); };
+
+  const handleSubmitDecl = async (id: number) => {
+    try {
+      await submitDeclaration(id);
+      load();
+    } catch {
+      alert('Error');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      if (editingId != null) {
+        await updateDeclaration(editingId, declForm);
+      } else {
+        await createDeclaration(declForm);
+      }
+      setEditingId(null);
+      setDeclForm({ destination_country: '', total_value: 0, currency: 'USD' });
+      setShowDecl(false);
+      load();
+    } catch {
+      alert('Error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
   const filteredHs = hsCodes.filter(h => !search || h.code.includes(search) || h.description.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -54,12 +125,14 @@ export function Customs() {
       )}
       {showDecl && (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 mb-6">
-          <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{t('customs.addDeclaration')}</h3><button onClick={() => setShowDecl(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
-          <form onSubmit={handleCreateDecl} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input value={declForm.destination_country} onChange={(e) => setDeclForm({...declForm, destination_country: e.target.value})} placeholder={t('shipment.destination')} required className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <input type="number" value={declForm.total_value} onChange={(e) => setDeclForm({...declForm, total_value: Number(e.target.value)})} placeholder="Total Value" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <div className="md:col-span-3"><button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">{t('common.save')}</button></div>
-          </form>
+          <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? t('customs.editDeclaration') : t('customs.addDeclaration')}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
+          {editLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <input value={declForm.destination_country} onChange={(e) => setDeclForm({...declForm, destination_country: e.target.value})} placeholder={t('shipment.destination')} required className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              <input type="number" value={declForm.total_value} onChange={(e) => setDeclForm({...declForm, total_value: Number(e.target.value)})} placeholder="Total Value" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              <div className="md:col-span-3"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">{submitting ? t('common.saving') : editingId ? t('common.update') : t('common.save')}</button></div>
+            </form>
+          )}
         </div>
       )}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mb-6">
@@ -71,12 +144,17 @@ export function Customs() {
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('shipment.destination')}</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Value</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('common.status')}</th>
-            </tr></thead><tbody className="divide-y divide-slate-100">
-              {declarations.map((d) => (<tr key={d.id} className="hover:bg-slate-50 transition-colors">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('common.actions')}</th>
+            </tr></thead>            <tbody className="divide-y divide-slate-100">
+              {declarations.map((d) => (<tr key={d.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => openDetails(d.id)}>
                 <td className="px-4 py-3 text-sm font-mono">{d.declaration_number}</td>
                 <td className="px-4 py-3 text-sm text-slate-600">{d.destination_country}</td>
                 <td className="px-4 py-3 text-sm text-slate-600">{d.total_value?.toFixed(2) || '-'}</td>
                 <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-medium ${d.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : d.status === 'submitted' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>{d.status}</span></td>
+                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}><div className="flex gap-2">
+                  {d.status !== 'submitted' && <button onClick={() => openEdit(d.id)} className="text-slate-600 hover:text-slate-900"><Edit size={16} /></button>}
+                  {d.status !== 'submitted' && <button onClick={() => handleSubmitDecl(d.id)} className="text-blue-600 hover:text-blue-700"><CheckCircle size={16} /></button>}
+                </div></td>
               </tr>))}
             </tbody></table>
           </div>
@@ -106,6 +184,24 @@ export function Customs() {
           </div>
         )}
       </div>
+      {showDetails && selectedId != null && selectedItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Declaration Details</h3>
+              <button onClick={closeDetails} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
+            </div>
+            {detailLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
+              <div className="space-y-3">
+                <div><span className="text-sm font-medium text-slate-500">Declaration Number</span><p className="text-sm text-slate-900 font-mono">{selectedItem.declaration_number}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">Destination</span><p className="text-sm text-slate-900">{selectedItem.destination_country}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">Total Value</span><p className="text-sm text-slate-900">{selectedItem.total_value?.toFixed(2) || '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">Status</span><p className="text-sm text-slate-900">{selectedItem.status}</p></div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

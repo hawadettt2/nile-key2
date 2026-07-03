@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, Settings, LogOut, Menu, X, User } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/customs', icon: FileArchive, label: 'customs' },
   { path: '/documents', icon: BookOpen, label: 'documents' },
   { path: '/resources', icon: Settings, label: 'resources' },
+  { path: '/profile', icon: User, label: 'profile' },
 ];
 
 export function Sidebar() {
