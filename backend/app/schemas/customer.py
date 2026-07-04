@@ -22,6 +22,11 @@ class CustomerCreate(CustomerBase):
     pass
 
 
+class ImportResponse(BaseModel):
+    message: str
+    count: int
+
+
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
     name_en: Optional[str] = None

@@ -4,7 +4,8 @@ from typing import Optional
 
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
-from app.schemas.customs import HSCode, CustomsDeclarationCreate, CustomsDeclarationUpdate, DutyCalculationRequest, DutyCalculationResponse
+from app.schemas.customs import HSCode, CustomsDeclaration, CustomsDeclarationCreate, CustomsDeclarationUpdate, DutyCalculationRequest, DutyCalculationResponse, DeclarationCreateResponse
+from app.schemas.common import MessageResponse
 
 router = APIRouter(prefix="/api/v1/customs", tags=["Customs"])
 
@@ -18,10 +19,13 @@ def _customs_row_to_response(row: dict) -> dict:
     - hs_code column retained but hs_code_id used in router
     """
     legacy_exclude = {"duties_estimate", "documents", "raw_response"}
-    return {k: v for k, v in row.items() if k not in legacy_exclude}
+    result = {k: v for k, v in row.items() if k not in legacy_exclude}
+    if result.get("destination_country") is None:
+        result["destination_country"] = ""
+    return result
 
 
-@router.get("/hs-codes", response_model=list)
+@router.get("/hs-codes", response_model=list[HSCode])
 def list_hs_codes(
     search: Optional[str] = None,
     category: Optional[str] = None,
@@ -47,7 +51,7 @@ def list_hs_codes(
     return [dict(r) for r in rows]
 
 
-@router.get("/hs-codes/{hs_code_id}", response_model=dict)
+@router.get("/hs-codes/{hs_code_id}", response_model=HSCode)
 def get_hs_code(hs_code_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -84,7 +88,7 @@ def calculate_duties(request: DutyCalculationRequest, current_user: dict = Depen
     )
 
 
-@router.get("/declarations", response_model=list)
+@router.get("/declarations", response_model=list[CustomsDeclaration])
 def list_declarations(
     status: Optional[str] = None,
     shipment_id: Optional[int] = None,
@@ -110,7 +114,7 @@ def list_declarations(
     return [_customs_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/declarations/{declaration_id}", response_model=dict)
+@router.get("/declarations/{declaration_id}", response_model=CustomsDeclaration)
 def get_declaration(declaration_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -122,7 +126,7 @@ def get_declaration(declaration_id: int, current_user: dict = Depends(get_curren
     return _customs_row_to_response(dict(row))
 
 
-@router.post("/declarations", response_model=dict)
+@router.post("/declarations", response_model=DeclarationCreateResponse)
 def create_declaration(data: CustomsDeclarationCreate, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -142,7 +146,7 @@ def create_declaration(data: CustomsDeclarationCreate, current_user: dict = Depe
     return {"id": decl_id, "declaration_number": decl_num, "message": "Declaration created successfully"}
 
 
-@router.put("/declarations/{declaration_id}", response_model=dict)
+@router.put("/declarations/{declaration_id}", response_model=MessageResponse)
 def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -161,7 +165,7 @@ def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, curr
     return {"message": "Declaration updated successfully"}
 
 
-@router.post("/declarations/{declaration_id}/submit", response_model=dict)
+@router.post("/declarations/{declaration_id}/submit", response_model=MessageResponse)
 def submit_declaration(declaration_id: int, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()

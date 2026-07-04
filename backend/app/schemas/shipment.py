@@ -61,6 +61,25 @@ class Shipment(ShipmentBase):
         from_attributes = True
 
 
+class ShipmentCreateResponse(BaseModel):
+    id: int
+    tracking_number: str
+    message: str
+
+
+class ShipmentTrackingResponse(BaseModel):
+    id: int
+    tracking_number: Optional[str] = None
+    status: str
+    tracking_events: list[dict]
+
+
+class LabelResponse(BaseModel):
+    shipment_id: int
+    label_url: str
+    message: str
+
+
 class ShippingRateRequest(BaseModel):
     origin: str
     destination: str

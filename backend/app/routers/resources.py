@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
+import json
 
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
-from app.schemas.resource import ResourceCreate, ResourceUpdate
+from app.schemas.resource import ResourceCreate, ResourceUpdate, Resource
+from app.schemas.common import MessageResponse, IdResponse
 
 router = APIRouter(prefix="/api/v1/resources", tags=["Resources"])
 
@@ -20,6 +22,14 @@ def _resource_row_to_response(row: dict) -> dict:
     is_active = row.get("is_active")
     if is_active is None:
         is_active = bool(row.get("is_verified", 0))
+    metadata = row.get("metadata")
+    if isinstance(metadata, str):
+        try:
+            metadata = json.loads(metadata)
+        except (json.JSONDecodeError, TypeError):
+            metadata = {}
+    elif metadata is None:
+        metadata = {}
     return {
         "id": row.get("id"),
         "title": row.get("title"),
@@ -30,7 +40,7 @@ def _resource_row_to_response(row: dict) -> dict:
         "category": row.get("category"),
         "url": row.get("url"),
         "country": row.get("country"),
-        "metadata": {"tags": row.get("tags")} if row.get("tags") else (row.get("metadata") if row.get("metadata") else {}),
+        "metadata": metadata,
         "is_active": is_active,
         "file_path": row.get("file_path"),
         "created_at": row.get("created_at"),
@@ -39,7 +49,7 @@ def _resource_row_to_response(row: dict) -> dict:
     }
 
 
-@router.get("/", response_model=list)
+@router.get("/", response_model=list[Resource])
 def list_resources(
     resource_type: Optional[str] = None,
     category: Optional[str] = None,
@@ -73,7 +83,7 @@ def list_resources(
     return [_resource_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/search", response_model=list)
+@router.get("/search", response_model=list[Resource])
 def search_resources(
     q: str,
     current_user: dict = Depends(get_current_user)
@@ -91,7 +101,7 @@ def search_resources(
     return [_resource_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/{resource_id}", response_model=dict)
+@router.get("/{resource_id}", response_model=Resource)
 def get_resource(resource_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -103,7 +113,7 @@ def get_resource(resource_id: int, current_user: dict = Depends(get_current_user
     return _resource_row_to_response(dict(row))
 
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=IdResponse)
 def create_resource(data: ResourceCreate, current_user: dict = Depends(require_role(["owner", "manager", "admin_staff"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -112,8 +122,8 @@ def create_resource(data: ResourceCreate, current_user: dict = Depends(require_r
         """INSERT INTO resources (title, title_ar, description, description_ar, resource_type, category,
            url, country, metadata, is_active, created_at, created_by)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-(data.title, data.title_ar, data.description, data.description_ar, data.resource_type,
-          data.category or "other", data.url, data.country, str(data.metadata) if data.metadata else "{}", 1, now, current_user["id"])
+        (data.title, data.title_ar, data.description, data.description_ar, data.resource_type,
+         data.category or "other", data.url, data.country, str(data.metadata) if data.metadata else "{}", 1, now, current_user["id"])
     )
     conn.commit()
     res_id = cursor.lastrowid
@@ -121,7 +131,7 @@ def create_resource(data: ResourceCreate, current_user: dict = Depends(require_r
     return {"id": res_id, "message": "Resource created successfully"}
 
 
-@router.put("/{resource_id}", response_model=dict)
+@router.put("/{resource_id}", response_model=MessageResponse)
 def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict = Depends(require_role(["owner", "manager", "admin_staff"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -140,7 +150,7 @@ def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict =
     return {"message": "Resource updated successfully"}
 
 
-@router.delete("/{resource_id}", response_model=dict)
+@router.delete("/{resource_id}", response_model=MessageResponse)
 def delete_resource(resource_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()

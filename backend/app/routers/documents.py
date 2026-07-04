@@ -5,7 +5,8 @@ import json
 
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
-from app.schemas.document import DocumentCreate, DocumentUpdate
+from app.schemas.document import DocumentCreate, DocumentUpdate, Document, DocumentUploadResponse
+from app.schemas.common import MessageResponse, IdResponse
 
 router = APIRouter(prefix="/api/v1/documents", tags=["Documents"])
 
@@ -37,7 +38,7 @@ def _document_row_to_response(row: dict) -> dict:
     }
 
 
-@router.get("/", response_model=list)
+@router.get("/", response_model=list[Document])
 def list_documents(
     document_type: Optional[str] = None,
     entity_type: Optional[str] = None,
@@ -67,7 +68,7 @@ def list_documents(
     return [_document_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/{document_id}", response_model=dict)
+@router.get("/{document_id}", response_model=Document)
 def get_document(document_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -79,7 +80,7 @@ def get_document(document_id: int, current_user: dict = Depends(get_current_user
     return _document_row_to_response(dict(row))
 
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=IdResponse)
 def create_document(data: DocumentCreate, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -97,7 +98,7 @@ def create_document(data: DocumentCreate, current_user: dict = Depends(get_curre
     return {"id": doc_id, "message": "Document created successfully"}
 
 
-@router.post("/upload", response_model=dict)
+@router.post("/upload", response_model=DocumentUploadResponse)
 def upload_document(
     file: UploadFile = File(...),
     title: Optional[str] = None,
@@ -128,7 +129,7 @@ def upload_document(
     return {"id": doc_id, "filename": filename, "message": "File uploaded successfully"}
 
 
-@router.put("/{document_id}", response_model=dict)
+@router.put("/{document_id}", response_model=MessageResponse)
 def update_document(document_id: int, data: DocumentUpdate, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -147,7 +148,7 @@ def update_document(document_id: int, data: DocumentUpdate, current_user: dict =
     return {"message": "Document updated successfully"}
 
 
-@router.delete("/{document_id}", response_model=dict)
+@router.delete("/{document_id}", response_model=MessageResponse)
 def delete_document(document_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()

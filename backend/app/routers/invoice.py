@@ -1,10 +1,13 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
 
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
-from app.schemas.invoice import InvoiceCreate, InvoiceUpdate
+from app.schemas.invoice import InvoiceCreate, InvoiceUpdate, Invoice, InvoiceCreateResponse, ValidationResponse
+from app.schemas.common import MessageResponse
 
 router = APIRouter(prefix="/api/v1/invoices", tags=["E-Invoicing"])
 
@@ -18,10 +21,26 @@ def _invoice_row_to_response(row: dict) -> dict:
     - Full cleanup deferred to WP-10
     """
     legacy_exclude = {"uuid", "issuer_tax_id", "receiver_tax_id", "receiver_name", "tax_total", "signed_data", "raw_response"}
-    return {k: v for k, v in row.items() if k not in legacy_exclude}
+    result = {k: v for k, v in row.items() if k not in legacy_exclude}
+    # Parse items from JSON string to list
+    if isinstance(result.get("items"), str):
+        try:
+            result["items"] = json.loads(result["items"])
+        except (json.JSONDecodeError, TypeError):
+            result["items"] = []
+    # Provide defaults for required fields that may be NULL in legacy rows
+    if result.get("subtotal") is None:
+        result["subtotal"] = 0.0
+    if result.get("total") is None:
+        result["total"] = 0.0
+    if result.get("issue_date") is None:
+        result["issue_date"] = row.get("created_at", datetime.utcnow().isoformat())
+    if result.get("tax_rate") is None:
+        result["tax_rate"] = 14.0
+    return result
 
 
-@router.get("/", response_model=list)
+@router.get("/", response_model=list[Invoice])
 def list_invoices(
     status: Optional[str] = None,
     customer_id: Optional[int] = None,
@@ -47,7 +66,7 @@ def list_invoices(
     return [_invoice_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/{invoice_id}", response_model=dict)
+@router.get("/{invoice_id}", response_model=Invoice)
 def get_invoice(invoice_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -59,7 +78,7 @@ def get_invoice(invoice_id: int, current_user: dict = Depends(get_current_user))
     return _invoice_row_to_response(dict(row))
 
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=InvoiceCreateResponse)
 def create_invoice(data: InvoiceCreate, current_user: dict = Depends(require_role(["owner", "manager", "accountant", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -67,7 +86,7 @@ def create_invoice(data: InvoiceCreate, current_user: dict = Depends(require_rol
     inv_num = f"INV-{datetime.utcnow().strftime('%Y%m%d')}-{cursor.execute('SELECT COUNT(*) FROM invoices').fetchone()[0] + 1:04d}"
     tax = data.subtotal * (data.tax_rate / 100)
     total = data.subtotal + tax
-    items_str = str([i.model_dump() for i in data.items])
+    items_str = json.dumps([i.model_dump() for i in data.items])
     cursor.execute(
         """INSERT INTO invoices (invoice_number, customer_id, supplier_id, shipment_id, subtotal, tax_rate,
            tax_amount, total, currency, issue_date, due_date, status, items, notes, created_at, created_by)
@@ -83,7 +102,7 @@ def create_invoice(data: InvoiceCreate, current_user: dict = Depends(require_rol
     return {"id": inv_id, "invoice_number": inv_num, "message": "Invoice created successfully"}
 
 
-@router.put("/{invoice_id}", response_model=dict)
+@router.put("/{invoice_id}", response_model=MessageResponse)
 def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict = Depends(require_role(["owner", "manager", "accountant"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -97,14 +116,14 @@ def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict = De
         record_id=invoice_id,
         data=data,
         coerce_fields={
-            "items": lambda v: str([i.model_dump() for i in v]) if isinstance(v, list) else v,
+            "items": lambda v: json.dumps([i.model_dump() for i in v]) if isinstance(v, list) else v,
         },
     ):
         return {"message": "No changes"}
     return {"message": "Invoice updated successfully"}
 
 
-@router.post("/{invoice_id}/validate", response_model=dict)
+@router.post("/{invoice_id}/validate", response_model=ValidationResponse)
 def validate_invoice(invoice_id: int, current_user: dict = Depends(require_role(["owner", "manager", "accountant"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -120,7 +139,7 @@ def validate_invoice(invoice_id: int, current_user: dict = Depends(require_role(
     return {"message": "Invoice validated successfully", "status": "validated"}
 
 
-@router.post("/{invoice_id}/cancel", response_model=dict)
+@router.post("/{invoice_id}/cancel", response_model=MessageResponse)
 def cancel_invoice(invoice_id: int, current_user: dict = Depends(require_role(["owner", "manager", "accountant"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -139,13 +158,13 @@ def cancel_invoice(invoice_id: int, current_user: dict = Depends(require_role(["
     return {"message": "Invoice cancelled successfully"}
 
 
-@router.get("/{invoice_id}/status", response_model=dict)
+@router.get("/{invoice_id}/status", response_model=Invoice)
 def get_invoice_status(invoice_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, invoice_number, eta_uuid, eta_status, status FROM invoices WHERE id = ?", (invoice_id,))
+    cursor.execute("SELECT * FROM invoices WHERE id = ?", (invoice_id,))
     row = cursor.fetchone()
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    return dict(row)
+    return _invoice_row_to_response(dict(row))

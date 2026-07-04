@@ -40,12 +40,12 @@ class User(UserBase):
         from_attributes = True
 
 
+class RegisterResponse(BaseModel):
+    message: str
+    user_id: int
+
+
 class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-
-
-class TokenPayload(BaseModel):
-    sub: Optional[int] = None
-    type: Optional[str] = None

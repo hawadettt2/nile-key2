@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from datetime import datetime
 from typing import Optional
@@ -5,6 +7,7 @@ from typing import Optional
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.supplier import SupplierCreate, SupplierUpdate, Supplier
+from app.schemas.common import MessageResponse, IdResponse
 
 router = APIRouter(prefix="/api/v1/suppliers", tags=["Suppliers"])
 
@@ -18,10 +21,18 @@ def _supplier_row_to_response(row: dict) -> dict:
     - Full removal deferred to WP-10
     """
     legacy_exclude = {"type", "farm_code", "governorate", "products", "rating"}
-    return {k: v for k, v in row.items() if k not in legacy_exclude}
+    result = {k: v for k, v in row.items() if k not in legacy_exclude}
+    if isinstance(result.get("certificates"), str):
+        try:
+            result["certificates"] = json.loads(result["certificates"])
+        except (json.JSONDecodeError, TypeError):
+            result["certificates"] = []
+    if result.get("country") is None:
+        result["country"] = "Egypt"
+    return result
 
 
-@router.get("/", response_model=list)
+@router.get("/", response_model=list[Supplier])
 def list_suppliers(
     search: Optional[str] = None,
     status: Optional[str] = None,
@@ -51,7 +62,7 @@ def list_suppliers(
     return [_supplier_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/{supplier_id}", response_model=dict)
+@router.get("/{supplier_id}", response_model=Supplier)
 def get_supplier(supplier_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -63,16 +74,11 @@ def get_supplier(supplier_id: int, current_user: dict = Depends(get_current_user
     return _supplier_row_to_response(dict(row))
 
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=IdResponse)
 def create_supplier(data: SupplierCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
-    # LEGACY COMPATIBILITY:
-    # The "type" column is not part of the backend contract.
-    # It is written only because the existing SQLite schema still requires a NOT NULL value.
-    # This column must not be used by new business logic.
-    # Removal is allowed only during the future Database Cleanup phase.
     cursor.execute(
         """INSERT INTO suppliers (name, type, name_en, contact_person, email, phone, address, city, country,
            tax_id, commercial_registry, certificates, notes, status, created_at, created_by)
@@ -87,7 +93,7 @@ def create_supplier(data: SupplierCreate, current_user: dict = Depends(require_r
     return {"id": supplier_id, "message": "Supplier created successfully"}
 
 
-@router.put("/{supplier_id}", response_model=dict)
+@router.put("/{supplier_id}", response_model=MessageResponse)
 def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -106,7 +112,7 @@ def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict =
     return {"message": "Supplier updated successfully"}
 
 
-@router.delete("/{supplier_id}", response_model=dict)
+@router.delete("/{supplier_id}", response_model=MessageResponse)
 def delete_supplier(supplier_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()

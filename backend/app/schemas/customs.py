@@ -35,6 +35,12 @@ class CustomsDeclarationCreate(CustomsDeclarationBase):
     pass
 
 
+class DeclarationCreateResponse(BaseModel):
+    id: int
+    declaration_number: str
+    message: str
+
+
 class CustomsDeclarationUpdate(BaseModel):
     shipment_id: Optional[int] = None
     hs_code_id: Optional[int] = None

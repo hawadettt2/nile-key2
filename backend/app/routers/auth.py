@@ -5,7 +5,8 @@ import sqlite3
 
 from app.core.database import get_db, execute_update
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
-from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token
+from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token, RegisterResponse
+from app.schemas.common import MessageResponse
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 security = HTTPBearer(auto_error=False)
@@ -39,7 +40,7 @@ def require_role(allowed_roles: list):
     return checker
 
 
-@router.post("/register", response_model=dict)
+@router.post("/register", response_model=RegisterResponse)
 def register(user_data: UserCreate):
     conn = get_db()
     cursor = conn.cursor()
@@ -90,7 +91,7 @@ def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security))
     return Token(access_token=access, refresh_token=refresh)
 
 
-@router.get("/me", response_model=dict)
+@router.get("/me", response_model=User)
 def get_me(current_user: dict = Depends(get_current_user)):
     return {
         "id": current_user["id"],
@@ -101,10 +102,12 @@ def get_me(current_user: dict = Depends(get_current_user)):
         "phone": current_user["phone"],
         "company": current_user["company"],
         "is_active": bool(current_user["is_active"]),
+        "created_at": current_user.get("created_at"),
+        "updated_at": current_user.get("updated_at"),
     }
 
 
-@router.put("/me", response_model=dict)
+@router.put("/me", response_model=MessageResponse)
 def update_me(update: UserUpdate, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()

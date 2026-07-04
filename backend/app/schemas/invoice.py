@@ -29,6 +29,17 @@ class InvoiceCreate(InvoiceBase):
     pass
 
 
+class InvoiceCreateResponse(BaseModel):
+    id: int
+    invoice_number: str
+    message: str
+
+
+class ValidationResponse(BaseModel):
+    message: str
+    status: str
+
+
 class InvoiceUpdate(BaseModel):
     customer_id: Optional[int] = None
     supplier_id: Optional[int] = None

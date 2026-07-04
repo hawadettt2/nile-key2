@@ -5,7 +5,8 @@ import random
 
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
-from app.schemas.shipment import ShipmentCreate, ShipmentUpdate, ShippingRateRequest, ShippingRate
+from app.schemas.shipment import ShipmentCreate, ShipmentUpdate, Shipment, ShippingRateRequest, ShippingRate, ShipmentCreateResponse, ShipmentTrackingResponse, LabelResponse
+from app.schemas.common import MessageResponse
 
 router = APIRouter(prefix="/api/v1/shipping", tags=["Shipping"])
 
@@ -19,7 +20,12 @@ def _shipment_row_to_response(row: dict) -> dict:
     - Full removal deferred to WP-10
     """
     legacy_exclude = {"service_name", "label_url", "cost", "provider", "pickup_address", "delivery_address", "parcels", "raw_response"}
-    return {k: v for k, v in row.items() if k not in legacy_exclude}
+    result = {k: v for k, v in row.items() if k not in legacy_exclude}
+    if result.get("origin") is None:
+        result["origin"] = ""
+    if result.get("destination") is None:
+        result["destination"] = ""
+    return result
 
 
 CARRIERS = {
@@ -31,7 +37,7 @@ CARRIERS = {
 }
 
 
-@router.get("/rates", response_model=list)
+@router.get("/rates", response_model=list[ShippingRate])
 def get_rates(request: ShippingRateRequest, current_user: dict = Depends(get_current_user)):
     rates = []
     for carrier, info in CARRIERS.items():
@@ -50,7 +56,7 @@ def get_rates(request: ShippingRateRequest, current_user: dict = Depends(get_cur
     return sorted(rates, key=lambda x: x.cost)
 
 
-@router.get("/shipments", response_model=list)
+@router.get("/shipments", response_model=list[Shipment])
 def list_shipments(
     status: Optional[str] = None,
     customer_id: Optional[int] = None,
@@ -76,7 +82,7 @@ def list_shipments(
     return [_shipment_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/track/{tracking_id}", response_model=dict)
+@router.get("/track/{tracking_id}", response_model=ShipmentTrackingResponse)
 def track_shipment(tracking_id: str, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -94,7 +100,7 @@ def track_shipment(tracking_id: str, current_user: dict = Depends(get_current_us
     return shipment
 
 
-@router.get("/shipments/{shipment_id}", response_model=dict)
+@router.get("/shipments/{shipment_id}", response_model=Shipment)
 def get_shipment(shipment_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -106,7 +112,7 @@ def get_shipment(shipment_id: int, current_user: dict = Depends(get_current_user
     return _shipment_row_to_response(dict(row))
 
 
-@router.post("/shipments", response_model=dict)
+@router.post("/shipments", response_model=ShipmentCreateResponse)
 def create_shipment(data: ShipmentCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -128,7 +134,7 @@ def create_shipment(data: ShipmentCreate, current_user: dict = Depends(require_r
     return {"id": shipment_id, "tracking_number": tracking, "message": "Shipment created successfully"}
 
 
-@router.put("/shipments/{shipment_id}", response_model=dict)
+@router.put("/shipments/{shipment_id}", response_model=MessageResponse)
 def update_shipment(shipment_id: int, data: ShipmentUpdate, current_user: dict = Depends(require_role(["owner", "manager", "sales", "logistics"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -147,6 +153,6 @@ def update_shipment(shipment_id: int, data: ShipmentUpdate, current_user: dict =
     return {"message": "Shipment updated successfully"}
 
 
-@router.get("/shipments/{shipment_id}/label", response_model=dict)
+@router.get("/shipments/{shipment_id}/label", response_model=LabelResponse)
 def get_label(shipment_id: int, current_user: dict = Depends(get_current_user)):
     return {"shipment_id": shipment_id, "label_url": f"/api/v1/shipping/shipments/{shipment_id}/label.pdf", "message": "Label generated"}

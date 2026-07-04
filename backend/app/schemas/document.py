@@ -17,6 +17,12 @@ class DocumentCreate(DocumentBase):
     pass
 
 
+class DocumentUploadResponse(BaseModel):
+    id: int
+    filename: str
+    message: str
+
+
 class DocumentUpdate(BaseModel):
     title: Optional[str] = None
     document_type: Optional[str] = None

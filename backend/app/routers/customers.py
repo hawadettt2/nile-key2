@@ -6,7 +6,8 @@ import io
 
 from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
-from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.schemas.customer import CustomerCreate, CustomerUpdate, Customer, ImportResponse
+from app.schemas.common import MessageResponse, IdResponse
 
 router = APIRouter(prefix="/api/v1/customers", tags=["Customers"])
 
@@ -33,7 +34,7 @@ def _customer_row_to_response(row: dict) -> dict:
     return response
 
 
-@router.get("/", response_model=list)
+@router.get("/", response_model=list[Customer])
 def list_customers(
     search: Optional[str] = None,
     status: Optional[str] = None,
@@ -67,7 +68,7 @@ def list_customers(
     return [_customer_row_to_response(dict(r)) for r in rows]
 
 
-@router.get("/{customer_id}", response_model=dict)
+@router.get("/{customer_id}", response_model=Customer)
 def get_customer(customer_id: int, current_user: dict = Depends(get_current_user)):
     conn = get_db()
     cursor = conn.cursor()
@@ -79,16 +80,11 @@ def get_customer(customer_id: int, current_user: dict = Depends(get_current_user
     return _customer_row_to_response(dict(row))
 
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=IdResponse)
 def create_customer(data: CustomerCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
-    # LEGACY COMPATIBILITY:
-    # The "company_name" and "contact_name" columns are not part of the backend contract.
-    # They are written only because the existing SQLite schema still requires them.
-    # "name" and "contact_person" are the authoritative columns.
-    # Removal is allowed only during the future Database Cleanup phase (WP-10).
     cursor.execute(
         """INSERT INTO customers (company_name, name, contact_name, contact_person, email, phone, address, city, country,
            tax_id, import_license, category, notes, status, created_at, created_by)
@@ -103,7 +99,7 @@ def create_customer(data: CustomerCreate, current_user: dict = Depends(require_r
     return {"id": customer_id, "message": "Customer created successfully"}
 
 
-@router.put("/{customer_id}", response_model=dict)
+@router.put("/{customer_id}", response_model=MessageResponse)
 def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -121,7 +117,7 @@ def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict =
     return {"message": "Customer updated successfully"}
 
 
-@router.delete("/{customer_id}", response_model=dict)
+@router.delete("/{customer_id}", response_model=MessageResponse)
 def delete_customer(customer_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
     cursor = conn.cursor()
@@ -132,7 +128,7 @@ def delete_customer(customer_id: int, current_user: dict = Depends(require_role(
     return {"message": "Customer deactivated successfully"}
 
 
-@router.post("/import", response_model=dict)
+@router.post("/import", response_model=ImportResponse)
 def import_customers(
     file: UploadFile = File(...),
     current_user: dict = Depends(require_role(["owner", "manager", "sales"]))
@@ -146,11 +142,6 @@ def import_customers(
     now = datetime.utcnow().isoformat()
     imported = 0
     for row in reader:
-        # LEGACY COMPATIBILITY:
-        # The "company_name" and "contact_name" columns are not part of the backend contract.
-        # They are written only because the existing SQLite schema still requires them.
-        # "name" and "contact_person" are the authoritative columns.
-        # Removal is allowed only during the future Database Cleanup phase (WP-10).
         cursor.execute(
             """INSERT INTO customers (company_name, name, contact_name, contact_person, email, phone, address, city, country,
                category, status, created_at, created_by)
