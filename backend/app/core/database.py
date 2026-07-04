@@ -7,6 +7,7 @@
 import sqlite3
 from datetime import datetime
 from contextlib import contextmanager
+from typing import Any
 
 from app.core.config import settings
 
@@ -51,7 +52,7 @@ def get_db():
     return conn
 
 
-def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict | None = None) -> bool:
+def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict | None = None, extra_fields: dict[str, Any] | None = None) -> bool:
     """Build SET clause from model_dump(exclude_unset=True), append updated_at, commit and close.
 
     Returns True if the row was updated, False if no fields were set (conn is still closed).
@@ -59,13 +60,18 @@ def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict |
     fields = []
     values = []
     coerce = coerce_fields or {}
-    for field, value in data.model_dump(exclude_unset=True).items():
-        if value is not None:
+    if data is not None:
+        for field, value in data.model_dump(exclude_unset=True).items():
+            if value is not None:
+                fields.append(f"{field} = ?")
+                if field in coerce:
+                    values.append(coerce[field](value))
+                else:
+                    values.append(value)
+    if extra_fields:
+        for field, value in extra_fields.items():
             fields.append(f"{field} = ?")
-            if field in coerce:
-                values.append(coerce[field](value))
-            else:
-                values.append(value)
+            values.append(value)
     if not fields:
         conn.close()
         return False

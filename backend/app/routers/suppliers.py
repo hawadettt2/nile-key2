@@ -115,9 +115,12 @@ def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict =
 @router.delete("/{supplier_id}", response_model=MessageResponse)
 def delete_supplier(supplier_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE suppliers SET status = 'inactive', updated_at = ? WHERE id = ?",
-                   (datetime.utcnow().isoformat(), supplier_id))
-    conn.commit()
-    conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="suppliers",
+        record_id=supplier_id,
+        data=None,
+        extra_fields={"status": "inactive"},
+    ):
+        return {"message": "No changes"}
     return {"message": "Supplier deactivated successfully"}

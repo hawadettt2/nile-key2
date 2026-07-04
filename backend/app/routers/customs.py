@@ -168,12 +168,13 @@ def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, curr
 @router.post("/declarations/{declaration_id}/submit", response_model=MessageResponse)
 def submit_declaration(declaration_id: int, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
     conn = get_db()
-    cursor = conn.cursor()
     now = datetime.utcnow().isoformat()
-    cursor.execute(
-        "UPDATE customs_declarations SET status = 'submitted', submitted_at = ? WHERE id = ?",
-        (now, declaration_id)
-    )
-    conn.commit()
-    conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="customs_declarations",
+        record_id=declaration_id,
+        data=None,
+        extra_fields={"status": "submitted", "submitted_at": now},
+    ):
+        return {"message": "No changes"}
     return {"message": "Declaration submitted successfully"}

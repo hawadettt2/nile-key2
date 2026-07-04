@@ -120,11 +120,14 @@ def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict =
 @router.delete("/{customer_id}", response_model=MessageResponse)
 def delete_customer(customer_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE customers SET status = 'inactive', updated_at = ? WHERE id = ?",
-                   (datetime.utcnow().isoformat(), customer_id))
-    conn.commit()
-    conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="customers",
+        record_id=customer_id,
+        data=None,
+        extra_fields={"status": "inactive"},
+    ):
+        return {"message": "No changes"}
     return {"message": "Customer deactivated successfully"}
 
 

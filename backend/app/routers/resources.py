@@ -153,9 +153,12 @@ def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict =
 @router.delete("/{resource_id}", response_model=MessageResponse)
 def delete_resource(resource_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE resources SET is_active = 0, updated_at = ? WHERE id = ?",
-                   (datetime.utcnow().isoformat(), resource_id))
-    conn.commit()
-    conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="resources",
+        record_id=resource_id,
+        data=None,
+        extra_fields={"is_active": 0},
+    ):
+        return {"message": "No changes"}
     return {"message": "Resource deactivated successfully"}

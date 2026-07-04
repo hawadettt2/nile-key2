@@ -132,10 +132,14 @@ def validate_invoice(invoice_id: int, current_user: dict = Depends(require_role(
     if not row:
         conn.close()
         raise HTTPException(status_code=404, detail="Invoice not found")
-    cursor.execute("UPDATE invoices SET status = 'validated', updated_at = ? WHERE id = ?",
-                   (datetime.utcnow().isoformat(), invoice_id))
-    conn.commit()
-    conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="invoices",
+        record_id=invoice_id,
+        data=None,
+        extra_fields={"status": "validated"},
+    ):
+        return {"message": "No changes"}
     return {"message": "Invoice validated successfully", "status": "validated"}
 
 
@@ -151,10 +155,14 @@ def cancel_invoice(invoice_id: int, current_user: dict = Depends(require_role(["
     if dict(row)["status"] == "cancelled":
         conn.close()
         raise HTTPException(status_code=400, detail="Invoice already cancelled")
-    cursor.execute("UPDATE invoices SET status = 'cancelled', updated_at = ? WHERE id = ?",
-                   (datetime.utcnow().isoformat(), invoice_id))
-    conn.commit()
-    conn.close()
+    if not execute_update(
+        conn=conn,
+        table_name="invoices",
+        record_id=invoice_id,
+        data=None,
+        extra_fields={"status": "cancelled"},
+    ):
+        return {"message": "No changes"}
     return {"message": "Invoice cancelled successfully"}
 
 
