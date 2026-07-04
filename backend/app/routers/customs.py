@@ -11,15 +11,7 @@ router = APIRouter(prefix="/api/v1/customs", tags=["Customs"])
 
 
 def _customs_row_to_response(row: dict) -> dict:
-    """Compatibility layer: map DB row to API contract fields.
-    
-    LEGACY COMPATIBILITY:
-    - Returns only backend contract fields
-    - Legacy columns (duties_estimate, documents, raw_response) are excluded
-    - hs_code column retained but hs_code_id used in router
-    """
-    legacy_exclude = {"duties_estimate", "documents", "raw_response"}
-    result = {k: v for k, v in row.items() if k not in legacy_exclude}
+    result = dict(row)
     if result.get("destination_country") is None:
         result["destination_country"] = ""
     return result

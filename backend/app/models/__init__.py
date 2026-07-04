@@ -1,6 +1,3 @@
-"""Database models package.
+from sqlalchemy import MetaData
 
-Model modules are not implemented yet; keep this package import-safe.
-"""
-
-__all__ = []
+target_metadata = MetaData()

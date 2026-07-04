@@ -11,23 +11,6 @@ from app.schemas.common import MessageResponse
 router = APIRouter(prefix="/api/v1/shipping", tags=["Shipping"])
 
 
-def _shipment_row_to_response(row: dict) -> dict:
-    """Compatibility layer: map DB row to API contract fields.
-    
-    LEGACY COMPATIBILITY:
-    - Returns only backend contract fields
-    - Filters out legacy columns (service_name, label_url, cost, provider, pickup_address, delivery_address, parcels, raw_response)
-    - Full removal deferred to WP-10
-    """
-    legacy_exclude = {"service_name", "label_url", "cost", "provider", "pickup_address", "delivery_address", "parcels", "raw_response"}
-    result = {k: v for k, v in row.items() if k not in legacy_exclude}
-    if result.get("origin") is None:
-        result["origin"] = ""
-    if result.get("destination") is None:
-        result["destination"] = ""
-    return result
-
-
 CARRIERS = {
     "DHL": {"services": ["Express", "Economy"], "base_rate": 25.0},
     "FedEx": {"services": ["International Priority", "International Economy"], "base_rate": 28.0},
@@ -79,7 +62,7 @@ def list_shipments(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [_shipment_row_to_response(dict(r)) for r in rows]
+    return [dict(r) for r in rows]
 
 
 @router.get("/track/{tracking_id}", response_model=ShipmentTrackingResponse)
@@ -109,7 +92,12 @@ def get_shipment(shipment_id: int, current_user: dict = Depends(get_current_user
     conn.close()
     if not row:
         raise HTTPException(status_code=404, detail="Shipment not found")
-    return _shipment_row_to_response(dict(row))
+    result = dict(row)
+    if result.get("origin") is None:
+        result["origin"] = ""
+    if result.get("destination") is None:
+        result["destination"] = ""
+    return result
 
 
 @router.post("/shipments", response_model=ShipmentCreateResponse)

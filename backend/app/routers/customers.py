@@ -13,23 +13,11 @@ router = APIRouter(prefix="/api/v1/customers", tags=["Customers"])
 
 
 def _customer_row_to_response(row: dict) -> dict:
-    """Compatibility layer: map DB row to API contract fields.
-    
-    LEGACY COMPATIBILITY:
-    - Returns only backend contract fields (name, contact_person, etc.)
-    - Falls back to legacy columns (company_name, contact_name) when new columns are NULL
-    - Legacy columns must not appear in API responses
-    - Full removal deferred to WP-10
-    """
     response = {}
-    # Copy schema fields
     for key in ["id", "email", "phone", "address", "city", "country", "tax_id", "import_license", "category", "notes", "status", "created_at", "updated_at", "created_by"]:
         response[key] = row.get(key)
-    # name: contract field, fallback to legacy
     response["name"] = row.get("name") if row.get("name") is not None else row.get("company_name")
-    # contact_person: contract field, fallback to legacy
     response["contact_person"] = row.get("contact_person") if row.get("contact_person") is not None else row.get("contact_name")
-    # name_en (optional)
     response["name_en"] = row.get("name_en")
     return response
 

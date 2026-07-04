@@ -13,15 +13,7 @@ router = APIRouter(prefix="/api/v1/suppliers", tags=["Suppliers"])
 
 
 def _supplier_row_to_response(row: dict) -> dict:
-    """Compatibility layer: map DB row to API contract fields.
-    
-    LEGACY COMPATIBILITY:
-    - Returns only backend contract fields
-    - Filters out legacy columns (type)
-    - Full removal deferred to WP-10
-    """
-    legacy_exclude = {"type", "farm_code", "governorate", "products", "rating"}
-    result = {k: v for k, v in row.items() if k not in legacy_exclude}
+    result = dict(row)
     if isinstance(result.get("certificates"), str):
         try:
             result["certificates"] = json.loads(result["certificates"])

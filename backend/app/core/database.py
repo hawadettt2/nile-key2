@@ -4,6 +4,7 @@
 - Seed Data (بيانات أولية)
 """
 
+import json
 import sqlite3
 from datetime import datetime
 from contextlib import contextmanager
@@ -179,8 +180,7 @@ def _ensure_invoices_schema(c: sqlite3.Cursor):
         "updated_at": "TIMESTAMP",
         "internal_id": "TEXT",
         "eta_uuid": "TEXT",
-        "eta_status": "TEXT",
-        "signed_data": "TEXT"
+        "eta_status": "TEXT"
     })
 
 
@@ -269,18 +269,17 @@ def _create_tables(c: sqlite3.Cursor):
         CREATE TABLE IF NOT EXISTS suppliers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            type TEXT NOT NULL,
-            farm_code TEXT,
-            tax_id TEXT,
+            name_en TEXT,
+            contact_person TEXT,
+            email TEXT,
+            phone TEXT,
             address TEXT,
             city TEXT,
-            governorate TEXT,
-            phone TEXT,
-            email TEXT,
-            products TEXT,
+            country TEXT DEFAULT 'Egypt',
+            tax_id TEXT,
+            commercial_registry TEXT,
             certificates TEXT,
             status TEXT DEFAULT 'active',
-            rating REAL DEFAULT 0.0,
             notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -291,15 +290,18 @@ def _create_tables(c: sqlite3.Cursor):
     c.execute("""
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            company_name TEXT NOT NULL,
-            country TEXT NOT NULL,
-            contact_name TEXT,
+            name TEXT NOT NULL,
+            name_en TEXT,
+            contact_person TEXT,
             email TEXT,
             phone TEXT,
-            website TEXT,
-            products_of_interest TEXT,
-            source TEXT DEFAULT 'manual',
-            trust_score INTEGER DEFAULT 5,
+            address TEXT,
+            city TEXT,
+            country TEXT NOT NULL,
+            tax_id TEXT,
+            import_license TEXT,
+            category TEXT,
+            notes TEXT,
             status TEXT DEFAULT 'active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -312,16 +314,24 @@ def _create_tables(c: sqlite3.Cursor):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             tracking_number TEXT,
             carrier TEXT,
-            service_name TEXT,
             status TEXT DEFAULT 'pending',
-            label_url TEXT,
-            cost REAL,
             currency TEXT,
-            provider TEXT,
-            pickup_address TEXT,
-            delivery_address TEXT,
-            parcels TEXT,
-            raw_response TEXT,
+            reference TEXT,
+            supplier_id INTEGER,
+            customer_id INTEGER,
+            origin TEXT,
+            destination TEXT,
+            service_type TEXT,
+            weight REAL,
+            weight_unit TEXT DEFAULT 'kg',
+            dimensions TEXT,
+            value REAL,
+            items_count INTEGER DEFAULT 1,
+            description TEXT,
+            eta TIMESTAMP,
+            customs_declaration_id INTEGER,
+            shipped_at TIMESTAMP,
+            delivered_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -330,16 +340,20 @@ def _create_tables(c: sqlite3.Cursor):
     c.execute("""
         CREATE TABLE IF NOT EXISTS invoices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            uuid TEXT UNIQUE,
-            issuer_tax_id TEXT,
-            receiver_tax_id TEXT,
-            receiver_name TEXT,
+            invoice_number TEXT,
+            customer_id INTEGER,
+            supplier_id INTEGER,
+            shipment_id INTEGER,
+            subtotal REAL,
+            tax_rate REAL DEFAULT 14.0,
+            tax_amount REAL,
             total REAL,
-            tax_total REAL,
+            currency TEXT DEFAULT 'EGP',
+            issue_date TIMESTAMP,
+            due_date TIMESTAMP,
             status TEXT DEFAULT 'draft',
-            eta_status TEXT,
-            signed_data TEXT,
-            raw_response TEXT,
+            items TEXT,
+            notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -349,12 +363,13 @@ def _create_tables(c: sqlite3.Cursor):
     c.execute("""
         CREATE TABLE IF NOT EXISTS customs_declarations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            declaration_number TEXT,
             shipment_id INTEGER,
-            hs_code TEXT,
-            origin_country TEXT,
-            value REAL,
-            currency TEXT,
-            duties_estimate REAL,
+            hs_code_id INTEGER,
+            origin_country TEXT DEFAULT 'EG',
+            destination_country TEXT,
+            total_value REAL,
+            currency TEXT DEFAULT 'USD',
             status TEXT DEFAULT 'draft',
             documents TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -395,12 +410,16 @@ def _create_tables(c: sqlite3.Cursor):
         CREATE TABLE IF NOT EXISTS resources (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
-            url TEXT,
+            title_ar TEXT,
             description TEXT,
-            category TEXT NOT NULL,
+            description_ar TEXT,
+            resource_type TEXT,
+            category TEXT,
+            url TEXT,
             country TEXT,
-            tags TEXT,
-            is_verified INTEGER DEFAULT 0,
+            metadata TEXT,
+            is_active INTEGER DEFAULT 1,
+            file_path TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -520,6 +539,6 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
         c.execute("SELECT id FROM resources WHERE url = ?", (url,))
         if not c.fetchone():
             c.execute("""
-                INSERT INTO resources (title, url, description, category, country, tags, is_verified)
+                INSERT INTO resources (title, description, category, url, country, metadata, is_active)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (title, url, description, category, country, tags, is_verified))
+            """, (title, description, category, url, country, json.dumps({"tags": tags}) if tags else "{}", 1 if is_verified else 0))

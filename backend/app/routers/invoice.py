@@ -13,22 +13,12 @@ router = APIRouter(prefix="/api/v1/invoices", tags=["E-Invoicing"])
 
 
 def _invoice_row_to_response(row: dict) -> dict:
-    """Compatibility layer: map DB row to API contract fields.
-    
-    LEGACY COMPATIBILITY:
-    - Returns only backend contract fields
-    - Legacy columns uuid, issuer_tax_id, receiver_tax_id, receiver_name, tax_total, signed_data are retained for internal use but not exposed
-    - Full cleanup deferred to WP-10
-    """
-    legacy_exclude = {"uuid", "issuer_tax_id", "receiver_tax_id", "receiver_name", "tax_total", "signed_data", "raw_response"}
-    result = {k: v for k, v in row.items() if k not in legacy_exclude}
-    # Parse items from JSON string to list
+    result = dict(row)
     if isinstance(result.get("items"), str):
         try:
             result["items"] = json.loads(result["items"])
         except (json.JSONDecodeError, TypeError):
             result["items"] = []
-    # Provide defaults for required fields that may be NULL in legacy rows
     if result.get("subtotal") is None:
         result["subtotal"] = 0.0
     if result.get("total") is None:
