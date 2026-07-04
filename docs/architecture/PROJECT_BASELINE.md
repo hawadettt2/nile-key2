@@ -1,46 +1,32 @@
 # Project Baseline
 
-**Generated:** 2026-07-02
-**Branch:** main
+**Generated:** 2026-07-04
+**Branch:** wp-13
+**Latest commit:** 56fc391 WP-10 + 87267d3 refactor
 
 ---
 
 ## 1. Current Repository Status
 
-- **Modified files:** 10 (backend/.env.example, backend/app/core/database.py, 8 routers)
-- **Untracked files:** .kilo/
-- **Branch status:** Up to date with origin/main (no unpushed changes)
-- **Python syntax:** All modified files pass syntax check
+- **Modified files:** Frontend build verified, 21 pytest tests passing
+- **Untracked files:** None relevant
+- **Branch status:** Latest work pushed to `origin/wp-13`
+- **Python syntax:** Verified by pytest run
 
 ---
 
 ## 2. Current Git Status
 
-```
- M backend/.env.example
- M backend/app/core/database.py
- M backend/app/routers/auth.py
- M backend/app/routers/customers.py
- M backend/app/routers/customs.py
- M backend/app/routers/documents.py
- M backend/app/routers/invoice.py
- M backend/app/routers/resources.py
- M backend/app/routers/shipping.py
- M backend/app/routers/suppliers.py
-
-Untracked:
-?? .kilo/
-```
+Project is tracked in Git with committed work through WP-10.
 
 ---
 
 ## 3. Current Backend Startup Status
 
-- **Entry point:** backend/main.py
-- **Config:** Modified (DEBUG changed to str type)
-- **Database:** Modified (get_db() function added)
-- **Security:** Modified (password algorithm changed)
-- **Models:** Modified (empty stub maintained)
+- **Entry point:** `backend/main.py`
+- **Config:** `SECRET_KEY` required from environment
+- **Database:** SQLite via raw `sqlite3` module
+- **Security:** JWT + bcrypt
 - **Import status:** All modules import cleanly
 - **Startup blockers:** None detected
 
@@ -48,18 +34,18 @@ Untracked:
 
 ## 4. Current Frontend Build Status
 
-- **Entry point:** frontend/src/main.tsx
-- **Framework:** React 18 + Vite + TypeScript
-- **Dependencies:** package-lock.json updated
-- **Build status:** Not verified (requires npm install)
+- **Entry point:** `frontend/src/main.tsx`
+- **Framework:** React 18 + TypeScript + Vite + Tailwind CSS
+- **Build status:** `npm run build` passes
+- **Lint:** `npm run lint` present
 
 ---
 
 ## 5. Current Deployment Status
 
-- **Containerization:** Not available (no Dockerfile)
-- **Environment:** .env.example exists but incomplete
-- **Hosting target:** PythonAnywhere Free + GitHub Pages (per PLAN.md)
+- **Containerization:** Dockerfiles present for backend and frontend; `docker-compose.yml` present
+- **Environment:** `.env.example` aligned with `config.py`
+- **Hosting targets:** Docker Compose, GitHub Pages, PythonAnywhere Free
 
 ---
 
@@ -71,8 +57,7 @@ Untracked:
 | Hardcoded SECRET_KEY | ✅ Resolved (WP-07 complete) | N/A |
 | Wildcard CORS | ✅ Resolved (WP-07 complete) | N/A |
 | Missing services layer | ⚠️ Deferred to WP-12 | Architectural debt |
-
----
+| Docker validation pending | ⏳ Pending WP-11 | Deployment risk |
 
 ---
 
@@ -80,84 +65,55 @@ Untracked:
 
 | Debt | Location | Charter Violation |
 |------|----------|-------------------|
-| Schema-DB mismatch | database.py vs schemas/* | Section 9 |
 | Logic in routers | All routers | Section 10 |
-| Empty models package | models/__init__.py | Section 16 |
-| Hardcoded secrets | config.py | Section 12 |
-| Wildcard CORS | main.py | Section 12 |
-
-**Resolved:** Code duplication (WP-09 complete - execute_update() extracted)
-
----
+| Empty services package | `services/__init__.py` | Section 10/16 |
+| Raw SQL everywhere | `database.py`, routers | Maintainability |
+| Manual frontend types | `frontend/src/types/api.d.ts` | Section 3 |
+| No rate limiting | Missing | PLAN.md requirement |
 
 ---
 
-## 8. Files Modified Before Phase 2
-
-| File | Type of Change | Reason |
-|------|----------------|--------|
-| backend/app/core/config.py | DEBUG type: bool→str | Pydantic-settings compatibility |
-| backend/app/core/database.py | Added get_db() function | Router code requirement |
-| backend/app/core/security.py | bcrypt→pbkdf2_sha256 | Algorithm change (verify intent) |
-| backend/app/models/__init__.py | Removed imports | Was causing ImportError |
-
-**All changes are syntactically valid and safe to keep.**
-
----
-
-## 9. Current Source of Truth
+## 8. Source of Truth
 
 Per ARCHITECTURE_CHARTER.md Section 3, priority must never be reversed:
 
-1. **Pydantic Schemas** (`backend/app/schemas/`) - ✅ Defined
-2. FastAPI API Contract - ✅ Generated
-3. Business Rules - ⚠️ In routers (violates charter)
-4. **Database Schema** - ❌ MISMATCH (violates charter)
-5. Frontend Types - ⚠️ Manual (violates charter)
-6. Documentation - ⚠️ Partial
+1. **Pydantic Schemas** (`backend/app/schemas/`) — ✅ Defined
+2. FastAPI API Contract — ✅ Generated
+3. Business Rules — ⚠️ In routers (violates charter)
+4. **Database Schema** — ✅ Aligned after WP-02 + WP-10
+5. Frontend Types — ⚠️ Manual (violates charter)
+6. Documentation — ⚠️ Partially stale; updates in progress
 
 ---
 
-## 10. Approved Architecture Documents
+## 9. Approved Architecture Documents
 
-- `ARCHITECTURE_CHARTER.md` - Official Engineering Constitution
-- `docs/architecture/REPOSITORY_INTELLIGENCE.md` - Phase 1.5 Intelligence Report
-- `docs/architecture/WORK_PACKAGE_PLAN.md` - Lifecycle-ordered Work Packages
-- `.kilo/plans/1782780073494-recovery-checkpoint.md` - Recovery Checkpoint Report
-
----
-
-## 11. Approved Work Package Plan
-
-Work Package Plan approved with 12 packages in software lifecycle order:
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
-
-All packages are independently testable with defined rollback strategies.
+- `ARCHITECTURE_CHARTER.md` — Official Engineering Constitution
+- `docs/architecture/REPOSITORY_INTELLIGENCE.md` — Phase 1.5 Intelligence Report
+- `docs/architecture/WORK_PACKAGE_PLAN.md` — Lifecycle-ordered Work Packages
+- `docs/architecture/ENGINEERING_MEMORY.md` — Project state and decisions
+- `.kilo/plans/` — Kilo session plans
 
 ---
 
-## 12. Success Criteria for Completing the Project
+## 10. Success Criteria for Project Completion
 
 Per ARCHITECTURE_CHARTER.md Section 18 Quality Gates:
 
 - [x] Backend builds and starts
-- [ ] Frontend builds
-- [x] Core routes work (all 32 endpoints)
-- [x] Authentication works (login/register/refresh)
+- [x] Frontend builds
+- [x] Core routes work
+- [x] Authentication works
 - [x] No broken imports
 - [x] No circular dependencies
 - [x] No hidden runtime errors
 - [ ] All WP-12 deliverables complete
 
 Additional criteria:
-- [ ] Database schema matches Pydantic schemas
+- [x] Database schema matches Pydantic schemas
 - [x] No hardcoded secrets
-- [x] CORS restricts to ALLOWED_ORIGINS
+- [x] CORS restricts to configured origins
 - [ ] Services layer implemented
 - [x] Code duplication eliminated
-- [ ] Migrations available (WP-10)
-- [ ] Docker deployment works (WP-11)
-
----
-
-*Baseline established. Ready for Phase 2 implementation.*
+- [x] Migrations available (WP-10)
+- [ ] Docker deployment validated (WP-11)

@@ -1,12 +1,14 @@
 # Work Package Plan (Software Lifecycle Order)
 
-**Version:** 1.2
-**Generated:** 2026-06-30
-**Based on:** ARCHITECTURE_CHARTER.md, REPOSITORY_INTELLIGENCE.md, RECOVERY_CHECKPOINT_REPORT.md
+**Version:** 1.3
+**Generated:** 2026-07-04
+**Based on:** ARCHITECTURE_CHARTER.md, REPOSITORY_INTELLIGENCE.md, ENGINEERING_MEMORY.md
 
 ---
 
 ## WP-01: Backend Runtime Stability
+
+**Status:** ✅ Complete
 
 **Objective:** Ensure backend starts without runtime blockers.
 
@@ -65,8 +67,8 @@
 
 **Rollback:** 
 - WP-02A: `git checkout a0e87e7 -- backend/app/core/database.py`
-- WP-02B: `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/suppliers.py`
-- WP-02C: `git checkout 6296d0a -- backend/app/core/database.py backend/app/routers/customers.py`
+- WP-02B: `git checkout 94ae639 -- backend/app/core/database.py backend/app/routers/suppliers.py`
+- WP-02C: `git checkout 5cec3ca -- backend/app/core/database.py backend/app/routers/customers.py`
 
 ---
 
@@ -76,9 +78,9 @@
 
 **Objective:** Ensure authentication system works with correct password algorithm.
 
-**Why It Exists:** Security.py changed from bcrypt to pbkdf2_sha256 (verify intent).
+**Why It Exists:** Security.py aligned to bcrypt and OAuth2 status codes verified.
 
-**Scope:** Verify/fix password hashing to match requirements.txt (bcrypt) and OAuth2 status codes.
+**Scope:** Verify password hashing matches requirements.txt (bcrypt) and OAuth2 status codes.
 
 **Files In Scope:**
 - backend/app/core/security.py
@@ -103,7 +105,7 @@
 
 **Objective:** Fix all CRUD operations to work with aligned schema.
 
-**Why It Exists:** Routes use schema fields that don't exist in DB.
+**Why It Exists:** Routes use schema fields that must match DB columns.
 
 **Scope:** Update router handlers to use correct column names after WP-02.
 
@@ -200,10 +202,10 @@
 | Patch | Entity | Status | Notes |
 |-------|--------|--------|-------|
 | Patch-1 | Authentication | ✅ Complete | Login returns JWT token |
-| Patch-2 | Suppliers | ✅ Complete | CRUD verified, legacy compatibility maintained |
-| Patch-3 | Customers | ✅ Complete | CRUD verified, legacy compatibility maintained |
+| Patch-2 | Suppliers | ✅ Complete | CRUD verified |
+| Patch-3 | Customers | ✅ Complete | CRUD verified |
 | Patch-4 | Resources | ✅ Complete | CRUD verified |
-| Patch-5 | Documents | ✅ Complete | CRUD verified, metadata repair applied |
+| Patch-5 | Documents | ✅ Complete | Metadata repair applied |
 | Patch-6 | Shipping | ✅ Complete | Router verified, ADR-0001 applied |
 | Patch-7 | Invoices | ✅ Complete | Legacy schema compatibility verified |
 | Patch-8 | Customs | ✅ Complete | All endpoints verified, DELETE absent by design |
@@ -240,7 +242,9 @@
 
 ## WP-08: Architecture Cleanup
 
-**Objective:** Prepare architecture for refactoring.
+**Status:** ✅ COMPLETED
+
+**Objective:** Prepare architecture for refactoring and migration system.
 
 **Why It Exists:** Charter requires cleanup before refactoring (Sections 8, 10, 16).
 
@@ -250,14 +254,13 @@
 - backend/app/services/__init__.py
 - backend/app/core/database.py
 - backend/.env.example
-- backend/requirements.txt
 
 **Dependencies:** WP-01, WP-02
 
 **Validation:**
-1. `from app.services import *` imports cleanly
-2. Helper function works for UPDATE queries
-3. .env.example has all config variables
+1. `from app.services import *` imports cleanly ✅
+2. Helper function works for UPDATE queries ✅
+3. .env.example has all config variables ✅
 
 **Rollback:** Remove added functions, revert .env.example
 
@@ -265,11 +268,13 @@
 
 ## WP-09: Refactoring
 
+**Status:** ✅ COMPLETED
+
 **Objective:** Extract duplicated logic into reusable components.
 
 **Why It Exists:** Charter Section 8 prohibits code duplication.
 
-**Scope:** Refactor 8 routers to use shared SQL query builder.
+**Scope:** Refactor 8 routers to use shared SQL query builder and remove legacy compatibility shims.
 
 **Files In Scope:**
 - backend/app/routers/auth.py
@@ -285,9 +290,10 @@
 **Dependencies:** WP-08
 
 **Validation:**
-1. All endpoints still work
-2. No code duplication in UPDATE patterns
-3. Cleaner router code
+1. All endpoints still work ✅
+2. No code duplication in UPDATE patterns ✅
+3. Cleaner router code ✅
+4. Legacy compatibility filters removed ✅
 
 **Rollback:** `git checkout backend/app/routers/`
 
@@ -295,46 +301,57 @@
 
 ## WP-10: Database Migration System
 
-**Objective:** Add Alembic migrations per charter Phase 3.
+**Status:** ✅ COMPLETED
+
+**Objective:** Add Alembic migrations per charter Phase 3 and remove legacy columns.
 
 **Why It Exists:** Charter requires migrations as legal evolution mechanism.
 
-**Scope:** Initialize Alembic, capture current schema as initial migration.
+**Scope:** Initialize Alembic, capture current schema as initial migration, remove legacy columns.
 
 **Files In Scope:**
-- alembic/ directory
 - alembic.ini
-- requirements.txt
+- backend/alembic/ directory
 - backend/app/core/database.py
+- backend/app/routers/*.py
 
-**Dependencies:** WP-02
+**Dependencies:** WP-02, WP-09
 
 **Validation:**
-1. `alembic upgrade head` applies migration
-2. Migration reversible
-3. Migration matches current schema
+1. `alembic upgrade head` applies migration on existing schema ✅
+2. Migration reversible ✅
+3. `invoices.uuid` removed ✅
+4. Legacy columns dropped via SQLite-safe table rebuild where needed ✅
 
-**Rollback:** Remove alembic directory
+**Execution Notes:**
+- `init_db()` owns initial schema creation
+- Alembic migrations handle destructive post-init cleanup only
+- Initial migration revision is empty (`pass`) because schema is created by `init_db()`
+
+**Rollback:** Remove alembic directory and revert routers/models/config changes
 
 ---
 
 ## WP-11: Deployment Validation
 
+**Status:** ⏳ In Progress
+
 **Objective:** Validate deployment configuration.
 
 **Why It Exists:** Charter Phase 6 requires deployment validation.
 
-**Scope:** Add Dockerfile, verify containerization.
+**Scope:** Add Dockerfiles, verify containerization.
 
 **Files In Scope:**
-- Dockerfile
+- backend/Dockerfile
+- frontend/Dockerfile
 - docker-compose.yml
 - .dockerignore
 - backend/requirements.txt
 - frontend/package.json
 - backend/app/core/config.py
 
-**Dependencies:** WP-09
+**Dependencies:** WP-10
 
 **Validation:**
 1. `docker compose up` starts both services
@@ -346,6 +363,8 @@
 ---
 
 ## WP-12: Production Readiness
+
+**Status:** ☐ Not Started
 
 **Objective:** Final production hardening per charter Phase 7.
 
@@ -372,7 +391,7 @@
 
 ## Execution Sequence
 
-WP-04 → WP-05 → WP-06 → **WP-07 COMPLETE** → WP-08 → WP-09 → WP-10 → WP-11 → WP-12
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12
 
 ---
 
@@ -393,4 +412,11 @@ WP-04 → WP-05 → WP-06 → **WP-07 COMPLETE** → WP-08 → WP-09 → WP-10 �
 | WP-02B | `git checkout 94ae639 -- backend/app/core/database.py backend/app/routers/suppliers.py` |
 | WP-02C | `git checkout 5cec3ca -- backend/app/core/database.py backend/app/routers/customers.py` |
 
-*End of Plan*
+---
+
+## WP-10 Rollback Points
+
+| WP | Rollback Command |
+|----|------------------|
+| WP-10 | `git checkout 9f6e6d58ca0f` |
+

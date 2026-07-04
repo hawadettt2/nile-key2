@@ -1,4 +1,4 @@
-# Nile Key Platform v1.0
+# Nile Key Platform
 
 ## منصة مفتاح النيل الرقمية
 
@@ -18,12 +18,13 @@ nile-key2/
 │   ├── main.py          # Entry point
 │   ├── requirements.txt
 │   ├── .env.example
+│   ├── Dockerfile
 │   └── app/
 │       ├── core/        # Config, Database, Security
 │       ├── models/      # Data models
 │       ├── schemas/     # Pydantic schemas
 │       ├── routers/     # API endpoints (8 services)
-│       └── services/    # Business logic
+│       └── services/    # Business logic (stub)
 └── frontend/            # React frontend
     ├── src/
     │   ├── App.tsx
@@ -33,6 +34,7 @@ nile-key2/
     │   ├── store/       # Auth store (Zustand)
     │   ├── locales/     # i18n (ar/en)
     │   └── lib/         # i18n config
+    ├── Dockerfile
     ├── package.json
     └── vite.config.ts
 ```
@@ -61,31 +63,6 @@ nile-key2/
 
 
 
- ## Backend (FastAPI) خدمات
-
-🔐 Auth	routers/auth.py	تسجيل دخول، JWT، أدوار
-🏭 Suppliers	routers/suppliers.py	CRUD + شهادات
-👥 Customers	routers/customers.py	CRUD + استيراد CSV
-🚢 Shipping	routers/shipping.py	أسعار، تتبع، شحنات
-🧾 Invoices	routers/invoice.py	إنشاء، تحقق، إلغاء
-🛃 Customs	routers/customs.py	HS Codes، حساب رسوم
-📄 Documents	routers/documents.py	رفع، قوالب
-🌐 Resources	routers/resources.py	أدلة، فرص
-
-Frontend (React) — صفحات كاملة
-📊 Dashboard — إحصائيات + رسوم بيانية
-🔐 Login — تسجيل دخول/حساب جديد
-🏭 Suppliers — إدارة الموردين
-👥 Customers — إدارة العملاء + CSV
-🚢 Shipments — شحنات + أسعار
-🧾 Invoices — فواتير + أصناف
-🛃 Customs — جمارك + HS Codes
-📄 Documents — مستندات
-🌐 Resources — موارد
-
-
-
-
 ## Quick Start
 
 ### Backend
@@ -103,19 +80,15 @@ npm install
 npm run dev
 ```
 
-### Default Login
-- Username: `admin`
-- Password: `admin123`
-
 ## Deployment
 
 | Component | Platform | Cost |
 |-----------|----------|------|
-| Frontend | GitHub Pages | Free |
-| Backend | PythonAnywhere | Free |
+| Frontend | GitHub Pages / Docker | Free |
+| Backend | Docker Compose / PythonAnywhere | Free |
 
 See `DEPLOYMENT.md` for details.
 
 ---
 
-**Built:** 2026-06-28 | **Version:** 1.0.0-MVP
+**Built:** 2026-07-04 | **Version:** 1.1.0-MVP

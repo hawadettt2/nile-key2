@@ -1,19 +1,19 @@
 # خطة البناء — منصة مفتاح النيل الرقمية
 # Nile Key Digital Platform — Build Plan
 
-**التاريخ:** 2026-06-28  
-**الإصدار:** 1.0.0-MVP  
-**المعمار:** Microservices + Static Frontend  
+**التاريخ:** 2026-07-04
+**الإصدار:** 1.1.0-MVP
+**المعمار:** FastAPI Backend + React Frontend + SQLite
 **المنصة الأساسية:** FastAPI + React + SQLite
 
 ---
 
 ## 1. الهوية الاستراتيجية
 
-**العميل:** شركة مفتاح النيل للاستثمار والتجارة الدولية ذ.م.م  
-**النشاط:** تصدير المنتجات المصرية (خضار، فاكهة، منتجات غذائية)  
-**الترخيص:** مسجلة ومرخصة من هيئة الاستثمار المصرية  
-**الرؤية:** التحول إلى منصة رقمية متكاملة وبوابة استراتيجية للصادرات المصرية  
+**العميل:** شركة مفتاح النيل للاستثمار والتجارة الدولية ذ.م.م
+**النشاط:** تصدير المنتجات المصرية (خضار، فاكهة، منتجات غذائية)
+**الترخيص:** مسجلة ومرخصة من هيئة الاستثمار المصرية
+**الرؤية:** التحول إلى منصة رقمية متكاملة وبوابة استراتيجية للصادرات المصرية
 **الدومين:** nile-key.com
 
 ---
@@ -25,10 +25,10 @@
 3. ❌ لا MariaDB/Redis/Bench
 4. ❌ لا بطاقة فيزا دولية
 5. ✅ Frontend مجاني 100% على GitHub Pages
-6. ✅ Backend بتكلفة صفرية على PythonAnywhere Free
+6. ✅ Backend قابل للنشر على Docker / PythonAnywhere Free
 7. ✅ استخراج منطق HTTP/API من تطبيقات Frappe وإعادة كتابته
 8. ✅ واجهة عربية/إنجليزية (RTL)
-9. ⏰ الوقت حرج — MVP فوري
+9. ✅ البنية تحتاج التحقق قبل الإنتاج (Docker + توثيق)
 
 ---
 
@@ -36,35 +36,35 @@
 
 ```
 ┌─────────────────────────────────────────┐
-│         GitHub Pages                     │
+│         GitHub Pages / Docker            │
 │     (React App - Static Hosting)         │
 │           nile-key.com                   │
 └──────────────────┬───────────────────────┘
-                   │
-        ┌──────────▼──────────┐
-        │    API Gateway       │
-        │   FastAPI Backend    │
-        │    PythonAnywhere    │
-        └──────────┬──────────┘
-                   │
-    ┌──────────────┼──────────────┐
-    │              │              │
+                    │
+         ┌──────────▼──────────┐
+         │    API Gateway       │
+         │   FastAPI Backend    │
+         │   Docker / PA Free   │
+         └──────────┬──────────┘
+                    │
+     ┌──────────────┼──────────────┐
+     │              │              │
 ┌───▼────┐  ┌────▼────┐  ┌────▼────┐
 │Shipping│  │E-Invoice│  │Customs  │
 │Service │  │Service  │  │Service  │
 │(SQLite)│  │(SQLite) │  │(SQLite) │
 └────────┘  └─────────┘  └─────────┘
-    │              │              │
-    └──────────────┼──────────────┘
-                   │
-        ┌──────────▼──────────┐
-        │   Core Services      │
-        │  - Auth/Roles        │
-        │  - Suppliers         │
-        │  - Customers         │
-        │  - Documents         │
-        │  - Resources         │
-        └──────────────────────┘
+     │              │              │
+     └──────────────┼──────────────┘
+                    │
+         ┌──────────▼──────────┐
+         │   Core Services      │
+         │  - Auth/Roles        │
+         │  - Suppliers         │
+         │  - Customers         │
+         │  - Documents         │
+         │  - Resources         │
+         └──────────────────────┘
 ```
 
 ---
@@ -73,16 +73,17 @@
 
 | الطبقة | التقنية |
 |--------|---------|
-| Frontend | React 18 + Vite + Tailwind CSS |
+| Frontend | React 18 + Vite + Tailwind CSS + shadcn/ui |
 | Backend | Python FastAPI + Uvicorn |
 | Database | SQLite (MVP) → PostgreSQL (Production) |
-| Auth | JWT (PyJWT) |
+| Auth | JWT (PyJWT) + bcrypt |
 | HTTP Client | httpx (Backend) + axios (Frontend) |
-| Validation | Pydantic (Backend) + Zod (Frontend) |
+| Validation | Pydantic (Backend) |
 | State | Zustand + React Query |
 | i18n | i18next (ar/en) |
 | Charts | Recharts |
 | Tables | TanStack Table |
+| Containerization | Docker + Docker Compose |
 
 ---
 
@@ -117,16 +118,25 @@
 
 ## 6. قاعدة البيانات — الجداول
 
-- users, roles, suppliers, customers, shipments, invoices, customs_declarations, hs_codes, documents, resources, audit_logs, system_settings
+- users, roles, suppliers, customers, shipments, invoices, customs_declarations, hs_codes, documents, resources
 
 ---
 
-## 7. خارطة الطريق (Roadmap)
+## 7. تهيئة قاعدة البيانات
+
+1. التطبيق يستدعي `init_db()` عند بدء التشغيل
+2. `init_db()` ينشئ الجداول لو غير موجودة، ويضيف الأعمدة الجديدة عبر `_ensure_*_schema()`، ويُدخل البيانات الأولية
+3. بعد ذلك تعمل ترحيلات Alembic للتنظيف وإزالة الأعمدة القديمة
+
+---
+
+## 8. خارطة الطريق (Roadmap)
 
 ### المرحلة 1: الأساس ✅
 - ✅ إنشاء هيكل المشروع
 - ✅ بناء Auth Service + Database Schema + Seed
 - ✅ إعداد FastAPI main app + CORS
+- ✅ ترحيلات Alembic + تنظيف الأعمدة القديمة
 
 ### المرحلة 2: الخدمات الأساسية ✅
 - ✅ Shipping Service + E-Invoicing + Dashboard
@@ -135,23 +145,26 @@
 - ✅ Suppliers + Customers + Documents + Customs
 
 ### المرحلة 4: التكامل والنشر ⏳
-- ☐ GitHub Pages + PythonAnywhere + Domain
+- ⏳ التحقق من Docker Compose
+- ⏳ تحديث التوثيق الكامل
+- ⏳ التحقق النهائي قبل الإنتاج
 
 ---
 
-## 8. الاستضافة
-- **Frontend:** GitHub Pages (مجاني)
-- **Backend:** PythonAnywhere Free Tier (مجاني)
+## 9. الاستضافة
+- **Frontend:** GitHub Pages أو Docker/Nginx
+- **Backend:** Docker Compose أو PythonAnywhere Free Tier
 
 ---
 
-## 9. الأمان
+## 10. الأمان
 - JWT: access_token (24h) + refresh_token (7d)
-- CORS: مسموح فقط لـ nile-key.com و localhost
-- Rate Limiting: 100 طلب/دقيقة
+- CORS: يقرأ من `ALLOWED_ORIGINS` في الإعدادات
+- SECRET_KEY: مطلوب من البيئة؛ يفشل التطبيق عند غيابه
+- Rate Limiting: مطلوب لكن غير مطبق حالياً
 - File Upload: max 10MB
 
 ---
 
-## 10. ملاحظة أخيرة
+## 11. ملاحظة أخيرة
 هذا الملف هو المرجع الوحيد للمشروع. أي تغيير يُسجل هنا أولاً.
