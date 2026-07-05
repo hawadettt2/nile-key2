@@ -1,6 +1,6 @@
 ﻿# Engineering Memory
 
-**Last Updated:** 2026-07-04
+**Last Updated:** 2026-07-05
 **Project:** Nile Key Platform
 **Architecture Charter:** Governing document (must not be violated)
 
@@ -33,6 +33,8 @@
 | WP-15 | ✅ Complete | 1d545b1 | Complete service layer extraction for resources, customs, documents, shipping, invoices |
 | WP-16A | ⏳ Integrated | — | Executed as part of WP-15/WP-16B verification |
 | WP-16B | ✅ Complete | b4ff64f | Introduce shared service base infrastructure (base.py, standardized helpers) |
+| WP-17A | ✅ Complete | cdb8bb9 | Expand API endpoint coverage: 48 new tests across 6 domains |
+| WP-17B | ✅ Complete | working tree | Add service-layer unit tests: 59 new tests across 7 modules; production code unchanged |
 
 ---
 
@@ -137,11 +139,11 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 |-----------|--------|
 | Backend | ✅ Starts; health endpoint healthy |
 | Frontend | ✅ Builds (`npm run build` passes) |
-| Tests | ✅ 21 pytest tests passing |
+| Tests | ✅ 170 pytest tests passing (21 original + 48 WP-17A endpoint + 59 WP-17B service unit + 42 domain integration) |
 | Alembic | ✅ Migration chain functional |
 | Docker | ⏳ Present; local validation requires Docker daemon |
 | Services layer | ✅ Implemented (7 domains with shared base.py) |
 
 ---
 
-*Memory Last Updated: WP-10 complete - migrations initialized, legacy columns removed.*
+*Memory Last Updated: WP-17B complete - 170 tests passing, service-layer unit tests added.*

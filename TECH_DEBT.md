@@ -1,6 +1,6 @@
 # Technical Debt
 
-**Last Updated:** 2026-07-04
+**Last Updated:** 2026-07-05
 **Branch:** wp-13
 
 ---
@@ -9,7 +9,7 @@
 
 | Priority | Debt | Location | Notes |
 |----------|------|----------|-------|
-| HIGH | Documentation drift | Multiple docs | Residual drift after WP-16B; in progress |
+| HIGH | Documentation drift | Multiple docs | Resolved in WP-17A/WP-17B |
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
 | MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | `docker compose up` not validated in this environment |
 | MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |

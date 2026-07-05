@@ -61,6 +61,14 @@ nile-key2/
 7. **Documents** — Upload, templates
 8. **Resources** — Guides, regulations, opportunities
 
+## Testing
+
+- **170 passing pytest tests** covering:
+  - Auth and RBAC
+  - API endpoint coverage for all 8 domains
+  - Service-layer unit tests for all 7 business services
+- Run backend tests: `cd backend && python -m pytest tests/ -v`
+
 
 
 ## Quick Start

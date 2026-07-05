@@ -2,20 +2,22 @@
 
 **Generated:** 2026-07-05
 **Branch:** wp-13
-**Latest commit:** b4ff64f refactor: introduce shared service base infrastructure (WP-16B)
+**Latest commit:** cdb8bb9 test: expand API endpoint coverage across all domains (WP-17A)
+**Working tree:** Includes untracked service-layer unit tests for WP-17B
+**Baseline:** baseline-wp17b (pending tag)
 
 ---
 
 ## 1. Current Repository Status
 
-- **Modified files:** Working tree clean
-- **Untracked files:** None relevant
-- **Branch status:** Latest work pushed to `origin/wp-13`
-- **Tag:** `baseline-wp16b` points to current HEAD
+- **Modified files:** None
+- **Untracked files:** `backend/tests/test_services/` (WP-17B service-layer unit tests)
+- **Branch status:** Latest work on `origin/wp-13`
+- **Tag:** `baseline-wp17a` exists; `baseline-wp17b` pending
 
 ## 2. Current Git Status
 
-Project is tracked in Git with committed work through WP-16B.
+Project is tracked in Git with committed work through WP-17A. Working tree includes WP-17B service-layer unit tests.
 
 ## 3. Current Backend Startup Status
 
@@ -91,7 +93,7 @@ Per ARCHITECTURE_CHARTER.md Section 18 Quality Gates:
 - [x] No broken imports
 - [x] No circular dependencies
 - [x] No hidden runtime errors
-- [x] All WP-16B deliverables complete
+- [x] All WP-17B deliverables complete
 
 Additional criteria:
 - [x] Database schema matches Pydantic schemas

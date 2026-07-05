@@ -497,9 +497,68 @@
 
 ---
 
+## WP-17A: API Coverage Expansion
+
+**Status:** ✅ Complete
+
+**Objective:** Expand endpoint integration test coverage to previously untested business domains.
+
+**Why It Exists:** Only Auth and Suppliers had automated endpoint coverage after WP-06; 6 domains remained untested.
+
+**Scope:** Add pytest endpoint tests in `backend/tests/test_customers.py`, `test_resources.py`, `test_customs.py`, `test_documents.py`, `test_shipping.py`, `test_invoices.py`.
+
+**Files In Scope:**
+- backend/tests/test_customers.py
+- backend/tests/test_resources.py
+- backend/tests/test_customs.py
+- backend/tests/test_documents.py
+- backend/tests/test_shipping.py
+- backend/tests/test_invoices.py
+
+**Dependencies:** WP-16B
+
+**Validation:**
+1. 48 new endpoint tests added
+2. Full suite passes
+3. No production code modified
+
+**Rollback:** Remove new endpoint test files
+
+---
+
+## WP-17B: Service Layer Unit Tests
+
+**Status:** ✅ Complete
+
+**Objective:** Add unit tests for business logic in service layer using `unittest.mock`.
+
+**Why It Exists:** Endpoint tests alone do not isolate row-mapping, JSON coercion, or deterministic business logic paths.
+
+**Scope:** Add pytest unit tests in `backend/tests/test_services/` for all 7 service modules.
+
+**Files In Scope:**
+- backend/tests/test_services/test_supplier_service.py
+- backend/tests/test_services/test_customer_service.py
+- backend/tests/test_services/test_customs_service.py
+- backend/tests/test_services/test_document_service.py
+- backend/tests/test_services/test_resource_service.py
+- backend/tests/test_services/test_shipping_service.py
+- backend/tests/test_services/test_invoice_service.py
+
+**Dependencies:** WP-17A
+
+**Validation:**
+1. 59 new service-layer unit tests added
+2. Full suite passes
+3. No production code modified
+
+**Rollback:** Remove `backend/tests/test_services/`
+
+---
+
 ## Execution Sequence
 
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B
 
 ---
 
@@ -514,6 +573,8 @@ WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → 
 | WP-13A | `git checkout c66087e` or `git checkout 3351a4d` |
 | WP-15 | `git checkout 1d545b1` |
 | WP-16B | `git checkout b4ff64f` |
+| WP-17A | Remove `backend/tests/test_customers.py`, `backend/tests/test_resources.py`, `backend/tests/test_customs.py`, `backend/tests/test_documents.py`, `backend/tests/test_shipping.py`, `backend/tests/test_invoices.py` |
+| WP-17B | Remove `backend/tests/test_services/` |
 
 ---
 
