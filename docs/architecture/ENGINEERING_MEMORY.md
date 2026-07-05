@@ -26,6 +26,13 @@
 | WP-08 | ✅ Complete | - | .env.example aligned with config.py; execute_update() helper added |
 | WP-09 | ✅ Complete | - | Extracted execute_update() helper; integrated into 8 routers; ~120 lines removed |
 | WP-10 | ✅ Complete | 56fc391 | Alembic migrations initialized; legacy column cleanup committed; invoices.uuid removed |
+| WP-11 | ✅ Complete | 08a9924 | Synchronize project documentation with current implementation |
+| WP-12 | ✅ Complete | 54f7c49 | Harden Docker deployment and finalize Compose configuration |
+| WP-13A | ✅ Complete | c66087e / 3351a4d | Extract supplier and customer business logic into service layer |
+| WP-14 | ⏳ Integrated | — | Combined into WP-15 |
+| WP-15 | ✅ Complete | 1d545b1 | Complete service layer extraction for resources, customs, documents, shipping, invoices |
+| WP-16A | ⏳ Integrated | — | Executed as part of WP-15/WP-16B verification |
+| WP-16B | ✅ Complete | b4ff64f | Introduce shared service base infrastructure (base.py, standardized helpers) |
 
 ---
 
@@ -33,6 +40,12 @@
 
 | Hash | Message | Date |
 |------|---------|------|
+| b4ff64f | refactor: introduce shared service base infrastructure (WP-16B) | 2026-07-05 |
+| 1d545b1 | refactor: complete service layer extraction (WP-15) | 2026-07-05 |
+| 3351a4d | WP-13A: Extract customer business logic into service layer | 2026-07-05 |
+| c66087e | WP-13A: Extract supplier business logic into service layer | 2026-07-05 |
+| 54f7c49 | WP-12: Harden Docker deployment and finalize Compose configuration | 2026-07-05 |
+| 08a9924 | WP-11: Synchronize project documentation with current implementation | 2026-07-05 |
 | 56fc391 | WP-10: Repair Alembic migration history for invoices schema | 2026-07-04 |
 | 87267d3 | refactor: align app-layer schema and router mappers with cleaned database structure | 2026-07-04 |
 | dede827 | WP-09: Consolidate SQL UPDATE operations into execute_update helper | 2026-07-03 |
@@ -44,7 +57,6 @@
 | 3e6fcc8 | test(backend): add pytest infrastructure and health smoke test | 2026-07-03 |
 | a83228b | feat(frontend): profile, CRUD updates, detail views, token refresh | 2026-07-02 |
 | cfd84bc | WP-11 Patch-2: Add Docker Compose orchestration | 2026-07-02 |
-| WP-06 | ✅ COMPLETED - All integration patches verified (Patch-1 through Patch-8) | 2026-07-01 |
 | dbe1ef4 | WP-03: Align authentication status codes with OAuth2 standard | 2026-06-30 |
 
 ---
@@ -114,9 +126,8 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Risk Level | Issue | Status |
 |------------|-------|--------|
 | 🔴 CRITICAL | Database schema mismatch | ✅ WP-02A-H complete - all entities aligned |
-| 🟡 MEDIUM | Empty services layer | Deferred to WP-12 |
-| 🟡 MEDIUM | Docker deployment unvalidated | Pending WP-11 |
-| 🟢 LOW | Manual frontend types | Deferred to WP-12 |
+| 🟡 MEDIUM | Docker deployment unvalidated | Pending local environment validation |
+| 🟢 LOW | Manual frontend types | ✅ Automatically generated types match API |
 
 ---
 
@@ -128,8 +139,8 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Frontend | ✅ Builds (`npm run build` passes) |
 | Tests | ✅ 21 pytest tests passing |
 | Alembic | ✅ Migration chain functional |
-| Docker | ⏳ Present but unvalidated |
-| Services layer | ❌ Empty stub |
+| Docker | ⏳ Present; local validation requires Docker daemon |
+| Services layer | ✅ Implemented (7 domains with shared base.py) |
 
 ---
 

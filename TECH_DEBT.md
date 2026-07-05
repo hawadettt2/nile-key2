@@ -9,12 +9,9 @@
 
 | Priority | Debt | Location | Notes |
 |----------|------|----------|-------|
-| HIGH | Empty services layer | `backend/app/services/__init__.py` | Charter Section 10 violation; business logic lives in routers |
-| HIGH | Business logic in routers | All 8 router files | Hard to unit-test; violates charter preferred architecture |
-| HIGH | Documentation drift | Multiple docs | Baseline, engineering memory, README, and deployment docs are stale |
+| HIGH | Documentation drift | Multiple docs | Residual drift after WP-16B; in progress |
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Manual frontend types | `frontend/src/types/api.d.ts` | Charter prefers OpenAPI-generated frontend types |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | `docker compose up` not yet validated |
+| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | `docker compose up` not validated in this environment |
 | MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |
 | MEDIUM | PostgreSQL migration path | Not started | Charter Section 9 notes SQLite is an implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
@@ -32,3 +29,6 @@
 | Missing Alembic migration system | Alembic initialized; migration chain present | WP-10 |
 | Legacy `invoices.uuid` column | SQLite-safe table rebuild migration removes it | WP-10 |
 | `.env.example` drift | Aligned with `config.py` variables and formats | WP-08 |
+| Empty services layer | Service modules implemented for all 7 non-auth domains with shared base infrastructure | WP-15, WP-16B |
+| Business logic in routers | Migrated to service layer; routers now thin | WP-13A, WP-15 |
+| Manual frontend types | Generated types via `openapi-typescript`; verified to match API | WP-12 |

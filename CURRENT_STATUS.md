@@ -1,8 +1,8 @@
 # Current Status
 
-**Last Updated:** 2026-07-04
+**Last Updated:** 2026-07-05
 **Branch:** wp-13
-**Commit:** 56fc391 WP-10 + 87267d3 refactor
+**Commit:** b4ff64f refactor: introduce shared service base infrastructure (WP-16B)
 
 ---
 
@@ -20,6 +20,11 @@
 | WP-08 | ✅ Complete | Architecture cleanup: `.env.example` aligned, `execute_update()` helper added |
 | WP-09 | ✅ Complete | Refactoring: legacy compatibility shims removed, UPDATE duplication eliminated |
 | WP-10 | ✅ Complete | Alembic migration system initialized; legacy column cleanup migrations committed |
+| WP-11 | ✅ Complete | Project documentation synchronized with implementation state |
+| WP-12 | ✅ Complete | Docker hardening and Compose configuration finalized |
+| WP-13A | ✅ Complete | Supplier and customer business logic extracted into service layer |
+| WP-15 | ✅ Complete | Service layer extraction complete for all remaining domains (resources, customs, documents, shipping, invoices) |
+| WP-16B | ✅ Complete | Shared service base infrastructure introduced (base.py, standardized helpers) |
 
 ## Current System State
 
@@ -28,8 +33,11 @@
 - **Migrations:** Alembic chain applies on existing schema; initial migration is empty (`pass`) because `init_db()` creates tables
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
 - **Tests:** 21 pytest tests pass
-- **Router cleanup:** Legacy compatibility filtering removed from all 8 routers
-- **Post-WP-10 app-layer alignment:** `database.py` and router mappers aligned with cleaned schema
+- **Routers:** All 7 non-auth routers are thin (no raw SQL, no DB imports, no business logic)
+- **Service layer:** Fully implemented for all 7 domains with shared base utilities
+- **Docker:** Dockerfiles and docker-compose.yml present; local validation pending Docker daemon availability
+- **Frontend API types:** Generated and verified to match OpenAPI contract
+- **Backend health:** `GET /health` returns healthy on running instance
 
 ## Initialization Flow
 
@@ -39,11 +47,9 @@
 
 ## Known Issues
 
-- Services layer is still an empty stub
-- No ORM; raw SQL is used throughout
-- Docker compose has not been validated in this environment
-- `.env` required; backend fails fast if `SECRET_KEY` is missing
+- Docker deployment not validated locally (Docker daemon not available in this environment)
+- Frontend lint warnings exist in shadcn/ui generated components (not project-specific)
 
 ## Ready for Next Work Package
 
-Next step: **WP-11 Deployment Validation** — validate Docker Compose stack and correct remaining documentation drift.
+Current WP-16B baseline is complete. System is healthy and ready for production hardening or next phase work.

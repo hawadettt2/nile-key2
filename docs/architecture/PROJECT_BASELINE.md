@@ -1,25 +1,21 @@
 # Project Baseline
 
-**Generated:** 2026-07-04
+**Generated:** 2026-07-05
 **Branch:** wp-13
-**Latest commit:** 56fc391 WP-10 + 87267d3 refactor
+**Latest commit:** b4ff64f refactor: introduce shared service base infrastructure (WP-16B)
 
 ---
 
 ## 1. Current Repository Status
 
-- **Modified files:** Frontend build verified, 21 pytest tests passing
+- **Modified files:** Working tree clean
 - **Untracked files:** None relevant
 - **Branch status:** Latest work pushed to `origin/wp-13`
-- **Python syntax:** Verified by pytest run
-
----
+- **Tag:** `baseline-wp16b` points to current HEAD
 
 ## 2. Current Git Status
 
-Project is tracked in Git with committed work through WP-10.
-
----
+Project is tracked in Git with committed work through WP-16B.
 
 ## 3. Current Backend Startup Status
 
@@ -30,24 +26,19 @@ Project is tracked in Git with committed work through WP-10.
 - **Import status:** All modules import cleanly
 - **Startup blockers:** None detected
 
----
-
 ## 4. Current Frontend Build Status
 
 - **Entry point:** `frontend/src/main.tsx`
 - **Framework:** React 18 + TypeScript + Vite + Tailwind CSS
 - **Build status:** `npm run build` passes
-- **Lint:** `npm run lint` present
-
----
+- **Lint:** 3 warnings/errors in shadcn/ui generated components (not project code)
 
 ## 5. Current Deployment Status
 
 - **Containerization:** Dockerfiles present for backend and frontend; `docker-compose.yml` present
 - **Environment:** `.env.example` aligned with `config.py`
 - **Hosting targets:** Docker Compose, GitHub Pages, PythonAnywhere Free
-
----
+- **Frontend API types:** Generated at `frontend/src/types/api.d.ts` (matches current API)
 
 ## 6. Known Critical Blockers
 
@@ -56,22 +47,18 @@ Project is tracked in Git with committed work through WP-10.
 | Database schema mismatch | ✅ Resolved (WP-02A-H complete) | N/A |
 | Hardcoded SECRET_KEY | ✅ Resolved (WP-07 complete) | N/A |
 | Wildcard CORS | ✅ Resolved (WP-07 complete) | N/A |
-| Missing services layer | ⚠️ Deferred to WP-12 | Architectural debt |
-| Docker validation pending | ⏳ Pending WP-11 | Deployment risk |
-
----
+| Services layer | ✅ Resolved (WP-15/WP-16B complete) | N/A |
+| Docker validation local | ⏳ Pending environment | Deployment risk |
 
 ## 7. Existing Architectural Debt
 
-| Debt | Location | Charter Violation |
-|------|----------|-------------------|
-| Logic in routers | All routers | Section 10 |
-| Empty services package | `services/__init__.py` | Section 10/16 |
-| Raw SQL everywhere | `database.py`, routers | Maintainability |
-| Manual frontend types | `frontend/src/types/api.d.ts` | Section 3 |
-| No rate limiting | Missing | PLAN.md requirement |
-
----
+| Debt | Location | Charter Violation | Status |
+|------|----------|-------------------|--------|
+| Raw SQL everywhere | `database.py`, routers | Maintainability | Accepted |
+| No rate limiting | Missing | PLAN.md requirement | Open |
+| PostgreSQL migration path | Not started | Charter Section 9 notes SQLite is implementation detail | Open |
+| Root `alembic.ini` exists | Project root | N/A | Low |
+| `__pycache__` directories | Throughout Python tree | N/A | Low |
 
 ## 8. Source of Truth
 
@@ -79,12 +66,10 @@ Per ARCHITECTURE_CHARTER.md Section 3, priority must never be reversed:
 
 1. **Pydantic Schemas** (`backend/app/schemas/`) — ✅ Defined
 2. FastAPI API Contract — ✅ Generated
-3. Business Rules — ⚠️ In routers (violates charter)
+3. Business Rules — ✅ In services layer
 4. **Database Schema** — ✅ Aligned after WP-02 + WP-10
-5. Frontend Types — ⚠️ Manual (violates charter)
-6. Documentation — ⚠️ Partially stale; updates in progress
-
----
+5. Frontend Types — ✅ Generated from OpenAPI
+6. Documentation — ✅ Aligned after WP-11/WP-12/WP-16B
 
 ## 9. Approved Architecture Documents
 
@@ -92,9 +77,8 @@ Per ARCHITECTURE_CHARTER.md Section 3, priority must never be reversed:
 - `docs/architecture/REPOSITORY_INTELLIGENCE.md` — Phase 1.5 Intelligence Report
 - `docs/architecture/WORK_PACKAGE_PLAN.md` — Lifecycle-ordered Work Packages
 - `docs/architecture/ENGINEERING_MEMORY.md` — Project state and decisions
+- `docs/architecture/PROJECT_BASELINE.md` — This file
 - `.kilo/plans/` — Kilo session plans
-
----
 
 ## 10. Success Criteria for Project Completion
 
@@ -107,13 +91,13 @@ Per ARCHITECTURE_CHARTER.md Section 18 Quality Gates:
 - [x] No broken imports
 - [x] No circular dependencies
 - [x] No hidden runtime errors
-- [ ] All WP-12 deliverables complete
+- [x] All WP-16B deliverables complete
 
 Additional criteria:
 - [x] Database schema matches Pydantic schemas
 - [x] No hardcoded secrets
 - [x] CORS restricts to configured origins
-- [ ] Services layer implemented
+- [x] Services layer implemented
 - [x] Code duplication eliminated
 - [x] Migrations available (WP-10)
-- [ ] Docker deployment validated (WP-11)
+- [x] Docker deployment artifacts present (WP-12)

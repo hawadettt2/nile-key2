@@ -24,7 +24,7 @@ nile-key2/
 │       ├── models/      # Data models
 │       ├── schemas/     # Pydantic schemas
 │       ├── routers/     # API endpoints (8 services)
-│       └── services/    # Business logic (stub)
+│       └── services/    # Business logic (7 domains, shared base)
 └── frontend/            # React frontend
     ├── src/
     │   ├── App.tsx
@@ -91,4 +91,4 @@ See `DEPLOYMENT.md` for details.
 
 ---
 
-**Built:** 2026-07-04 | **Version:** 1.1.0-MVP
+**Built:** 2026-07-05 | **Version:** 1.1.0-MVP

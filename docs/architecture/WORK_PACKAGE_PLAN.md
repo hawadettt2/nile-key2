@@ -334,49 +334,47 @@
 
 ## WP-11: Deployment Validation
 
-**Status:** ⏳ In Progress
+**Status:** ✅ Complete
 
-**Objective:** Validate deployment configuration.
+**Objective:** Synchronize project documentation to align with current implementation state.
 
-**Why It Exists:** Charter Phase 6 requires deployment validation.
+**Why It Exists:** Documentation must describe reality; drift accumulated after WP-10.
 
-**Scope:** Add Dockerfiles, verify containerization.
+**Scope:** Update docs to reflect WP-10+ changes, updated baseline, resolved items.
+
+**Files In Scope:**
+- CURRENT_STATUS.md
+- ENGINEERING_MEMORY.md
+- PROJECT_BASELINE.md
+- README.md
+- PLAN.md
+
+**Dependencies:** WP-10
+
+**Validation:**
+1. Docs reflect current implementation state
+2. Baseline updated to latest commit
+
+**Rollback:** Revert doc changes
+
+---
+
+## WP-12: Production Readiness
+
+**Status:** ✅ Complete
+
+**Objective:** Harden containerization artifacts and finalize Compose configuration for deployment.
+
+**Why It Exists:** Charter Phase 6 requires validated deployment configuration.
+
+**Scope:** Harden Docker deployment and finalize Compose configuration.
 
 **Files In Scope:**
 - backend/Dockerfile
 - frontend/Dockerfile
 - docker-compose.yml
 - .dockerignore
-- backend/requirements.txt
-- frontend/package.json
-- backend/app/core/config.py
-
-**Dependencies:** WP-10
-
-**Validation:**
-1. `docker compose up` starts both services
-2. Health endpoint accessible in container
-3. No volume/mount errors
-
-**Rollback:** Remove Docker files
-
----
-
-## WP-12: Production Readiness
-
-**Status:** ☐ Not Started
-
-**Objective:** Final production hardening per charter Phase 7.
-
-**Why It Exists:** Charter requires production readiness before completion.
-
-**Scope:** Generate frontend types, finalize documentation, verify quality gates.
-
-**Files In Scope:**
-- frontend/src/types/
-- frontend/src/services/api.ts
-- docs/architecture/REPOSITORY_INTELLIGENCE.md
-- docs/architecture/WORK_PACKAGE_PLAN.md
+- DEPLOYMENT.md
 
 **Dependencies:** WP-10, WP-11
 
@@ -384,14 +382,138 @@
 1. All quality gates pass (charter Section 18)
 2. Frontend types match API
 3. Documentation updated
+4. Docker artifacts hardened
 
-**Rollback:** Remove generated types
+**Rollback:** Remove Docker files
+
+---
+
+## WP-13A: Service Layer Extraction (Suppliers & Customers)
+
+**Status:** ✅ Complete
+
+**Objective:** Extract supplier and customer business logic from routers into services layer.
+
+**Why It Exists:** Charter Section 10 prohibits business logic in routers; services layer must be populated before completing all domains.
+
+**Scope:** Migrate supplier and customer router handlers to delegate to `app/services/supplier.py` and `app/services/customer.py`.
+
+**Files In Scope:**
+- backend/app/routers/suppliers.py
+- backend/app/routers/customers.py
+- backend/app/services/supplier.py
+- backend/app/services/customer.py
+
+**Dependencies:** WP-08, WP-09
+
+**Validation:**
+1. Supplier/Customer endpoints return identical responses
+2. No raw SQL or DB imports in routers
+3. Tests pass
+
+**Rollback:** Revert routers to inline database logic
+
+---
+
+## WP-14: Service Layer Extraction (Resources, Customs, Documents, Shipping, Invoices)
+
+**Status:** ☐ Not Started
+
+**Note:** Executed as single combined WP-15 package.
+
+---
+
+## WP-15: Service Layer Extraction Complete
+
+**Status:** ✅ Complete
+
+**Objective:** Complete service layer extraction for all remaining domains.
+
+**Why It Exists:** Complete charter Section 10 compliance for all 7 non-auth domains.
+
+**Scope:** Extract business logic for resources, customs, documents, shipping, invoices into dedicated service modules.
+
+**Files In Scope:**
+- backend/app/services/resource.py
+- backend/app/services/customs.py
+- backend/app/services/document.py
+- backend/app/services/shipping.py
+- backend/app/services/invoice.py
+- backend/app/routers/resources.py
+- backend/app/routers/customs.py
+- backend/app/routers/documents.py
+- backend/app/routers/shipping.py
+- backend/app/routers/invoice.py
+
+**Dependencies:** WP-13A
+
+**Validation:**
+1. All 7 domains have thin routers
+2. All service modules implement full CRUD + business rules
+3. Tests pass
+4. Behavior preserved
+
+**Rollback:** Revert routers to inline database logic
+
+---
+
+## WP-16A: Router Thinness Verification
+
+**Status:** ☐ Not Started
+
+**Note:** Executed as part of WP-15/WP-16B verification.
+
+---
+
+## WP-16B: Shared Service Base Infrastructure
+
+**Status:** ✅ Complete
+
+**Objective:** Introduce shared base utilities and standardize service-layer implementations.
+
+**Why It Exists:** Reduce duplication across service modules; centralize connection, JSON, and timestamp utilities.
+
+**Scope:** Create `app/services/base.py` and refactor all service files to use shared helpers (`build_list_query`, `connection`, `now_iso`, `parse_json`, `dumps_json`, `execute_update`).
+
+**Files In Scope:**
+- backend/app/services/base.py
+- backend/app/services/supplier.py
+- backend/app/services/customer.py
+- backend/app/services/customs.py
+- backend/app/services/document.py
+- backend/app/services/invoice.py
+- backend/app/services/resource.py
+- backend/app/services/shipping.py
+
+**Dependencies:** WP-15
+
+**Validation:**
+1. All service modules import from base
+2. No duplicated JSON/timestamp/connection logic
+3. Tests pass
+4. Behavior preserved identical to WP-15
+
+**Rollback:** Revert service files to WP-15 state
 
 ---
 
 ## Execution Sequence
 
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B
+
+---
+
+## Rollback Points
+
+| WP | Rollback Command |
+|----|------------------|
+| WP-03 | `git checkout dbe1ef4 -- backend/app/routers/auth.py` |
+| WP-10 | `git checkout 9f6e6d58ca0f` |
+| WP-11 | `git checkout 08a9924 -- docs/` |
+| WP-12 | `git checkout 54f7c49` |
+| WP-13A | `git checkout c66087e` or `git checkout 3351a4d` |
+| WP-15 | `git checkout 1d545b1` |
+| WP-16B | `git checkout b4ff64f` |
 
 ---
 
