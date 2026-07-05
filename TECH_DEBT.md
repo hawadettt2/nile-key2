@@ -11,7 +11,7 @@
 |----------|------|----------|-------|
 | HIGH | Documentation drift | Multiple docs | Resolved in WP-17A/WP-17B |
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | `docker compose up` not validated in this environment |
+| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | Static validation complete; runtime validation pending Docker daemon availability |
 | MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |
 | MEDIUM | PostgreSQL migration path | Not started | Charter Section 9 notes SQLite is an implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
@@ -32,3 +32,6 @@
 | Empty services layer | Service modules implemented for all 7 non-auth domains with shared base infrastructure | WP-15, WP-16B |
 | Business logic in routers | Migrated to service layer; routers now thin | WP-13A, WP-15 |
 | Manual frontend types | Generated types via `openapi-typescript`; verified to match API | WP-12 |
+| Customs HS-code created_at mismatch | Added `created_at` to `_ensure_hs_codes_schema()` with backfill | WP-18 |
+| Document upload type omission | Fixed `upload_document()` INSERT to populate required `type` column | WP-18 |
+| Docker deployment validation | Docker artifacts reviewed and validated against project configuration | WP-18 |

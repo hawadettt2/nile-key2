@@ -24,10 +24,36 @@ def _register_and_login(client, role="staff"):
     return login_resp.json()["access_token"], credentials
 
 
-# NOTE: HS code list/get endpoints are currently affected by a known schema mismatch
-# between the HSCode response schema (requires `created_at`) and the database rows
-# (no `created_at` column). These endpoints raise ResponseValidationError (500) in
-# the current codebase and are excluded from automated coverage for WP-17.
+def test_list_hs_codes_authorized(client):
+    token, _ = _register_and_login(client)
+    response = client.get("/api/v1/customs/hs-codes", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    if data:
+        assert "code" in data[0]
+        assert "duty_rate" in data[0]
+        assert "created_at" in data[0]
+
+
+def test_get_hs_code_authorized(client):
+    token, _ = _register_and_login(client)
+    list_resp = client.get("/api/v1/customs/hs-codes", headers={"Authorization": f"Bearer {token}"})
+    hs_codes = list_resp.json()
+    if not hs_codes:
+        pytest.skip("No HS codes available")
+    hs_code_id = hs_codes[0]["id"]
+    response = client.get(f"/api/v1/customs/hs-codes/{hs_code_id}", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json()["id"] == hs_code_id
+    assert "created_at" in response.json()
+
+
+def test_get_hs_code_not_found(client):
+    token, _ = _register_and_login(client)
+    response = client.get("/api/v1/customs/hs-codes/999999", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 404
+    assert "HS Code not found" in response.json().get("detail", "")
 
 
 def test_calculate_duties_authorized(client):

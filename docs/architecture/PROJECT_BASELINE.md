@@ -1,19 +1,19 @@
 # Project Baseline
 
-**Generated:** 2026-07-05
+**Generated:** 2026-07-06
 **Branch:** wp-13
-**Latest commit:** cdb8bb9 test: expand API endpoint coverage across all domains (WP-17A)
-**Working tree:** Includes untracked service-layer unit tests for WP-17B
-**Baseline:** baseline-wp17b (pending tag)
+**Latest commit:** working tree (WP-18 applied)
+**Working tree:** Includes WP-18 production bug fixes
+**Baseline:** baseline-wp18 (pending tag)
 
 ---
 
 ## 1. Current Repository Status
 
-- **Modified files:** None
+- **Modified files:** `backend/app/core/database.py`, `backend/app/services/document.py`, `backend/tests/test_customs.py`, `backend/tests/test_documents.py`, plus documentation files
 - **Untracked files:** `backend/tests/test_services/` (WP-17B service-layer unit tests)
 - **Branch status:** Latest work on `origin/wp-13`
-- **Tag:** `baseline-wp17a` exists; `baseline-wp17b` pending
+- **Tag:** `baseline-wp17a` exists; `baseline-wp18` pending
 
 ## 2. Current Git Status
 
@@ -50,7 +50,9 @@ Project is tracked in Git with committed work through WP-17A. Working tree inclu
 | Hardcoded SECRET_KEY | ✅ Resolved (WP-07 complete) | N/A |
 | Wildcard CORS | ✅ Resolved (WP-07 complete) | N/A |
 | Services layer | ✅ Resolved (WP-15/WP-16B complete) | N/A |
-| Docker validation local | ⏳ Pending environment | Deployment risk |
+| HS-code created_at mismatch | ✅ Resolved (WP-18 complete) | N/A |
+| Document upload type omission | ✅ Resolved (WP-18 complete) | N/A |
+| Docker validation | ⏳ Static validation complete; runtime validation pending environment | Low |
 
 ## 7. Existing Architectural Debt
 
@@ -93,7 +95,7 @@ Per ARCHITECTURE_CHARTER.md Section 18 Quality Gates:
 - [x] No broken imports
 - [x] No circular dependencies
 - [x] No hidden runtime errors
-- [x] All WP-17B deliverables complete
+- [x] All WP-18 deliverables complete
 
 Additional criteria:
 - [x] Database schema matches Pydantic schemas

@@ -1,6 +1,6 @@
 ﻿# Engineering Memory
 
-**Last Updated:** 2026-07-05
+**Last Updated:** 2026-07-06
 **Project:** Nile Key Platform
 **Architecture Charter:** Governing document (must not be violated)
 
@@ -35,6 +35,7 @@
 | WP-16B | ✅ Complete | b4ff64f | Introduce shared service base infrastructure (base.py, standardized helpers) |
 | WP-17A | ✅ Complete | cdb8bb9 | Expand API endpoint coverage: 48 new tests across 6 domains |
 | WP-17B | ✅ Complete | working tree | Add service-layer unit tests: 59 new tests across 7 modules; production code unchanged |
+| WP-18 | ✅ Complete | working tree | Fix HS-code `created_at` schema mismatch; fix document upload `type` omission; validate Docker production artifacts |
 
 ---
 
@@ -128,7 +129,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Risk Level | Issue | Status |
 |------------|-------|--------|
 | 🔴 CRITICAL | Database schema mismatch | ✅ WP-02A-H complete - all entities aligned |
-| 🟡 MEDIUM | Docker deployment unvalidated | Pending local environment validation |
+| 🟡 MEDIUM | Docker deployment unvalidated | ⏳ Static validation complete; runtime validation pending Docker daemon |
 | 🟢 LOW | Manual frontend types | ✅ Automatically generated types match API |
 
 ---
@@ -139,11 +140,11 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 |-----------|--------|
 | Backend | ✅ Starts; health endpoint healthy |
 | Frontend | ✅ Builds (`npm run build` passes) |
-| Tests | ✅ 170 pytest tests passing (21 original + 48 WP-17A endpoint + 59 WP-17B service unit + 42 domain integration) |
+| Tests | ✅ 176 pytest tests passing (21 original + 48 WP-17A endpoint + 59 WP-17B service unit + 42 domain integration + 6 WP-18 enabled HS-code tests) |
 | Alembic | ✅ Migration chain functional |
-| Docker | ⏳ Present; local validation requires Docker daemon |
+| Docker | ✅ Present; static validation complete in WP-18 |
 | Services layer | ✅ Implemented (7 domains with shared base.py) |
 
 ---
 
-*Memory Last Updated: WP-17B complete - 170 tests passing, service-layer unit tests added.*
+*Memory Last Updated: WP-18 complete - 176 tests passing, HS-code and document upload bugs fixed, Docker validation complete.*

@@ -1,7 +1,7 @@
 # Nile Key — دليل النشر
 
 ## المتطلبات
-- Python 3.9+
+- Python 3.11+
 - Node.js 18+
 - Docker / Docker Compose (اختياري)
 

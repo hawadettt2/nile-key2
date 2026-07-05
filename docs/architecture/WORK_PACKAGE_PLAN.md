@@ -556,9 +556,44 @@
 
 ---
 
+## WP-18: Production Bug Fixes and Deployment Readiness
+
+**Status:** ✅ Complete
+
+**Objective:** Fix two pre-existing production bugs and validate Docker deployment artifacts.
+
+**Why It Exists:** Two runtime bugs were discovered during WP-17A/WP-17B test expansion that affect production endpoints. Docker artifacts existed but had not been validated.
+
+**Scope:** 
+1. Fix `hs_codes` missing `created_at` column
+2. Fix `upload_document()` missing `type` column
+3. Validate Docker artifacts against project configuration
+
+**Files In Scope:**
+- backend/app/core/database.py
+- backend/app/services/document.py
+- backend/tests/test_customs.py
+- backend/tests/test_documents.py
+- docker-compose.yml
+- backend/Dockerfile
+- frontend/Dockerfile
+- DEPLOYMENT.md
+
+**Dependencies:** WP-17B
+
+**Validation:**
+1. `hs_codes` table has `created_at` column after `init_db()`
+2. `POST /api/v1/documents/upload` returns 200
+3. Docker artifacts validated and consistent
+4. Full suite passes (176 tests)
+
+**Rollback:** Revert `database.py` and `document.py` changes; remove re-enabled tests
+
+---
+
 ## Execution Sequence
 
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B → WP-18
 
 ---
 
@@ -575,6 +610,7 @@ WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → 
 | WP-16B | `git checkout b4ff64f` |
 | WP-17A | Remove `backend/tests/test_customers.py`, `backend/tests/test_resources.py`, `backend/tests/test_customs.py`, `backend/tests/test_documents.py`, `backend/tests/test_shipping.py`, `backend/tests/test_invoices.py` |
 | WP-17B | Remove `backend/tests/test_services/` |
+| WP-18 | Revert `backend/app/core/database.py` and `backend/app/services/document.py`; remove re-enabled tests in `backend/tests/test_customs.py` and `backend/tests/test_documents.py` |
 
 ---
 

@@ -1,9 +1,8 @@
 # Current Status
 
-**Last Updated:** 2026-07-05
+**Last Updated:** 2026-07-06
 **Branch:** wp-13
-**Commit:** cdb8bb9 test: expand API endpoint coverage across all domains (WP-17A)
-**Working Tree:** Includes untracked service-layer unit tests for WP-17B
+**Commit:** working tree (WP-18 patches applied)
 
 ---
 
@@ -28,6 +27,7 @@
 | WP-16B | ✅ Complete | Shared service base infrastructure introduced (base.py, standardized helpers) |
 | WP-17A | ✅ Complete | API endpoint test coverage expanded; 48 new tests added across 6 domains |
 | WP-17B | ✅ Complete | Service-layer unit tests added; 59 new tests across 7 service modules; production code unchanged |
+| WP-18 | ✅ Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
 
 ## Current System State
 
@@ -35,12 +35,12 @@
 - **Database:** SQLite (`nile_key.db`) with cleaned schema; migrations present in `backend/alembic/`
 - **Migrations:** Alembic chain applies on existing schema; initial migration is empty (`pass`) because `init_db()` creates tables
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 170 pytest tests pass
+- **Tests:** 176 pytest tests pass
 - **Routers:** All 7 non-auth routers are thin (no raw SQL, no DB imports, no business logic)
 - **Service layer:** Fully implemented for all 7 domains with shared base utilities
 - **API endpoint tests:** Comprehensive coverage across all 8 services via WP-17A
 - **Service-layer unit tests:** 59 tests added in WP-17B covering all 7 service modules
-- **Docker:** Dockerfiles and docker-compose.yml present; local validation pending Docker daemon availability
+- **Docker:** Dockerfiles and docker-compose.yml present and validated; artifacts consistent with project configuration
 - **Frontend API types:** Generated and verified to match OpenAPI contract
 - **Backend health:** `GET /health` returns healthy on running instance
 
@@ -52,11 +52,10 @@
 
 ## Known Issues
 
-- Docker deployment not validated locally (Docker daemon not available in this environment)
 - Frontend lint warnings exist in shadcn/ui generated components (not project-specific)
-- Customs HS-code list/get and declaration list/get endpoints affected by pre-existing schema mismatch (`created_at` / documents JSON); documented in WP-17A test exclusions
-- Document upload endpoint affects pre-existing `documents.type` NOT NULL omission in service layer; documented in WP-17A test exclusions
+- Docker runtime validation pending Docker daemon availability (`docker compose up` not executed in this environment)
+- `__pycache__` directories remain scattered throughout Python tree (mostly gitignored)
 
 ## Ready for Next Work Package
 
-WP-17A and WP-17B are complete. System is healthy and ready for WP-18.
+WP-18 is complete. System is healthy and ready for WP-19.

@@ -63,10 +63,18 @@ def test_create_document_authorized(client):
     assert data["message"] == "Document created successfully"
 
 
-# NOTE: Document upload (/upload) is currently affected by a known production bug
-# where the service does not populate the required `type` column, causing
-# sqlite3.IntegrityError at runtime. Manual coverage for the upload endpoint
-# is deferred until that bug is fixed in the service layer.
+def test_upload_document_authorized(client):
+    token, _ = _register_and_login(client)
+    response = client.post(
+        "/api/v1/documents/upload",
+        files={"file": ("test.pdf", b"%PDF-1.4 hello", "application/pdf")},
+        data={"title": "Uploaded Document"},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "id" in data
+    assert "filename" in data
 
 
 def test_update_document_authorized(client):

@@ -103,10 +103,10 @@ def upload_document(
     with connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            """INSERT INTO documents (title, file_name, file_type, file_size, document_type,
+            """INSERT INTO documents (title, type, file_name, file_type, file_size, document_type,
                entity_type, entity_id, created_at, created_by)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (title or filename, stored_filename, content_type, len(content), "uploaded",
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (title or filename, "uploaded", stored_filename, content_type, len(content), "uploaded",
              entity_type, entity_id, now, current_user["id"])
         )
         conn.commit()

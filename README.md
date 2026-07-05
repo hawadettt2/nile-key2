@@ -63,7 +63,7 @@ nile-key2/
 
 ## Testing
 
-- **170 passing pytest tests** covering:
+- **176 passing pytest tests** covering:
   - Auth and RBAC
   - API endpoint coverage for all 8 domains
   - Service-layer unit tests for all 7 business services

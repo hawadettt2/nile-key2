@@ -202,8 +202,10 @@ def _ensure_customs_declarations_schema(c: sqlite3.Cursor):
 def _ensure_hs_codes_schema(c: sqlite3.Cursor):
     ensure_columns(c, "hs_codes", {
         "description_ar": "TEXT",
-        "restrictions": "TEXT"
+        "restrictions": "TEXT",
+        "created_at": "TIMESTAMP"
     })
+    c.execute("UPDATE hs_codes SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL")
 
 
 def _ensure_resources_schema(c: sqlite3.Cursor):
