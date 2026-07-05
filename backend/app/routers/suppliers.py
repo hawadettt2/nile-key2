@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 
-from app.core.database import get_db, execute_update
 from app.routers.auth import get_current_user, require_role
 from app.schemas.supplier import SupplierCreate, SupplierUpdate, Supplier
 from app.schemas.common import MessageResponse, IdResponse
