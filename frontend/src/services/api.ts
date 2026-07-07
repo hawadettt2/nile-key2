@@ -46,7 +46,9 @@ api.interceptors.response.use(
         const storedRefreshToken = localStorage.getItem('refresh_token');
         if (!storedRefreshToken) throw new Error('No refresh token');
 
-        const { data } = await rawApi.post('/api/v1/auth/refresh', { refresh_token: storedRefreshToken });
+        const { data } = await rawApi.post('/api/v1/auth/refresh', null, {
+          headers: { Authorization: `Bearer ${storedRefreshToken}` },
+        });
         const newAccessToken = data.access_token;
         localStorage.setItem('access_token', newAccessToken);
         if (data.refresh_token) {
@@ -79,7 +81,8 @@ export const register = (data: Record<string, string>) =>
   api.post('/api/v1/auth/register', data);
 export const getMe = () => api.get('/api/v1/auth/me');
 export const updateMe = (data: Record<string, unknown>) => api.put('/api/v1/auth/me', data);
-export const refreshToken = (data: Record<string, unknown>) => api.post('/api/v1/auth/refresh', data);
+export const refreshToken = (data: Record<string, unknown>) =>
+  rawApi.post('/api/v1/auth/refresh', null, { headers: { Authorization: `Bearer ${data.refresh_token}` } });
 
 export const listSuppliers = (params?: Record<string, unknown>) => api.get('/api/v1/suppliers', { params });
 export const getSupplier = (id: number) => api.get(`/api/v1/suppliers/${id}`);
@@ -102,7 +105,9 @@ export const listShipments = (params?: Record<string, unknown>) => api.get('/api
 export const getShipment = (id: number) => api.get(`/api/v1/shipping/shipments/${id}`);
 export const createShipment = (data: Record<string, unknown>) => api.post('/api/v1/shipping/shipments', data);
 export const updateShipment = (id: number, data: Record<string, unknown>) => api.put(`/api/v1/shipping/shipments/${id}`, data);
-export const getShippingRates = (data: Record<string, unknown>) => api.get('/api/v1/shipping/rates', { params: data });
+export const getShipmentLabel = (id: number) => api.get(`/api/v1/shipping/shipments/${id}/label`);
+export const trackShipment = (trackingId: string) => api.get(`/api/v1/shipping/track/${trackingId}`);
+export const getShippingRates = (data: Record<string, unknown>) => api.get('/api/v1/shipping/rates', { data });
 
 export const listInvoices = (params?: Record<string, unknown>) => api.get('/api/v1/invoices', { params });
 export const getInvoice = (id: number) => api.get(`/api/v1/invoices/${id}`);
@@ -110,8 +115,10 @@ export const createInvoice = (data: Record<string, unknown>) => api.post('/api/v
 export const updateInvoice = (id: number, data: Record<string, unknown>) => api.put(`/api/v1/invoices/${id}`, data);
 export const validateInvoice = (id: number) => api.post(`/api/v1/invoices/${id}/validate`);
 export const cancelInvoice = (id: number) => api.post(`/api/v1/invoices/${id}/cancel`);
+export const getInvoiceStatus = (id: number) => api.get(`/api/v1/invoices/${id}/status`);
 
 export const listHSCodes = (params?: Record<string, unknown>) => api.get('/api/v1/customs/hs-codes', { params });
+export const getHSCode = (id: number) => api.get(`/api/v1/customs/hs-codes/${id}`);
 export const calculateDuties = (data: Record<string, unknown>) => api.post('/api/v1/customs/calculate-duties', data);
 export const listDeclarations = (params?: Record<string, unknown>) => api.get('/api/v1/customs/declarations', { params });
 export const createDeclaration = (data: Record<string, unknown>) => api.post('/api/v1/customs/declarations', data);
