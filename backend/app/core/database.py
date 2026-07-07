@@ -511,8 +511,8 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
         c.execute("SELECT id FROM hs_codes WHERE code = ?", (code,))
         if not c.fetchone():
             c.execute("""
-                INSERT INTO hs_codes (code, description, category, duty_rate, vat_rate)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO hs_codes (code, description, category, duty_rate, vat_rate, created_at)
+                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             """, (code, description, category, duty_rate, vat_rate))
     
     # ===== الموارد والفرص =====

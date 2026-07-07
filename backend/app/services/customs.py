@@ -115,10 +115,10 @@ def create_declaration(data: CustomsDeclarationCreate, current_user: dict) -> di
         now = now_iso()
         decl_num = f"CD-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
         cursor.execute(
-            """INSERT INTO customs_declarations (declaration_number, shipment_id, hs_code, origin_country,
-               destination_country, value, currency, documents, status, created_at, created_by)
+            """INSERT INTO customs_declarations (declaration_number, shipment_id, hs_code_id, origin_country,
+               destination_country, total_value, currency, documents, status, created_at, created_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (decl_num, data.shipment_id, None, data.origin_country,
+            (decl_num, data.shipment_id, data.hs_code_id, data.origin_country,
              data.destination_country, data.total_value, data.currency,
              str(data.documents) if data.documents else "[]", "draft", now, current_user["id"])
         )

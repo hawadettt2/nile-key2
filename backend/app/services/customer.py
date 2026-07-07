@@ -52,10 +52,10 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
         cursor = conn.cursor()
         now = now_iso()
         cursor.execute(
-            """INSERT INTO customers (company_name, name, contact_name, contact_person, email, phone, address, city, country,
+            """INSERT INTO customers (name, contact_person, email, phone, address, city, country,
                tax_id, import_license, category, notes, status, created_at, created_by)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (data.name, data.name, data.contact_person, data.contact_person, data.email, data.phone,
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (data.name, data.contact_person, data.email, data.phone,
              data.address, data.city, data.country, data.tax_id, data.import_license,
              data.category, data.notes, "active", now, current_user["id"])
         )
@@ -104,12 +104,12 @@ def import_customers(file: io.BytesIO, filename: str, current_user: dict) -> dic
         imported = 0
         for row in reader:
             cursor.execute(
-                """INSERT INTO customers (company_name, name, contact_name, contact_person, email, phone, address, city, country,
+                """INSERT INTO customers (name, contact_person, email, phone, address, city, country,
                    category, status, created_at, created_by)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (row.get("name", ""), row.get("name_en"), row.get("contact_person"), row.get("contact_person"),
-                 row.get("email"), row.get("phone"), row.get("address"), row.get("city"),
-                 row.get("country", ""), row.get("category"), "active", now, current_user["id"])
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (row.get("name", ""), row.get("contact_person"), row.get("email"), row.get("phone"),
+                 row.get("address"), row.get("city"), row.get("country", ""), row.get("category"),
+                 "active", now, current_user["id"])
             )
             imported += 1
         conn.commit()

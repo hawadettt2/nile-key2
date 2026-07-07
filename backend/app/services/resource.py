@@ -46,7 +46,7 @@ def list_resources(
 ) -> list[dict]:
     with connection() as conn:
         cursor = conn.cursor()
-        query = "SELECT * FROM resources WHERE (is_active = 1 OR is_verified = 1)"
+        query = "SELECT * FROM resources WHERE (is_active = 1)"
         params = []
         if resource_type:
             query += " AND resource_type = ?"
@@ -71,7 +71,7 @@ def search_resources(q: str) -> list[dict]:
     with connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            """SELECT * FROM resources WHERE (is_active = 1 OR is_verified = 1) AND 
+            """SELECT * FROM resources WHERE (is_active = 1) AND 
                (title LIKE ? OR title_ar LIKE ? OR description LIKE ? OR description_ar LIKE ?
                 OR category LIKE ? OR country LIKE ?)""",
             [f"%{q}%"] * 6
@@ -83,7 +83,7 @@ def search_resources(q: str) -> list[dict]:
 def get_resource(resource_id: int) -> dict:
     with connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM resources WHERE id = ? AND (is_active = 1 OR is_verified = 1)", (resource_id,))
+        cursor.execute("SELECT * FROM resources WHERE id = ? AND (is_active = 1)", (resource_id,))
         row = cursor.fetchone()
         if not row:
             raise ValueError("Resource not found")

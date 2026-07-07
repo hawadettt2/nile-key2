@@ -53,10 +53,10 @@ def create_supplier(data: SupplierCreate, current_user: dict) -> dict:
         now = now_iso()
         payload = data.model_dump()
         cursor.execute(
-            """INSERT INTO suppliers (name, type, name_en, contact_person, email, phone, address, city, country,
+            """INSERT INTO suppliers (name, name_en, contact_person, email, phone, address, city, country,
                tax_id, commercial_registry, certificates, notes, status, created_at, created_by)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (payload["name"], "general", payload.get("name_en"), payload.get("contact_person"), payload.get("email"),
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (payload["name"], payload.get("name_en"), payload.get("contact_person"), payload.get("email"),
              payload.get("phone"), payload.get("address"), payload.get("city"), payload.get("country", "Egypt"),
              payload.get("tax_id"), payload.get("commercial_registry"),
              str(payload.get("certificates", [])) if payload.get("certificates") else "[]",
