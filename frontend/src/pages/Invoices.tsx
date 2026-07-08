@@ -51,9 +51,9 @@ export function Invoices() {
     setSubmitting(true);
     try {
       if (editingId != null) {
-        await updateInvoice(editingId, { ...form, items: form.items.map(i => ({ ...i, total: i.quantity * i.unit_price })) });
+        await updateInvoice(editingId, { ...form, total, items: form.items.map(i => ({ ...i, total: i.quantity * i.unit_price })) });
       } else {
-        await createInvoice({ ...form, items: form.items.map(i => ({ ...i, total: i.quantity * i.unit_price })) });
+        await createInvoice({ ...form, total, items: form.items.map(i => ({ ...i, total: i.quantity * i.unit_price })) });
       }
       setEditingId(null);
       setForm({ subtotal: 0, tax_rate: 14, currency: 'EGP', issue_date: '', due_date: '', notes: '', items: [{ description: '', quantity: 1, unit_price: 0, total: 0 }] });
