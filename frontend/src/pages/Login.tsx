@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { LogIn, UserPlus, AlertCircle } from 'lucide-react';
@@ -7,6 +8,7 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 export function Login() {
   const { t } = useTranslation();
   const { login, register, error, clearError } = useAuthStore();
+  const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ username: '', password: '', email: '', full_name: '', phone: '', company: '' });
 
@@ -14,7 +16,7 @@ export function Login() {
     e.preventDefault();
     clearError();
     if (isRegister) { await register(form); if (!error) setIsRegister(false); }
-    else { await login(form.username, form.password); }
+    else { await login(form.username, form.password); if (useAuthStore.getState().isAuthenticated) navigate('/'); }
   };
 
   return (
