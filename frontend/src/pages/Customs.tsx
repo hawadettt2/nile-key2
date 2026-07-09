@@ -23,7 +23,7 @@ export function Customs() {
   const [showDetails, setShowDetails] = useState(false);
   const [calcResult, setCalcResult] = useState<Record<string, number> | null>(null);
   const [calcForm, setCalcForm] = useState({ hs_code: '', value: 0, currency: 'USD', destination_country: '' });
-  const [declForm, setDeclForm] = useState({ destination_country: '', total_value: 0, currency: 'USD' });
+  const [declForm, setDeclForm] = useState({ origin_country: 'EG', destination_country: '', total_value: 0, currency: 'USD' });
 
   const load = async () => { setLoading(true); try { const [hsRes, declRes] = await Promise.all([listHSCodes(), listDeclarations()]); setHsCodes(hsRes.data || []); setDeclarations(declRes.data || []); } catch { /* silent */ } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
@@ -36,6 +36,7 @@ export function Customs() {
       const res = await getDeclaration(id);
       const data = res.data;
       setDeclForm({
+        origin_country: data.origin_country || 'EG',
         destination_country: data.destination_country || '',
         total_value: data.total_value || 0,
         currency: 'USD'
@@ -49,7 +50,7 @@ export function Customs() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setDeclForm({ destination_country: '', total_value: 0, currency: 'USD' });
+    setDeclForm({ origin_country: 'EG', destination_country: '', total_value: 0, currency: 'USD' });
     setShowDecl(false);
   };
 
@@ -85,7 +86,7 @@ export function Customs() {
         await createDeclaration(declForm);
       }
       setEditingId(null);
-      setDeclForm({ destination_country: '', total_value: 0, currency: 'USD' });
+      setDeclForm({ origin_country: 'EG', destination_country: '', total_value: 0, currency: 'USD' });
       setShowDecl(false);
       load();
     } catch {
@@ -110,15 +111,15 @@ export function Customs() {
           <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{t('customs.calculateDuties')}</h3><button onClick={() => { setShowCalc(false); setCalcResult(null); }} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           <div className="flex gap-2 mb-4">
             <input value={calcForm.hs_code} onChange={(e) => setCalcForm({...calcForm, hs_code: e.target.value})} placeholder={t('customs.hsCode')} className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <input type="number" value={calcForm.value} onChange={(e) => setCalcForm({...calcForm, value: Number(e.target.value)})} placeholder="Value" className="w-28 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+            <input type="number" value={calcForm.value} onChange={(e) => setCalcForm({...calcForm, value: Number(e.target.value)})} placeholder={t('shipment.value')} className="w-28 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <button onClick={handleCalc} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium">{t('customs.calculateDuties')}</button>
           </div>
           {calcResult && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">Duty Rate</p><p className="text-lg font-bold text-slate-900">{calcResult.duty_rate}%</p></div>
-              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">Duty Amount</p><p className="text-lg font-bold text-emerald-600">${calcResult.duty_amount?.toFixed(2)}</p></div>
-              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">Tax Amount</p><p className="text-lg font-bold text-cyan-600">${calcResult.tax_amount?.toFixed(2)}</p></div>
-              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">Total</p><p className="text-lg font-bold text-rose-600">${calcResult.total_duties?.toFixed(2)}</p></div>
+              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">{t('customs.dutyRate')}</p><p className="text-lg font-bold text-slate-900">{calcResult.duty_rate}%</p></div>
+              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">{t('customs.dutyAmount')}</p><p className="text-lg font-bold text-emerald-600">${calcResult.duty_amount?.toFixed(2)}</p></div>
+              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">{t('customs.taxAmount')}</p><p className="text-lg font-bold text-cyan-600">${calcResult.tax_amount?.toFixed(2)}</p></div>
+              <div className="bg-slate-50 rounded-lg p-3"><p className="text-xs text-slate-500">{t('customs.total')}</p><p className="text-lg font-bold text-rose-600">${calcResult.total_duties?.toFixed(2)}</p></div>
             </div>
           )}
         </div>
@@ -128,6 +129,7 @@ export function Customs() {
           <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? t('customs.editDeclaration') : t('customs.addDeclaration')}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           {editLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <input value={declForm.origin_country} onChange={(e) => setDeclForm({...declForm, origin_country: e.target.value})} placeholder={t('shipment.origin')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <input value={declForm.destination_country} onChange={(e) => setDeclForm({...declForm, destination_country: e.target.value})} placeholder={t('shipment.destination')} required className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <input type="number" value={declForm.total_value} onChange={(e) => setDeclForm({...declForm, total_value: Number(e.target.value)})} placeholder="Total Value" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <div className="md:col-span-3"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">{submitting ? t('common.saving') : editingId ? t('common.update') : t('common.save')}</button></div>
@@ -142,7 +144,7 @@ export function Customs() {
             <table className="w-full"><thead className="bg-slate-50"><tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">#</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('shipment.destination')}</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Value</th>
+               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customs.totalValue')}</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('common.status')}</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('common.actions')}</th>
             </tr></thead>            <tbody className="divide-y divide-slate-100">
@@ -163,7 +165,7 @@ export function Customs() {
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100">
           <div className="flex items-center gap-2 mb-2"><Search size={16} className="text-slate-500" /><h3 className="font-semibold text-slate-900">{t('customs.hsCode')} Database</h3></div>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search HS codes..." className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('customs.searchHsCodes')} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
         </div>
         {loading ? <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" /></div> : (
           <div className="overflow-x-auto max-h-96 overflow-y-auto">
@@ -188,15 +190,15 @@ export function Customs() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Declaration Details</h3>
+              <h3 className="text-lg font-semibold">{t('customs.declarationDetails')}</h3>
               <button onClick={closeDetails} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
             </div>
             {detailLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
               <div className="space-y-3">
-                <div><span className="text-sm font-medium text-slate-500">Declaration Number</span><p className="text-sm text-slate-900 font-mono">{selectedItem.declaration_number}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Destination</span><p className="text-sm text-slate-900">{selectedItem.destination_country}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Total Value</span><p className="text-sm text-slate-900">{selectedItem.total_value?.toFixed(2) || '-'}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Status</span><p className="text-sm text-slate-900">{selectedItem.status}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('customs.declarationNumber')}</span><p className="text-sm text-slate-900 font-mono">{selectedItem.declaration_number}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('customs.destination')}</span><p className="text-sm text-slate-900">{selectedItem.destination_country}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('customs.totalValue')}</span><p className="text-sm text-slate-900">{selectedItem.total_value?.toFixed(2) || '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('common.status')}</span><p className="text-sm text-slate-900">{selectedItem.status}</p></div>
               </div>
             )}
           </div>

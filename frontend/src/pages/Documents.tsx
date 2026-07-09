@@ -77,10 +77,10 @@ export function Documents() {
       </div>
       {showForm && (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 mb-6">
-          <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? 'Edit Document' : 'Create Document'}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
+          <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? t('document.editDocument') : t('document.createDocument')}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           {editLoading ? <div className="text-sm text-slate-500">Loading...</div> : (
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} placeholder="Title" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              <input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} placeholder={t('document.fieldTitle')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <select value={form.document_type} onChange={(e) => setForm({...form, document_type: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"><option value="uploaded">Uploaded</option><option value="template">Template</option><option value="generated">Generated</option></select>
               <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : (editingId ? 'Update' : t('common.save'))}</button></div>
             </form>
@@ -113,16 +113,16 @@ export function Documents() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Document Details</h3>
+              <h3 className="text-lg font-semibold">{t('document.details')}</h3>
               <button onClick={closeDetails} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
             </div>
             {detailLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
               <div className="space-y-3">
-                <div><span className="text-sm font-medium text-slate-500">Title</span><p className="text-sm text-slate-900">{selectedItem.title}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Type</span><p className="text-sm text-slate-900">{selectedItem.document_type}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">File Name</span><p className="text-sm text-slate-900">{selectedItem.file_name || '-'}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Created At</span><p className="text-sm text-slate-900">{new Date(selectedItem.created_at).toLocaleString()}</p></div>
-                {selectedItem.content && <div><span className="text-sm font-medium text-slate-500">Content</span><p className="text-sm text-slate-900 whitespace-pre-wrap">{selectedItem.content}</p></div>}
+                <div><span className="text-sm font-medium text-slate-500">{t('document.fieldTitle')}</span><p className="text-sm text-slate-900">{selectedItem.title}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('document.type')}</span><p className="text-sm text-slate-900">{selectedItem.document_type}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('document.fileName')}</span><p className="text-sm text-slate-900">{selectedItem.file_name || '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('document.createdAt')}</span><p className="text-sm text-slate-900">{new Date(selectedItem.created_at).toLocaleString()}</p></div>
+                {selectedItem.content && <div><span className="text-sm font-medium text-slate-500">{t('document.content')}</span><p className="text-sm text-slate-900 whitespace-pre-wrap">{selectedItem.content}</p></div>}
               </div>
             )}
           </div>

@@ -79,13 +79,13 @@ export function Resources() {
       </div>
       {showForm && (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 mb-6">
-          <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? 'Edit Resource' : 'Add Resource'}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
+          <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? t('resource.editResource') : t('resource.addResource')}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           {editLoading ? <div className="text-sm text-slate-500">Loading...</div> : (
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} placeholder="Title" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              <input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} placeholder={t('resource.fieldTitle')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <select value={form.resource_type} onChange={(e) => setForm({...form, resource_type: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"><option value="guide">Guide</option><option value="regulation">Regulation</option><option value="opportunity">Opportunity</option><option value="contact">Contact</option></select>
               <input value={form.category} onChange={(e) => setForm({...form, category: e.target.value})} placeholder={t('resource.category')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input value={form.url} onChange={(e) => setForm({...form, url: e.target.value})} placeholder="URL" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              <input value={form.url} onChange={(e) => setForm({...form, url: e.target.value})} placeholder={t('resource.url')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <input value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} placeholder={t('resource.country')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : (editingId ? 'Update' : t('common.save'))}</button></div>
             </form>
@@ -110,17 +110,17 @@ export function Resources() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Resource Details</h3>
+              <h3 className="text-lg font-semibold">{t('resource.details')}</h3>
               <button onClick={closeDetails} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
             </div>
             {detailLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
               <div className="space-y-3">
-                <div><span className="text-sm font-medium text-slate-500">Title</span><p className="text-sm text-slate-900">{selectedItem.title}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Type</span><p className="text-sm text-slate-900">{selectedItem.resource_type}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Category</span><p className="text-sm text-slate-900">{selectedItem.category || '-'}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Country</span><p className="text-sm text-slate-900">{selectedItem.country || '-'}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">URL</span><p className="text-sm text-slate-900">{selectedItem.url ? <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700">{selectedItem.url}</a> : '-'}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">Status</span><p className="text-sm text-slate-900">{selectedItem.is_active ? 'Active' : 'Inactive'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.fieldTitle')}</span><p className="text-sm text-slate-900">{selectedItem.title}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.type')}</span><p className="text-sm text-slate-900">{selectedItem.resource_type}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.category')}</span><p className="text-sm text-slate-900">{selectedItem.category || '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.country')}</span><p className="text-sm text-slate-900">{selectedItem.country || '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.url')}</span><p className="text-sm text-slate-900">{selectedItem.url ? <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700">{selectedItem.url}</a> : '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.status')}</span><p className="text-sm text-slate-900">{selectedItem.is_active ? 'Active' : 'Inactive'}</p></div>
               </div>
             )}
           </div>

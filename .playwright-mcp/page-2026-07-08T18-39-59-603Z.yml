@@ -1,0 +1,45 @@
+- generic [ref=e30]:
+  - button [ref=e31] [cursor=pointer]:
+    - img [ref=e32]
+  - main [ref=e33]:
+    - generic [ref=e34]:
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - heading "Welcome, Owner!" [level=1] [ref=e37]
+          - paragraph [ref=e38]: Dashboard
+        - button "العربية" [ref=e39] [cursor=pointer]:
+          - img [ref=e40]
+          - generic [ref=e43]: العربية
+      - generic [ref=e44]:
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: Total Suppliers
+            - paragraph [ref=e49]: "0"
+          - img [ref=e51]
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - paragraph [ref=e59]: Total Customers
+            - paragraph [ref=e60]: "0"
+          - img [ref=e62]
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - paragraph [ref=e70]: Active Shipments
+            - paragraph [ref=e71]: "0"
+          - img [ref=e73]
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - paragraph [ref=e80]: Total Invoices
+            - paragraph [ref=e81]: "0"
+          - img [ref=e83]
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - heading "Overview" [level=3] [ref=e88]
+          - paragraph [ref=e89]: No analytics data available.
+        - generic [ref=e90]:
+          - heading "Overview" [level=3] [ref=e91]
+          - paragraph [ref=e92]: No analytics data available.
+      - generic [ref=e94]:
+        - img [ref=e95]
+        - generic [ref=e98]:
+          - heading "Nile Key Platform v1.0" [level=3] [ref=e99]
+          - paragraph [ref=e100]: Your digital gateway for Egyptian exports.

@@ -1,13 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useAuthStore } from '@/store/authStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export function Layout() {
   const loadUser = useAuthStore((s) => s.loadUser);
   const isLoading = useAuthStore((s) => s.isLoading);
   const { i18n } = useTranslation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => { loadUser(); }, []);
   useEffect(() => {
@@ -25,8 +26,8 @@ export function Layout() {
 
   return (
     <div className="flex min-h-screen bg-slate-50" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-      <Sidebar />
-      <main className="flex-1 lg:ml-64 p-6 pt-16 lg:pt-6">
+      <Sidebar collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed((v) => !v)} />
+      <main className={`flex-1 p-6 pt-16 lg:pt-6 transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <Outlet />
       </main>
     </div>

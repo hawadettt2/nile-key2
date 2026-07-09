@@ -1,0 +1,20 @@
+- generic [ref=e3]:
+  - button "English" [ref=e5] [cursor=pointer]:
+    - img [ref=e6]
+    - generic [ref=e9]: English
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e14]: NK
+      - heading "مفتاح النيل" [level=1] [ref=e15]
+      - paragraph [ref=e16]: المنصة الرقمية للتصدير
+    - generic [ref=e17]:
+      - generic [ref=e18]:
+        - generic [ref=e19]: اسم المستخدم
+        - textbox [ref=e20]
+      - generic [ref=e21]:
+        - generic [ref=e22]: كلمة المرور
+        - textbox [ref=e23]
+      - button "تسجيل الدخول" [ref=e24] [cursor=pointer]:
+        - img [ref=e25]
+        - text: تسجيل الدخول
+    - button "ليس لديك حساب؟" [ref=e29] [cursor=pointer]

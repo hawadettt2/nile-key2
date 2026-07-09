@@ -16,11 +16,18 @@ export function Shipments() {
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [form, setForm] = useState({ origin: '', destination: '', carrier: '', service_type: '', weight: 0, weight_unit: 'kg', value: 0, currency: 'USD', items_count: 1, description: '', reference: '' });
   const [rateForm, setRateForm] = useState({ origin: '', destination: '', weight: 1, weight_unit: 'kg' });
+  const [submitting, setSubmitting] = useState(false);
 
   const load = async () => { setLoading(true); try { const res = await listShipments(); setShipments(res.data || []); } catch { setShipments([]); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); try { if (editing) await updateShipment(editing.id, form); else await createShipment(form); setShowForm(false); setEditing(null); setForm({ origin: '', destination: '', carrier: '', service_type: '', weight: 0, weight_unit: 'kg', value: 0, currency: 'USD', items_count: 1, description: '', reference: '' }); load(); } catch { alert('Error'); } };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    try { if (editing) await updateShipment(editing.id, form); else await createShipment(form); setShowForm(false); setEditing(null); setForm({ origin: '', destination: '', carrier: '', service_type: '', weight: 0, weight_unit: 'kg', value: 0, currency: 'USD', items_count: 1, description: '', reference: '' }); load(); }
+    catch { alert('Error'); } finally { setSubmitting(false); }
+  };
   const handleGetRates = async () => { try { const res = await getShippingRates(rateForm); setRates(res.data || []); } catch { alert('Error'); } };
   const openEdit = (s: Shipment) => { setEditing(s); setForm({ origin: s.origin, destination: s.destination, carrier: s.carrier || '', service_type: '', weight: 0, weight_unit: 'kg', value: 0, currency: 'USD', items_count: 1, description: '', reference: '' }); setShowForm(true); };
 
@@ -61,8 +68,8 @@ export function Shipments() {
             <input value={form.carrier} onChange={(e) => setForm({...form, carrier: e.target.value})} placeholder={t('shipment.carrier')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <input type="number" value={form.weight} onChange={(e) => setForm({...form, weight: Number(e.target.value)})} placeholder={t('shipment.weight')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <input type="number" value={form.value} onChange={(e) => setForm({...form, value: Number(e.target.value)})} placeholder={t('shipment.value')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <input value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} placeholder="Description" className="md:col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <div className="md:col-span-2"><button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">{t('common.save')}</button></div>
+            <input value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} placeholder={t('shipment.description')} className="md:col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+            <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : t('common.save')}</button></div>
           </form>
         </div>
       )}

@@ -4,24 +4,16 @@ import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, 
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 
-const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'dashboard' },
-  { path: '/suppliers', icon: Truck, label: 'suppliers' },
-  { path: '/customers', icon: Users, label: 'customers' },
-  { path: '/shipments', icon: Globe, label: 'shipments' },
-  { path: '/invoices', icon: FileText, label: 'invoices' },
-  { path: '/customs', icon: FileArchive, label: 'customs' },
-  { path: '/documents', icon: BookOpen, label: 'documents' },
-  { path: '/resources', icon: Settings, label: 'resources' },
-  { path: '/profile', icon: User, label: 'profile' },
-];
+interface SidebarProps {
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+}
 
-export function Sidebar() {
+export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const { t } = useTranslation();
   const location = useLocation();
   const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const sidebarContent = (
@@ -40,7 +32,7 @@ export function Sidebar() {
             <span className="font-bold text-white text-sm">NK</span>
           </div>
         )}
-        <button onClick={() => setCollapsed(!collapsed)} className="hidden lg:block text-slate-400 hover:text-white">
+        <button onClick={onToggleCollapsed} className="hidden lg:block text-slate-400 hover:text-white">
           {collapsed ? <Menu size={20} /> : <X size={20} />}
         </button>
       </div>

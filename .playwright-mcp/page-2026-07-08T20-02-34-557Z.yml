@@ -1,0 +1,30 @@
+- generic [ref=e30]:
+  - button [ref=e31] [cursor=pointer]:
+    - img [ref=e175]
+  - main [ref=e33]:
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - heading "العملاء" [level=1] [ref=e178]
+        - generic [ref=e179]:
+          - generic [ref=e180] [cursor=pointer]:
+            - img [ref=e181]
+            - text: استيراد CSV
+          - button "إضافة عميل" [ref=e184] [cursor=pointer]:
+            - img [ref=e185]
+            - text: إضافة عميل
+      - generic [ref=e186]:
+        - textbox "بحث" [ref=e187]
+        - button [ref=e188] [cursor=pointer]:
+          - img [ref=e189]
+      - table [ref=e194]:
+        - rowgroup [ref=e195]:
+          - row "الاسم الشخص المسؤول الدولة التصنيف الحالة إجراءات" [ref=e196]:
+            - columnheader "الاسم" [ref=e197]
+            - columnheader "الشخص المسؤول" [ref=e198]
+            - columnheader "الدولة" [ref=e199]
+            - columnheader "التصنيف" [ref=e200]
+            - columnheader "الحالة" [ref=e201]
+            - columnheader "إجراءات" [ref=e202]
+        - rowgroup [ref=e203]:
+          - row "لا توجد بيانات" [ref=e204]:
+            - cell "لا توجد بيانات" [ref=e205]

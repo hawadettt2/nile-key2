@@ -78,6 +78,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   refreshTokens: async () => {
+    set({ error: null });
     const storedRefreshToken = localStorage.getItem('refresh_token');
     if (!storedRefreshToken) return false;
     try {

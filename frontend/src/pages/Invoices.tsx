@@ -23,7 +23,7 @@ export function Invoices() {
 
   const openEdit = (invoice: Invoice) => {
     setEditingId(invoice.id);
-    setForm({ subtotal: invoice.subtotal, tax_rate: 14, currency: invoice.currency, issue_date: invoice.issue_date, due_date: '', notes: '', items: [{ description: '', quantity: 1, unit_price: 0, total: 0 }] });
+    setForm({ subtotal: invoice.subtotal, tax_rate: 14, currency: invoice.currency, issue_date: invoice.issue_date, due_date: '', notes: '', items: invoice.items });
     setShowForm(true);
   };
 
@@ -91,13 +91,13 @@ export function Invoices() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-slate-700">Items</h4>
-                <button type="button" onClick={addItem} className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">+ Add Item</button>
+                <h4 className="text-sm font-semibold text-slate-700">{t('invoice.items')}</h4>
+                <button type="button" onClick={addItem} className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">{t('invoice.addItem')}</button>
               </div>
               {form.items.map((item, i) => (<div key={i} className="grid grid-cols-4 gap-2">
-                <input value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)} placeholder="Description" className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-                <input type="number" value={item.quantity} onChange={(e) => updateItem(i, 'quantity', Number(e.target.value))} placeholder="Qty" className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-                <input type="number" value={item.unit_price} onChange={(e) => updateItem(i, 'unit_price', Number(e.target.value))} placeholder="Price" className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                <input value={item.description} onChange={(e) => updateItem(i, 'description', e.target.value)} placeholder={t('invoice.description')} className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                <input type="number" value={item.quantity} onChange={(e) => updateItem(i, 'quantity', Number(e.target.value))} placeholder={t('invoice.quantity')} className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                <input type="number" value={item.unit_price} onChange={(e) => updateItem(i, 'unit_price', Number(e.target.value))} placeholder={t('invoice.price')} className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
                 <div className="px-3 py-2 bg-slate-50 rounded-lg text-sm font-medium text-slate-700">{item.total.toFixed(2)}</div>
               </div>))}
             </div>
@@ -149,12 +149,12 @@ export function Invoices() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 max-w-lg w-full max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Invoice Details</h3>
+              <h3 className="text-lg font-semibold">{t('invoice.details')}</h3>
               <button onClick={closeDetails} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
             </div>
             {detailLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
               <div className="space-y-3">
-                <div><span className="text-sm font-medium text-slate-500">Invoice Number</span><p className="text-sm text-slate-900 font-mono">{selectedItem.invoice_number}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('invoice.invoiceNumber')}</span><p className="text-sm text-slate-900 font-mono">{selectedItem.invoice_number}</p></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><span className="text-sm font-medium text-slate-500">Subtotal</span><p className="text-sm text-slate-900">{selectedItem.subtotal.toFixed(2)}</p></div>
                   <div><span className="text-sm font-medium text-slate-500">Tax</span><p className="text-sm text-slate-900">{selectedItem.tax_amount?.toFixed(2) || '0.00'}</p></div>

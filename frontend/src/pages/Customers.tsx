@@ -13,14 +13,23 @@ export function Customers() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [form, setForm] = useState({ name: '', contact_person: '', email: '', phone: '', city: '', country: '', category: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const load = async () => { setLoading(true); try { const res = await listCustomers(search ? { search } : {}); setCustomers(res.data || []); } catch { setCustomers([]); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); try { if (editing) await updateCustomer(editing.id, form); else await createCustomer(form); setShowForm(false); setEditing(null); setForm({ name: '', contact_person: '', email: '', phone: '', city: '', country: '', category: '' }); load(); } catch { alert('Error'); } };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      if (editing) await updateCustomer(editing.id, form); else await createCustomer(form);
+      setShowForm(false); setEditing(null); setForm({ name: '', contact_person: '', email: '', phone: '', city: '', country: '', category: '' }); load();
+    } catch { alert('Error'); } finally { setSubmitting(false); }
+  };
   const handleDelete = async (id: number) => { if (!confirm('Sure?')) return; try { await deleteCustomer(id); load(); } catch { alert('Error'); } };
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; if (!file) return; try { await importCustomers(file); load(); } catch { alert('Error'); } };
-  const openEdit = (c: Customer) => { setEditing(c); setForm({ name: c.name, contact_person: c.contact_person || '', email: c.email || '', phone: '', city: '', country: c.country, category: c.category || '' }); setShowForm(true); };
+  const openEdit = (c: Customer) => { setEditing(c); setForm({ name: c.name, contact_person: c.contact_person || '', email: c.email || '', phone: c.phone || '', city: c.city || '', country: c.country, category: c.category || '' }); setShowForm(true); };
 
   return (
     <div>
@@ -44,7 +53,7 @@ export function Customers() {
             <input value={form.contact_person} onChange={(e) => setForm({...form, contact_person: e.target.value})} placeholder={t('customer.contact')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} placeholder={t('customer.email')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <input required value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} placeholder={t('customer.country')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <div className="md:col-span-2"><button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">{t('common.save')}</button></div>
+            <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : t('common.save')}</button></div>
           </form>
         </div>
       )}

@@ -56,11 +56,11 @@ export function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('common.overview')}</h3>
-            <p className="text-sm text-slate-500 text-center py-8">No analytics data available.</p>
+            <p className="text-sm text-slate-500 text-center py-8">{t('dashboard.noAnalytics')}</p>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">{t('common.overview')}</h3>
-            <p className="text-sm text-slate-500 text-center py-8">No analytics data available.</p>
+            <p className="text-sm text-slate-500 text-center py-8">{t('dashboard.noAnalytics')}</p>
           </div>
         </div>
         <div className="bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-xl p-6 text-white">

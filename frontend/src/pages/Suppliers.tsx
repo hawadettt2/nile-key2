@@ -13,6 +13,7 @@ export function Suppliers() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Supplier | null>(null);
   const [form, setForm] = useState({ name: '', name_en: '', contact_person: '', email: '', phone: '', city: '', country: 'Egypt', tax_id: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -23,9 +24,11 @@ export function Suppliers() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try { if (editing) await updateSupplier(editing.id, form); else await createSupplier(form);
       setShowForm(false); setEditing(null); setForm({ name: '', name_en: '', contact_person: '', email: '', phone: '', city: '', country: 'Egypt', tax_id: '' }); load();
-    } catch { alert('Error'); }
+    } catch { alert('Error'); } finally { setSubmitting(false); }
   };
   const handleDelete = async (id: number) => { if (!confirm('Are you sure?')) return; try { await deleteSupplier(id); load(); } catch { alert('Error'); } };
   const openEdit = (s: Supplier) => { setEditing(s); setForm({ name: s.name, name_en: '', contact_person: s.contact_person || '', email: s.email || '', phone: s.phone || '', city: s.city || '', country: 'Egypt', tax_id: '' }); setShowForm(true); };
@@ -55,7 +58,7 @@ export function Suppliers() {
             <input value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} placeholder={t('supplier.phone')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <input value={form.city} onChange={(e) => setForm({...form, city: e.target.value})} placeholder={t('supplier.city')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
             <input value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} placeholder={t('supplier.country')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <div className="md:col-span-2"><button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">{t('common.save')}</button></div>
+            <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : t('common.save')}</button></div>
           </form>
         </div>
       )}
