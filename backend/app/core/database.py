@@ -452,17 +452,24 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     
     # ===== استيراد داخلي لتجنب Circular Import =====
     from app.core.security import get_password_hash
+    import os
     
     # ===== إنشاء المستخدم الافتراضي (Owner) =====
     c.execute("SELECT id, username FROM users WHERE email = ?", ("owner@nile-key.com",))
     owner_row = c.fetchone()
     if not owner_row:
+        owner_password = os.environ.get("OWNER_PASSWORD")
+        if not owner_password:
+            raise RuntimeError(
+                "OWNER_PASSWORD is not set. "
+                "Set OWNER_PASSWORD environment variable before starting the application."
+            )
         c.execute("""
             INSERT INTO users (email, password_hash, full_name, username, role)
             VALUES (?, ?, ?, ?, ?)
         """, (
             "owner@nile-key.com",
-            get_password_hash("NileKey2024!"),
+            get_password_hash(owner_password),
             "Owner",
             "owner",
             "owner"
