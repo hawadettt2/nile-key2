@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from datetime import datetime
+import os
 import sqlite3
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.core.database import get_db, execute_update
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
@@ -9,6 +13,18 @@ from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token, Reg
 from app.schemas.common import MessageResponse
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
+limiter = Limiter(key_func=get_remote_address)
+
+
+def _rate_limit(limit_str: str):
+    def decorator(func):
+        db_url = os.environ.get("DATABASE_URL", "")
+        if "test" in db_url.lower():
+            return func
+        return limiter.limit(limit_str)(func)
+    return decorator
+
+
 security = HTTPBearer(auto_error=False)
 
 
@@ -41,7 +57,8 @@ def require_role(allowed_roles: list):
 
 
 @router.post("/register", response_model=RegisterResponse)
-def register(user_data: UserCreate):
+@_rate_limit("5/minute")
+def register(user_data: UserCreate, request: Request):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE email = ? OR username = ?", (user_data.email, user_data.username))
@@ -63,7 +80,8 @@ def register(user_data: UserCreate):
 
 
 @router.post("/login", response_model=Token)
-def login(credentials: UserLogin):
+@_rate_limit("5/minute")
+def login(credentials: UserLogin, request: Request):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (credentials.username, credentials.username))
@@ -80,7 +98,8 @@ def login(credentials: UserLogin):
 
 
 @router.post("/refresh", response_model=Token)
-def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+@_rate_limit("5/minute")
+def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security), request: Request = None):
     token = credentials.credentials
     payload = decode_token(token)
     if not payload or payload.get("type") != "refresh":
