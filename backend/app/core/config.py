@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     ETA_BASE_URL: str = "https://api.invoicing.eta.gov.eg"
 
     # ========== CORS ==========
-    ALLOWED_ORIGINS: List[str] = ["*"]
+    ALLOWED_ORIGINS: List[str] = []
 
     class Config:
         env_file = ".env"
@@ -50,6 +50,11 @@ class Settings(BaseSettings):
                 "SECRET_KEY is not secure. "
                 "Set a production-ready SECRET_KEY (at least 32 characters) "
                 "and do not use 'change-me-in-production'."
+            )
+        if "*" in self.ALLOWED_ORIGINS:
+            raise RuntimeError(
+                "ALLOWED_ORIGINS must not contain '*'. "
+                "Explicitly list allowed origins when allow_credentials=True."
             )
 
 
