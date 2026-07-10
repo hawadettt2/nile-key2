@@ -12,6 +12,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.csrf import CSRFMiddleware
 from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents
 
 
@@ -76,6 +77,7 @@ app.add_middleware(
 )
 
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(CSRFMiddleware)
 
 # ========== تسجيل الـ Routers ==========
 app.include_router(auth.router)

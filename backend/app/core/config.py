@@ -3,7 +3,7 @@
 """
 
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 ساعة
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7       # 7 أيام
     ALGORITHM: str = "HS256"
+
+    # ========== Cookies ==========
+    ACCESS_TOKEN_COOKIE_NAME: str = "access_token"
+    REFRESH_TOKEN_COOKIE_NAME: str = "refresh_token"
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: str = "lax"
+    COOKIE_DOMAIN: Optional[str] = None
 
     # ========== LetMeShip API ==========
     LETME_API_ID: str = ""

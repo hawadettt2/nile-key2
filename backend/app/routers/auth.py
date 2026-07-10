@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from datetime import datetime
 import os
@@ -7,6 +7,7 @@ import sqlite3
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+from app.core.config import settings
 from app.core.database import get_db, execute_update
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
 from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token, RegisterResponse
@@ -28,10 +29,12 @@ def _rate_limit(limit_str: str):
 security = HTTPBearer(auto_error=False)
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    if credentials is None:
+def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = request.cookies.get(settings.ACCESS_TOKEN_COOKIE_NAME)
+    if not token and credentials:
+        token = credentials.credentials
+    if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    token = credentials.credentials
     payload = decode_token(token)
     if not payload or payload.get("type") != "access":
         raise HTTPException(status_code=401, detail="Invalid or expired token")
@@ -81,7 +84,7 @@ def register(user_data: UserCreate, request: Request):
 
 @router.post("/login", response_model=Token)
 @_rate_limit("5/minute")
-def login(credentials: UserLogin, request: Request):
+def login(credentials: UserLogin, request: Request, response: Response):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (credentials.username, credentials.username))
@@ -94,12 +97,30 @@ def login(credentials: UserLogin, request: Request):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     access = create_access_token({"sub": str(user["id"]), "role": user["role"]})
     refresh = create_refresh_token({"sub": str(user["id"])})
+    response.set_cookie(
+        key=settings.ACCESS_TOKEN_COOKIE_NAME,
+        value=access,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+    )
+    response.set_cookie(
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+    )
     return Token(access_token=access, refresh_token=refresh)
 
 
 @router.post("/refresh", response_model=Token)
 @_rate_limit("5/minute")
-def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security), request: Request = None):
+def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security), request: Request = None, response: Response = None):
     token = credentials.credentials
     payload = decode_token(token)
     if not payload or payload.get("type") != "refresh":
@@ -107,6 +128,24 @@ def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security),
     user_id = payload.get("sub")
     access = create_access_token({"sub": user_id})
     refresh = create_refresh_token({"sub": user_id})
+    response.set_cookie(
+        key=settings.ACCESS_TOKEN_COOKIE_NAME,
+        value=access,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+    )
+    response.set_cookie(
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
+        value=refresh,
+        httponly=True,
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+    )
     return Token(access_token=access, refresh_token=refresh)
 
 

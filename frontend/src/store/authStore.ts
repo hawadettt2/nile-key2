@@ -35,9 +35,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await apiLogin(username, password);
-      const { access_token, refresh_token } = response.data;
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
+      const { refresh_token } = response.data;
+      if (refresh_token) {
+        localStorage.setItem('refresh_token', refresh_token);
+      }
       const meRes = await getMe();
       set({ user: meRes.data, isAuthenticated: true, isLoading: false });
     } catch (err: unknown) {
@@ -58,20 +59,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     set({ user: null, isAuthenticated: false, error: null });
     window.location.href = '/login';
   },
 
   loadUser: async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) { set({ isAuthenticated: false, isLoading: false }); return; }
+    set({ isLoading: true });
     try {
       const response = await getMe();
       set({ user: response.data, isAuthenticated: true, isLoading: false });
     } catch {
-      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
@@ -83,12 +81,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (!storedRefreshToken) return false;
     try {
       const response = await apiRefreshToken({ refresh_token: storedRefreshToken });
-      const { access_token, refresh_token } = response.data;
-      localStorage.setItem('access_token', access_token);
+      const { refresh_token } = response.data;
       if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
       return true;
     } catch {
-      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       set({ user: null, isAuthenticated: false });
       return false;
