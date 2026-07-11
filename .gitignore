@@ -31,3 +31,16 @@ frontend/vite.config.js
 
 # Transient tooling logs
 tools/*.log
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# UAT temporary screenshots
+dashboard_*.png
+login_page.png
+uat_final_dashboard.png
+
+# UAT temporary scripts
+uat_issues.py
+uat_verification*.py
+uat_verify*.py

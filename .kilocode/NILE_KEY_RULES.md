@@ -144,3 +144,22 @@ Deliver secure, reliable, and maintainable key management solutions with uncompr
 - No task is complete until the user explicitly approves completion.
 - All verifications must pass before completion declaration.
 - Uncertainty must be reported before declaring completion.
+
+## 24. Official Mode Selection
+- Before any future task: do not assume the operating Mode.
+- If operating modes are documented inside the project, follow those documents.
+- If operating modes are not documented inside the project:
+  - Do not assume any Mode.
+  - Identify the official Kilo Code mode appropriate and supported for this specific task.
+  - State before execution begins:
+    1. The official Mode name.
+    2. The reason it was chosen.
+
+## 25. Automatic Resume
+- If a task is interrupted for any reason (session loss, restart, disconnect, context exhaustion, or any unintended stop):
+  - Resume from the last confirmed checkpoint.
+  - Do not restart from zero.
+  - Do not redo completed work.
+  - Do not skip any step.
+  - Continue automatically until the entire task is complete.
+  - Maintain the same methodology: Evidence First, no assumptions, stop only at approval points or evidence conflicts.
