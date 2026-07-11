@@ -76,15 +76,15 @@ def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict |
     if not fields:
         conn.close()
         return False
-    values.append(record_id)
     cursor = conn.cursor()
     cursor.execute(
         f"UPDATE {table_name} SET {', '.join(fields)}, updated_at = ? WHERE id = ?",
-        (*values, datetime.utcnow().isoformat()),
+        (*values, datetime.utcnow().isoformat(), record_id),
     )
+    updated = cursor.rowcount > 0
     conn.commit()
     conn.close()
-    return True
+    return updated
 
 
 def init_db():

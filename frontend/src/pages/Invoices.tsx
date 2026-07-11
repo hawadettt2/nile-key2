@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { listInvoices, createInvoice, updateInvoice, getInvoice, validateInvoice, cancelInvoice } from '@/services/api';
 import { Plus, X, CheckCircle, XCircle, Edit } from 'lucide-react';
 
-interface Invoice { id: number; invoice_number: string; subtotal: number; tax_amount: number; total: number; currency: string; status: string; issue_date: string; }
+interface Invoice { id: number; invoice_number: string; subtotal: number; tax_amount: number; total: number; currency: string; status: string; issue_date: string; items?: { description: string; quantity: number; unit_price: number; total: number }[]; }
 
 export function Invoices() {
   const { t } = useTranslation();
@@ -23,7 +23,7 @@ export function Invoices() {
 
   const openEdit = (invoice: Invoice) => {
     setEditingId(invoice.id);
-    setForm({ subtotal: invoice.subtotal, tax_rate: 14, currency: invoice.currency, issue_date: invoice.issue_date, due_date: '', notes: '', items: invoice.items });
+    setForm({ subtotal: invoice.subtotal, tax_rate: 14, currency: invoice.currency, issue_date: invoice.issue_date, due_date: '', notes: '', items: invoice.items || [] });
     setShowForm(true);
   };
 

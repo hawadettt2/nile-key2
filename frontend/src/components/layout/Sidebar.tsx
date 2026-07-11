@@ -9,6 +9,18 @@ interface SidebarProps {
   onToggleCollapsed: () => void;
 }
 
+const navItems = [
+  { path: '/', icon: LayoutDashboard, label: 'dashboard' },
+  { path: '/suppliers', icon: Truck, label: 'suppliers' },
+  { path: '/customers', icon: Users, label: 'customers' },
+  { path: '/shipments', icon: Globe, label: 'shipments' },
+  { path: '/invoices', icon: FileText, label: 'invoices' },
+  { path: '/customs', icon: FileArchive, label: 'customs' },
+  { path: '/documents', icon: BookOpen, label: 'documents' },
+  { path: '/resources', icon: Settings, label: 'resources' },
+  { path: '/profile', icon: User, label: 'profile' },
+];
+
 export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const { t } = useTranslation();
   const location = useLocation();

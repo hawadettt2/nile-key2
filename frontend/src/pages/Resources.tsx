@@ -5,6 +5,14 @@ import { Search, Plus, Trash2, X, Globe, Edit3 } from 'lucide-react';
 
 interface Resource { id: number; title: string; resource_type: string; category?: string; country?: string; url?: string; is_active: number; }
 
+function sanitizeResourceUrl(url?: string): string | undefined {
+  if (!url || typeof url !== 'string') return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  if (/^javascript:/i.test(trimmed)) return undefined;
+  return trimmed;
+}
+
 export function Resources() {
   const { t } = useTranslation();
   const [resources, setResources] = useState<Resource[]>([]);
@@ -101,7 +109,7 @@ export function Resources() {
             </div>
             <h3 className="mt-3 font-semibold text-slate-900">{r.title}</h3>
             <p className="text-sm text-slate-500 mt-1">{r.category} {r.country ? `• ${r.country}` : ''}</p>
-            {r.url && <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-600 hover:text-emerald-700 mt-2 inline-block">Visit →</a>}
+            {r.url && sanitizeResourceUrl(r.url) && <a href={sanitizeResourceUrl(r.url)} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-600 hover:text-emerald-700 mt-2 inline-block">Visit →</a>}
           </div>
         ))}
         {resources.length === 0 && !loading && <div className="md:col-span-3 text-center py-12 text-sm text-slate-500">{t('common.noData')}</div>}
@@ -119,7 +127,7 @@ export function Resources() {
                 <div><span className="text-sm font-medium text-slate-500">{t('resource.type')}</span><p className="text-sm text-slate-900">{selectedItem.resource_type}</p></div>
                 <div><span className="text-sm font-medium text-slate-500">{t('resource.category')}</span><p className="text-sm text-slate-900">{selectedItem.category || '-'}</p></div>
                 <div><span className="text-sm font-medium text-slate-500">{t('resource.country')}</span><p className="text-sm text-slate-900">{selectedItem.country || '-'}</p></div>
-                <div><span className="text-sm font-medium text-slate-500">{t('resource.url')}</span><p className="text-sm text-slate-900">{selectedItem.url ? <a href={selectedItem.url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700">{selectedItem.url}</a> : '-'}</p></div>
+                <div><span className="text-sm font-medium text-slate-500">{t('resource.url')}</span><p className="text-sm text-slate-900">{sanitizeResourceUrl(selectedItem.url) ? <a href={sanitizeResourceUrl(selectedItem.url)} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700">{sanitizeResourceUrl(selectedItem.url)}</a> : '-'}</p></div>
                 <div><span className="text-sm font-medium text-slate-500">{t('resource.status')}</span><p className="text-sm text-slate-900">{selectedItem.is_active ? 'Active' : 'Inactive'}</p></div>
               </div>
             )}

@@ -5,6 +5,16 @@ from app.schemas.resource import ResourceCreate, ResourceUpdate
 from app.services.base import connection, now_iso, execute_update
 
 
+def _validate_url(url: Optional[str]) -> None:
+    if not isinstance(url, str):
+        return
+    trimmed = url.strip()
+    if not trimmed:
+        return
+    if trimmed.lower().startswith("javascript:"):
+        raise ValueError("Invalid resource URL: javascript: URLs are not allowed")
+
+
 def _resource_row_to_response(row: dict) -> dict:
     is_active = row.get("is_active")
     if is_active is None:
@@ -91,6 +101,7 @@ def get_resource(resource_id: int) -> dict:
 
 
 def create_resource(data: ResourceCreate, current_user: dict) -> dict:
+    _validate_url(data.url)
     with connection() as conn:
         cursor = conn.cursor()
         now = now_iso()
@@ -107,6 +118,7 @@ def create_resource(data: ResourceCreate, current_user: dict) -> dict:
 
 
 def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict) -> dict:
+    _validate_url(data.url)
     with connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT id FROM resources WHERE id = ?", (resource_id,))

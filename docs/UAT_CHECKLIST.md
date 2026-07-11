@@ -28,19 +28,22 @@
 
 ### Logout
 - [ ] تسجيل الخروج من القائمة الجانبية يعمل
-- [ ] إزالة التوكن من التخزين المحلي بعد تسجيل الخروج
+- [ ] إزالة `refresh_token` من التخزين المحلي بعد تسجيل الخروج
 - [ ] التوجيه بعد تسجيل الخروج إلى `/login`
 
 ### Invalid Credentials
 - [ ] اسم مستخدم غير موجود يعرض رسالة خطأ
 - [ ] كلمة مرور خاطئة تعرض رسالة خطأ
 - [ ] الحساب غير المفعل لا يمكنه تسجيل الدخول
-- [ ]_rate limiting أو تأخير في الاستجابة (إن مطبق)
+- [ ] تفعيل Rate Limiting على نقاط نهاية المصادقة (/login, /register, /refresh)
 
 ### Session Persistence
 - [ ] تحديث الصفحة يحافظ على حالة تسجيل الدخول
 - [ ] إعادة فتح المتصفح يحافظ على الجلسة (حسب إعدادات expires)
-- [ ] التوكن يُخزن في `localStorage` بشكل صحيح
+- [ ] توكن المصادقة يُرسل عبر HttpOnly Cookies (بدون تخزين في localStorage)
+- [ ] خصائص الأمان للـ Cookies: HttpOnly, Secure, SameSite, Domain مطابقة للإعدادات
+- [ ] حماية CSRF تعمل على الطلبات التي تغير الحالة (POST/PUT/PATCH/DELETE) مع Cookies
+- [ ] Security Headers مُفعّلة في الاستجابات
 
 ### Token Expiration
 - [ ] انتهاء صلاحية `access_token` يُعيد التوجيه إلى `/login`
@@ -398,6 +401,23 @@
 - [ ] كتابة `/dashboard` مباشرة في المتصفح تفتح الصفحة (إذا كان مسجلاً)
 - [ ] كتابة `/suppliers` مباشرة في المتصفح تفتح الصفحة (إذا كان مسجلاً)
 - [ ] كتابة `/login` أثناء التسجيل يوجه إلى الصفحة بدون أخطاء
+
+### CSRF Protection
+- [ ] الطلبات التي تغير الحالة مع Cookies تتفحص من خلال Origin/Referer
+- [ ] الطلبات بدون Origin/Referer صالحين تُرفض (403)
+- [ ] الطلبات برسوم التحقق CSRF صالحة تمر بنجاح
+- [ ] الطلبات برسوم Authorization Header تتخطى فحص CSRF
+
+### Cookie Security
+- [ ] Access Token Cookie يحتوي على علم HttpOnly
+- [ ] Refresh Token Cookie يحتوي على علم HttpOnly
+- [ ] SameSite مُعَد حسب الإعدادات (lax أو strict)
+- [ ] Secure flag مُفعل في بيئة الإنتاج
+- [ ] Domain مُعَد عند الحاجة
+
+### Rate Limiting
+- [ ] Rate Limiting مفعّل على نقاط نهاية المصادقة
+- [ ] الطلبات المتكررة تُرجع 429 Too Many Requests
 
 ---
 

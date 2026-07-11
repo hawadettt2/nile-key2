@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { listCustomers, createCustomer, updateCustomer, deleteCustomer, importCustomers } from '@/services/api';
 import { Search, Plus, Pencil, Trash2, X, Upload } from 'lucide-react';
 
-interface Customer { id: number; name: string; contact_person?: string; email?: string; country: string; category?: string; status: string; }
+interface Customer { id: number; name: string; contact_person?: string; email?: string; phone?: string; city?: string; country: string; category?: string; status: string; }
 
 export function Customers() {
   const { t } = useTranslation();

@@ -54,7 +54,10 @@ def get_resource(resource_id: int, current_user: dict = Depends(get_current_user
 
 @router.post("/", response_model=IdResponse)
 def create_resource(data: ResourceCreate, current_user: dict = Depends(require_role(["owner", "manager", "admin_staff"]))):
-    return _create_resource(data=data, current_user=current_user)
+    try:
+        return _create_resource(data=data, current_user=current_user)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.put("/{resource_id}", response_model=MessageResponse)
@@ -64,7 +67,7 @@ def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict =
     except ValueError as exc:
         if str(exc) == "Resource not found":
             raise HTTPException(status_code=404, detail=str(exc))
-        raise
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.delete("/{resource_id}", response_model=MessageResponse)

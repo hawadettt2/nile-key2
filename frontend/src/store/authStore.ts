@@ -65,7 +65,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   loadUser: async () => {
-    set({ isLoading: true });
     try {
       const response = await getMe();
       set({ user: response.data, isAuthenticated: true, isLoading: false });
