@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-07-12
 **Branch:** main
-**Phase:** 1.5 — ETA Engine Complete ✅
+**Phase:** 2.0 — Platform Integration (WP-19 + WP-20 complete)
 
 ---
 
@@ -19,6 +19,7 @@
 | LOW | Email notifications | `backend/app/services/eta/__init__.py` | Notification preparation functions ready; SMTP integration deferred to WP-21 |
 | LOW | POS receipt building | `backend/app/schemas/eta.py` | Receipt schemas ready; full POS receipt builder deferred to WP-21 |
 | LOW | Production CORS origins | `backend/main.py` | `ALLOWED_ORIGINS` configurable via settings; production origins (`nile-key.com`) to be set before deployment |
+| LOW | Shipping backward-compat alias complexity | `app/services/shipping/__init__.py` | Shim pattern resolves circular imports; can be simplified after full migration to new package |
 
 ## Resolved Technical Debt
 
@@ -48,3 +49,9 @@
 | ETA tax rounding | Implemented `eta_round` with 5 decimal places precision | WP-19 |
 | ETA batch delay logic | Implemented `delay_in_hours` logic in `submit_pending_batch` | WP-19 |
 | ETA APScheduler | Integrated APScheduler with hourly status polling and batch submission jobs | WP-19 |
+| Shipping engine missing | Full Shipping Engine implemented: schemas, provider abstraction, LetMeShip + SendCloud clients, service layer, router, scheduler, 34+ tests | WP-20 |
+| Shipping retry strategy | Added tenacity retry with exponential backoff (3 attempts) to provider clients | WP-20 |
+| Shipping audit logging | Implemented `shipping_logs` table for provider API call audit trail | WP-20 |
+| Shipping state machine | Implemented 7-state shipment state machine (pending, booked, in_transit, delivered, returned, lost, cancelled) | WP-20 |
+| Shipping contacts/addresses | Implemented dedicated `contacts` and `addresses` tables | WP-20 |
+| Shipping scheduler | Integrated APScheduler with daily tracking poll job | WP-20 |

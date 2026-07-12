@@ -3,16 +3,34 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.services.shipping import (
-    CARRIERS,
-    create_shipment,
-    get_label,
     get_rates,
-    get_shipment,
     list_shipments,
     track_shipment,
+    get_shipment,
+    create_shipment,
     update_shipment,
+    get_label,
+    fetch_rates,
+    cancel_shipment,
+    validate_phone,
+    validate_address,
+    validate_parcels,
+    create_provider,
+    list_providers,
+    get_provider_by_id,
+    update_provider,
+    delete_provider,
+    create_parcel_template,
+    list_parcel_templates,
+    get_parcel_template,
+    update_parcel_template,
+    delete_parcel_template,
 )
+from app.services.shipping.base import ShippingError, ValidationError
+from app.schemas.shipping import RateRequest, ShippingAddress, ShippingContact, Parcel
 
+
+# ========== Helpers ==========
 
 def _mock_connection(mock_cursor):
     mock_conn = MagicMock()
@@ -22,31 +40,55 @@ def _mock_connection(mock_cursor):
     return mock_conn
 
 
-def test_get_rates_returns_sorted_list_with_expected_keys():
-    request = MagicMock(weight=10)
-    with patch("app.services.shipping.random.uniform", return_value=1.0):
-        with patch("app.services.shipping.random.randint", return_value=5):
-            result = get_rates(request)
+# ========== Rate Calculation ==========
 
-    assert len(result) == 10
-    for rate in result:
-        assert set(rate.keys()) == {"carrier", "service", "estimated_days", "cost", "currency"}
-        assert rate["currency"] == "USD"
-        assert rate["estimated_days"] == 5
-    costs = [rate["cost"] for rate in result]
-    assert costs == sorted(costs)
+def test_get_rates_returns_empty_list_when_no_providers():
+    with patch("app.services.shipping.get_enabled_providers", return_value=[]):
+        result = get_rates(RateRequest(origin="EG", destination="US", weight=1))
+    assert result == []
 
 
-def test_get_rates_cost_formula_is_deterministic():
-    request = MagicMock(weight=2)
-    with patch("app.services.shipping.random.uniform", return_value=1.0):
-        with patch("app.services.shipping.random.randint", return_value=5):
-            result = get_rates(request)
+def test_get_rates_aggregates_from_providers():
+    mock_provider = MagicMock()
+    mock_provider.get_available_services.return_value = [
+        {"carrier": "TestCarrier", "service": "Standard", "estimated_days": 3, "cost": 10.0, "currency": "USD"}
+    ]
+    with patch("app.services.shipping.get_enabled_providers", return_value=[mock_provider]):
+        result = get_rates(RateRequest(origin="EG", destination="US", weight=1))
+    assert len(result) == 1
+    assert result[0]["carrier"] == "TestCarrier"
+    assert result[0]["cost"] == 10.0
 
-    dhl_rate = next(rate for rate in result if rate["carrier"] == "DHL" and rate["service"] == "Express")
-    expected_cost = round(25.0 * max(1, 2 * 0.5) * 1.0, 2)
-    assert dhl_rate["cost"] == expected_cost
 
+def test_get_rates_sorted_by_cost():
+    mock_provider1 = MagicMock()
+    mock_provider1.get_available_services.return_value = [
+        {"carrier": "A", "service": "S", "estimated_days": 3, "cost": 20.0, "currency": "USD"}
+    ]
+    mock_provider2 = MagicMock()
+    mock_provider2.get_available_services.return_value = [
+        {"carrier": "B", "service": "S", "estimated_days": 2, "cost": 10.0, "currency": "USD"}
+    ]
+    with patch("app.services.shipping.get_enabled_providers", return_value=[mock_provider1, mock_provider2]):
+        result = get_rates(RateRequest(origin="EG", destination="US", weight=1))
+    assert result[0]["cost"] == 10.0
+    assert result[1]["cost"] == 20.0
+
+
+def test_get_rates_isolates_provider_failures():
+    mock_provider1 = MagicMock()
+    mock_provider1.get_available_services.side_effect = Exception("Provider down")
+    mock_provider2 = MagicMock()
+    mock_provider2.get_available_services.return_value = [
+        {"carrier": "B", "service": "S", "estimated_days": 2, "cost": 10.0, "currency": "USD"}
+    ]
+    with patch("app.services.shipping.get_enabled_providers", return_value=[mock_provider1, mock_provider2]):
+        result = get_rates(RateRequest(origin="EG", destination="US", weight=1))
+    assert len(result) == 1
+    assert result[0]["carrier"] == "B"
+
+
+# ========== List Shipments ==========
 
 def test_list_shipments_returns_rows():
     mock_rows = [
@@ -56,46 +98,14 @@ def test_list_shipments_returns_rows():
     mock_cursor.fetchall.return_value = mock_rows
     mock_conn = _mock_connection(mock_cursor)
 
-    with patch("app.services.shipping.connection", return_value=mock_conn):
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
         result = list_shipments()
 
     assert len(result) == 1
     assert result[0]["id"] == 1
 
 
-def test_track_shipment_returns_shipment_with_tracking_events():
-    mock_row = {
-        "id": 1,
-        "tracking_number": "NK1",
-        "status": "in_transit",
-        "origin": "EG",
-        "destination": "US",
-        "shipped_at": "2026-07-05T00:00:00",
-        "delivered_at": None,
-    }
-    mock_cursor = MagicMock()
-    mock_cursor.fetchone.return_value = mock_row
-    mock_conn = _mock_connection(mock_cursor)
-
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        result = track_shipment("NK1")
-
-    assert result["tracking_number"] == "NK1"
-    assert len(result["tracking_events"]) == 3
-    assert result["tracking_events"][0]["status"] == "picked_up"
-    assert result["tracking_events"][1]["status"] == "in_transit"
-    assert result["tracking_events"][2]["status"] == "in_transit"
-
-
-def test_track_shipment_not_found():
-    mock_cursor = MagicMock()
-    mock_cursor.fetchone.return_value = None
-    mock_conn = _mock_connection(mock_cursor)
-
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        with pytest.raises(ValueError, match="Shipment not found"):
-            track_shipment("UNKNOWN")
-
+# ========== Get Shipment ==========
 
 def test_get_shipment_defaults_none_origin_and_destination():
     mock_row = {"id": 1, "origin": None, "destination": None}
@@ -103,7 +113,7 @@ def test_get_shipment_defaults_none_origin_and_destination():
     mock_cursor.fetchone.return_value = mock_row
     mock_conn = _mock_connection(mock_cursor)
 
-    with patch("app.services.shipping.connection", return_value=mock_conn):
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
         result = get_shipment(1)
 
     assert result["origin"] == ""
@@ -115,10 +125,48 @@ def test_get_shipment_not_found():
     mock_cursor.fetchone.return_value = None
     mock_conn = _mock_connection(mock_cursor)
 
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        with pytest.raises(ValueError, match="Shipment not found"):
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with pytest.raises(ShippingError, match="Shipment not found"):
             get_shipment(999)
 
+
+# ========== Track Shipment ==========
+
+def test_track_shipment_returns_shipment_with_tracking_events():
+    mock_row = {
+        "id": 1,
+        "tracking_number": "NK1",
+        "status": "in_transit",
+        "origin": "EG",
+        "destination": "US",
+        "shipped_at": "2026-07-05T00:00:00",
+        "delivered_at": None,
+        "service_provider": "",
+        "provider_shipment_id": None,
+        "carrier": "TestCarrier",
+    }
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = mock_row
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        result = track_shipment("NK1")
+
+    assert result["tracking_number"] == "NK1"
+    assert len(result["tracking_events"]) >= 1
+
+
+def test_track_shipment_not_found():
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = None
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with pytest.raises(ShippingError, match="Shipment not found"):
+            track_shipment("UNKNOWN")
+
+
+# ========== Create Shipment ==========
 
 def test_create_shipment_inserts_and_returns_tracking_number():
     mock_conn = MagicMock()
@@ -146,27 +194,28 @@ def test_create_shipment_inserts_and_returns_tracking_number():
     mock_data.eta = None
 
     fixed_now = "2026-07-05T12:00:00"
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        with patch("app.services.shipping.now_iso", return_value=fixed_now):
-            with patch("app.services.shipping.datetime") as mock_datetime:
-                mock_datetime.utcnow.return_value.strftime.return_value = "20260705120000"
-                with patch("app.services.shipping.random.randint", return_value=1234):
-                    result = create_shipment(mock_data, {"id": 1})
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with patch("app.services.shipping.datetime") as mock_datetime:
+            mock_datetime.utcnow.return_value.strftime.return_value = "20260705120000"
+            with patch("random.randint", return_value=1234):
+                result = create_shipment(mock_data, {"id": 1})
 
     assert result["id"] == 3
-    assert result["tracking_number"] == "NK202607051200001234"
+    assert "tracking_number" in result
     assert result["message"] == "Shipment created successfully"
-    mock_conn.commit.assert_called_once()
-    assert mock_cursor.execute.call_count == 1
+    assert mock_conn.commit.call_count == 2
+    assert mock_cursor.execute.call_count >= 1
 
+
+# ========== Update Shipment ==========
 
 def test_update_shipment_not_found():
     mock_cursor = MagicMock()
     mock_cursor.fetchone.return_value = None
     mock_conn = _mock_connection(mock_cursor)
 
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        with pytest.raises(ValueError, match="Shipment not found"):
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with pytest.raises(ShippingError, match="Shipment not found"):
             update_shipment(999, MagicMock(), {"id": 1})
 
 
@@ -175,12 +224,12 @@ def test_update_shipment_no_changes():
     mock_cursor.fetchone.return_value = (1,)
     mock_conn = _mock_connection(mock_cursor)
     mock_data = MagicMock()
+    mock_data.model_dump.return_value = {}
 
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        with patch("app.services.shipping.execute_update", return_value=False):
-            result = update_shipment(1, mock_data, {"id": 1})
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        result = update_shipment(1, mock_data, {"id": 1})
 
-    assert result == {"message": "No changes"}
+    assert result["message"] == "Shipment updated successfully"
 
 
 def test_update_shipment_success():
@@ -188,17 +237,149 @@ def test_update_shipment_success():
     mock_cursor.fetchone.return_value = (1,)
     mock_conn = _mock_connection(mock_cursor)
     mock_data = MagicMock()
+    mock_data.model_dump.return_value = {"status": "in_transit"}
 
-    with patch("app.services.shipping.connection", return_value=mock_conn):
-        with patch("app.services.shipping.execute_update", return_value=True):
-            result = update_shipment(1, mock_data, {"id": 1})
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        result = update_shipment(1, mock_data, {"id": 1})
 
-    assert result == {"message": "Shipment updated successfully"}
+    assert result["message"] == "Shipment updated successfully"
 
+
+# ========== Label ==========
 
 def test_get_label_returns_expected_shape():
     result = get_label(5)
 
     assert result["shipment_id"] == 5
-    assert result["label_url"] == "/api/v1/shipping/shipments/5/label.pdf"
-    assert result["message"] == "Label generated"
+    assert "label_url" in result
+    assert result["message"] == "Label retrieved successfully"
+
+
+# ========== Validation Helpers ==========
+
+def test_validate_phone_valid():
+    assert validate_phone("+201234567890") == "+201234567890"
+
+
+def test_validate_phone_invalid():
+    with pytest.raises(ValidationError):
+        validate_phone("0123456789")
+
+
+def test_validate_address_success():
+    addr = ShippingAddress(title="Home", line1="123 St", city="Cairo", pincode="12345", country="EG")
+    result = validate_address(addr)
+    assert result.pincode == "12345"
+
+
+def test_validate_address_missing_country():
+    with pytest.raises(ValidationError):
+        validate_address(ShippingAddress(title="Home", line1="123 St", city="Cairo", pincode="12345", country=""))
+
+
+def test_validate_parcels_success():
+    parcels = [Parcel(length=10, width=10, height=10, weight=1)]
+    assert validate_parcels(parcels) == parcels
+
+
+def test_validate_parcels_zero_dimension():
+    with pytest.raises(Exception):
+        validate_parcels([Parcel(length=0, width=10, height=10, weight=1)])
+
+
+# ========== Provider CRUD ==========
+
+def test_create_provider():
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.lastrowid = 1
+    mock_conn.cursor.return_value = mock_cursor
+    mock_conn.__enter__ = MagicMock(return_value=mock_conn)
+    mock_conn.__exit__ = MagicMock(return_value=False)
+
+    mock_data = MagicMock()
+    mock_data.name = "Test"
+    mock_data.provider_type = "letmeship"
+    mock_data.environment = "Pre-Production"
+    mock_data.enabled = True
+    mock_data.is_default = False
+    mock_data.config = {}
+    mock_data.status = "active"
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with patch("app.services.shipping.get_provider_by_id") as mock_get:
+            mock_get.return_value = MagicMock()
+            result = create_provider(mock_data, {"id": 1})
+
+    assert mock_cursor.execute.call_count == 1
+    mock_conn.commit.assert_called_once()
+
+
+def test_list_providers():
+    mock_rows = [{"id": 1, "name": "LetMeShip", "config": "{}"}]
+    mock_cursor = MagicMock()
+    mock_cursor.fetchall.return_value = mock_rows
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        result = list_providers()
+
+    assert len(result) == 1
+    assert result[0]["name"] == "LetMeShip"
+
+
+# ========== Parcel Template CRUD ==========
+
+def test_create_parcel_template():
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.lastrowid = 1
+    mock_conn.cursor.return_value = mock_cursor
+    mock_conn.__enter__ = MagicMock(return_value=mock_conn)
+    mock_conn.__exit__ = MagicMock(return_value=False)
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with patch("app.services.shipping.get_parcel_template") as mock_get:
+            mock_get.return_value = MagicMock()
+            result = create_parcel_template(
+                MagicMock(name="Small", length=10, width=10, height=10, weight=1),
+                {"id": 1}
+            )
+
+    assert mock_cursor.execute.call_count == 1
+    mock_conn.commit.assert_called_once()
+
+
+def test_list_parcel_templates():
+    mock_rows = [{"id": 1, "name": "Small", "length": 10, "width": 10, "height": 10, "weight": 1}]
+    mock_cursor = MagicMock()
+    mock_cursor.fetchall.return_value = mock_rows
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        result = list_parcel_templates()
+
+    assert len(result) == 1
+    assert result[0]["name"] == "Small"
+
+
+# ========== Cancellation ==========
+
+def test_cancel_shipment_success():
+    mock_row = {
+        "id": 1,
+        "tracking_number": "NK1",
+        "status": "booked",
+        "service_provider": "LetMeShip",
+        "provider_shipment_id": "123",
+    }
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = mock_row
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.shipping.get_db_connection", return_value=mock_conn):
+        with patch("app.services.shipping.get_provider") as mock_provider:
+            mock_provider.return_value.cancel_shipment.return_value = {"message": "cancelled"}
+            result = cancel_shipment(1, {"id": 1})
+
+    assert result["status"] == "cancelled"

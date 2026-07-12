@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.core.csrf import CSRFMiddleware
 from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
+from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
 from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta
 
 
@@ -53,11 +54,19 @@ async def lifespan(app: FastAPI):
     
     # Initialize ETA background scheduler
     try:
-        scheduler = init_scheduler()
+        eta_scheduler = init_scheduler()
         start_scheduler()
         print("[SUCCESS] ETA scheduler started")
     except Exception as exc:
         print(f"[WARNING] ETA scheduler failed to start: {exc}")
+
+    # Initialize Shipping background scheduler
+    try:
+        shipping_scheduler = init_shipping_scheduler()
+        start_shipping_scheduler()
+        print("[SUCCESS] Shipping scheduler started")
+    except Exception as exc:
+        print(f"[WARNING] Shipping scheduler failed to start: {exc}")
     
     yield
     # ========== SHUTDOWN ==========
@@ -67,6 +76,11 @@ async def lifespan(app: FastAPI):
         print("[SUCCESS] ETA scheduler stopped")
     except Exception as exc:
         print(f"[WARNING] ETA scheduler shutdown error: {exc}")
+    try:
+        shutdown_shipping_scheduler()
+        print("[SUCCESS] Shipping scheduler stopped")
+    except Exception as exc:
+        print(f"[WARNING] Shipping scheduler shutdown error: {exc}")
 
 
 # إنشاء تطبيق FastAPI

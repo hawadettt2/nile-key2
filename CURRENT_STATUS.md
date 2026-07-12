@@ -3,8 +3,8 @@
 **Last Updated:** 2026-07-12
 **Branch:** main
 **Commit:** d6ba84a (docs) + WP-19 working tree
-**Phase:** 1.5 — إعادة محاذاة منطق الأعمال (WP-19 مكتمل 100%)
-**Next Phase:** 1.5 — إعادة محاذاة منطق الأعمال
+**Phase:** 1.5 — إعادة محاذاة منطق الأعمال (WP-19 + WP-20 مكتملان 100%)
+**Next Phase:** 2.0 — تكامل المنصة التجارية الأساسية (WP-21)
 
 ---
 
@@ -31,24 +31,26 @@
 | WP-17B | ✅ Complete | Service-layer unit tests added; 59 new tests across 7 service modules; production code unchanged |
 | WP-18 | ✅ Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
 | WP-19 | ✅ Complete | ETA Engine — full implementation with production-ready infrastructure |
+| WP-20 | ✅ Complete | Shipping Engine — provider abstraction, LetMeShip + SendCloud clients, scheduler, 34+ tests |
 
 ## Current System State
 
 - **Backend:** Starts successfully with `init_db()` and environment-based configuration
 - **Database:** SQLite (`nile_key.db`) with cleaned schema; migrations present in `backend/alembic/`
 - **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
+- **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 196 existing + 71 new ETA tests = 267 total test suite (259 passing, 8 skipped by design)
-- **Routers:** ETA router registered at `/api/v1/eta` with endpoints for connectors, invoice operations, receipt operations, batch operations, and notification preparation
-- **ETA Schemas:** Pydantic schemas matching ETA Schema v1.0 (invoices) and v1.2 (receipts) implemented
-- **ETA Client:** HTTP client with OAuth2 client_credentials flow, submit/cancel/status/PDF operations, tenacity retry
-- **ETA Service Layer:** Complete business logic for connector CRUD, invoice submission, cancellation, status tracking, receipt submission, batch submission with delay logic, status polling, idempotency, error mapping, audit logging, Cairo timezone conversion, tax rounding
-- **APScheduler:** Integrated with hourly status polling and batch submission jobs
+- **Tests:** 272 passing, 8 skipped by design
+- **Routers:** ETA router registered at `/api/v1/eta`; Shipping router extended at `/api/v1/shipping` with provider CRUD, parcel templates, cancel endpoint
+- **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
+- **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
+- **Shipping Service Layer:** Complete business logic for rate aggregation, booking, labels, tracking, cancellation, provider/parcel-template CRUD
+- **Shipping Scheduler:** APScheduler daily tracking poll job
 - **Docker:** Dockerfiles and docker-compose.yml present and validated; artifacts consistent with project configuration
 
-## WP-19 Implementation Summary
+## WP-19 + WP-20 Implementation Summary
 
-### Completed Components
+### WP-19: ETA Engine (Completed)
 - **ETA Pydantic Schemas:** InvoiceSubmit (v1.0), ReceiptSubmit (v1.2), ETAAuthConfig
 - **ETA HTTP Client (ETAClient):** OAuth2 with 3-minute token buffer, tenacity retry (3 attempts, exponential backoff), idempotency keys
 - **Business Logic from Reference Repo:**
@@ -57,31 +59,33 @@
   - `delay_in_hours` logic in batch submission (from `main.py` get_batch_invoices)
   - `check_existing_eta_logs` — log existence check (from `main.py`)
   - Notification preparation functions (from `utils.py`)
-- **Invoice Operations:**
-  - `_build_eta_invoice_payload` — builds ETA payload with proper Cairo timezone conversion
-  - `submit_invoice_to_eta` — submits with idempotency check and error mapping
-  - `cancel_eta_invoice` — cancels via ETA API
-  - `get_eta_invoice_status` — polls ETA and updates local status
-  - `download_eta_pdf` — downloads PDF from ETA
-- **Receipt Operations:**
-  - `submit_receipt_to_eta` — submits e-receipts with POS-specific OAuth2 headers support
-- **Batch Operations:**
-  - `submit_pending_batch` — batch submission with configurable batch size and delay_in_hours
-- **Status Polling:**
-  - `poll_pending_invoice_statuses` — scheduled polling for submitted invoices
-- **Error Mapping:**
-  - `map_eta_error_to_user_message` — maps ETA HTTP errors to user-friendly Arabic/English messages
-- **Idempotency:**
-  - `generate_idempotency_key` — daily idempotency keys
-  - `check_invoice_idempotency` — prevents duplicate submissions
-- **Audit Logging:**
-  - `create_eta_log` — creates ETA log entries
-  - `update_eta_log_documents` — updates log documents
-- **Database:**
-  - `eta_connectors` table with CRUD operations
-  - `eta_logs` table for audit trail
-  - `eta_log_documents` table for child documents
-  - Invoices table extended with ETA columns
+- **Invoice Operations:** submit, cancel, status, PDF download
+- **Receipt Operations:** submit e-receipts with POS-specific OAuth2 headers
+- **Batch Operations:** batch submission with configurable batch size and delay
+- **Status Polling:** scheduled polling for submitted invoices
+- **Error Mapping:** user-friendly Arabic/English error messages
+- **Idempotency:** daily idempotency keys and duplicate submission checks
+- **Audit Logging:** `create_eta_log` and `update_eta_log_documents`
+- **Database:** `eta_connectors`, `eta_logs`, `eta_log_documents` tables; invoices extended with ETA columns
+- **Test Coverage:** 71 pytest tests (70 passing, 1 skipped by design)
+
+### WP-20: Shipping Engine (Completed)
+- **Shipping Pydantic Schemas:** RateRequest, ShippingRate, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
+- **Provider Abstraction:** Abstract `ShippingProvider` interface, registry, error hierarchy
+- **LetMeShip Client:** Basic Auth, `/available`, `/shipments`, `/tracking`, `/documents` endpoints, tenacity retry
+- **SendCloud Client:** API key/secret Basic Auth, `/v3/shipping-options`, `/v3/shipments/announce`, `/v2/labels`, `/v2/parcels`, `/v3/shipments/{id}/cancel`, tenacity retry
+- **Business Logic:**
+  - Rate aggregation across enabled providers with error isolation
+  - Shipment booking with validation (phone E.164, address, parcel dimensions)
+  - Label retrieval with filesystem storage + DB metadata
+  - Tracking with provider status mapping to local state machine
+  - Cancellation with provider rollback + local state update
+- **Database:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses` tables; shipments extended with shipping columns
+- **Scheduler:** APScheduler daily tracking poll (`shipping_tracking_poll`)
+- **Router:** Extended with provider CRUD, parcel template CRUD, cancel endpoint, POST `/rates`
+- **Backward Compatibility:** Existing `app.services.shipping` imports preserved via shim
+- **Secrets:** Loaded exclusively from environment variables (`LETME_API_ID`, `LETME_API_PASSWORD`, `SENDCLOUD_PUBLIC_KEY`, `SENDCLOUD_SECRET_KEY`)
+- **Test Coverage:** 34 shipping-specific tests (9 router + 25 service), all passing
 
 ### Test Coverage
 - 71 pytest tests (70 passing, 1 skipped by design) covering:
@@ -119,7 +123,8 @@
 
 - All WP-01 through WP-18 closed successfully
 - WP-19 completed — ETA Engine fully implemented with production-ready infrastructure
-- Next immediate task: WP-20 (Shipping Engine) — pending formal WP-19 approval
+- WP-20 completed — Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
+- Next immediate task: WP-21 (Platform Integration) — integrate ETA Engine, Shipping Engine, and remaining Nile Key domains
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md` (both subordinate to PLAN.md)
 
@@ -129,4 +134,4 @@ If resuming after session interruption:
 1. Read `PLAN.md` Section 12 (Project Continuity Protocol)
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
-4. Resume WP-20: Shipping Engine
+4. Resume WP-21: Platform Integration

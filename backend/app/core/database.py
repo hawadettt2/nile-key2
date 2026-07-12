@@ -263,6 +263,116 @@ def _ensure_resources_schema(c: sqlite3.Cursor):
     })
 
 
+def _ensure_shipping_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "shipments", {
+        "service_provider": "TEXT",
+        "provider_shipment_id": "TEXT",
+        "awb_number": "TEXT",
+        "tracking_url": "TEXT",
+        "tracking_status": "TEXT",
+        "tracking_status_info": "TEXT",
+        "shipment_amount": "REAL",
+        "label_url": "TEXT",
+        "pickup_contact_id": "INTEGER",
+        "delivery_contact_id": "INTEGER",
+        "pickup_address_name": "TEXT",
+        "delivery_address_name": "TEXT",
+        "pickup_from_type": "TEXT DEFAULT 'Company'",
+        "delivery_to_type": "TEXT DEFAULT 'Customer'",
+        "provider_response": "TEXT",
+    })
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS shipping_providers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            provider_type TEXT NOT NULL,
+            environment TEXT DEFAULT 'Pre-Production',
+            enabled INTEGER DEFAULT 0,
+            is_default INTEGER DEFAULT 0,
+            config TEXT,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP,
+            created_by INTEGER
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS shipping_parcel_templates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            length REAL NOT NULL,
+            width REAL NOT NULL,
+            height REAL NOT NULL,
+            weight REAL NOT NULL,
+            description TEXT,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS shipping_labels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shipment_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+            provider_shipment_id TEXT NOT NULL,
+            label_url TEXT NOT NULL,
+            label_format TEXT DEFAULT 'PDF',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS shipping_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            shipment_id INTEGER,
+            provider TEXT NOT NULL,
+            action TEXT NOT NULL,
+            request_payload TEXT,
+            response_payload TEXT,
+            error_message TEXT,
+            status_code INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+
+def _ensure_contacts_addresses_schema(c: sqlite3.Cursor):
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
+            mobile_no TEXT,
+            gender TEXT,
+            customer_id INTEGER,
+            supplier_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS addresses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            address_title TEXT NOT NULL,
+            address_line1 TEXT NOT NULL,
+            address_line2 TEXT,
+            city TEXT NOT NULL,
+            pincode TEXT NOT NULL,
+            country TEXT NOT NULL,
+            country_code TEXT,
+            entity_type TEXT,
+            entity_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+
 def _ensure_documents_schema(c: sqlite3.Cursor):
     ensure_columns(c, "documents", {
         "document_type": "TEXT",
@@ -519,6 +629,9 @@ def _create_tables(c: sqlite3.Cursor):
         )
     """)
     _ensure_resources_schema(c)
+    
+    _ensure_shipping_schema(c)
+    _ensure_contacts_addresses_schema(c)
     
     # ========== جدول سجل التدقيق ==========
     c.execute("""
