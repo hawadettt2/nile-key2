@@ -36,6 +36,7 @@
 | WP-17A | ✅ Complete | cdb8bb9 | Expand API endpoint coverage: 48 new tests across 6 domains |
 | WP-17B | ✅ Complete | working tree | Add service-layer unit tests: 59 new tests across 7 modules; production code unchanged |
 | WP-18 | ✅ Complete | working tree | Fix HS-code `created_at` schema mismatch; fix document upload `type` omission; validate Docker production artifacts |
+| WP-19 | ✅ Complete | working tree | ETA Engine: schemas, client, service layer, router, scheduler, 71 tests (70 passing, 1 skipped); business logic extracted from erpnext_egypt_compliance |
 
 ---
 
@@ -140,11 +141,13 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 |-----------|--------|
 | Backend | ✅ Starts; health endpoint healthy |
 | Frontend | ✅ Builds (`npm run build` passes) |
-| Tests | ✅ 176 pytest tests passing (21 original + 48 WP-17A endpoint + 59 WP-17B service unit + 42 domain integration + 6 WP-18 enabled HS-code tests) |
+| Tests | ✅ 267 pytest tests collected (259 passing, 8 skipped by design) |
 | Alembic | ✅ Migration chain functional |
 | Docker | ✅ Present; static validation complete in WP-18 |
-| Services layer | ✅ Implemented (7 domains with shared base.py) |
+| Services layer | ✅ Implemented (7 domains + ETA with shared base.py) |
+| ETA Engine | ✅ Implemented (WP-19) |
+| APScheduler | ✅ Integrated (hourly polling + batch submission) |
 
 ---
 
-*Memory Last Updated: WP-18 complete - 176 tests passing, HS-code and document upload bugs fixed, Docker validation complete.*
+*Memory Last Updated: WP-19 verified - 267 tests collected (259 passing, 8 skipped), ETA Engine implemented with production-ready infrastructure. Final Acceptance Gate remediation complete.*

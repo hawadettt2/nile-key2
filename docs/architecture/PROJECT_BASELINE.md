@@ -1,19 +1,19 @@
 # Project Baseline
 
-**Generated:** 2026-07-06
-**Branch:** wp-13
-**Latest commit:** working tree (WP-18 applied)
-**Working tree:** Includes WP-18 production bug fixes
-**Baseline:** baseline-wp18 (pending tag)
+**Generated:** 2026-07-12
+**Branch:** main
+**Latest commit:** d6ba84a (docs) + WP-19 working tree
+**Working tree:** Includes WP-19 ETA Engine implementation
+**Baseline:** baseline-wp19 (ready for approval)
 
 ---
 
 ## 1. Current Repository Status
 
-- **Modified files:** `backend/app/core/database.py`, `backend/app/services/document.py`, `backend/tests/test_customs.py`, `backend/tests/test_documents.py`, plus documentation files
-- **Untracked files:** `backend/tests/test_services/` (WP-17B service-layer unit tests)
-- **Branch status:** Latest work on `origin/wp-13`
-- **Tag:** `baseline-wp17a` exists; `baseline-wp18` pending
+- **Modified files:** `backend/app/core/database.py`, `backend/main.py`, `backend/requirements.txt`, `PLAN.md`, `CURRENT_STATUS.md`, `TECH_DEBT.md`, `docs/architecture/*.md`, plus documentation files
+- **New WP-19 files:** `backend/app/schemas/eta.py`, `backend/app/services/eta/__init__.py`, `backend/app/services/eta/eta_client.py`, `backend/app/routers/eta.py`, `backend/app/core/eta_scheduler.py`, `backend/tests/test_eta.py`
+- **Branch status:** Latest work on `origin/main`
+- **Tag:** `baseline-wp18` exists; `baseline-wp19` ready for approval
 
 ## 2. Current Git Status
 
@@ -53,6 +53,7 @@ Project is tracked in Git with committed work through WP-17A. Working tree inclu
 | HS-code created_at mismatch | ✅ Resolved (WP-18 complete) | N/A |
 | Document upload type omission | ✅ Resolved (WP-18 complete) | N/A |
 | Docker validation | ⏳ Static validation complete; runtime validation pending environment | Low |
+| Email notifications | ⏳ Deferred to WP-21 (SMTP integration) | Low |
 
 ## 7. Existing Architectural Debt
 
@@ -99,7 +100,7 @@ Per PLAN.md Section 10.8 Quality Gates:
 - [x] No broken imports
 - [x] No circular dependencies
 - [x] No hidden runtime errors
-- [x] All WP-18 deliverables complete
+- [x] All WP-19 deliverables complete
 
 Additional criteria:
 - [x] Database schema matches Pydantic schemas
@@ -109,3 +110,4 @@ Additional criteria:
 - [x] Code duplication eliminated
 - [x] Migrations available (WP-10)
 - [x] Docker deployment artifacts present (WP-12)
+- [x] ETA Engine implemented (WP-19) — 71 tests (70 passing, 1 skipped by design)

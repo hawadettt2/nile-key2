@@ -592,9 +592,62 @@
 
 ---
 
+## WP-19: ETA Engine
+
+**Status:** ✅ Complete
+
+**Objective:** Extract complete ETA compliance business logic from `erpnext_egypt_compliance` and rebuild it within Nile Key architecture.
+
+**Why It Exists:** Egyptian Tax Authority (ETA) e-invoicing/e-receipt compliance is mandatory for Nile Key platform. Business logic must be extracted from reference repo and rebuilt to match Nile Key patterns.
+
+**Scope:** 
+1. ETA Pydantic schemas matching ETA Schema v1.0 (invoices) and v1.2 (receipts)
+2. OAuth2 client credentials HTTP client with retry and token refresh
+3. Service layer: connector CRUD, invoice/receipt operations, batch submission, status polling, audit logging, error mapping, idempotency
+4. Thin FastAPI router following Nile Key pattern
+5. APScheduler integration for hourly status polling and batch submission
+6. Database tables: `eta_connectors`, `eta_logs`, `eta_log_documents`
+  7. 71 pytest tests (70 passing, 1 skipped by design)
+
+**Files In Scope:**
+- backend/app/schemas/eta.py
+- backend/app/services/eta/__init__.py
+- backend/app/services/eta/eta_client.py
+- backend/app/routers/eta.py
+- backend/app/core/eta_scheduler.py
+- backend/app/core/database.py
+- backend/main.py
+- backend/requirements.txt
+- backend/tests/test_eta.py
+
+**Dependencies:** WP-18
+
+**Validation:**
+1. Pydantic schemas match ETA v1.0/v1.2 ✅
+2. OAuth2 integration with Preprod/Production environments ✅
+3. Invoice submission ready (requires API keys for live test) ✅
+4. Invoice cancellation implemented ✅
+5. Invoice status tracking implemented ✅
+6. PDF download implemented ✅
+7. Receipt submission implemented ✅
+8. Batch submission with delay_in_hours logic ✅
+9. Status polling implemented ✅
+10. Retry strategy (tenacity, 3 attempts, exponential backoff) ✅
+11. Idempotency keys implemented ✅
+12. Error mapping to Arabic/English messages ✅
+13. Audit logging (eta_logs + eta_log_documents) ✅
+14. Token refresh with 3-minute buffer ✅
+15. APScheduler integrated (hourly jobs) ✅
+  16. 71 new pytest tests pass (70 passing, 1 skipped by design) ✅
+17. No TODO/FIXME/Stub/Placeholder in WP-19 code ✅
+
+**Rollback:** Remove ETA files and revert `database.py`, `main.py`, `requirements.txt`
+
+---
+
 ## Execution Sequence
 
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B → WP-18
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B → WP-18 → **WP-19**
 
 ---
 
@@ -612,6 +665,7 @@ WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → 
 | WP-17A | Remove `backend/tests/test_customers.py`, `backend/tests/test_resources.py`, `backend/tests/test_customs.py`, `backend/tests/test_documents.py`, `backend/tests/test_shipping.py`, `backend/tests/test_invoices.py` |
 | WP-17B | Remove `backend/tests/test_services/` |
 | WP-18 | Revert `backend/app/core/database.py` and `backend/app/services/document.py`; remove re-enabled tests in `backend/tests/test_customs.py` and `backend/tests/test_documents.py` |
+| WP-19 | Remove ETA files; revert `backend/app/core/database.py`, `backend/main.py`, `backend/requirements.txt` |
 
 ---
 

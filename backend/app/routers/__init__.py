@@ -6,6 +6,7 @@ from .customers import router
 from .customs import router
 from .resources import router
 from .documents import router
+from .eta import router
 
 __all__ = [
     "auth",
@@ -16,4 +17,5 @@ __all__ = [
     "customs",
     "resources",
     "documents",
+    "eta",
 ]

@@ -13,7 +13,8 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.csrf import CSRFMiddleware
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents
+from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta
 
 
 class SecurityHeadersMiddleware:
@@ -42,16 +43,30 @@ class SecurityHeadersMiddleware:
 async def lifespan(app: FastAPI):
     """
     إدارة دورة حياة التطبيق:
-    - Startup: تهيئة قاعدة البيانات
-    - Shutdown: تنظيف الموارد (إن وجد)
+    - Startup: تهيئة قاعدة البيانات + تشغيل ETA Scheduler
+    - Shutdown: إيقاف ETA Scheduler + تنظيف الموارد
     """
     # ========== STARTUP ==========
     print("[STARTUP] Starting Nile Key API...")
     init_db()
     print("[SUCCESS] Database initialized")
+    
+    # Initialize ETA background scheduler
+    try:
+        scheduler = init_scheduler()
+        start_scheduler()
+        print("[SUCCESS] ETA scheduler started")
+    except Exception as exc:
+        print(f"[WARNING] ETA scheduler failed to start: {exc}")
+    
     yield
     # ========== SHUTDOWN ==========
     print("[SHUTDOWN] Shutting down Nile Key API...")
+    try:
+        shutdown_scheduler()
+        print("[SUCCESS] ETA scheduler stopped")
+    except Exception as exc:
+        print(f"[WARNING] ETA scheduler shutdown error: {exc}")
 
 
 # إنشاء تطبيق FastAPI
@@ -70,7 +85,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # إعداد CORS — يُعدل في الإنتاج ليكون أكثر تحديداً
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,  # TODO: حدد في الإنتاج: ["https://nile-key.com", "https://www.nile-key.com"]
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,6 +103,7 @@ app.include_router(customers.router)
 app.include_router(customs.router)
 app.include_router(resources.router)
 app.include_router(documents.router)
+app.include_router(eta.router)
 
 
 @app.get("/", tags=["Root"])

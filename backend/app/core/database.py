@@ -180,7 +180,49 @@ def _ensure_invoices_schema(c: sqlite3.Cursor):
         "updated_at": "TIMESTAMP",
         "internal_id": "TEXT",
         "eta_uuid": "TEXT",
-        "eta_status": "TEXT"
+        "eta_status": "TEXT",
+        "eta_submission_id": "TEXT",
+        "eta_response": "TEXT",
+        "eta_cancellation_reason": "TEXT",
+    })
+
+
+def _ensure_eta_connectors_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "eta_connectors", {
+        "name": "TEXT",
+        "client_id": "TEXT",
+        "client_secret": "TEXT",
+        "environment": "TEXT",
+        "submission_mode": "TEXT",
+        "batch_size": "INTEGER",
+        "delay_in_hours": "INTEGER",
+        "company_id": "INTEGER",
+        "is_default": "INTEGER",
+        "status": "TEXT",
+        "updated_at": "TIMESTAMP",
+        "created_by": "INTEGER",
+    })
+
+
+def _ensure_eta_logs_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "eta_logs", {
+        "from_doctype": "TEXT",
+        "submission_status": "TEXT",
+        "submission_id": "TEXT",
+        "eta_response": "TEXT",
+        "documents": "TEXT",
+    })
+
+
+def _ensure_eta_log_documents_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "eta_log_documents", {
+        "eta_log_id": "INTEGER",
+        "reference_doctype": "TEXT",
+        "reference_document": "INTEGER",
+        "uuid": "TEXT",
+        "long_id": "TEXT",
+        "error": "TEXT",
+        "eta_status": "TEXT",
     })
 
 
@@ -360,6 +402,57 @@ def _create_tables(c: sqlite3.Cursor):
         )
     """)
     _ensure_invoices_schema(c)
+
+    # ========== جدول موصلات ETA ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS eta_connectors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            client_id TEXT NOT NULL,
+            client_secret TEXT NOT NULL,
+            environment TEXT DEFAULT 'Pre-Production',
+            submission_mode TEXT DEFAULT 'Manual',
+            batch_size INTEGER DEFAULT 10,
+            delay_in_hours INTEGER DEFAULT 0,
+            company_id INTEGER,
+            is_default INTEGER DEFAULT 0,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP,
+            created_by INTEGER
+        )
+    """)
+    _ensure_eta_connectors_schema(c)
+
+    # ========== جدول سجل عمليات ETA ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS eta_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            from_doctype TEXT NOT NULL,
+            submission_status TEXT NOT NULL,
+            submission_id TEXT,
+            eta_response TEXT,
+            documents TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    _ensure_eta_logs_schema(c)
+
+    # ========== جدول تفاصيل وثائق ETA (جدول فرعي) ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS eta_log_documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            eta_log_id INTEGER NOT NULL,
+            reference_doctype TEXT,
+            reference_document INTEGER,
+            uuid TEXT,
+            long_id TEXT,
+            error TEXT,
+            eta_status TEXT DEFAULT 'Submitted',
+            FOREIGN KEY (eta_log_id) REFERENCES eta_logs(id)
+        )
+    """)
+    _ensure_eta_log_documents_schema(c)
 
     # ========== جدول البيانات الجمركية ==========
     c.execute("""
