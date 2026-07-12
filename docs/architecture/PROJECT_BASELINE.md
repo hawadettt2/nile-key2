@@ -56,17 +56,17 @@ Project is tracked in Git with committed work through WP-17A. Working tree inclu
 
 ## 7. Existing Architectural Debt
 
-| Debt | Location | Charter Violation | Status |
+| Debt | Location | PLAN.md Reference | Status |
 |------|----------|-------------------|--------|
-| Raw SQL everywhere | `database.py`, routers | Maintainability | Accepted |
-| No rate limiting | Missing | PLAN.md requirement | Open |
-| PostgreSQL migration path | Not started | Charter Section 9 notes SQLite is implementation detail | Open |
+| Raw SQL everywhere | `database.py`, routers | Section 9.9 (Database Rules) | Accepted |
+| No rate limiting | Missing | Section 4 (الأمان) | Open |
+| PostgreSQL migration path | Not started | Section 9.9 (SQLite is implementation detail) | Open |
 | Root `alembic.ini` exists | Project root | N/A | Low |
 | `__pycache__` directories | Throughout Python tree | N/A | Low |
 
 ## 8. Source of Truth
 
-Per ARCHITECTURE_CHARTER.md Section 3, priority must never be reversed:
+Per PLAN.md Section 9.3, priority must never be reversed:
 
 1. **Pydantic Schemas** (`backend/app/schemas/`) — ✅ Defined
 2. FastAPI API Contract — ✅ Generated
@@ -77,16 +77,20 @@ Per ARCHITECTURE_CHARTER.md Section 3, priority must never be reversed:
 
 ## 9. Approved Architecture Documents
 
-- `ARCHITECTURE_CHARTER.md` — Official Engineering Constitution
+- `PLAN.md` — **Master Roadmap v2.1 — Single Source of Truth (Constitution)**
+- `CURRENT_STATUS.md` — Project state (subordinate to PLAN.md)
+- `TECH_DEBT.md` — Technical debt register (subordinate to PLAN.md)
+- `DEPLOYMENT.md` — Deployment guide (derived from PLAN.md)
 - `docs/architecture/REPOSITORY_INTELLIGENCE.md` — Phase 1.5 Intelligence Report
 - `docs/architecture/WORK_PACKAGE_PLAN.md` — Lifecycle-ordered Work Packages
 - `docs/architecture/ENGINEERING_MEMORY.md` — Project state and decisions
 - `docs/architecture/PROJECT_BASELINE.md` — This file
 - `.kilo/plans/` — Kilo session plans
+- `ARCHITECTURE_CHARTER.md` — **Deprecated** — Content merged into PLAN.md; no independent authority
 
 ## 10. Success Criteria for Project Completion
 
-Per ARCHITECTURE_CHARTER.md Section 18 Quality Gates:
+Per PLAN.md Section 10.8 Quality Gates:
 
 - [x] Backend builds and starts
 - [x] Frontend builds

@@ -3,6 +3,7 @@
 **Version:** 1.0
 **Generated:** 2026-06-30
 **Phases:** Architecture Audit (Phase 1) + Repository Intelligence (Phase 1.5)
+**Status:** Historical snapshot — Authority has moved to `PLAN.md` (Master Roadmap v2.1)
 
 ---
 
@@ -16,13 +17,16 @@ Nile Key is a production-grade digital platform for Egyptian exports with a Fast
 - **HIGH:** Massive code duplication across all routers
 - **HIGH:** SQLite unsuitable for production workloads
 
+> **Note:** This report reflects the state as of 2026-06-30. All issues listed have been resolved through WP-01 through WP-18. The current authority for all architectural decisions is `PLAN.md` (Master Roadmap v2.1).
+
 ---
 
 ## 2. Repository Structure
 
 ```
 nile-key-project/
-├── ARCHITECTURE_CHARTER.md          # Official engineering constitution
+├── PLAN.md                          # Master Roadmap v2.1 — Single Source of Truth
+├── ARCHITECTURE_CHARTER.md          # Deprecated — content merged into PLAN.md
 ├── backend/
 │   ├── main.py                      # FastAPI entry point
 │   ├── requirements.txt             # 12 dependencies
@@ -38,12 +42,12 @@ nile-key-project/
 │       └── services/                # Empty stub
 ├── docs/
 │   └── architecture/
-│       ├── ARCHITECTURE_CHARTER.md  # Architecture document
+│       ├── PLAN.md                  # Master Roadmap v2.1 (moved from root)
 │       ├── ADR-0001-shipments-legacy-columns.md  # Architecture decisions
 │       ├── ENGINEERING_MEMORY.md    # Current state
-│       ├── WORK_PACKAGE_PLAN.md       # Execution roadmap
+│       ├── WORK_PACKAGE_PLAN.md     # Execution roadmap
 │       ├── PROJECT_BASELINE.md      # Project snapshot
-│       └── REPOSITORY_INTELLIGENCE.md  # Repository analysis
+│       └── REPOSITORY_INTELLIGENCE.md  # This file
 └── frontend/
     ├── package.json                 # 75 dependencies
     ├── vite.config.ts               # Vite + React
@@ -59,7 +63,7 @@ nile-key-project/
 
 ## 3. Architecture Overview
 
-Per ARCHITECTURE_CHARTER.md: Refactor > Rewrite, Simplify > Expand, Reuse > Duplicate, Correctness > Speed
+Per PLAN.md Section 9.4: Refactor > Rewrite, Simplify > Expand, Reuse > Duplicate, Correctness > Speed
 
 Source of Truth Priority (never reverse):
 1. Backend Pydantic Schemas
@@ -68,6 +72,8 @@ Source of Truth Priority (never reverse):
 4. Database Schema
 5. Frontend Types
 6. Documentation
+
+> **Note:** At the time of this report (2026-06-30), architectural principles were governed by ARCHITECTURE_CHARTER.md. All principles from that document have been merged into PLAN.md Section 9 (Architecture Principles).
 
 ---
 

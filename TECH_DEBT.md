@@ -1,7 +1,8 @@
 # Technical Debt
 
-**Last Updated:** 2026-07-05
-**Branch:** wp-13
+**Last Updated:** 2026-07-12
+**Branch:** main
+**Phase:** 1.5 — ETA Engine In Progress
 
 ---
 
@@ -13,7 +14,12 @@
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
 | MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | Static validation complete; runtime validation pending Docker daemon availability |
 | MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |
-| MEDIUM | PostgreSQL migration path | Not started | Charter Section 9 notes SQLite is an implementation detail |
+| MEDIUM | PostgreSQL migration path | Not started | PLAN.md Section 9.9 notes SQLite is implementation detail |
+| MEDIUM | ETA invoice payload builder incomplete | `backend/app/services/eta/__init__.py` | `_build_eta_invoice_payload` raises NotImplementedError; requires full issuer/receiver/line mapping |
+| MEDIUM | ETA cancellation not implemented | `backend/app/services/eta/__init__.py` | `cancel_eta_invoice` raises NotImplementedError |
+| MEDIUM | Receipt status tracking not implemented | `backend/app/services/eta/__init__.py` | `get_eta_invoice_status` and receipt status tracking raise NotImplementedError |
+| MEDIUM | PDF download not implemented | `backend/app/services/eta/__init__.py` | `download_eta_pdf` raises NotImplementedError |
+| MEDIUM | Batch submission not implemented | `backend/app/services/eta/__init__.py` | `submit_pending_batch` raises NotImplementedError |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
 | LOW | `__pycache__` directories | Throughout Python tree | Mostly gitignored, but scattered `__pycache__` dirs remain |
 

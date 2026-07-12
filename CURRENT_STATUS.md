@@ -1,8 +1,10 @@
 # Current Status
 
-**Last Updated:** 2026-07-06
-**Branch:** wp-13
+**Last Updated:** 2026-07-12
+**Branch:** main
 **Commit:** baseline-wp18 (stable)
+**Phase:** 1.5 — إعادة محاذاة منطق الأعمال (WP-19 قيد التنفيذ)
+**Next Phase:** 1.5 — إعادة محاذاة منطق الأعمال
 
 ---
 
@@ -28,21 +30,38 @@
 | WP-17A | ✅ Complete | API endpoint test coverage expanded; 48 new tests added across 6 domains |
 | WP-17B | ✅ Complete | Service-layer unit tests added; 59 new tests across 7 service modules; production code unchanged |
 | WP-18 | ✅ Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
+| WP-19 | 🔴 In Progress | ETA Engine — schemas, client, service layer, routers, and 71 tests created |
 
 ## Current System State
 
 - **Backend:** Starts successfully with `init_db()` and environment-based configuration
 - **Database:** SQLite (`nile_key.db`) with cleaned schema; migrations present in `backend/alembic/`
-- **Migrations:** Alembic chain applies on existing schema; initial migration is empty (`pass`) because `init_db()` creates tables
+- **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 176 pytest tests pass
-- **Routers:** All 7 non-auth routers are thin (no raw SQL, no DB imports, no business logic)
-- **Service layer:** Fully implemented for all 7 domains with shared base utilities
-- **API endpoint tests:** Comprehensive coverage across all 8 services via WP-17A
-- **Service-layer unit tests:** 59 tests added in WP-17B covering all 7 service modules
+- **Tests:** 176 existing + 71 new ETA tests = 247 total test suite
+- **Routers:** ETA router registered at `/api/v1/eta` with endpoints for connectors, invoice operations, receipt operations, and batch operations
+- **ETA Schemas:** Pydantic schemas matching ETA Schema v1.0 (invoices) and v1.2 (receipts) implemented
+- **ETA Client:** HTTP client with OAuth2 client_credentials flow, submit/cancel/status/PDF operations
+- **ETA Service Layer:** Business logic for connector CRUD, invoice submission, cancellation, status tracking, receipt submission
 - **Docker:** Dockerfiles and docker-compose.yml present and validated; artifacts consistent with project configuration
-- **Frontend API types:** Generated and verified to match OpenAPI contract
-- **Backend health:** `GET /health` returns healthy on running instance
+
+## WP-19 Progress
+
+### Completed
+- ETA Pydantic schemas (InvoiceSubmit, ReceiptSubmit, ETAAuthConfig) matching ETA v1.0/v1.2
+- ETA HTTP client (ETAClient) with OAuth2, retry, and error handling
+- ETA service layer (connector CRUD, invoice/receipt operations, batch submission)
+- ETA database tables (`eta_connectors`, `eta_logs`, `eta_log_documents`)
+- ETA router with thin endpoints following Nile Key pattern
+- 71 pytest tests covering schemas, client, service layer, database, and router
+
+### Pending
+- Full invoice payload builder (`_build_eta_invoice_payload`) with business rules
+- ETA cancellation implementation
+- Receipt status tracking implementation
+- PDF download endpoint testing
+- Full batch submission testing
+- End-to-end integration with real ETA Preprod environment
 
 ## Initialization Flow
 
@@ -55,9 +74,22 @@
 - Frontend lint warnings exist in shadcn/ui generated components (not project-specific)
 - Docker runtime validation pending Docker daemon availability (`docker compose up` not executed in this environment)
 - `__pycache__` directories remain scattered throughout Python tree (mostly gitignored)
+- WP-19 invoice payload builder requires full business rule implementation (issuer/receiver/line mapping)
+- WP-19 receipt operations require POS-specific OAuth2 headers implementation
+- ETA real-environment integration pending (requires production API keys)
 
-## Project Closure Status
+## Project Continuity Status
 
 - All WP-01 through WP-18 closed successfully
-- Awaiting Project Owner acceptance per PROJECT_EXECUTION_RULES.md §17
-- Git working tree ready for Gate 6 (clean)
+- WP-19 in progress — ETA Engine core structure implemented
+- Next immediate task: Complete `_build_eta_invoice_payload` with full business rules
+- Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
+- Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md` (both subordinate to PLAN.md)
+
+## Session Recovery Point
+
+If resuming after session interruption:
+1. Read `PLAN.md` Section 12 (Project Continuity Protocol)
+2. Read this file (`CURRENT_STATUS.md`)
+3. Read `TECH_DEBT.md`
+4. Resume WP-19: Complete invoice payload builder and receipt operations

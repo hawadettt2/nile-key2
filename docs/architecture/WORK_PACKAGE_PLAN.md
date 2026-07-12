@@ -2,7 +2,8 @@
 
 **Version:** 1.3
 **Generated:** 2026-07-04
-**Based on:** ARCHITECTURE_CHARTER.md, REPOSITORY_INTELLIGENCE.md, ENGINEERING_MEMORY.md
+**Based on:** PLAN.md (Master Roadmap v2.1) — Single Source of Truth
+**Note:** Originally based on ARCHITECTURE_CHARTER.md; content now merged into PLAN.md
 
 ---
 

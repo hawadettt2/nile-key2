@@ -1,8 +1,8 @@
 ﻿# Engineering Memory
 
-**Last Updated:** 2026-07-06
+**Last Updated:** 2026-07-12
 **Project:** Nile Key Platform
-**Architecture Charter:** Governing document (must not be violated)
+**Authority:** `PLAN.md` (Master Roadmap v2.1) — Single Source of Truth
 
 | WP | Status | Commit | Notes |
 |----|--------|--------|-------|
@@ -66,11 +66,11 @@
 
 ## Important Architectural Decisions
 
-1. **SQLite is implementation detail** (per charter Section 9) - will change to PostgreSQL in production
-2. **Pydantic schemas are Source of Truth** - database must follow schemas
+1. **SQLite is implementation detail** (per PLAN.md Section 9.9) - will change to PostgreSQL in production
+2. **Pydantic schemas are Source of Truth** - database must follow schemas (PLAN.md Section 9.3)
 3. **bcrypt is required password algorithm** - passlib[bcrypt] in requirements.txt
-4. **No business logic in routers** (charter Section 10) - must move to services layer
-5. **Code duplication prohibited** (charter Section 8) - execute_update() extracted in WP-09
+4. **No business logic in routers** (PLAN.md Section 9.10) - must move to services layer
+5. **Code duplication prohibited** (PLAN.md Section 9.8) - execute_update() extracted in WP-09
 6. **Legacy Compatibility Policy** - Legacy columns are excluded from API responses, not used as fallbacks
 7. **ADR-0001: Shipments Legacy Columns** - Legacy columns are NOT fallback pairs; excluded entirely from API contract. See docs/architecture/ADR-0001-shipments-legacy-columns.md
 8. **Database initialization flow** - `init_db()` creates/maintains schema; Alembic handles destructive post-init cleanup
