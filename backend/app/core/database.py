@@ -373,6 +373,45 @@ def _ensure_contacts_addresses_schema(c: sqlite3.Cursor):
     """)
 
 
+def _ensure_notification_schema(c: sqlite3.Cursor):
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS notification_templates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            body TEXT NOT NULL,
+            variables TEXT,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS notification_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            template_id INTEGER,
+            recipient TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            body TEXT NOT NULL,
+            status TEXT NOT NULL,
+            error TEXT,
+            sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS notification_preferences (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            notification_type TEXT NOT NULL,
+            enabled INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP
+        )
+    """)
+
+
 def _ensure_documents_schema(c: sqlite3.Cursor):
     ensure_columns(c, "documents", {
         "document_type": "TEXT",
@@ -632,6 +671,7 @@ def _create_tables(c: sqlite3.Cursor):
     
     _ensure_shipping_schema(c)
     _ensure_contacts_addresses_schema(c)
+    _ensure_notification_schema(c)
     
     # ========== جدول سجل التدقيق ==========
     c.execute("""
