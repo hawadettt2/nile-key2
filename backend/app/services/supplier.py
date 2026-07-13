@@ -3,6 +3,8 @@ from typing import Optional
 
 from app.schemas.supplier import SupplierCreate, SupplierUpdate
 from app.services.base import connection, build_list_query, now_iso, execute_update
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 
 def _supplier_row_to_response(row: dict) -> dict:
@@ -64,6 +66,10 @@ def create_supplier(data: SupplierCreate, current_user: dict) -> dict:
         )
         conn.commit()
         supplier_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="supplier", entity_id=supplier_id, details=payload["name"]),
+        )
         return {"id": supplier_id, "message": "Supplier created successfully"}
 
 
@@ -81,6 +87,10 @@ def update_supplier(supplier_id: int, data: SupplierUpdate, current_user: dict) 
             coerce_fields={"certificates": lambda v: str(v) if isinstance(v, list) else v},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="supplier", entity_id=supplier_id),
+        )
         return {"message": "Supplier updated successfully"}
 
 
@@ -94,4 +104,8 @@ def delete_supplier(supplier_id: int, current_user: dict) -> dict:
             extra_fields={"status": "inactive"},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="delete", entity_type="supplier", entity_id=supplier_id),
+        )
         return {"message": "Supplier deactivated successfully"}

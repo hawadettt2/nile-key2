@@ -4,6 +4,8 @@ from typing import Optional
 
 from app.schemas.invoice import InvoiceCreate, InvoiceUpdate
 from app.services.base import connection, build_list_query, now_iso, execute_update
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 
 def _invoice_row_to_response(row: dict) -> dict:
@@ -70,6 +72,10 @@ def create_invoice(data: InvoiceCreate, current_user: dict) -> dict:
         )
         conn.commit()
         inv_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="invoice", entity_id=inv_id, details=inv_num),
+        )
         return {"id": inv_id, "invoice_number": inv_num, "message": "Invoice created successfully"}
 
 
@@ -89,6 +95,10 @@ def update_invoice(invoice_id: int, data: InvoiceUpdate, current_user: dict) -> 
             },
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="invoice", entity_id=invoice_id),
+        )
         return {"message": "Invoice updated successfully"}
 
 
@@ -107,6 +117,10 @@ def validate_invoice(invoice_id: int, current_user: dict) -> dict:
             extra_fields={"status": "validated"},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="validate", entity_type="invoice", entity_id=invoice_id),
+        )
         return {"message": "Invoice validated successfully", "status": "validated"}
 
 
@@ -127,6 +141,10 @@ def cancel_invoice(invoice_id: int, current_user: dict) -> dict:
             extra_fields={"status": "cancelled"},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="cancel", entity_type="invoice", entity_id=invoice_id),
+        )
         return {"message": "Invoice cancelled successfully"}
 
 

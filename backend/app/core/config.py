@@ -43,6 +43,14 @@ class Settings(BaseSettings):
     ETA_CLIENT_SECRET: str = ""
     ETA_BASE_URL: str = "https://api.invoicing.eta.gov.eg"
 
+    # ========== SMTP ==========
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_USE_TLS: bool = True
+
     # ========== CORS ==========
     ALLOWED_ORIGINS: List[str] = []
 

@@ -4,6 +4,8 @@ from typing import Optional
 
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 from app.services.base import connection, build_list_query, now_iso, execute_update
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 
 def _customer_row_to_response(row: dict) -> dict:
@@ -61,6 +63,10 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
         )
         conn.commit()
         customer_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="customer", entity_id=customer_id, details=data.name),
+        )
         return {"id": customer_id, "message": "Customer created successfully"}
 
 
@@ -77,6 +83,10 @@ def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict) 
             data=data,
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="customer", entity_id=customer_id),
+        )
         return {"message": "Customer updated successfully"}
 
 
@@ -90,6 +100,10 @@ def delete_customer(customer_id: int, current_user: dict) -> dict:
             extra_fields={"status": "inactive"},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="delete", entity_type="customer", entity_id=customer_id),
+        )
         return {"message": "Customer deactivated successfully"}
 
 

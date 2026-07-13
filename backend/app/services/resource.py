@@ -3,6 +3,8 @@ from typing import Optional
 
 from app.schemas.resource import ResourceCreate, ResourceUpdate
 from app.services.base import connection, now_iso, execute_update
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 
 def _validate_url(url: Optional[str]) -> None:
@@ -114,6 +116,10 @@ def create_resource(data: ResourceCreate, current_user: dict) -> dict:
         )
         conn.commit()
         res_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="resource", entity_id=res_id, details=data.title),
+        )
         return {"id": res_id, "message": "Resource created successfully"}
 
 
@@ -132,6 +138,10 @@ def update_resource(resource_id: int, data: ResourceUpdate, current_user: dict) 
             coerce_fields={"metadata": lambda v: str(v) if isinstance(v, dict) else v},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="resource", entity_id=resource_id),
+        )
         return {"message": "Resource updated successfully"}
 
 
@@ -145,4 +155,8 @@ def delete_resource(resource_id: int, current_user: dict) -> dict:
             extra_fields={"is_active": 0},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="delete", entity_type="resource", entity_id=resource_id),
+        )
         return {"message": "Resource deactivated successfully"}

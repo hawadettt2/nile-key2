@@ -9,6 +9,8 @@ from datetime import datetime
 from typing import Optional
 
 from app.core.database import get_db_connection
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 from app.schemas.eta import (
     ETAAuthConfig,
     InvoiceSubmit,
@@ -125,6 +127,10 @@ def create_connector(data: dict, current_user: dict) -> dict:
             ),
         )
         conn.commit()
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="eta_connector", entity_id=cursor.lastrowid, details=data.get("name")),
+        )
         return {"id": cursor.lastrowid, "message": "Connector created successfully"}
 
 
@@ -152,7 +158,10 @@ def update_connector(connector_id: int, data: dict, current_user: dict) -> dict:
             params.append(connector_id)
             cursor.execute(f"UPDATE eta_connectors SET {', '.join(fields)} WHERE id = ?", params)
             conn.commit()
-        
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="eta_connector", entity_id=connector_id),
+        )
         return {"message": "Connector updated successfully"}
 
 
@@ -164,6 +173,10 @@ def delete_connector(connector_id: int) -> dict:
             raise ValueError("ETA connector not found")
         cursor.execute("DELETE FROM eta_connectors WHERE id = ?", (connector_id,))
         conn.commit()
+        log_audit(
+            current_user=None,
+            data=AuditLogCreate(action="delete", entity_type="eta_connector", entity_id=connector_id),
+        )
         return {"message": "Connector deleted successfully"}
 
 
@@ -400,6 +413,10 @@ def submit_invoice_to_eta(invoice_id: int, connector_id: int, current_user: dict
                 documents=[{"uuid": uuid, "reference_document": invoice_id, "eta_status": "Submitted"}],
             )
             conn.commit()
+            log_audit(
+                current_user=current_user,
+                data=AuditLogCreate(action="submit", entity_type="invoice", entity_id=invoice_id, details=uuid),
+            )
             
             return {
                 "message": "Invoice submitted to ETA successfully",
@@ -464,6 +481,10 @@ def cancel_eta_invoice(invoice_id: int, reason: str, current_user: dict) -> dict
                 ("Cancelled", reason, now, invoice_id),
             )
             conn.commit()
+            log_audit(
+                current_user=current_user,
+                data=AuditLogCreate(action="cancel", entity_type="invoice", entity_id=invoice_id, details=uuid),
+            )
             return {"message": "Invoice cancelled at ETA successfully", "status": "Cancelled"}
         except ETAHttpError as exc:
             raise ValueError(f"ETA cancellation failed: {exc.message}")
@@ -548,6 +569,10 @@ def submit_receipt_to_eta(receipt_data: dict, connector_id: int, current_user: d
                 eta_response=str(result),
             )
             conn.commit()
+            log_audit(
+                current_user=current_user,
+                data=AuditLogCreate(action="submit", entity_type="receipt", entity_id=receipt_data.get("document_id"), details=submission_id),
+            )
             
             return {
                 "message": "Receipt submitted to ETA",
@@ -673,6 +698,10 @@ def submit_pending_batch(connector_id: int) -> dict:
                     continue
             
             conn.commit()
+            log_audit(
+                current_user=current_user,
+                data=AuditLogCreate(action="batch_submit", entity_type="eta_connector", entity_id=connector_id, details=f"submitted={submitted}"),
+            )
             return {"message": f"Batch submitted {submitted} invoices", "submitted": submitted}
         finally:
             client.close()
@@ -688,6 +717,10 @@ def create_eta_log(from_doctype: str, submission_status: str, submission_id: Opt
             (from_doctype, submission_status, submission_id, eta_response, documents, now),
         )
         conn.commit()
+        log_audit(
+            current_user=None,
+            data=AuditLogCreate(action="create", entity_type="eta_log", entity_id=cursor.lastrowid),
+        )
         return {"id": cursor.lastrowid}
 
 
@@ -701,6 +734,10 @@ def update_eta_log_documents(eta_log_id: int, reference_doctype: str, reference_
             (eta_log_id, reference_doctype, reference_document, uuid, long_id, error, eta_status),
         )
         conn.commit()
+        log_audit(
+            current_user=None,
+            data=AuditLogCreate(action="create", entity_type="eta_log_document", entity_id=cursor.lastrowid),
+        )
         return {"id": cursor.lastrowid}
 
 

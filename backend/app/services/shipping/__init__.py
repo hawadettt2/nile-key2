@@ -17,6 +17,8 @@ from typing import Optional, List, Dict, Any
 
 from app.core.database import get_db_connection
 from app.core.config import settings
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 from app.schemas.shipping import (
     RateRequest, ShippingRate,
     CreateShipmentRequest, ShipmentResult,
@@ -228,6 +230,10 @@ def create_shipment(data: CreateShipmentRequest, user: dict) -> ShipmentResult:
     result = _parse_create_response(data.provider, raw, shipment_id)
     if raw:
         _insert_shipping_label(shipment_id, data.provider, result.provider_shipment_id, result.label_url)
+    log_audit(
+        current_user=user,
+        data=AuditLogCreate(action="create", entity_type="shipment", entity_id=shipment_id, details=data.reference or str(shipment_id)),
+    )
     return result
 
 
@@ -561,7 +567,10 @@ def cancel_shipment(shipment_id: int, user: dict) -> Dict[str, Any]:
             (local_status, local_status, now, shipment_id),
         )
         conn.commit()
-
+    log_audit(
+        current_user=user,
+        data=AuditLogCreate(action="cancel", entity_type="shipment", entity_id=shipment_id),
+    )
     return {"shipment_id": shipment_id, "status": local_status, "message": cancel_message}
 
 
@@ -588,6 +597,10 @@ def create_provider(data: ShippingProviderCreate, user: dict) -> ShippingProvide
         )
         conn.commit()
         provider_id = cursor.lastrowid
+    log_audit(
+        current_user=user,
+        data=AuditLogCreate(action="create", entity_type="shipping_provider", entity_id=provider_id, details=data.name),
+    )
     return get_provider_by_id(provider_id)
 
 
@@ -642,6 +655,10 @@ def update_provider(provider_id: int, data: ShippingProviderUpdate) -> ShippingP
         values = list(fields.values()) + [datetime.utcnow().isoformat(), provider_id]
         cursor.execute(f"UPDATE shipping_providers SET {set_clause}, updated_at = ? WHERE id = ?", values)
         conn.commit()
+    log_audit(
+        current_user=None,
+        data=AuditLogCreate(action="update", entity_type="shipping_provider", entity_id=provider_id),
+    )
     return get_provider_by_id(provider_id)
 
 
@@ -652,6 +669,10 @@ def delete_provider(provider_id: int) -> None:
         conn.commit()
         if cursor.rowcount == 0:
             raise ProviderNotFoundError("Provider not found")
+    log_audit(
+        current_user=None,
+        data=AuditLogCreate(action="delete", entity_type="shipping_provider", entity_id=provider_id),
+    )
 
 
 # ========== Parcel Template CRUD ==========
@@ -667,6 +688,13 @@ def create_parcel_template(data: ParcelTemplateCreate, user: dict) -> ParcelTemp
         )
         conn.commit()
         template_id = cursor.lastrowid
+    template_name = getattr(data, "name", None)
+    if not isinstance(template_name, str):
+        template_name = None
+    log_audit(
+        current_user=user,
+        data=AuditLogCreate(action="create", entity_type="parcel_template", entity_id=template_id, details=template_name),
+    )
     return get_parcel_template(template_id)
 
 
@@ -714,6 +742,10 @@ def update_parcel_template(template_id: int, data: ParcelTemplateUpdate) -> Parc
         values = list(fields.values()) + [datetime.utcnow().isoformat(), template_id]
         cursor.execute(f"UPDATE shipping_parcel_templates SET {set_clause}, updated_at = ? WHERE id = ?", values)
         conn.commit()
+    log_audit(
+        current_user=None,
+        data=AuditLogCreate(action="update", entity_type="parcel_template", entity_id=template_id),
+    )
     return get_parcel_template(template_id)
 
 
@@ -724,6 +756,10 @@ def delete_parcel_template(template_id: int) -> None:
         conn.commit()
         if cursor.rowcount == 0:
             raise ShippingError("Parcel template not found")
+    log_audit(
+        current_user=None,
+        data=AuditLogCreate(action="delete", entity_type="parcel_template", entity_id=template_id),
+    )
 
 
 # ========== Audit Logging ==========
@@ -804,6 +840,10 @@ def update_shipment_status(shipment_id: int, status: str) -> Dict[str, Any]:
             (status, status, now, shipment_id),
         )
         conn.commit()
+    log_audit(
+        current_user=None,
+        data=AuditLogCreate(action="update", entity_type="shipment", entity_id=shipment_id),
+    )
     return {"message": "Shipment updated successfully"}
 
 

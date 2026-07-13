@@ -412,6 +412,14 @@ def _ensure_notification_schema(c: sqlite3.Cursor):
     """)
 
 
+def _ensure_audit_logs_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "audit_logs", {
+        "ip_address": "TEXT",
+        "user_agent": "TEXT",
+        "session_id": "TEXT"
+    })
+
+
 def _ensure_documents_schema(c: sqlite3.Cursor):
     ensure_columns(c, "documents", {
         "document_type": "TEXT",
@@ -685,6 +693,7 @@ def _create_tables(c: sqlite3.Cursor):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    _ensure_audit_logs_schema(c)
 
 
 def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):

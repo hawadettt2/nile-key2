@@ -2,6 +2,8 @@ from typing import Optional
 
 from app.schemas.document import DocumentCreate, DocumentUpdate
 from app.services.base import connection, parse_json, now_iso, execute_update
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 
 def _document_row_to_response(row: dict) -> dict:
@@ -81,6 +83,10 @@ def create_document(data: DocumentCreate, current_user: dict) -> dict:
         )
         conn.commit()
         doc_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="document", entity_id=doc_id, details=data.title),
+        )
         return {"id": doc_id, "message": "Document created successfully"}
 
 
@@ -111,6 +117,10 @@ def upload_document(
         )
         conn.commit()
         doc_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="document", entity_id=doc_id, details=title or filename),
+        )
         return {"id": doc_id, "filename": stored_filename, "message": "File uploaded successfully"}
 
 
@@ -128,6 +138,10 @@ def update_document(document_id: int, data: DocumentUpdate, current_user: dict) 
             coerce_fields={"metadata": lambda v: str(v) if isinstance(v, dict) else v},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="document", entity_id=document_id),
+        )
         return {"message": "Document updated successfully"}
 
 
@@ -136,4 +150,8 @@ def delete_document(document_id: int, current_user: dict) -> dict:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM documents WHERE id = ?", (document_id,))
         conn.commit()
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="delete", entity_type="document", entity_id=document_id),
+        )
         return {"message": "Document deleted successfully"}

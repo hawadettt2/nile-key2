@@ -11,6 +11,8 @@ from app.schemas.customs import (
     DeclarationCreateResponse,
 )
 from app.services.base import connection, now_iso, execute_update
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 
 def _customs_row_to_response(row: dict) -> dict:
@@ -124,6 +126,10 @@ def create_declaration(data: CustomsDeclarationCreate, current_user: dict) -> di
         )
         conn.commit()
         decl_id = cursor.lastrowid
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="create", entity_type="customs_declaration", entity_id=decl_id, details=decl_num),
+        )
         return {"id": decl_id, "declaration_number": decl_num, "message": "Declaration created successfully"}
 
 
@@ -141,6 +147,10 @@ def update_declaration(declaration_id: int, data: CustomsDeclarationUpdate, curr
             coerce_fields={"documents": lambda v: str(v) if isinstance(v, list) else v},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="update", entity_type="customs_declaration", entity_id=declaration_id),
+        )
         return {"message": "Declaration updated successfully"}
 
 
@@ -155,4 +165,8 @@ def submit_declaration(declaration_id: int, current_user: dict) -> dict:
             extra_fields={"status": "submitted", "submitted_at": now},
         ):
             return {"message": "No changes"}
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="submit", entity_type="customs_declaration", entity_id=declaration_id),
+        )
         return {"message": "Declaration submitted successfully"}

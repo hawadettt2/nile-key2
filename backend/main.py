@@ -15,7 +15,7 @@ from app.core.database import init_db
 from app.core.csrf import CSRFMiddleware
 from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit
 
 
 class SecurityHeadersMiddleware:
@@ -118,6 +118,8 @@ app.include_router(customs.router)
 app.include_router(resources.router)
 app.include_router(documents.router)
 app.include_router(eta.router)
+app.include_router(notifications.router)
+app.include_router(audit.router)
 
 
 @app.get("/", tags=["Root"])
