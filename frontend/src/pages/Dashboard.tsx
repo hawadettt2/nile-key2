@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
@@ -28,6 +28,8 @@ interface DashboardResponse {
   notifications_count: number;
 }
 
+const POLL_INTERVAL_MS = 30000;
+
 export function Dashboard() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -35,17 +37,26 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadDashboard() {
-      try {
-        const res = await getDashboard();
-        setDashboard(res.data as DashboardResponse);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard');
-      } finally { setLoading(false); }
+  const loadDashboard = useCallback(async () => {
+    try {
+      const res = await getDashboard();
+      setDashboard(res.data as DashboardResponse);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
     }
-    loadDashboard();
   }, []);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    const timer = setInterval(loadDashboard, POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [loadDashboard]);
 
   const stats = dashboard?.stats;
   const notificationsCount = dashboard?.notifications_count || 0;
