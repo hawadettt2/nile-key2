@@ -1,10 +1,10 @@
 # Current Status
 
-**Last Updated:** 2026-07-12
+**Last Updated:** 2026-07-14
 **Branch:** main
-**Commit:** d6ba84a (docs) + WP-19 working tree
-**Phase:** 1.5 — إعادة محاذاة منطق الأعمال (WP-19 + WP-20 مكتملان 100%)
-**Next Phase:** 2.0 — تكامل المنصة التجارية الأساسية (WP-21)
+**Commit:** 1bebd10 (feat(frontend): add vitest + RTL tests for Notifications and NotificationBell (M3-T8))
+**Phase:** 1.5 — إعادة محاذاة منطق الأعمال (WP-19 + WP-20 + WP-21 M1-M3 مكتملة)
+**Next Phase:** 2.0 — WP-21 Milestone 4: Export Operations Integration
 
 ---
 
@@ -32,6 +32,9 @@
 | WP-18 | ✅ Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
 | WP-19 | ✅ Complete | ETA Engine — full implementation with production-ready infrastructure |
 | WP-20 | ✅ Complete | Shipping Engine — provider abstraction, LetMeShip + SendCloud clients, scheduler, 34+ tests |
+| WP-21 M1 | ✅ Complete | Notification service + audit logging foundation; 52 tests |
+| WP-21 M2 | ✅ Complete | Unified search + live dashboard; 10 tests |
+| WP-21 M3 | ✅ Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
 
 ## Current System State
 
@@ -40,12 +43,15 @@
 - **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 272 passing, 8 skipped by design
-- **Routers:** ETA router registered at `/api/v1/eta`; Shipping router extended at `/api/v1/shipping` with provider CRUD, parcel templates, cancel endpoint
+- **Tests:** 373 passing, 8 skipped by design
+- **Routers:** ETA router at `/api/v1/eta`; Shipping router at `/api/v1/shipping`; Search at `/api/v1/search`; Dashboard at `/api/v1/dashboard`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
 - **Shipping Service Layer:** Complete business logic for rate aggregation, booking, labels, tracking, cancellation, provider/parcel-template CRUD
 - **Shipping Scheduler:** APScheduler daily tracking poll job
+- **Frontend Pages:** Dashboard (live widgets), Notifications (list with read/unread), NotificationBell component
+- **Frontend Tests:** 17 Vitest + React Testing Library tests for Notifications and NotificationBell
+- **Backend Notification Triggers:** ETA submit/receipt triggers + Shipping create/update triggers; 17 tests
 - **Docker:** Dockerfiles and docker-compose.yml present and validated; artifacts consistent with project configuration
 
 ## WP-19 + WP-20 Implementation Summary
@@ -103,6 +109,32 @@
   - Receipt schemas (5 tests)
   - Additional database tests (3 tests)
 
+## WP-21 Implementation Summary
+
+### WP-21 Milestone 1: Foundation (Completed)
+- **Notification Service:** SMTP email sending with template rendering
+- **Audit Service:** Centralized audit logging with `log_audit()` and `list_audit_logs()`
+- **Database:** `notification_templates`, `notification_logs`, `notification_preferences` tables; `audit_logs` extended
+- **Integration:** Audit logging integrated into 8 services (customer, supplier, invoice, customs, document, resource, shipping, eta)
+- **Routers:** `/api/v1/notifications/send`, `/api/v1/audit/logs`
+- **Test Coverage:** 52 tests (notification service: 17, audit service: 14, notification router: 8, audit router: 13)
+
+### WP-21 Milestone 2: Search + Dashboard (Completed)
+- **Unified Search:** `/api/v1/search` endpoint aggregating results across all business entities
+- **Live Dashboard:** `/api/v1/dashboard` endpoint with ETA + Shipping stats, recent activity, notification count
+- **Frontend:** Dashboard page updated with live widgets
+- **Test Coverage:** 10 tests (search service + dashboard service + router tests)
+
+### WP-21 Milestone 3: Notification Triggers + Frontend (Completed)
+- **ETA Notification Triggers:** `submit_invoice_to_eta` and `submit_receipt_to_eta` send template emails on success
+- **Shipping Notification Triggers:** `create_shipment` and `update_shipment` send template emails on state changes
+- **Notification Preferences:** Per-user opt-in/opt-out by notification type via `_is_notification_enabled()`
+- **Frontend:** Notifications page with read/unread status, NotificationBell dropdown with unread count
+- **Frontend API:** Updated `api.ts` with search, dashboard, notifications, audit endpoints
+- **Frontend Tests:** 17 Vitest + React Testing Library tests
+- **Backend Trigger Tests:** 17 tests verifying notification triggers in ETA and Shipping services
+- **Test Coverage:** Full suite: 373 passed, 8 skipped, 0 failed
+
 ## Initialization Flow
 
 1. FastAPI startup calls `init_db()`
@@ -115,16 +147,14 @@
 - Frontend lint warnings exist in shadcn/ui generated components (not project-specific)
 - Docker runtime validation pending Docker daemon availability (`docker compose up` not executed in this environment)
 - `__pycache__` directories remain scattered throughout Python tree (mostly gitignored)
-- ETA real-environment integration pending (requires production API keys)
-- Email notifications infrastructure deferred to WP-21 (requires SMTP service integration)
-- POS receipt building logic deferred to WP-21 (requires POS integration)
 
 ## Project Continuity Status
 
 - All WP-01 through WP-18 closed successfully
 - WP-19 completed — ETA Engine fully implemented with production-ready infrastructure
 - WP-20 completed — Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
-- Next immediate task: WP-21 (Platform Integration) — integrate ETA Engine, Shipping Engine, and remaining Nile Key domains
+- WP-21 M1-M3 completed — Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
+- Next immediate task: WP-21 Milestone 4 (Export Operations Integration)
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md` (both subordinate to PLAN.md)
 
