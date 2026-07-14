@@ -161,6 +161,10 @@ def update_workflow(workflow_id: int, data: ExportWorkflowUpdate, current_user: 
 
         updates = {}
         if data.state is not None:
+            cursor.execute("SELECT state FROM export_workflows WHERE id = ?", (workflow_id,))
+            row = cursor.fetchone()
+            current_state = row["state"] if row else "draft"
+            _validate_transition(current_state, data.state)
             updates["state"] = data.state
         if data.customs_declaration_id is not None:
             updates["customs_declaration_id"] = data.customs_declaration_id

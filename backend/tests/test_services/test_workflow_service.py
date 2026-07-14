@@ -182,7 +182,7 @@ def test_create_workflow_success(mock_log_audit):
 @patch("app.services.workflow.log_audit")
 def test_update_workflow_state(mock_log_audit):
     mock_cursor = MagicMock()
-    mock_cursor.fetchone.return_value = {"id": 1}
+    mock_cursor.fetchone.return_value = {"id": 1, "state": "draft"}
     mock_conn = _mock_connection(mock_cursor)
 
     with patch("app.services.workflow.connection", return_value=mock_conn):
