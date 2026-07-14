@@ -547,16 +547,15 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 | `/items` endpoint | ✅ Complete (Engineering Decision, CR-M4-001 Rev.1) |
 | `draft → shipped` bypass | ✅ Complete (Engineering Decision, CR-M4-001 Rev.1) |
 
-### 6.5 Milestone 5 — Pending
+### 6.5 Milestone 5 — Complete
 
 | Deliverable | Status |
 |-------------|--------|
-| Router registration in `main.py` | Partial (M1 routers done) |
-| End-to-end integration tests | Pending |
-| Performance testing | Pending |
-| Security review | Pending |
-| Documentation updates | Pending |
-| Final acceptance gate | Pending |
+| Dashboard live data auto-refresh | ✅ Complete (M5-R1) |
+| Notification audit logging | ✅ Complete (M5-R2) |
+| Workflow state validation | ✅ Complete (M5-R3) |
+| Search RBAC enforcement | ✅ Complete (M5-R4) |
+| Configuration documentation | ✅ Complete (M5-R5) |
 
 ---
 

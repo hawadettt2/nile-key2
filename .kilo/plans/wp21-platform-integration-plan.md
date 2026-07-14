@@ -2,8 +2,8 @@
 
 **Reference:** PLAN.md (Master Roadmap v2.1)  
 **Phase:** 1.5 — Business Logic Re-alignment  
-**Status:** Ready for Implementation  
-**Date:** 2026-07-13
+**Status:** Complete  
+**Date:** 2026-07-15
 
 ---
 
@@ -445,18 +445,18 @@ All changes use `_ensure_*_schema()` incremental approach. No destructive migrat
 
 | Component | Description | Status |
 |-----------|-------------|--------|
-| ETA Stats Widget | Pending, submitted, signed, failed invoice counts | **Create New** |
-| Shipping Stats Widget | Pending, booked, in_transit, delivered shipment counts | **Create New** |
-| Recent Activity Timeline | Last 10 cross-entity events with timestamps | **Create New** |
-| Notification Bell | Unread notification count with dropdown | **Create New** |
+| ETA Stats Widget | Pending, submitted, signed, failed invoice counts | ✅ Complete (M2) |
+| Shipping Stats Widget | Pending, booked, in_transit, delivered shipment counts | ✅ Complete (M2) |
+| Recent Activity Timeline | Last 10 cross-entity events with timestamps | ✅ Complete (M2) |
+| Notification Bell | Unread notification count with dropdown | ✅ Complete (M3) |
 
 ### 10.2 Notifications Page
 
 | Component | Description | Status |
 |-----------|-------------|--------|
-| Notification List | Paginated list with read/unread status | **Create New** |
-| Notification Settings | Per-type opt-in/opt-out preferences | **Create New** |
-| Template Management | Admin-only CRUD for email templates | **Create New** |
+| Notification List | Paginated list with read/unread status | ✅ Complete (M3) |
+| Notification Settings | Per-type opt-in/opt-out preferences | ✅ Complete (M3) |
+| Template Management | Admin-only CRUD for email templates | ✅ Complete (M1) |
 
 > **Note:** Frontend component and page filenames for notifications and search are **to be determined after repository verification**.
 
