@@ -32,11 +32,45 @@ from app.services.shipping.base import (
     ShipmentBookingError, TrackingError, ValidationError,
     register_provider, get_provider, get_enabled_providers, PROVIDERS,
 )
+from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError
 
 logger = logging.getLogger("shipping")
 
 STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage", "labels")
 os.makedirs(STORAGE_DIR, exist_ok=True)
+
+
+def _get_user_email(user_id: int) -> Optional[str]:
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT email FROM users WHERE id = ?", (user_id,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+            try:
+                return dict(row).get("email")
+            except (TypeError, ValueError):
+                return row[0] if row else None
+    except Exception:
+        return None
+
+
+def _send_shipping_notification(template_id: int, user_id: Optional[int], variables: Optional[dict] = None) -> None:
+    if user_id is None:
+        return
+    email = _get_user_email(user_id)
+    if not email:
+        logger.warning("Shipping notification skipped: no email for user %s", user_id)
+        return
+    try:
+        result = send_template_email(template_id=template_id, recipient=email, variables=variables)
+        if result.get("status") == "failed":
+            logger.warning("Shipping notification failed: %s", result.get("error"))
+    except (TemplateNotFoundError, TemplateInactiveError) as exc:
+        logger.warning("Shipping notification skipped: %s", str(exc))
+    except EmailSendError as exc:
+        logger.warning("Shipping notification failed: %s", str(exc))
 
 
 def _build_letmeship_client(provider_row: dict) -> "LetMeShipClient":
@@ -904,6 +938,11 @@ def create_shipment(data, current_user: dict) -> dict:
         cursor.execute("SELECT tracking_number FROM shipments WHERE id = ?", (result.shipment_id,))
         row = cursor.fetchone()
         tracking = row["tracking_number"] if row else str(result.shipment_id)
+    _send_shipping_notification(
+        template_id=3,
+        user_id=current_user.get("id") if current_user else None,
+        variables={"shipment_id": result.shipment_id, "tracking_number": tracking},
+    )
     return {
         "id": result.shipment_id,
         "tracking_number": tracking,
@@ -918,7 +957,13 @@ def update_shipment(shipment_id: int, data, current_user: dict) -> dict:
     else:
         update_data = data
     if update_data.status:
-        return _new_update_shipment_status(shipment_id, update_data.status)
+        result = _new_update_shipment_status(shipment_id, update_data.status)
+        _send_shipping_notification(
+            template_id=4,
+            user_id=current_user.get("id") if current_user else None,
+            variables={"shipment_id": shipment_id, "status": update_data.status},
+        )
+        return result
     return {"message": "Shipment updated successfully"}
 
 
