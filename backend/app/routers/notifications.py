@@ -19,6 +19,7 @@ def send_notification(
             template_id=data.template_id,
             recipient=data.recipient,
             variables=data.variables,
+            current_user=current_user,
         )
     except TemplateNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))

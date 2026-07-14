@@ -285,3 +285,118 @@ def test_send_template_email_returns_failed_on_smtp_error():
 
     assert result["status"] == "failed"
     assert result["error"] == "Email delivery failed"
+
+
+# ========== Notification Audit Logging Tests ==========
+
+
+@patch("app.services.notification.log_audit")
+def test_send_template_email_creates_audit_log_on_success(mock_log_audit):
+    mock_row = {
+        "id": 1,
+        "subject": "Hello {name}",
+        "body": "Hi {name}, welcome!",
+        "is_active": 1,
+    }
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = mock_row
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.notification.get_db", return_value=mock_conn):
+        with patch("app.services.notification.settings.SMTP_HOST", "smtp.example.com"):
+            with patch("app.services.notification.settings.SMTP_FROM", "from@example.com"):
+                with patch("app.services.notification.settings.SMTP_USE_TLS", False):
+                    with patch("app.services.notification.settings.SMTP_USER", ""):
+                        with patch("app.services.notification.smtplib.SMTP") as mock_smtp_cls:
+                            mock_client = MagicMock()
+                            mock_client.__enter__ = MagicMock(return_value=mock_client)
+                            mock_client.__exit__ = MagicMock(return_value=False)
+                            mock_smtp_cls.return_value = mock_client
+
+                            result = send_template_email(
+                                template_id=1,
+                                recipient="user@example.com",
+                                variables={"name": "Alice"},
+                                current_user={"id": 1, "role": "owner"},
+                            )
+
+    assert result["status"] == "sent"
+    assert result["error"] is None
+    mock_log_audit.assert_called_once()
+    audit_call = mock_log_audit.call_args[1]
+    assert audit_call["data"].action == "send"
+    assert audit_call["data"].entity_type == "notification"
+    assert audit_call["data"].entity_id == 1
+
+
+@patch("app.services.notification.log_audit")
+def test_send_template_email_skips_audit_log_when_user_none(mock_log_audit):
+    mock_row = {
+        "id": 1,
+        "subject": "Hello {name}",
+        "body": "Hi {name}, welcome!",
+        "is_active": 1,
+    }
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = mock_row
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.notification.get_db", return_value=mock_conn):
+        with patch("app.services.notification.settings.SMTP_HOST", "smtp.example.com"):
+            with patch("app.services.notification.settings.SMTP_FROM", "from@example.com"):
+                with patch("app.services.notification.settings.SMTP_USE_TLS", False):
+                    with patch("app.services.notification.settings.SMTP_USER", ""):
+                        with patch("app.services.notification.smtplib.SMTP") as mock_smtp_cls:
+                            mock_client = MagicMock()
+                            mock_client.__enter__ = MagicMock(return_value=mock_client)
+                            mock_client.__exit__ = MagicMock(return_value=False)
+                            mock_smtp_cls.return_value = mock_client
+
+                            result = send_template_email(
+                                template_id=1,
+                                recipient="user@example.com",
+                                variables={"name": "Alice"},
+                            )
+
+    assert result["status"] == "sent"
+    assert result["error"] is None
+    mock_log_audit.assert_not_called()
+
+
+@patch("app.services.notification.log_audit")
+def test_send_template_email_creates_notification_log_on_failure(mock_log_audit):
+    mock_row = {
+        "id": 1,
+        "subject": "Test",
+        "body": "Body",
+        "is_active": 1,
+    }
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = mock_row
+    mock_conn = _mock_connection(mock_cursor)
+
+    with patch("app.services.notification.get_db", return_value=mock_conn):
+        with patch("app.services.notification.settings.SMTP_HOST", "smtp.example.com"):
+            with patch("app.services.notification.settings.SMTP_FROM", "from@example.com"):
+                with patch("app.services.notification.settings.SMTP_USE_TLS", False):
+                    with patch("app.services.notification.settings.SMTP_USER", ""):
+                        with patch("app.services.notification.smtplib.SMTP") as mock_smtp_cls:
+                            mock_client = MagicMock()
+                            mock_client.__enter__ = MagicMock(return_value=mock_client)
+                            mock_client.__exit__ = MagicMock(return_value=False)
+                            mock_client.sendmail.side_effect = Exception("SMTP down")
+                            mock_smtp_cls.return_value = mock_client
+
+                            result = send_template_email(
+                                template_id=1,
+                                recipient="user@example.com",
+                                current_user={"id": 1, "role": "owner"},
+                            )
+
+    assert result["status"] == "failed"
+    assert result["error"] == "Email delivery failed"
+    mock_log_audit.assert_called_once()
+    audit_call = mock_log_audit.call_args[1]
+    assert audit_call["data"].action == "send"
+    assert audit_call["data"].entity_type == "notification"
+    assert audit_call["data"].entity_id == 1

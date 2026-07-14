@@ -42,7 +42,12 @@ def _get_user_email(user_id: int) -> Optional[str]:
         return row["email"] if row else None
 
 
-def _send_eta_notification(template_id: int, user_id: Optional[int], variables: Optional[dict] = None) -> None:
+def _send_eta_notification(
+    template_id: int,
+    user_id: Optional[int],
+    variables: Optional[dict] = None,
+    current_user: Optional[dict] = None,
+) -> None:
     if user_id is None:
         return
     if not _is_notification_enabled(user_id, "eta"):
@@ -53,7 +58,12 @@ def _send_eta_notification(template_id: int, user_id: Optional[int], variables: 
         logger.warning("ETA notification skipped: no email for user %s", user_id)
         return
     try:
-        result = send_template_email(template_id=template_id, recipient=email, variables=variables)
+        result = send_template_email(
+            template_id=template_id,
+            recipient=email,
+            variables=variables,
+            current_user=current_user,
+        )
         if result.get("status") == "failed":
             logger.warning("ETA notification failed: %s", result.get("error"))
     except (TemplateNotFoundError, TemplateInactiveError) as exc:
@@ -450,6 +460,7 @@ def submit_invoice_to_eta(invoice_id: int, connector_id: int, current_user: dict
                 template_id=1,
                 user_id=current_user.get("id") if current_user else None,
                 variables={"invoice_id": invoice_id, "submission_id": submission_id or ""},
+                current_user=current_user,
             )
 
             return {
@@ -611,6 +622,7 @@ def submit_receipt_to_eta(receipt_data: dict, connector_id: int, current_user: d
                 template_id=2,
                 user_id=current_user.get("id") if current_user else None,
                 variables={"document_id": receipt_data.get("document_id"), "submission_id": submission_id or ""},
+                current_user=current_user,
             )
 
             return {

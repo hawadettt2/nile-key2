@@ -44,11 +44,12 @@ def test_send_eta_notification_calls_send_template_email_when_enabled():
                     user_id=1,
                     variables={"invoice_id": 123, "submission_id": "SUB-1"},
                 )
-        mock_send.assert_called_once_with(
-            template_id=1,
-            recipient="test@example.com",
-            variables={"invoice_id": 123, "submission_id": "SUB-1"},
-        )
+    mock_send.assert_called_once_with(
+        template_id=1,
+        recipient="test@example.com",
+        variables={"invoice_id": 123, "submission_id": "SUB-1"},
+        current_user=None,
+    )
 
 
 # ========== submit_invoice_to_eta Notification Trigger ==========

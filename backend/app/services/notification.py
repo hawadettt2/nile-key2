@@ -1,3 +1,4 @@
+import json
 import logging
 import sqlite3
 import smtplib
@@ -6,6 +7,8 @@ from typing import Optional
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 logger = logging.getLogger("notification")
 
@@ -45,6 +48,36 @@ def _load_template(template_id: int) -> dict:
     if not row["is_active"]:
         raise TemplateInactiveError("Notification template is inactive")
     return dict(row)
+
+
+def _log_notification(
+    template_id: int,
+    recipient: str,
+    subject: str,
+    body: str,
+    status: str,
+    error: Optional[str],
+    current_user: Optional[dict],
+) -> None:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """INSERT INTO notification_logs (template_id, recipient, subject, body, status, error)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (template_id, recipient, subject, body, status, error),
+        )
+        conn.commit()
+
+    if current_user:
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(
+                action="send",
+                entity_type="notification",
+                entity_id=template_id,
+                details=f"{status}: {recipient}",
+            ),
+        )
 
 
 def _is_notification_enabled(user_id: int, notification_type: str) -> bool:
@@ -98,6 +131,7 @@ def send_template_email(
     template_id: int,
     recipient: str,
     variables: Optional[dict[str, object]] = None,
+    current_user: Optional[dict] = None,
 ) -> dict:
     template = _load_template(template_id)
     try:
@@ -108,12 +142,31 @@ def send_template_email(
             variables=variables,
         )
     except EmailSendError as exc:
+        _log_notification(
+            template_id=template_id,
+            recipient=recipient,
+            subject=template["subject"],
+            body=template["body"],
+            status="failed",
+            error=str(exc),
+            current_user=current_user,
+        )
         return {
             "template_id": template_id,
             "recipient": recipient,
             "status": "failed",
             "error": str(exc),
         }
+
+    _log_notification(
+        template_id=template_id,
+        recipient=recipient,
+        subject=template["subject"],
+        body=template["body"],
+        status="sent",
+        error=None,
+        current_user=current_user,
+    )
 
     return {
         "template_id": template_id,

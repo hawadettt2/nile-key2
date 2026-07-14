@@ -56,7 +56,12 @@ def _get_user_email(user_id: int) -> Optional[str]:
         return None
 
 
-def _send_shipping_notification(template_id: int, user_id: Optional[int], variables: Optional[dict] = None) -> None:
+def _send_shipping_notification(
+    template_id: int,
+    user_id: Optional[int],
+    variables: Optional[dict] = None,
+    current_user: Optional[dict] = None,
+) -> None:
     if user_id is None:
         return
     if not _is_notification_enabled(user_id, "shipping"):
@@ -67,7 +72,12 @@ def _send_shipping_notification(template_id: int, user_id: Optional[int], variab
         logger.warning("Shipping notification skipped: no email for user %s", user_id)
         return
     try:
-        result = send_template_email(template_id=template_id, recipient=email, variables=variables)
+        result = send_template_email(
+            template_id=template_id,
+            recipient=email,
+            variables=variables,
+            current_user=current_user,
+        )
         if result.get("status") == "failed":
             logger.warning("Shipping notification failed: %s", result.get("error"))
     except (TemplateNotFoundError, TemplateInactiveError) as exc:
@@ -945,6 +955,7 @@ def create_shipment(data, current_user: dict) -> dict:
         template_id=3,
         user_id=current_user.get("id") if current_user else None,
         variables={"shipment_id": result.shipment_id, "tracking_number": tracking},
+        current_user=current_user,
     )
     return {
         "id": result.shipment_id,
@@ -965,6 +976,7 @@ def update_shipment(shipment_id: int, data, current_user: dict) -> dict:
             template_id=4,
             user_id=current_user.get("id") if current_user else None,
             variables={"shipment_id": shipment_id, "status": update_data.status},
+            current_user=current_user,
         )
         return result
     return {"message": "Shipment updated successfully"}

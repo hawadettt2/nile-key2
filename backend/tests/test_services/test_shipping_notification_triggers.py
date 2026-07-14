@@ -57,6 +57,7 @@ def test_send_shipping_notification_calls_send_template_email_when_enabled():
             template_id=3,
             recipient="user@example.com",
             variables={"shipment_id": 10, "tracking_number": "NK123"},
+            current_user=None,
         )
 
 
