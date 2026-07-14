@@ -300,12 +300,12 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 
 ### Milestone 4: Export Operations Integration
 
-**Status:** Not Started  
-**Prerequisites:** M1 Complete, M2 Complete
+**Status:** Complete  
+**Prerequisites:** M1 Complete, M2 Complete, M3 Complete
 
 | Task ID | Description | Complexity | Dependencies | Expected Output |
 |---------|-------------|------------|--------------|-----------------|
-| M4-T1 | Define export workflow state machine | Medium | None | States: draft → customs_ready → shipped → delivered |
+| M4-T1 | Define export workflow state machine | Medium | None | States: draft → customs_ready → shipped → delivered (with conditional draft → shipped bypass when shipment_id exists; approved via CR-M4-001 Rev.1) |
 | M4-T2 | Create `export_workflows` table | Low | None | Table for tracking export workflow instances |
 | M4-T3 | Create `app/services/workflow.py` | High | M4-T2 | Service to manage export workflow lifecycle |
 | M4-T4 | Create export workflow router | Medium | M4-T3 | CRUD endpoints for export workflows |
@@ -345,6 +345,7 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 | PUT | `/api/v1/export-workflows/{id}` | `get_current_user` | Update workflow |
 | POST | `/api/v1/export-workflows/{id}/submit` | `get_current_user` | Submit workflow |
 | GET | `/api/v1/export-workflows/{id}/summary` | `get_current_user` | Generate summary |
+| POST | `/api/v1/export-workflows/{id}/items` | `get_current_user` | Add workflow item (approved via CR-M4-001 Rev.1) |
 
 #### M4 Testing Requirements
 
@@ -523,15 +524,17 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 | Frontend tests | ✅ Done |
 | Backend notification trigger tests | ✅ Done |
 
-### 6.4 Milestone 4 — Pending
+### 6.4 Milestone 4 — Complete (per CR-M4-001 Rev.1)
 
 | Deliverable | Status |
 |-------------|--------|
-| Export workflow service | Pending |
-| Export workflow router + schemas | Pending |
-| Database: `export_workflows`, `export_workflow_items` | Pending |
-| Export summary generator | Pending |
-| Tests: workflow | Pending |
+| Export workflow service | ✅ Complete |
+| Export workflow router + schemas | ✅ Complete |
+| Database: `export_workflows`, `export_workflow_items` | ✅ Complete |
+| Export summary generator | ✅ Complete |
+| Tests: workflow | ✅ Complete |
+| `/items` endpoint | ✅ Complete (Engineering Decision, CR-M4-001 Rev.1) |
+| `draft → shipped` bypass | ✅ Complete (Engineering Decision, CR-M4-001 Rev.1) |
 
 ### 6.5 Milestone 5 — Pending
 
@@ -579,9 +582,9 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 | M1: Foundation | ✅ Complete | 100% |
 | M2: Search + Dashboard | ✅ Complete | 100% |
 | M3: Notification Triggers + Frontend | ✅ Complete | 100% |
-| M4: Export Operations Integration | Not Started | 0% |
+| M4: Export Operations Integration | ✅ Complete (with conditions) | 100% |
 | M5: Polish + Integration Testing | Not Started | 0% |
-| **WP-21 Total** | **In Progress** | **~50%** |
+| **WP-21 Total** | **In Progress** | **~62.5%** |
 
 ### 8.2 M2 Completion Details
 
@@ -609,7 +612,23 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 | Frontend pages added | 2 (`/notifications`, `/dashboard` live widgets) |
 | Frontend components added | 1 (`NotificationBell`) |
 
-### 8.4 M1 Completion Details
+### 8.4 M4 Completion Details
+
+| Metric | Value |
+|--------|-------|
+| Modified files | 2 (`backend/app/core/database.py`, `backend/main.py`) |
+| New files | 4 (`backend/app/schemas/workflow.py`, `backend/app/services/workflow.py`, `backend/app/routers/workflow.py`, test files) |
+| Service tests added | 23 |
+| Router tests added | 10 |
+| Test pass rate | 100% (33/33) |
+| Regression tests | 406 passed, 8 skipped, 0 failed |
+| Commits | `f6aa5a4`, `5dcf72c` |
+| Router endpoints added | 7 (`/api/v1/export-workflows`, `/export-workflows/{id}`, `/export-workflows/{id}/submit`, `/export-workflows/{id}/summary`, `/export-workflows/{id}/items`) |
+| Database tables created | 2 (`export_workflows`, `export_workflow_items`) |
+| Change Request | CR-M4-001 Rev.1 — Approved with conditions |
+| Conditions | Business stakeholder notification of Engineering Decision required within 5 business days |
+
+### 8.5 M1 Completion Details
 
 | Metric | Value |
 |--------|-------|
@@ -714,7 +733,7 @@ No new backend endpoints. Existing notification endpoints used by frontend.
 1. SMTP provider will be selected by business owner (Open Question #1 in original plan)
 2. Notification preferences table schema from M1 is sufficient for M3
 3. Search uses SQL LIKE only in WP-21. FTS5 is out of scope and may be evaluated in a future Work Package.
-4. Export workflow states are limited to: draft, customs_ready, shipped, delivered
+4. Export workflow states are limited to: draft, customs_ready, shipped, delivered. Engineering Decision (CR-M4-001 Rev.1): `draft → shipped` bypass is permitted when `shipment_id` exists.
 5. Frontend build environment remains stable (Vite + TypeScript + Tailwind)
 6. No PostgreSQL migration during WP-21 (deferred to WP-40+)
 7. Existing domain services remain unchanged during WP-21

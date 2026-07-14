@@ -1,4 +1,4 @@
-# Technical Debt
+﻿# Technical Debt
 
 **Last Updated:** 2026-07-12
 **Branch:** main
@@ -20,6 +20,8 @@
 | LOW | POS receipt building | `backend/app/schemas/eta.py` | Receipt schemas ready; full POS receipt builder deferred to WP-21 |
 | LOW | Production CORS origins | `backend/main.py` | `ALLOWED_ORIGINS` configurable via settings; production origins (`nile-key.com`) to be set before deployment |
 | LOW | Shipping backward-compat alias complexity | `app/services/shipping/__init__.py` | Shim pattern resolves circular imports; can be simplified after full migration to new package |
+
+| LOW | Engineering Decision formalization | `app/services/workflow.py` | `draft → shipped` bypass approved via CR-M4-001 Rev.1; optional business requirement formalization pending |
 
 ## Resolved Technical Debt
 

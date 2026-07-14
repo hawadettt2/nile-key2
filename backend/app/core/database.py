@@ -695,6 +695,36 @@ def _create_tables(c: sqlite3.Cursor):
     """)
     _ensure_audit_logs_schema(c)
 
+    # ========== جدول سير عمليات التصدير ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS export_workflows (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workflow_number TEXT UNIQUE NOT NULL,
+            state TEXT NOT NULL DEFAULT 'draft',
+            customer_id INTEGER NOT NULL,
+            supplier_id INTEGER NOT NULL,
+            invoice_id INTEGER,
+            customs_declaration_id INTEGER,
+            shipment_id INTEGER,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP,
+            created_by INTEGER
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS export_workflow_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workflow_id INTEGER NOT NULL,
+            entity_type TEXT NOT NULL,
+            entity_id INTEGER NOT NULL,
+            metadata TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (workflow_id) REFERENCES export_workflows(id)
+        )
+    """)
+
 
 def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     """
