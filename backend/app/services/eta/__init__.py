@@ -29,8 +29,34 @@ from app.schemas.eta import (
     Signature,
 )
 from app.services.eta.eta_client import ETAClient, ETAHttpError
+from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError
 
 logger = logging.getLogger("eta")
+
+
+def _get_user_email(user_id: int) -> Optional[str]:
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT email FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+        return row["email"] if row else None
+
+
+def _send_eta_notification(template_id: int, user_id: Optional[int], variables: Optional[dict] = None) -> None:
+    if user_id is None:
+        return
+    email = _get_user_email(user_id)
+    if not email:
+        logger.warning("ETA notification skipped: no email for user %s", user_id)
+        return
+    try:
+        result = send_template_email(template_id=template_id, recipient=email, variables=variables)
+        if result.get("status") == "failed":
+            logger.warning("ETA notification failed: %s", result.get("error"))
+    except (TemplateNotFoundError, TemplateInactiveError) as exc:
+        logger.warning("ETA notification skipped: %s", str(exc))
+    except EmailSendError as exc:
+        logger.warning("ETA notification failed: %s", str(exc))
 
 
 # ========== Business Rules from Reference Repo ==========
@@ -417,7 +443,12 @@ def submit_invoice_to_eta(invoice_id: int, connector_id: int, current_user: dict
                 current_user=current_user,
                 data=AuditLogCreate(action="submit", entity_type="invoice", entity_id=invoice_id, details=uuid),
             )
-            
+            _send_eta_notification(
+                template_id=1,
+                user_id=current_user.get("id") if current_user else None,
+                variables={"invoice_id": invoice_id, "submission_id": submission_id or ""},
+            )
+
             return {
                 "message": "Invoice submitted to ETA successfully",
                 "uuid": uuid,
@@ -573,7 +604,12 @@ def submit_receipt_to_eta(receipt_data: dict, connector_id: int, current_user: d
                 current_user=current_user,
                 data=AuditLogCreate(action="submit", entity_type="receipt", entity_id=receipt_data.get("document_id"), details=submission_id),
             )
-            
+            _send_eta_notification(
+                template_id=2,
+                user_id=current_user.get("id") if current_user else None,
+                variables={"document_id": receipt_data.get("document_id"), "submission_id": submission_id or ""},
+            )
+
             return {
                 "message": "Receipt submitted to ETA",
                 "submission_id": submission_id,
