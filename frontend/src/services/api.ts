@@ -146,4 +146,12 @@ export const getResource = (id: number) => api.get(`/api/v1/resources/${id}`);
 export const updateResource = (id: number, data: Record<string, unknown>) => api.put(`/api/v1/resources/${id}`, data);
 export const deleteResource = (id: number) => api.delete(`/api/v1/resources/${id}`);
 
+export const search = (query: string, entityType?: string) =>
+  api.get('/api/v1/search', { params: { query, entity_type: entityType } });
+export const getDashboard = () => api.get('/api/v1/dashboard');
+export const sendNotification = (data: { template_id: number; recipient: string; variables?: Record<string, unknown> }) =>
+  api.post('/api/v1/notifications/send', data);
+export const getAuditLogs = (params?: Record<string, unknown>) =>
+  api.get('/api/v1/audit/logs', { params });
+
 export default api;
