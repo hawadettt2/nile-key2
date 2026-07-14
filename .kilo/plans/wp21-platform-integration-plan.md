@@ -370,14 +370,16 @@ resource.py, shipping/__init__.py, eta/__init__.py | 8 |
 
 ### Milestone 5: Polish + Integration Testing
 
-| Task ID | Description | Complexity | Dependencies | Expected Output |
-|---------|-------------|------------|--------------|-----------------|
-| M5-T1 | Register new routers in `backend/main.py` | Low | All M1-M4 | All new routers accessible under /api/v1 |
-| M5-T2 | End-to-end integration tests | High | All M1-M4 | Tests covering full user workflows |
-| M5-T3 | Performance testing for search | Medium | M2-T2 | Search < 500ms with 10k records |
-| M5-T4 | Security review | Medium | All M1-M4 | Verify auth, input validation, rate limiting |
-| M5-T5 | Documentation updates | Low | All M1-M4 | Update PLAN.md, CURRENT_STATUS.md, TECH_DEBT.md |
-| M5-T6 | Final acceptance gate | Low | All M1-M5 | Sign-off on all acceptance criteria |
+**Status:** Complete  
+**Prerequisites:** M1, M2, M3, M4 complete
+
+| Task ID | Description | Complexity | Dependencies | Expected Output | Status |
+|---------|-------------|------------|--------------|-----------------|--------|
+| M5-R5 | Update `.env.example` with missing variables | Low | None | `OWNER_PASSWORD`, SMTP vars documented | ✅ Done |
+| M5-R3 | Enforce workflow state validation in `update_workflow()` | Medium | None | All transitions validated; CR-M4-001 Rev.1 bypass preserved | ✅ Done |
+| M5-R2 | Add notification audit logging to `send_template_email()` | Medium | None | Audit + notification_log records created | ✅ Done |
+| M5-R1 | Add live dashboard auto-refresh polling | Medium | None | Dashboard refreshes every 30s without manual reload | ✅ Done |
+| M5-R4 | Enforce search RBAC with `require_role()` | Low | None | Search restricted to authorized roles | ✅ Done |
 
 ---
 

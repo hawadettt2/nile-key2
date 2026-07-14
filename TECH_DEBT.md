@@ -1,8 +1,8 @@
 ﻿# Technical Debt
 
-**Last Updated:** 2026-07-12
+**Last Updated:** 2026-07-15
 **Branch:** main
-**Phase:** 2.0 — Platform Integration (WP-19 + WP-20 complete)
+**Phase:** 2.5 — WP-21 Milestone 5 Complete
 
 ---
 
@@ -23,6 +23,14 @@
 
 | LOW | Engineering Decision formalization | `app/services/workflow.py` | `draft → shipped` bypass approved via CR-M4-001 Rev.1; optional business requirement formalization pending |
 
+| LOW | Email notifications operational | ackend/app/services/notification.py | SMTP code implemented; notification audit logging added in M5-R2 |
+| LOW | Dashboard live data | rontend/src/pages/Dashboard.tsx | Auto-refresh polling added in M5-R1 |
+| MEDIUM | Workflow state validation bypass | ackend/app/services/workflow.py | update_workflow() now validates transitions in M5-R3 |
+| MEDIUM | Search missing RBAC | ackend/app/routers/search.py | 
+equire_role() added in M5-R4 |
+| MEDIUM | .env.example missing variables | ackend/.env.example | OWNER_PASSWORD and SMTP vars added in M5-R5 |
+| LOW | Notification audit logging missing | ackend/app/services/notification.py | udit_logs + 
+otification_logs integration added in M5-R2 |
 ## Resolved Technical Debt
 
 | Debt | Resolution | Work Package |
