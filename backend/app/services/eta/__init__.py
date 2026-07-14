@@ -29,7 +29,7 @@ from app.schemas.eta import (
     Signature,
 )
 from app.services.eta.eta_client import ETAClient, ETAHttpError
-from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError
+from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError, _is_notification_enabled
 
 logger = logging.getLogger("eta")
 
@@ -44,6 +44,9 @@ def _get_user_email(user_id: int) -> Optional[str]:
 
 def _send_eta_notification(template_id: int, user_id: Optional[int], variables: Optional[dict] = None) -> None:
     if user_id is None:
+        return
+    if not _is_notification_enabled(user_id, "eta"):
+        logger.info("ETA notification skipped for user %s: preference disabled", user_id)
         return
     email = _get_user_email(user_id)
     if not email:

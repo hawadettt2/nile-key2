@@ -47,6 +47,19 @@ def _load_template(template_id: int) -> dict:
     return dict(row)
 
 
+def _is_notification_enabled(user_id: int, notification_type: str) -> bool:
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT enabled FROM notification_preferences WHERE user_id = ? AND notification_type = ?",
+            (user_id, notification_type),
+        )
+        row = cursor.fetchone()
+        if row:
+            return bool(row["enabled"])
+        return True
+
+
 def send_email(
     to: str,
     subject: str,

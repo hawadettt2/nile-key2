@@ -32,7 +32,7 @@ from app.services.shipping.base import (
     ShipmentBookingError, TrackingError, ValidationError,
     register_provider, get_provider, get_enabled_providers, PROVIDERS,
 )
-from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError
+from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError, _is_notification_enabled
 
 logger = logging.getLogger("shipping")
 
@@ -58,6 +58,9 @@ def _get_user_email(user_id: int) -> Optional[str]:
 
 def _send_shipping_notification(template_id: int, user_id: Optional[int], variables: Optional[dict] = None) -> None:
     if user_id is None:
+        return
+    if not _is_notification_enabled(user_id, "shipping"):
+        logger.info("Shipping notification skipped for user %s: preference disabled", user_id)
         return
     email = _get_user_email(user_id)
     if not email:
