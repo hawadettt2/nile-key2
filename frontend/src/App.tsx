@@ -11,6 +11,7 @@ import { Customs } from '@/pages/Customs';
 import { Documents } from '@/pages/Documents';
 import { Resources } from '@/pages/Resources';
 import { Profile } from '@/pages/Profile';
+import { Notifications } from '@/pages/Notifications';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -40,6 +41,7 @@ function App() {
           <Route path="documents" element={<Documents />} />
           <Route path="resources" element={<Resources />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
