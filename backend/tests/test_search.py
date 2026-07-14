@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from fastapi import HTTPException
 
 from app.routers.search import router as search_router
 from app.services.search import search_all, _calculate_relevance
@@ -22,7 +23,7 @@ def test_search_route_handler_delegates_to_service():
     with patch("app.routers.search.search_all", return_value=mock_response) as mock_search:
         route = [r for r in search_router.routes if r.path == "/api/v1/search"][0]
         handler = route.endpoint
-        result = handler(query="test", entity_type=None, current_user={"id": 1})
+        result = handler(query="test", entity_type=None, current_user={"id": 1, "role": "owner"})
 
     mock_search.assert_called_once_with(query="test", entity_type=None)
     assert result == mock_response
@@ -35,10 +36,22 @@ def test_search_route_handler_passes_entity_type():
     with patch("app.routers.search.search_all", return_value=mock_response) as mock_search:
         route = [r for r in search_router.routes if r.path == "/api/v1/search"][0]
         handler = route.endpoint
-        result = handler(query="test", entity_type="customer", current_user={"id": 1})
+        result = handler(query="test", entity_type="customer", current_user={"id": 1, "role": "owner"})
 
     mock_search.assert_called_once_with(query="test", entity_type="customer")
     assert result == mock_response
+
+
+def test_search_route_handler_requires_authorized_role():
+    from app.routers.auth import require_role
+
+    checker = require_role(["owner", "manager", "sales", "admin_staff", "accountant", "logistics"])
+
+    with pytest.raises(HTTPException) as exc_info:
+        checker({"id": 1, "role": "supplier"})
+
+    assert exc_info.value.status_code == 403
+    assert "Insufficient permissions" in str(exc_info.value.detail)
 
 
 def test_search_service_relevance_exact_match():
