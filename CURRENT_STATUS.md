@@ -36,6 +36,7 @@
 | WP-21 M2 | âœ… Complete | Unified search + live dashboard; 10 tests |
 | WP-21 M3 | âœ… Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
 | WP-21 M4 | âœ… Complete | Export workflow service + router + database tables + summary generator; 33 tests; CLOSED WITH CONDITIONS per CR-M4-001 Rev.1 |
+| WP-30B | ✅ Complete | Session Management + Mission Lifecycle; 6 DEM endpoints; router registered; Closure Review approved; ED-WP30-001 recorded |
 
 ## Current System State
 
@@ -45,7 +46,7 @@
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
 - **Tests:** 410 passing, 8 skipped by design
-- **Routers:** ETA router at `/api/v1/eta`; Shipping router at `/api/v1/shipping`; Search at `/api/v1/search`; Dashboard at `/api/v1/dashboard`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit`; Export Workflows at /api/v1/export-workflows
+- **Routers:** ETA router at `/api/v1/eta`; Shipping router at `/api/v1/shipping`; Search at `/api/v1/search`; Dashboard at `/api/v1/dashboard`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit`; Export Workflows at /api/v1/export-workflows; Digital Export Manager at `/api/v1/digital-export-manager`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
 - **Shipping Service Layer:** Complete business logic for rate aggregation, booking, labels, tracking, cancellation, provider/parcel-template CRUD
@@ -138,6 +139,19 @@
 - **Backend Trigger Tests:** 17 tests verifying notification triggers in ETA and Shipping services
 - **Test Coverage:** Full suite: 373 passed, 8 skipped, 0 failed
 
+## WP-30B Implementation Summary
+
+### WP-30B: Session Management + Mission Lifecycle (Completed)
+- **Session Management:** Persistent Digital Export Session with full lifecycle: connect, missions, close
+- **SessionContext:** Full domain model with active_workflows, linked_entities, standing_orders, user_preferences, reasoning_state, memory_refs
+- **Session Manager:** create, get, update, end, add_mission, get_missions, update_mission_status
+- **Mission Lifecycle:** Mission domain object with status, result, error, updated_at; linked to Session
+- **API Endpoints:** POST /connect, POST /missions, GET /sessions/{id}, POST /sessions/{id}/close, GET /health, GET /tools
+- **Router Registration:** DEM router registered in main.py and routers/__init__.py
+- **Governance:** WP-30B Official Closure Review approved; ED-WP30-001 recorded
+- **Architecture:** Business façade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
+- **Backward Compatibility:** Existing agent router unchanged; all original endpoints intact
+
 ## Initialization Flow
 
 1. FastAPI startup calls `init_db()`
@@ -162,8 +176,10 @@
 - WP-20 completed â€” Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
 - WP-21 M1-M3 completed â€” Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
 - WP-21 completed — All milestones closed
+- WP-30B completed — Session Management + Mission Lifecycle; 6 DEM endpoints; Closure Review approved; ED-WP30-001 recorded
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
-- Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md` (both subordinate to PLAN.md)
+- Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/wp30-implementation-plan.md` (all subordinate to PLAN.md)
+- Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment)
 
 ## Session Recovery Point
 
@@ -171,5 +187,7 @@ If resuming after session interruption:
 1. Read `PLAN.md` Section 12 (Project Continuity Protocol)
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
-4. Proceed to Phase 3 — Advanced Features
+4. Read `.kilo/plans/wp30-implementation-plan.md` for current WP-30 phase status
+5. Read `.kilo/plans/ED-WP30-001.md` if working on WP-30C or later
+6. Proceed to WP-30C — Task Planner + Execution Engine
 

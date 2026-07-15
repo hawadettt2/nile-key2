@@ -725,6 +725,51 @@ def _create_tables(c: sqlite3.Cursor):
         )
     """)
 
+    # ========== جداول WP-30: Digital Export Manager ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS agent_sessions (
+            id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            context TEXT,
+            status TEXT DEFAULT 'active',
+            started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ended_at TIMESTAMP,
+            metadata TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS agent_memory (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            key TEXT NOT NULL,
+            value TEXT,
+            memory_type TEXT DEFAULT 'context',
+            importance INTEGER DEFAULT 5,
+            expires_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS agent_audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            agent_id TEXT NOT NULL,
+            tool_name TEXT NOT NULL,
+            input_hash TEXT NOT NULL,
+            output_status TEXT NOT NULL,
+            result_ref TEXT,
+            duration_ms INTEGER,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            metadata TEXT,
+            FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
+        )
+    """)
+
 
 def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     """
