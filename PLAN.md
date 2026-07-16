@@ -243,6 +243,7 @@
 - WP-30E: Tool Implementations — ✅ مكتمل
 - WP-30F: Company Knowledge Layer Interface — ✅ مكتمل
 - WP-30G: Memory Interface Definition — ✅ مكتمل
+- WP-30H: Avatar Contract — ✅ مكتمل
 - WP-31: AI Memory — ذاكرة سياقية
 - WP-32: Knowledge Graph — رسم معرفي للتجارة
 - WP-33: Trade Intelligence — ذكاء السوق والموردين والعملاء
@@ -284,6 +285,7 @@
 | WP-30E | ✅ مكتمل | Tool Implementations |
 | WP-30F | ✅ مكتمل | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract |
 | WP-30G | ✅ مكتمل | Memory Interface Definition; MemoryProvider ABC with recall/store/forget/summarize; graceful degradation in DEM core |
+| WP-30H | ✅ مكتمل | Avatar Contract; IntentContent and AvatarRenderer interfaces defined; structured intents confirmed; 15 tests |
 
 ## 8.2 الحالة النظامية الحالية
 

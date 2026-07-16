@@ -19,16 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `MemoryProvider` ABC refined with `recall()`, `store()`, `forget()`, `summarize()` methods
   - `MemoryContract` document (`.kilo/plans/MEMORY_CONTRACT.md`)
   - 12 new unit tests for memory interface (`tests/agent/test_memory.py`)
+- WP-30H: Avatar Contract
+  - `IntentContent` Pydantic contract with `intent_type`, `content`, `context`, `suggested_actions`
+  - `AvatarRenderer` ABC with `render()` method
+  - Avatar Contract document (`.kilo/plans/AVATAR_CONTRACT.md`)
+  - 15 new unit tests for avatar interface (`tests/agent/test_avatar.py`)
 
 ### Changed
 - `AgentKnowledgeQueryRequest` now includes `context` and `scope` fields
 - `AgentKnowledgeQueryResponse` now includes `confidence` and `sources` fields
 - `KnowledgeProvider.query()` signature extended with `scope` parameter
 - `MemoryProvider` interface refined with structured docstrings and clear return contracts
+- `IntentContent` refined with Field docstrings and type clarity
+- `AvatarRenderer.render()` contract clarified with structured docstring
 
 ### Documentation
-- `CURRENT_STATUS.md` updated with WP-30F and WP-30G closure
-- `PLAN.md` updated with WP-30B–WP-30G completion status
+- `CURRENT_STATUS.md` updated with WP-30F, WP-30G, and WP-30H closure
+- `PLAN.md` updated with WP-30B–WP-30H completion status
 - `wp30-implementation-plan.md` updated with ED-WP30-002 reference and Task 6.5 exclusion note
 - `1784079736812-wp30-architecture-compliance-review.md` updated with ED-WP30-002 reference
 
