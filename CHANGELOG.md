@@ -15,15 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Knowledge Ingestion Contract document (`.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`)
 - 17 new unit tests for knowledge layer (`tests/agent/test_knowledge.py`)
 - ED-WP30-002: WP-30F scope clarification (Tasks 6.1–6.4 only)
+- WP-30G: Memory Interface Definition
+  - `MemoryProvider` ABC refined with `recall()`, `store()`, `forget()`, `summarize()` methods
+  - `MemoryContract` document (`.kilo/plans/MEMORY_CONTRACT.md`)
+  - 12 new unit tests for memory interface (`tests/agent/test_memory.py`)
 
 ### Changed
 - `AgentKnowledgeQueryRequest` now includes `context` and `scope` fields
 - `AgentKnowledgeQueryResponse` now includes `confidence` and `sources` fields
 - `KnowledgeProvider.query()` signature extended with `scope` parameter
+- `MemoryProvider` interface refined with structured docstrings and clear return contracts
 
 ### Documentation
-- `CURRENT_STATUS.md` updated with WP-30F closure
-- `PLAN.md` updated with WP-30B–WP-30F completion status
+- `CURRENT_STATUS.md` updated with WP-30F and WP-30G closure
+- `PLAN.md` updated with WP-30B–WP-30G completion status
 - `wp30-implementation-plan.md` updated with ED-WP30-002 reference and Task 6.5 exclusion note
 - `1784079736812-wp30-architecture-compliance-review.md` updated with ED-WP30-002 reference
 

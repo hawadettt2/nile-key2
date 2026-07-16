@@ -3,8 +3,8 @@
 **Last Updated:** 2026-07-16
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 2 — Intelligent Platform (WP-30F CLOSED)
-**Next Phase:** WP-30G — Memory Interface Definition
+**Phase:** 2 — Intelligent Platform (WP-30G CLOSED)
+**Next Phase:** WP-30H — Avatar Contract
 
 ---
 
@@ -41,6 +41,7 @@
 | WP-30D | ✅ Complete | Decision Engine; reasoning loop with knowledge/memory graceful degradation |
 | WP-30E | ✅ Complete | 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed |
 | WP-30F | ✅ Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
+| WP-30G | ✅ Complete | MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests |
 
 ## Current System State
 
@@ -49,7 +50,7 @@
 - **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 579 passing, 8 skipped by design
+- **Tests:** 591 passing, 8 skipped by design
 - **Routers:** ETA router at `/api/v1/eta`; Shipping router at `/api/v1/shipping`; Search at `/api/v1/search`; Dashboard at `/api/v1/dashboard`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit`; Export Workflows at /api/v1/export-workflows; Digital Export Manager at `/api/v1/digital-export-manager`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
@@ -167,6 +168,16 @@
 - **Tests:** 17 new tests for interface, registry, and schemas
 - **Backward Compatibility:** Existing Decision Engine stubs unchanged; no breaking changes to existing code
 
+## WP-30G Implementation Summary
+
+### WP-30G: Memory Interface Definition (Completed)
+- **MemoryProvider Interface:** Refined ABC with `recall()`, `store()`, `forget()`, `summarize()` methods; structured docstrings with clear input/output contracts
+- **Memory Contract:** Documented in `.kilo/plans/MEMORY_CONTRACT.md`; principles, interface contract, memory types, graceful degradation rules
+- **Graceful Degradation:** Decision Engine and Mission Planner already use MemoryProvider with graceful degradation when unavailable
+- **Schemas:** `AgentMemoryRequest/Response`, `AgentMemoryRecallRequest/Response` already present and compatible
+- **Tests:** 12 new tests for interface and schemas
+- **Backward Compatibility:** No breaking changes; existing DEM core code unchanged
+
 ## Initialization Flow
 
 1. FastAPI startup calls `init_db()`
@@ -196,6 +207,7 @@
 - WP-30D completed — Decision Engine; reasoning loop with knowledge/memory graceful degradation
 - WP-30E completed — 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
 - WP-30F completed — Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
+- WP-30G completed — MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
@@ -207,6 +219,6 @@ If resuming after session interruption:
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
 4. Read `.kilo/plans/wp30-implementation-plan.md` for current WP-30 phase status
-5. Read `.kilo/plans/ED-WP30-001.md` and `.kilo/plans/ED-WP30-002.md` if working on WP-30G or later
-6. Proceed to WP-30G — Memory Interface Definition
+5. Read `.kilo/plans/ED-WP30-001.md` and `.kilo/plans/ED-WP30-002.md` if working on WP-30H or later
+6. Proceed to WP-30H — Avatar Contract
 
