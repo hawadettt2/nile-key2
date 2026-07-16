@@ -140,7 +140,7 @@ class AgentOrchestrator:
                         agent_id=self.agent_id,
                         tool_name=step.tool_name,
                         parameters={**parameters, **step.parameters},
-                        result=ToolResultSchema(status="error", error=error_msg),
+                        result=ToolResultSchema(status="error", error=error_msg, audit_ref=f"error:{step.tool_name}:{int(time.time()*1000)}"),
                         duration_ms=duration_ms,
                         metadata={"step_id": step.step_id, "description": step.description},
                     )

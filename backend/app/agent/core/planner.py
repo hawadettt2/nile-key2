@@ -1,6 +1,10 @@
+import uuid
 from typing import List, Dict, Any, Optional
-from ..tools.base import BaseTool, ToolResult
+
 from ..tools.registry import tool_registry
+from ..mission_planner.planner import TaskPlanner
+from ..schemas.enums import MissionType
+from ..exceptions import MissionPlannerException
 
 
 class PlanStep:
@@ -38,81 +42,57 @@ class ExecutionPlan:
 
 class Planner:
     def __init__(self):
-        pass
+        self.task_planner = TaskPlanner(tool_registry=tool_registry)
 
     def plan(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
+        chosen_path = self._map_intent_to_path(intent)
+        session_id = context.get("session_id") or str(uuid.uuid4())
+
+        decision = {
+            "decision_id": str(uuid.uuid4()),
+            "session_id": session_id,
+            "chosen_path": chosen_path,
+            "context": context,
+        }
+
+        try:
+            result = self.task_planner.plan(decision, context)
+        except MissionPlannerException:
+            chosen_path = "search"
+            decision["chosen_path"] = chosen_path
+            result = self.task_planner.plan(decision, context)
+
+        tasks = result["tasks"]
+        steps = [
+            PlanStep(
+                step_id=i,
+                tool_name=task.tool_name,
+                parameters=task.parameters,
+                description=f"Execute {task.tool_name}",
+                depends_on=task.depends_on,
+            )
+            for i, task in enumerate(tasks)
+        ]
+
+        return ExecutionPlan(steps, intent)
+
+    def _map_intent_to_path(self, intent: str) -> str:
         intent_lower = intent.lower()
-
-        if "شحن" in intent_lower or "shipment" in intent_lower or "shipping" in intent_lower:
-            return self._plan_shipping(intent, context)
+        if "شحن" in intent_lower or "ship" in intent_lower:
+            return "shipping"
         elif "فاتورة" in intent_lower or "invoice" in intent_lower or "eta" in intent_lower:
-            return self._plan_eta(intent, context)
+            return "eta"
         elif "جمارك" in intent_lower or "customs" in intent_lower:
-            return self._plan_customs(intent, context)
+            return "customs"
         elif "وثيقة" in intent_lower or "document" in intent_lower:
-            return self._plan_document(intent, context)
+            return "document"
         elif "بحث" in intent_lower or "search" in intent_lower:
-            return self._plan_search(intent, context)
+            return "search"
         elif "لوحة" in intent_lower or "dashboard" in intent_lower:
-            return self._plan_dashboard(intent, context)
+            return "dashboard"
         elif "إشعار" in intent_lower or "notification" in intent_lower:
-            return self._plan_notification(intent, context)
+            return "notification"
         elif "sop" in intent_lower or "إجراء" in intent_lower or "procedure" in intent_lower:
-            return self._plan_training(intent, context)
+            return "workflow"
         else:
-            return self._plan_general(intent, context)
-
-    def _plan_shipping(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "shipping_get_rates", {}, "Get shipping rates"),
-            PlanStep(2, "shipping_create_shipment", {}, "Create shipment"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_eta(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "eta_get_invoices", {}, "Get ETA invoices"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_customs(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "customs_get_declarations", {}, "Get customs declarations"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_document(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "documents_get_templates", {}, "Get document templates"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_search(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "search_global", {"query": intent}, "Search across entities"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_dashboard(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "dashboard_get_stats", {}, "Get dashboard statistics"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_notification(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "notifications_get_recent", {}, "Get recent notifications"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_training(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "knowledge_search", {"query": intent}, "Search knowledge base"),
-        ]
-        return ExecutionPlan(steps, intent)
-
-    def _plan_general(self, intent: str, context: Dict[str, Any]) -> ExecutionPlan:
-        steps = [
-            PlanStep(1, "search_global", {"query": intent}, "Search across entities"),
-        ]
-        return ExecutionPlan(steps, intent)
+            return "search"

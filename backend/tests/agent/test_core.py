@@ -116,7 +116,7 @@ class TestPlanner:
     def test_plan_eta_intent(self):
         plan = self.planner.plan("Check my ETA invoices", {})
         assert isinstance(plan, ExecutionPlan)
-        assert plan.steps[0].tool_name == "eta_get_invoices"
+        assert plan.steps[0].tool_name == "eta_submit_invoice"
 
     def test_plan_customs_intent(self):
         plan = self.planner.plan("File customs declaration", {})
@@ -136,12 +136,18 @@ class TestPlanner:
     def test_plan_notification_intent(self):
         plan = self.planner.plan("Show notifications", {})
         assert isinstance(plan, ExecutionPlan)
-        assert plan.steps[0].tool_name == "notifications_get_recent"
+        assert plan.steps[0].tool_name == "notifications_send"
 
     def test_plan_general_intent(self):
         plan = self.planner.plan("Tell me about something", {})
         assert isinstance(plan, ExecutionPlan)
         assert plan.steps[0].tool_name == "search_global"
+
+    def test_plan_uses_only_registered_tools(self):
+        from app.agent.tools.registry import tool_registry
+        plan = self.planner.plan("I want to ship a package", {})
+        for step in plan.steps:
+            assert tool_registry.has_tool(step.tool_name), f"Unregistered tool referenced: {step.tool_name}"
 
     def test_execution_plan_get_next_step(self):
         plan = ExecutionPlan(
@@ -238,7 +244,7 @@ class TestAuditRecorder:
     def test_record_tool_execution(self):
         from app.agent.schemas.tool_result import ToolResultSchema
 
-        result = ToolResultSchema(status="success", data={"key": "value"})
+        result = ToolResultSchema(status="success", data={"key": "value"}, audit_ref="test-audit-ref")
         self.recorder.record_tool_execution(
             session_id="session-123",
             agent_id="agent-1",
@@ -271,9 +277,10 @@ class TestAgentSchemas:
     def test_tool_result_schema(self):
         from app.agent.schemas.tool_result import ToolResultSchema
 
-        schema = ToolResultSchema(status="success", data={"key": "value"})
+        schema = ToolResultSchema(status="success", data={"key": "value"}, audit_ref="test-audit-ref")
         assert schema.status == "success"
         assert schema.data == {"key": "value"}
+        assert schema.audit_ref == "test-audit-ref"
 
     def test_agent_execute_request(self):
         from app.agent.schemas.tool_result import AgentExecuteRequest

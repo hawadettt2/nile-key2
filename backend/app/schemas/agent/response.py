@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class AgentHealthResponse(BaseModel):
@@ -18,6 +18,9 @@ class AgentToolInfoResponse(BaseModel):
     side_effects: str
     idempotent: bool
     auth_required: bool
+    version: Optional[str] = "1.0.0"
+    idempotency_key: Optional[str] = None
+    auth_requirements: Optional[Dict[str, Any]] = None
 
 
 class AgentExecuteResponse(BaseModel):

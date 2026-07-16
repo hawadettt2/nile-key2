@@ -237,7 +237,11 @@
 - WP-21: تكامل المنصة التجارية الأساسية
 
 ## المرحلة 2: المنصة الذكية (بعد نجاح المرحلة 1.5)
-- WP-30: AI Agent — وكيل ذكي للمنصة
+- WP-30B: Session Management + Mission Lifecycle — ✅ مكتمل
+- WP-30C: Task Planner + Execution Engine — ✅ مكتمل
+- WP-30D: Decision Engine — ✅ مكتمل
+- WP-30E: Tool Implementations — ✅ مكتمل
+- WP-30F: Company Knowledge Layer Interface — ✅ مكتمل
 - WP-31: AI Memory — ذاكرة سياقية
 - WP-32: Knowledge Graph — رسم معرفي للتجارة
 - WP-33: Trade Intelligence — ذكاء السوق والموردين والعملاء
@@ -273,6 +277,11 @@
 | WP-17A | ✅ مكتمل | اختبارات نقاط النهاية |
 | WP-17B | ✅ مكتمل | اختبارات طبقة الخدمات |
 | WP-18 | ✅ مكتمل | إصلاحات توافقية نهائية |
+| WP-30B | ✅ مكتمل | Session Management + Mission Lifecycle |
+| WP-30C | ✅ مكتمل | Task Planner + Execution Engine |
+| WP-30D | ✅ مكتمل | Decision Engine |
+| WP-30E | ✅ مكتمل | Tool Implementations |
+| WP-30F | ✅ مكتمل | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract |
 
 ## 8.2 الحالة النظامية الحالية
 

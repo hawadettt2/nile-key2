@@ -3,7 +3,7 @@
 **Reference:** PLAN.md (Master Roadmap v2.1)  
 **Architecture:** `.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`  
 **Compliance:** `.kilo/plans/1784079736812-wp30-architecture-compliance-review.md`  
-**Engineering Decision:** `.kilo/plans/ED-WP30-001.md`  
+**Engineering Decision:** `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`  
 **Phase:** 2 — Intelligent Platform  
 **Status:** Active — WP-30B Closed, WP-30C Next  
 **Date:** 2026-07-15
@@ -460,6 +460,8 @@ The client never sees internal `Mission`, `ExecutionPlan`, or `Task` objects.
 | 6.2 | Define `KnowledgeQuery` contract |
 | 6.3 | Define provider registry |
 | 6.4 | Document ingestion contract (no implementation) |
+
+**Note:** Task 6.5 ("Decision Engine and Mission Planner can query knowledge") is explicitly excluded from WP-30F per ED-WP30-002. The existing stubs in `decision_engine/engine.py` and `mission_planner/planner.py` satisfy interface-level conformance for this capability. Integration with Decision Engine and Mission Planner is deferred to a future work package.
 
 ### Phase 7: Memory Interface Definition (WP-30G)
 

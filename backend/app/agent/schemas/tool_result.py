@@ -6,7 +6,7 @@ class ToolResultSchema(BaseModel):
     status: str
     data: Optional[Any] = None
     error: Optional[str] = None
-    audit_ref: str = ""
+    audit_ref: str
 
     model_config = {"from_attributes": True}
 

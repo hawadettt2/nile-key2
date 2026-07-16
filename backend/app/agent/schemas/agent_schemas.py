@@ -34,11 +34,13 @@ class AgentMemoryRecallResponse(BaseModel):
 
 class AgentKnowledgeQueryRequest(BaseModel):
     query: str
+    context: Optional[Dict[str, Any]] = None
+    scope: Optional[str] = None
     sources: Optional[List[str]] = None
     limit: int = Field(ge=1, le=50, default=10)
 
 
 class AgentKnowledgeQueryResponse(BaseModel):
     results: List[Dict[str, Any]]
-    total: int
-    sources_used: List[str]
+    confidence: Optional[float] = None
+    sources: List[str]

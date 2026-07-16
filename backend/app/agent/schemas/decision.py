@@ -11,3 +11,5 @@ class Decision(BaseModel):
     alternatives: List[str]
     context: Dict[str, Any]
     created_at: datetime
+    requires_approval: bool = False
+    approval_status: str = "not_required"

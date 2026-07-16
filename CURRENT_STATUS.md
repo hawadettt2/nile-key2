@@ -1,10 +1,10 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-07-15
+**Last Updated:** 2026-07-16
 **Branch:** main
-**Commit:** b8b2ecb (feat(wp21-m5-m5r1): add live dashboard data auto-refresh)
-**Phase:** 2.5 — WP-21 Milestone 5: Polish + Integration Testing (CLOSED)
-**Next Phase:** Phase 3 — Advanced Features
+**Commit:** HEAD
+**Phase:** 2 — Intelligent Platform (WP-30F CLOSED)
+**Next Phase:** WP-30G — Memory Interface Definition
 
 ---
 
@@ -37,6 +37,10 @@
 | WP-21 M3 | âœ… Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
 | WP-21 M4 | âœ… Complete | Export workflow service + router + database tables + summary generator; 33 tests; CLOSED WITH CONDITIONS per CR-M4-001 Rev.1 |
 | WP-30B | ✅ Complete | Session Management + Mission Lifecycle; 6 DEM endpoints; router registered; Closure Review approved; ED-WP30-001 recorded |
+| WP-30C | ✅ Complete | Task Planner + Execution Engine; structured mission execution; retry, idempotency, audit |
+| WP-30D | ✅ Complete | Decision Engine; reasoning loop with knowledge/memory graceful degradation |
+| WP-30E | ✅ Complete | 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed |
+| WP-30F | ✅ Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
 
 ## Current System State
 
@@ -45,7 +49,7 @@
 - **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 410 passing, 8 skipped by design
+- **Tests:** 579 passing, 8 skipped by design
 - **Routers:** ETA router at `/api/v1/eta`; Shipping router at `/api/v1/shipping`; Search at `/api/v1/search`; Dashboard at `/api/v1/dashboard`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit`; Export Workflows at /api/v1/export-workflows; Digital Export Manager at `/api/v1/digital-export-manager`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
@@ -152,6 +156,17 @@
 - **Architecture:** Business façade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
 - **Backward Compatibility:** Existing agent router unchanged; all original endpoints intact
 
+## WP-30F Implementation Summary
+
+### WP-30F: Company Knowledge Layer Interface (Completed)
+- **KnowledgeProvider Interface:** Refined ABC with `query()` and `get_sources()` methods; supports context, scope, sources, limit parameters; structured return contract with results, confidence, sources
+- **KnowledgeQuery Contract:** `AgentKnowledgeQueryRequest` and `AgentKnowledgeQueryResponse` Pydantic models; request includes query, context, scope, sources, limit; response includes results, confidence, sources
+- **KnowledgeProviderRegistry:** Registry implementation following ToolRegistry pattern; supports register, unregister, get, list_providers, exists, query; validates sources on registration
+- **Ingestion Contract:** Documented in `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`; principles, registration contract, future pipeline contract, versioning rules
+- **Governance:** ED-WP30-002 recorded — scope limited to Tasks 6.1–6.4; Task 6.5 excluded
+- **Tests:** 17 new tests for interface, registry, and schemas
+- **Backward Compatibility:** Existing Decision Engine stubs unchanged; no breaking changes to existing code
+
 ## Initialization Flow
 
 1. FastAPI startup calls `init_db()`
@@ -172,14 +187,18 @@
 ## Project Continuity Status
 
 - All WP-01 through WP-18 closed successfully
-- WP-19 completed â€” ETA Engine fully implemented with production-ready infrastructure
-- WP-20 completed â€” Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
-- WP-21 M1-M3 completed â€” Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
+- WP-19 completed — ETA Engine fully implemented with production-ready infrastructure
+- WP-20 completed — Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
+- WP-21 M1-M3 completed — Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
 - WP-21 completed — All milestones closed
 - WP-30B completed — Session Management + Mission Lifecycle; 6 DEM endpoints; Closure Review approved; ED-WP30-001 recorded
+- WP-30C completed — Task Planner + Execution Engine; structured mission execution
+- WP-30D completed — Decision Engine; reasoning loop with knowledge/memory graceful degradation
+- WP-30E completed — 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
+- WP-30F completed — Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/wp30-implementation-plan.md` (all subordinate to PLAN.md)
-- Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment)
+- Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
 
 ## Session Recovery Point
 
@@ -188,6 +207,6 @@ If resuming after session interruption:
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
 4. Read `.kilo/plans/wp30-implementation-plan.md` for current WP-30 phase status
-5. Read `.kilo/plans/ED-WP30-001.md` if working on WP-30C or later
-6. Proceed to WP-30C — Task Planner + Execution Engine
+5. Read `.kilo/plans/ED-WP30-001.md` and `.kilo/plans/ED-WP30-002.md` if working on WP-30G or later
+6. Proceed to WP-30G — Memory Interface Definition
 

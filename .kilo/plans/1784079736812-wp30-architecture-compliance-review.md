@@ -2,7 +2,7 @@
 
 **Status:** Planning — Final architectural refinement; implementation-ready
 **Date:** 2026-07-15
-**Reference:** PLAN.md Section 15.3, `.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`
+**Reference:** PLAN.md Section 15.3, `.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`, `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`
 
 ---
 
