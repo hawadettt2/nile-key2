@@ -4,8 +4,9 @@
 **Architecture:** `.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`  
 **Compliance:** `.kilo/plans/1784079736812-wp30-architecture-compliance-review.md`  
 **Engineering Decision:** `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`  
+**WP-30I Specification:** `.kilo/plans/WP-30I-spec.md`  
 **Phase:** 2 — Intelligent Platform  
-**Status:** Active — WP-30B Closed, WP-30C Next  
+**Status:** Active — WP-30H Closed, WP-30I Next    
 **Date:** 2026-07-15
 
 ---
@@ -492,6 +493,8 @@ The client never sees internal `Mission`, `ExecutionPlan`, or `Task` objects.
 | 9.2 | Proactive monitoring with alert thresholds |
 | 9.3 | Training mode as structured workflow |
 | 9.4 | Human oversight: approval gates |
+
+**Note on phase numbering:** The architecture document (`.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`) uses Phases 1–5 as a conceptual capability evolution roadmap. The implementation plan uses Phases 5–9 as an execution roadmap mapping capabilities to work packages (WP-30B–WP-30I). The two numbering schemes serve different purposes and are not in conflict. See the Implementation Mapping table in the architecture document for the authoritative mapping.
 
 ---
 

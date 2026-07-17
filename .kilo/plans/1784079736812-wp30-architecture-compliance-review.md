@@ -2,7 +2,7 @@
 
 **Status:** Planning — Final architectural refinement; implementation-ready
 **Date:** 2026-07-15
-**Reference:** PLAN.md Section 15.3, `.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`, `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`
+**Reference:** PLAN.md Section 15.3, `.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`, `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`, `.kilo/plans/WP-30I-spec.md`
 
 ---
 
@@ -585,6 +585,8 @@ The Avatar is the **presentation layer** through which users perceive the Digita
 | 9.2 | Proactive monitoring with alert thresholds |
 | 9.3 | Training mode as structured workflow |
 | 9.4 | Human oversight: approval gates |
+
+**Note on phase numbering:** The architecture document (`.kilo/plans/1784089363000-wp30-digital-export-manager-architecture.md`) uses Phases 1–5 as a conceptual capability evolution roadmap. The implementation plan uses Phases 5–9 as an execution roadmap mapping capabilities to work packages (WP-30B–WP-30I). The two numbering schemes serve different purposes and are not in conflict. See the Implementation Mapping table in the architecture document for the authoritative mapping.
 
 ---
 

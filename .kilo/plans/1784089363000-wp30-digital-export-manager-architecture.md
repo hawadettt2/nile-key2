@@ -252,6 +252,55 @@ The architecture must accommodate growth without redesign.
 
 **Architectural invariant across all phases:** The agent core, tool layer, memory layer, and knowledge layer must remain independently replaceable and versioned.
 
+### Implementation Mapping
+
+This architecture document describes **conceptual capability evolution** through Phases 1–5. The implementation plan (`.kilo/plans/wp30-implementation-plan.md`) describes **execution sequencing** through Phases 5–9. The two numbering schemes serve different purposes and are not in conflict.
+
+| Architecture Phase | Implementation Plan Phase | Work Package |
+|-------------------|---------------------------|--------------|
+| Phase 1: Foundation | Phase 5 | WP-30B–WP-30E |
+| Phase 2: Core Agent | Phase 5–6 | WP-30B–WP-30E |
+| Phase 3: Knowledge Integration | Phase 6–7 | WP-30F–WP-30G |
+| Phase 4: Extended Capabilities | Phase 8–9 | WP-30H–WP-30I |
+| Phase 5: Platform Autonomy | Future | WP-31+ |
+
+**Key mapping for WP-30I:** The capabilities listed in Architecture Phase 4 (Proactive monitoring and alerting, Advanced workflow automation) are implemented in the implementation plan as **Phase 9: Advanced Features (WP-30I)**.
+
+### Phase Numbering Governance Decision
+
+#### 12.3 Decision
+
+**This is a Documentation Mapping Gap, not an Architectural Conflict.**
+
+**Reasoning:**
+1. The Architecture Document explicitly describes "Long-Term Evolution Roadmap" (L217) and "conceptual capability evolution." Its phase numbering (1–5) is strategic and describes what capabilities the system will eventually have.
+2. The Implementation Plan explicitly describes execution sequencing. Its phase numbering (5–9) is operational and maps capabilities to concrete work packages (WP-30B–WP-30I).
+3. The documents have different purposes, audiences, and time horizons. No evidence suggests they intend to use the same numbering scheme.
+4. Per decision rule 4: "If the difference results from the different purposes of the documents, consider it Documentation Mapping Gap and not Architectural Conflict."
+5. The content is aligned: Architecture Phase 4 lists "Proactive monitoring and alerting" and "Advanced workflow automation" (L241-246), which Implementation Plan Phase 9 delivers as WP-30I tasks (L491-494).
+
+#### 12.4 Reference Authority for Work Package Numbering
+
+**PLAN.md is the official reference for work package sequencing and numbering.**
+
+Evidence:
+- PLAN.md L239-248 lists work packages in execution order: WP-30B, WP-30C, WP-30D, WP-30E, WP-30F, WP-30G, WP-30H, WP-31, WP-32, WP-33.
+- PLAN.md L1200-1204: "إذا تعارض أي مستند مع PLAN.md: 1. يُعتبر PLAN.md المرجع الصحيح" (If any document conflicts with PLAN.md: 1. PLAN.md is considered the correct reference).
+- PLAN.md L1211: "هذا المستند هو المرجع الوحيد للمشروع" (This document is the only reference for the project).
+
+Therefore, Implementation Plan Phase 9 = WP-30I is the authoritative work package mapping.
+
+#### 12.5 Decision
+
+Per decision rule 5: "Do not renumber any document unless necessary and evidence-supported."
+
+Renumbering the Architecture Document would:
+- Lose the strategic timeline context (Phases 1–5 as evolutionary stages)
+- Require widespread cross-reference updates across 6+ documents
+- Add no new information, only create risk of breaking existing references
+
+**Decision: No renumbering. Add formal cross-reference only.**
+
 ---
 
 ## 11. Why Agentic Platform Is the Correct Architecture
