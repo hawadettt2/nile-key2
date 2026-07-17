@@ -5,6 +5,7 @@ import uuid
 from ..schemas.decision import Decision
 from ..schemas.enums import MissionType
 from ..exceptions import DecisionEngineException
+from ..approval.gate import ApprovalGate
 
 
 class ReasoningEngine:
@@ -14,9 +15,10 @@ class ReasoningEngine:
     and Memory Interface, evaluating options against company rules.
     """
 
-    def __init__(self, knowledge_provider=None, memory_provider=None):
+    def __init__(self, knowledge_provider=None, memory_provider=None, approval_gate=None):
         self.knowledge_provider = knowledge_provider
         self.memory_provider = memory_provider
+        self.approval_gate = approval_gate or ApprovalGate()
 
     async def reason(self, session_id: str, request: Dict[str, Any]) -> Dict[str, Any]:
         """Produce a Decision from a user request.
@@ -164,35 +166,7 @@ class ReasoningEngine:
 
     def _check_approval(self, chosen_path: str, intent: str, parameters: Dict[str, Any]) -> tuple[bool, str]:
         """Check if the chosen path requires approval."""
-        destructive_paths = {
-            "shipping": ["cancel", "delete", "refund"],
-            "eta": ["cancel", "delete", "void"],
-            "customs": ["delete", "cancel", "amend"],
-            "document": ["delete", "remove"],
-            "workflow": ["cancel", "terminate", "reject"],
-        }
-
-        destructive_values = {"delete", "cancel", "remove", "void", "terminate", "reject"}
-
-        intent_lower = intent.lower()
-        path_checks = destructive_paths.get(chosen_path, [])
-        for check in path_checks:
-            if check in intent_lower:
-                return True, "pending"
-
-        param_values = parameters.get("action", "")
-        if isinstance(param_values, str):
-            param_values = param_values.lower()
-        elif isinstance(param_values, list):
-            param_values = " ".join(str(v).lower() for v in param_values)
-        else:
-            param_values = str(param_values).lower()
-
-        for value in destructive_values:
-            if value in param_values:
-                return True, "pending"
-
-        return False, "not_required"
+        return self.approval_gate.check_approval(chosen_path, intent, parameters)
 
     def _build_reasoning(
         self,

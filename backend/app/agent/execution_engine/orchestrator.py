@@ -7,6 +7,8 @@ from ..tools.base import BaseTool, ToolResult
 from ..tools.registry import ToolRegistry
 from ..schemas.mission import Mission
 from ..exceptions import ExecutionEngineException, ToolNotFoundException, ToolExecutionException
+from ..approval.gate import ApprovalGate
+from ..monitoring.service import MonitoringService
 
 
 class ExecutionStep:
@@ -44,10 +46,12 @@ class ToolOrchestrator:
     retry with backoff, idempotency propagation, and graceful degradation.
     """
 
-    def __init__(self, tool_registry=None, audit_recorder=None, session_manager=None):
+    def __init__(self, tool_registry=None, audit_recorder=None, session_manager=None, approval_gate=None, monitoring_service=None):
         self.tool_registry = tool_registry
         self.audit_recorder = audit_recorder
         self.session_manager = session_manager
+        self.approval_gate = approval_gate or ApprovalGate()
+        self.monitoring_service = monitoring_service or MonitoringService()
 
     async def execute(self, execution_plan, session_context=None) -> Dict[str, Any]:
         """Execute an ExecutionPlan sequentially.
@@ -109,11 +113,13 @@ class ToolOrchestrator:
         failed_task_id = None
         mission_status = MissionStatus.COMPLETED.value
         context = session_context or {}
+        completed_task_ids = set()
 
         for task_dict in tasks:
             task_id = task_dict.get("task_id")
             tool_name = task_dict.get("tool_name")
             parameters = task_dict.get("parameters", {})
+            depends_on = task_dict.get("depends_on", []) or []
 
             if failed_task_id is not None:
                 task_dict["status"] = TaskStatus.FAILED.value
@@ -128,6 +134,77 @@ class ToolOrchestrator:
                         result=ToolResult(status="skipped", error="Skipped due to previous failure"),
                     ).to_dict()
                 )
+                if self.monitoring_service:
+                    self.monitoring_service.record_task_execution(
+                        mission_id=mission_id or "",
+                        task_id=task_id,
+                        tool_name=tool_name,
+                        execution_status="skipped",
+                        execution_time_ms=0.0,
+                        retry_count=0,
+                        error="Skipped due to previous failure",
+                    )
+                continue
+
+            if depends_on:
+                missing_deps = [dep for dep in depends_on if dep not in completed_task_ids]
+                if missing_deps:
+                    task_dict["status"] = TaskStatus.FAILED.value
+                    task_dict["result"] = {"error": f"Skipped due to unmet dependencies: {missing_deps}"}
+                    execution_trace.append(
+                        ExecutionStep(
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            start_time=datetime.now(timezone.utc),
+                            finish_time=datetime.now(timezone.utc),
+                            execution_status="skipped",
+                            result=ToolResult(status="skipped", error=f"Skipped due to unmet dependencies: {missing_deps}"),
+                        ).to_dict()
+                    )
+                    failed_task_id = task_id
+                    mission_status = MissionStatus.FAILED.value
+                    if self.monitoring_service:
+                        self.monitoring_service.record_task_execution(
+                            mission_id=mission_id or "",
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            execution_status="skipped",
+                            execution_time_ms=0.0,
+                            retry_count=0,
+                            error=f"Skipped due to unmet dependencies: {missing_deps}",
+                        )
+                    continue
+
+            requires_approval, approval_status = self.approval_gate.check_approval(
+                chosen_path=context.get("chosen_path", ""),
+                intent=context.get("intent", ""),
+                parameters=parameters,
+            )
+            if requires_approval:
+                task_dict["status"] = TaskStatus.PENDING.value
+                task_dict["result"] = {"approval_required": True, "approval_status": approval_status}
+                execution_trace.append(
+                    ExecutionStep(
+                        task_id=task_id,
+                        tool_name=tool_name,
+                        start_time=datetime.now(timezone.utc),
+                        finish_time=datetime.now(timezone.utc),
+                        execution_status="pending_approval",
+                        result=ToolResult(status="pending_approval", error="Approval required before execution"),
+                    ).to_dict()
+                )
+                failed_task_id = task_id
+                mission_status = MissionStatus.FAILED.value
+                if self.monitoring_service:
+                    self.monitoring_service.record_task_execution(
+                        mission_id=mission_id or "",
+                        task_id=task_id,
+                        tool_name=tool_name,
+                        execution_status="pending_approval",
+                        execution_time_ms=0.0,
+                        retry_count=0,
+                        error="Approval required before execution",
+                    )
                 continue
 
             start_time = datetime.now(timezone.utc)
@@ -179,9 +256,26 @@ class ToolOrchestrator:
 
             if tool_result is not None:
                 results.append(tool_result.to_dict())
-                if tool_result.status != "success":
+                if tool_result.status == "success":
+                    completed_task_ids.add(task_id)
+                else:
                     failed_task_id = task_id
                     mission_status = MissionStatus.FAILED.value
+
+                finish_time = datetime.now(timezone.utc)
+                execution_time_ms = (finish_time - start_time).total_seconds() * 1000
+                retry_count = task_dict.get("retry_count", 0)
+                error_message = tool_result.error if hasattr(tool_result, "error") else None
+                if self.monitoring_service:
+                    self.monitoring_service.record_task_execution(
+                        mission_id=mission_id or "",
+                        task_id=task_id,
+                        tool_name=tool_name,
+                        execution_status=tool_result.status,
+                        execution_time_ms=execution_time_ms,
+                        retry_count=retry_count,
+                        error=error_message,
+                    )
 
         if self.session_manager and mission_id:
             try:
@@ -192,6 +286,9 @@ class ToolOrchestrator:
                 )
             except Exception:
                 pass
+
+        if self.monitoring_service and mission_id:
+            self.monitoring_service.record_mission_completed(mission_id, mission_status)
 
         failure_summary = self._build_failure_summary(failed_task_id, execution_trace, tasks)
         degraded = failed_task_id is not None

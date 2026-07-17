@@ -1187,3 +1187,201 @@ class TestExecutionEngineMissionAcceptance:
             MissionStatus.COMPLETED.value,
             {"results": [{"audit_ref": None, "data": {"result": "mock:"}, "error": None, "status": "success"}], "failed_task_id": None},
         )
+
+
+@pytest.mark.asyncio
+class TestExecutionEngineDependencyResolution:
+    """WP-30I Task 9.1: Multi-step workflow executor with dependency resolution."""
+
+    def setup_method(self):
+        self.registry = ToolRegistry()
+        self.registry.register(MockTool)
+        self.registry.register(FailingTool)
+
+    async def test_dependencies_resolved_before_execution(self):
+        engine = ToolOrchestrator(tool_registry=self.registry)
+        plan = ExecutionPlan(
+            plan_id="plan-1",
+            mission_id="mission-1",
+            tasks=[
+                {
+                    "task_id": "task-1",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "first"},
+                    "depends_on": [],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+                {
+                    "task_id": "task-2",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "second"},
+                    "depends_on": ["task-1"],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+            ],
+            execution_mode="sequential",
+            created_at=datetime.now(timezone.utc),
+        )
+        result = await engine.execute(plan)
+
+        assert len(result["execution_trace"]) == 2
+        assert result["execution_trace"][0]["task_id"] == "task-1"
+        assert result["execution_trace"][1]["task_id"] == "task-2"
+        assert result["execution_trace"][0]["execution_status"] == "completed"
+        assert result["execution_trace"][1]["execution_status"] == "completed"
+        assert result["mission_status"] == MissionStatus.COMPLETED.value
+        assert result["failed_task_id"] is None
+
+    async def test_unmet_dependency_skips_task(self):
+        engine = ToolOrchestrator(tool_registry=self.registry)
+        plan = ExecutionPlan(
+            plan_id="plan-1",
+            mission_id="mission-1",
+            tasks=[
+                {
+                    "task_id": "task-1",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "first"},
+                    "depends_on": [],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+                {
+                    "task_id": "task-2",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "second"},
+                    "depends_on": ["nonexistent-task"],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+            ],
+            execution_mode="sequential",
+            created_at=datetime.now(timezone.utc),
+        )
+        result = await engine.execute(plan)
+
+        assert result["mission_status"] == MissionStatus.FAILED.value
+        assert result["failed_task_id"] == "task-2"
+        assert result["execution_trace"][1]["execution_status"] == "skipped"
+        assert "unmet dependencies" in result["execution_trace"][1]["result"]["error"]
+
+    async def test_multiple_dependencies_all_must_complete(self):
+        engine = ToolOrchestrator(tool_registry=self.registry)
+        plan = ExecutionPlan(
+            plan_id="plan-1",
+            mission_id="mission-1",
+            tasks=[
+                {
+                    "task_id": "task-1",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "a"},
+                    "depends_on": [],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+                {
+                    "task_id": "task-2",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "b"},
+                    "depends_on": [],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+                {
+                    "task_id": "task-3",
+                    "tool_name": "mock_tool",
+                    "parameters": {"param": "c"},
+                    "depends_on": ["task-1", "task-2"],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+            ],
+            execution_mode="sequential",
+            created_at=datetime.now(timezone.utc),
+        )
+        result = await engine.execute(plan)
+
+        assert len(result["execution_trace"]) == 3
+        assert result["execution_trace"][2]["task_id"] == "task-3"
+        assert result["execution_trace"][2]["execution_status"] == "completed"
+        assert result["mission_status"] == MissionStatus.COMPLETED.value
+
+
+@pytest.mark.asyncio
+class TestExecutionEngineApprovalGates:
+    """WP-30I Task 9.4: Human oversight via approval gates."""
+
+    def setup_method(self):
+        self.registry = ToolRegistry()
+        self.registry.register(MockTool)
+
+    async def test_destructive_operation_requires_approval(self):
+        from app.agent.approval.gate import ApprovalGate
+
+        engine = ToolOrchestrator(
+            tool_registry=self.registry,
+            approval_gate=ApprovalGate(),
+        )
+        plan = ExecutionPlan(
+            plan_id="plan-1",
+            mission_id="mission-1",
+            tasks=[
+                {
+                    "task_id": "task-1",
+                    "tool_name": "mock_tool",
+                    "parameters": {"action": "delete", "param": "value"},
+                    "depends_on": [],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+            ],
+            execution_mode="sequential",
+            created_at=datetime.now(timezone.utc),
+        )
+        session_context = {"chosen_path": "shipping", "intent": "cancel shipment"}
+        result = await engine.execute(plan, session_context=session_context)
+
+        assert result["mission_status"] == MissionStatus.FAILED.value
+        assert result["execution_trace"][0]["execution_status"] == "pending_approval"
+        assert result["execution_trace"][0]["result"]["error"] == "Approval required before execution"
+
+    async def test_non_destructive_operation_executes_normally(self):
+        from app.agent.approval.gate import ApprovalGate
+
+        engine = ToolOrchestrator(
+            tool_registry=self.registry,
+            approval_gate=ApprovalGate(),
+        )
+        plan = ExecutionPlan(
+            plan_id="plan-1",
+            mission_id="mission-1",
+            tasks=[
+                {
+                    "task_id": "task-1",
+                    "tool_name": "mock_tool",
+                    "parameters": {"action": "view", "param": "value"},
+                    "depends_on": [],
+                    "status": "pending",
+                    "result": None,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                },
+            ],
+            execution_mode="sequential",
+            created_at=datetime.now(timezone.utc),
+        )
+        session_context = {"chosen_path": "shipping", "intent": "get rates"}
+        result = await engine.execute(plan, session_context=session_context)
+
+        assert result["mission_status"] == MissionStatus.COMPLETED.value
+        assert result["execution_trace"][0]["execution_status"] == "completed"
+        assert result["failed_task_id"] is None
