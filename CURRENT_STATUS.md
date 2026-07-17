@@ -3,8 +3,8 @@
 **Last Updated:** 2026-07-17
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 2 — Intelligent Platform (WP-30H CLOSED)
-**Next Phase:** WP-30I — Advanced Features
+**Phase:** 2 — Intelligent Platform (WP-30I CLOSED)
+**Next Phase:** WP-31 — AI Memory
 
 ---
 
@@ -232,6 +232,6 @@ If resuming after session interruption:
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
 4. Read `.kilo/plans/wp30-implementation-plan.md` for current WP-30 phase status
-5. Read `.kilo/plans/ED-WP30-001.md` and `.kilo/plans/ED-WP30-002.md` if working on WP-30I or later
-6. Proceed to WP-30I — Advanced Features
+5. Read `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`, and `.kilo/plans/WP-30I-spec.md` if working on WP-31 or later
+6. Proceed to WP-31 — AI Memory
 
