@@ -6,7 +6,7 @@
 **Engineering Decision:** `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`  
 **WP-30I Specification:** `.kilo/plans/WP-30I-spec.md`  
 **Phase:** 2 — Intelligent Platform  
-**Status:** Active — WP-30H Closed, WP-30I Next    
+**Status:** Active — WP-30I Closed, WP-31 Next    
 **Date:** 2026-07-15
 
 ---
