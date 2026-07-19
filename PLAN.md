@@ -1,4 +1,4 @@
-# Master Roadmap v2.1 — منصة مفتاح النيل الرقمية
+﻿# Master Roadmap v2.1 — منصة مفتاح النيل الرقمية
 # Nile Key Digital Platform — Master Roadmap v2.1
 
 **التاريخ:** 2026-07-12
@@ -774,17 +774,17 @@ without sacrificing simplicity.
 
 | البند | القيمة الحالية |
 |------|---------------|
-| آخر تحديث | 2026-07-12 |
-| المرحلة الحالية | 1 — الأساس |
-| Work Package الحالية | WP-18 (مكتملة) |
-| المرحلة التالية | 1.5 — إعادة محاذاة منطق الأعمال |
-| WP التالية الفورية | WP-19: ETA Engine |
-| المهام المكتملة | WP-01 through WP-18 |
-| المهام المتبقية | WP-19, WP-20, WP-21, WP-30+, WP-40, WP-41, WP-42 |
+| آخر تحديث | 2026-07-19 |
+| المرحلة الحالية | 2 — المنصة الذكية |
+| Work Package الحالية | WP-31 (مكتملة) |
+| المرحلة التالية | WP-32 — Knowledge Graph |
+| WP التالية الفورية | WP-32: Knowledge Graph |
+| المهام المكتملة | WP-01 through WP-31 |
+| المهام المتبقية | WP-32, WP-33, WP-40, WP-41, WP-42 |
 | المخاطر المعروفة | عدم وجود تكامل حقيقي مع ETA و Shipping APIs |
 | إجراءات الاستعادة | قراءة Master Roadmap v2.1 + CURRENT_STATUS.md + TECH_DEBT.md |
 | Branch الحالي | main |
-| Commit الأخير | baseline-wp18 (مستقر) |
+| Commit الأخير | feat(wp31): implement SQLiteMemoryProvider and unit tests for Task 8.1 |
 
 ## 12.4 Session Recovery Rules
 
@@ -995,10 +995,10 @@ without sacrificing simplicity.
 ## 15.3 المرحلة 2: المنصة الذكية
 
 ### WP-30: AI Agent
-- 🔴 مخطط
+- ✅ مكتمل
 
 ### WP-31: AI Memory
-- 🔴 مخطط
+- ✅ مكتمل
 
 ### WP-32: Knowledge Graph
 - 🔴 مخطط

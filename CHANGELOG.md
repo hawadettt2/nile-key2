@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -45,6 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Task 9.4: Approval gates for destructive operations
 - `PLAN.md` updated with WP-30I completion status
 - `CURRENT_STATUS.md` updated to reflect WP-30I closure
+
+- WP-31: AI Memory — completed
+  - SQLiteMemoryProvider concrete implementation with cleanup_expired()
+  - Memory injection into session context at session start
+  - Decision persistence hook and active recall biases in ReasoningEngine
+  - Mission schema extended with tasks and execution_plan fields
+  - All scope creep items reverted; repository compliant with approved WP-31 scope
 
 ## [1.0.0] - 2026-07-15
 

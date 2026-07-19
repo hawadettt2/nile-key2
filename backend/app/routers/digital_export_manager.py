@@ -13,6 +13,8 @@ from app.agent.schemas.mission import Mission
 from app.agent.schemas.api_request import MissionRequest
 from app.agent.schemas.api_response import MissionResponse
 from app.agent.tools.registry import tool_registry
+from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
+from app.agent.decision_engine.engine import ReasoningEngine
 from app.core.database import get_db
 
 router = APIRouter(prefix="/api/v1/digital-export-manager", tags=["digital-export-manager"])
@@ -20,6 +22,16 @@ router = APIRouter(prefix="/api/v1/digital-export-manager", tags=["digital-expor
 
 def get_session_manager() -> SessionManager:
     return SessionManager(get_db)
+
+
+def get_memory_provider() -> SQLiteMemoryProvider:
+    return SQLiteMemoryProvider(db_path="nile_key.db")
+
+
+def get_reasoning_engine(
+    memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
+) -> ReasoningEngine:
+    return ReasoningEngine(memory_provider=memory_provider)
 
 
 class ConnectResponse(BaseModel):
@@ -56,11 +68,11 @@ async def health():
         "components": {
             "session_management": "available",
             "mission_lifecycle": "available",
-            "reasoning_engine": "not_implemented",
+            "reasoning_engine": "available",
             "task_planner": "not_implemented",
             "execution_engine": "not_implemented",
             "company_knowledge": "not_implemented",
-            "long_term_memory": "not_implemented",
+            "long_term_memory": "available",
             "avatar": "not_implemented",
         },
     }
@@ -70,8 +82,14 @@ async def health():
 async def connect(
     request: SessionCreateRequest,
     session_manager: SessionManager = Depends(get_session_manager),
+    memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
 ):
     session = session_manager.create_session(request)
+    await session_manager.initialize_session_memory(
+        session_id=session.session_id,
+        memory_provider=memory_provider,
+        user_id=request.user_id,
+    )
     return ConnectResponse(
         session_id=session.session_id,
         status="connected",
@@ -85,6 +103,7 @@ async def create_mission(
     request: MissionRequest,
     session_id: str,
     session_manager: SessionManager = Depends(get_session_manager),
+    reasoning_engine: ReasoningEngine = Depends(get_reasoning_engine),
 ):
     session = session_manager.get_session(session_id)
     if not session:
@@ -98,20 +117,41 @@ async def create_mission(
     correlation_id = str(__import__("uuid").uuid4())
     idempotency_key = str(__import__("uuid").uuid4())
 
+    try:
+        decision = await reasoning_engine.reason(
+            session_id=session_id,
+            request={
+                "intent": "create_mission",
+                "parameters": request.payload,
+                "context": {"mission_type": request.mission_type.value},
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reasoning engine failed: {e}")
+
+    mission_type_value = request.mission_type.value
+    chosen_path = decision.get("chosen_path", mission_type_value)
+    decision_context = decision.get("context", {})
+    requires_approval = decision.get("requires_approval", False)
+    approval_status = decision.get("approval_status", "pending")
+
     mission = Mission(
         mission_id=mission_id,
-        mission_type=request.mission_type.value,
-        objective=f"Execute {request.mission_type.value} mission",
+        mission_type=mission_type_value,
+        objective=decision.get("reasoning", f"Execute {mission_type_value} mission"),
         priority=5,
         requester={"user_id": session.user_id},
-        context={"session_id": session_id},
-        constraints=[],
-        approval_policy={"requires_approval": False},
+        context={
+            "session_id": session_id,
+            "decision": decision_context,
+        },
+        constraints=decision_context.get("constraints", []),
+        approval_policy={"requires_approval": requires_approval, "status": approval_status},
         execution_policy={"mode": "sequential", "retry_count": 0, "timeout_seconds": 300},
         created_at=now,
         correlation_id=correlation_id,
         idempotency_key=idempotency_key,
-        audit_context={"source": "api", "session_id": session_id},
+        audit_context={"source": "api", "session_id": session_id, "chosen_path": chosen_path},
         payload=request.payload,
         status="pending",
     )

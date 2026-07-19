@@ -22,3 +22,5 @@ class Mission(BaseModel):
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     updated_at: Optional[datetime] = None
+    tasks: Optional[List[Dict[str, Any]]] = None
+    execution_plan: Optional[Dict[str, Any]] = None

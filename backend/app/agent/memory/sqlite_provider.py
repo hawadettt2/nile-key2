@@ -230,3 +230,45 @@ class SQLiteMemoryProvider(MemoryProvider):
         except Exception as exc:
             logger.error("Memory summarize failed: %s", exc)
             return {}
+
+    async def cleanup_expired(self, session_id: Optional[str] = None) -> int:
+        """حذف السجلات منتهية الصلاحية من قاعدة البيانات.
+
+        تلتزم الدالة بحذف السجلات التي تخطت الوقت الحالي فقط (expires_at <= now).
+        تعود بعدد السجلات المحذوفة، وفي حالة حدوث خطأ تعود بـ 0 تلبية للتدهور الآمن.
+        """
+        try:
+            def _cleanup():
+                conn = sqlite3.connect(self._db_path)
+                cursor = conn.cursor()
+
+                now_str = datetime.utcnow().isoformat()
+                if session_id:
+                    cursor.execute(
+                        """
+                        DELETE FROM agent_memory
+                        WHERE expires_at IS NOT NULL
+                          AND expires_at <= ?
+                          AND session_id = ?
+                        """,
+                        (now_str, session_id),
+                    )
+                else:
+                    cursor.execute(
+                        """
+                        DELETE FROM agent_memory
+                        WHERE expires_at IS NOT NULL
+                          AND expires_at <= ?
+                        """,
+                        (now_str,),
+                    )
+
+                deleted_count = cursor.rowcount
+                conn.commit()
+                conn.close()
+                return deleted_count
+
+            return await self._run(_cleanup)
+        except Exception as exc:
+            logger.error("Memory expired cleanup failed: %s", exc)
+            return 0

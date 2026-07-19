@@ -199,3 +199,25 @@ class SessionManager:
             return True
         except Exception:
             return False
+
+    async def initialize_session_memory(self, session_id: str, memory_provider, user_id: int) -> bool:
+        """إثراء سياق الجلسة بالذكريات التاريخية للمستخدم عند بدء الجلسة.
+
+        تلتزم الدالة بالتدهور الآمن؛ أي خطأ أو عدم توفر للمزود لن يعطل استمرار الجلسة.
+        تستعلم الدالة عن الذاكرة التاريخية بناءً على سياق المستخدم (user_id) لتحقيق توارث الذاكرة.
+        """
+        if not memory_provider:
+            return False
+        try:
+            memories = await memory_provider.recall(session_id=str(user_id), query="context", limit=10)
+            if not memories:
+                return False
+
+            memory_keys = [m.get("key") for m in memories if m.get("key")]
+
+            return self.update_context(session_id, {
+                "memory_refs": memory_keys,
+                "memory_keys": memory_keys,
+            })
+        except Exception:
+            return False

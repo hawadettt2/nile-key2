@@ -1,10 +1,10 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-07-17
+**Last Updated:** 2026-07-19
 **Branch:** main
 **Commit:** HEAD
 **Phase:** 2 — Intelligent Platform (WP-30I CLOSED)
-**Next Phase:** WP-31 — AI Memory
+**Next Phase:** WP-32 — Knowledge Graph
 
 ---
 
@@ -43,6 +43,15 @@
 | WP-30F | ✅ Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
 | WP-30G | ✅ Complete | MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests |
 | WP-30H | ✅ Complete | Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions |
+
+## WP-31 Implementation Summary
+
+### WP-31: AI Memory (In Progress)
+- **SQLiteMemoryProvider:** Concrete implementation with recall/store/forget/summarize/cleanup_expired
+- **Memory Integration:** Session memory injection, decision persistence, active recall biases
+- **Schema:** Mission extended with tasks and execution_plan fields
+- **Tests:** 235-line test suite for SQLiteMemoryProvider; 151 agent tests passing
+- **Governance:** Scope creep identified: TextAvatarRenderer and DatabaseKnowledgeProvider are out of scope per ED-WP30-002 and WP-30H contract
 
 ## Current System State
 

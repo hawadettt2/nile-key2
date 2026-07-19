@@ -45,6 +45,7 @@ class ReasoningEngine:
             memories = await self._query_memory(session_id, intent)
             knowledge = await self._query_knowledge(intent, parameters)
 
+            candidates = self._apply_memory_biases(candidates, memories)
             scored_candidates = self._evaluate_options(candidates, memories, knowledge, parameters)
             chosen_path, alternatives = self._select_best_option(scored_candidates)
 
@@ -76,6 +77,20 @@ class ReasoningEngine:
                 requires_approval=is_destructive,
                 approval_status=approval_status,
             )
+
+            # Persistence hook: Store significant decisions
+            if self.memory_provider:
+                try:
+                    await self.memory_provider.store(
+                        session_id=session_id,
+                        key=f"decision:{decision.decision_id}",
+                        value=decision.model_dump(mode="json"),
+                        memory_type="decision",
+                        importance=8,
+                    )
+                except Exception:
+                    # Graceful degradation: Decision still returns to user even if persistence fails
+                    pass
 
             return decision.model_dump()
         except DecisionEngineException:
@@ -117,6 +132,38 @@ class ReasoningEngine:
         candidates.sort(key=lambda c: c["confidence"], reverse=True)
         return candidates
 
+    def _apply_memory_biases(self, candidates: List[Dict[str, Any]], memories: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Active recall: Apply biases/constraints based on memory content."""
+        if not memories:
+            return candidates
+
+        for memory in memories:
+            mem_type = memory.get("memory_type")
+            value = memory.get("value", {})
+            if isinstance(value, str):
+                import json
+                try:
+                    value = json.loads(value)
+                except Exception:
+                    value = {}
+
+            if not isinstance(value, dict):
+                continue
+
+            for candidate in candidates:
+                path = candidate.get("path")
+
+                if mem_type == "standing_order" and value.get("forbidden_path") == path:
+                    candidate["score"] = -100.0
+
+                elif mem_type == "preference" and value.get("preferred_path") == path:
+                    candidate["score"] += 0.5
+
+                elif mem_type == "decision" and value.get("chosen_path") == path:
+                    candidate["score"] += 0.3
+
+        return candidates
+
     def _evaluate_options(
         self,
         candidates: List[Dict[str, Any]],
@@ -132,13 +179,6 @@ class ReasoningEngine:
 
             if parameters:
                 score += 0.1
-
-            for memory in memories:
-                memory_value = memory.get("value", {})
-                if isinstance(memory_value, dict):
-                    preferred_path = memory_value.get("preferred_path")
-                    if preferred_path and preferred_path == candidate["path"]:
-                        score += 0.2
 
             for k in knowledge:
                 if isinstance(k, dict):
