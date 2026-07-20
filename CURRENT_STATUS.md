@@ -1,10 +1,10 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-07-19
+**Last Updated:** 2026-07-20
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 2 — Intelligent Platform (WP-30I CLOSED)
-**Next Phase:** WP-32 — Knowledge Graph
+**Phase:** 2 — Intelligent Platform (WP-30I CLOSED, WP-32 CLOSED)
+**Next Phase:** WP-33 — Trade Intelligence
 
 ---
 
@@ -43,6 +43,7 @@
 | WP-30F | ✅ Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
 | WP-30G | ✅ Complete | MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests |
 | WP-30H | ✅ Complete | Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions |
+| WP-32 | ✅ Complete | Knowledge Graph — 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
 
 ## WP-31 Implementation Summary
 
@@ -199,6 +200,20 @@
 - **Backward Compatibility:** No breaking changes; class names and signatures preserved
 - **No Regressions:** All affected tests pass; no architectural drift
 
+## WP-32 Implementation Summary
+
+### WP-32: Knowledge Graph (Completed)
+- **Schemas:** `KnowledgeGraphNode`, `KnowledgeGraphNodeCreate`, `KnowledgeGraphEdge`, `KnowledgeGraphEdgeCreate`, `KnowledgeGraphRelationships`, `KnowledgeGraphTraversal`, `SyncResult`
+- **Service Layer:** `create_node`, `get_node`, `update_node`, `delete_node`, `create_edge`, `get_edge`, `delete_edge`, `list_edges_for_node`, `_derive_edges_from_entity`, `traverse`, `_get_entity_name`, `_sync_entity`, `sync_entity`, `sync_all`, `search_nodes`
+- **MemoryProvider Integration:** `set_memory_provider`, `_store_graph_context`, `_recall_graph_context` with graceful degradation
+- **Audit Integration:** `_audit_mutation` logs all mutations via `log_audit()`
+- **KnowledgeProvider:** `KnowledgeGraphProvider` registered in `KnowledgeProviderRegistry`
+- **API Endpoints:** 9 endpoints under `/api/v1/knowledge-graph`: nodes CRUD, edges CRUD, relationships, traverse, search, sync
+- **Database Tables:** `knowledge_nodes`, `knowledge_edges`
+- **Governance:** ED-WP32-001 recorded — Document Edge Handling clarification
+- **Tests:** 105 tests (59 service unit tests, 35 integration tests, 4 performance tests, 7 security tests); all passing
+- **Backward Compatibility:** No modifications to existing entity tables; no modifications to DEM core
+
 ## Initialization Flow
 
 1. FastAPI startup calls `init_db()`
@@ -230,6 +245,7 @@
 - WP-30F completed — Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
 - WP-30G completed — MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
 - WP-30H completed — Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions
+- WP-32 completed — Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
@@ -241,6 +257,6 @@ If resuming after session interruption:
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
 4. Read `.kilo/plans/wp30-implementation-plan.md` for current WP-30 phase status
-5. Read `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`, and `.kilo/plans/WP-30I-spec.md` if working on WP-31 or later
-6. Proceed to WP-31 — AI Memory
+5. Read `.kilo/plans/ED-WP30-001.md`, `.kilo/plans/ED-WP30-002.md`, `.kilo/plans/WP-30I-spec.md`, and `.kilo/plans/WP-32-spec.md` if working on WP-32 or later
+6. Proceed to WP-33 — Trade Intelligence
 

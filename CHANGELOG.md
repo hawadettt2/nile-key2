@@ -53,6 +53,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mission schema extended with tasks and execution_plan fields
   - All scope creep items reverted; repository compliant with approved WP-31 scope
 
+- WP-32: Knowledge Graph — completed
+  - Knowledge Graph schemas: `KnowledgeGraphNode`, `KnowledgeGraphEdge`, `KnowledgeGraphRelationships`, `KnowledgeGraphTraversal`, `SyncResult`
+  - Service layer: `knowledge_graph.py` with CRUD, derived edges, traversal, sync, search, MemoryProvider integration, audit logging
+  - Router: 9 endpoints under `/api/v1/knowledge-graph` (nodes CRUD, edges CRUD, relationships, traverse, search, sync)
+  - KnowledgeProvider: `KnowledgeGraphProvider` registered in `KnowledgeProviderRegistry`
+  - Database tables: `knowledge_nodes`, `knowledge_edges`
+  - Tests: 105 tests (59 service unit tests, 35 integration tests, 4 performance tests, 7 security tests)
+  - Governance: ED-WP32-001 recorded — Document Edge Handling clarification
+  - No modifications to existing entity tables or DEM core
+
 ## [1.0.0] - 2026-07-15
 
 ### Added

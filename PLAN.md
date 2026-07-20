@@ -195,7 +195,7 @@
 | 7 | Document Management | إدارة الوثائق - رفع، قوالب، ربط | Documents Service | ✅ منفذ |
 | 8 | Export Operations | عمليات التصدير - تنسيق، متطلبات، فرص | Resources + Customs | 🟡 جزئي |
 | 9 | Trade Intelligence | ذكاء السوق - تحليل، اتجاهات، مقارنات | Phase 2 | ⚪ مخطط |
-| 10 | Knowledge Graph | رسم معرفي - عملاء، موردين، منتجات، علاقات | Phase 2 | ⚪ مخطط |
+| 10 | Knowledge Graph | رسم معرفي - عملاء، موردين، منتجات، علاقات | Phase 2 | ✅ منفذ |
 | 11 | AI Agent | وكيل ذكي - مساعد، اقتراحات، تنبيهات | Phase 2 | ⚪ مخطط |
 | 12 | AI Memory | ذاكرة سياقية - تفضيلات، قرارات سابقة | Phase 2 | ⚪ مخطط |
 | 13 | Opportunity Discovery | اكتشاف فرص - أسواق جديدة، شركاء | Phase 2 | ⚪ مخطط |
@@ -774,17 +774,17 @@ without sacrificing simplicity.
 
 | البند | القيمة الحالية |
 |------|---------------|
-| آخر تحديث | 2026-07-19 |
+| آخر تحديث | 2026-07-20 |
 | المرحلة الحالية | 2 — المنصة الذكية |
-| Work Package الحالية | WP-31 (مكتملة) |
-| المرحلة التالية | WP-32 — Knowledge Graph |
-| WP التالية الفورية | WP-32: Knowledge Graph |
-| المهام المكتملة | WP-01 through WP-31 |
-| المهام المتبقية | WP-32, WP-33, WP-40, WP-41, WP-42 |
+| Work Package الحالية | WP-32 (مكتملة) |
+| المرحلة التالية | WP-33 — Trade Intelligence |
+| WP التالية الفورية | WP-33: Trade Intelligence |
+| المهام المكتملة | WP-01 through WP-32 |
+| المهام المتبقية | WP-33, WP-40, WP-41, WP-42 |
 | المخاطر المعروفة | عدم وجود تكامل حقيقي مع ETA و Shipping APIs |
 | إجراءات الاستعادة | قراءة Master Roadmap v2.1 + CURRENT_STATUS.md + TECH_DEBT.md |
 | Branch الحالي | main |
-| Commit الأخير | feat(wp31): implement SQLiteMemoryProvider and unit tests for Task 8.1 |
+| Commit الأخير | docs(wp32): update documentation and close WP-32 |
 
 ## 12.4 Session Recovery Rules
 
@@ -1001,7 +1001,19 @@ without sacrificing simplicity.
 - ✅ مكتمل
 
 ### WP-32: Knowledge Graph
-- 🔴 مخطط
+- الغرض: رسم معرفي للكيانات التجارية مع اكتشاف الحواف المشتقة واجتياز العلاقات
+- الحالة: ✅ مكتمل
+- المتطلبات الأساسية: WP-30F, WP-30G مكتملتان
+- المخرجات: 9 أنواع عقد، 9 نقاط نهاية API، تكامل MemoryProvider، تدقيق، 105 اختبار
+- معايير القبول:
+  - [x] 9 أنواع عقد مدعومة (customer, supplier, shipment, invoice, document, resource, hs_code, customs_declaration, export_workflow)
+  - [x] 9 نقاط نهاية API تعمل
+  - [x] الحواف المشتقة تُكتشف من أعمدة المراجع
+  - [x] اجتياز الرسم البياني يعمل
+  - [x] مزامنة الكيانات تعمل
+  - [x] تكامل MemoryProvider مع graceful degradation
+  - [x] تسجيل التدقيق لجميع العمليات
+  - [x] 105 اختبار نجحت
 
 ### WP-33: Trade Intelligence
 - 🔴 مخطط

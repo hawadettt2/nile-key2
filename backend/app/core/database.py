@@ -770,6 +770,33 @@ def _create_tables(c: sqlite3.Cursor):
         )
     """)
 
+    # ========== جداول WP-32: Knowledge Graph ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS knowledge_nodes (
+            id TEXT PRIMARY KEY,
+            entity_type TEXT NOT NULL,
+            entity_id INTEGER NOT NULL,
+            label TEXT,
+            properties TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS knowledge_edges (
+            id TEXT PRIMARY KEY,
+            source_node_id TEXT NOT NULL,
+            target_node_id TEXT NOT NULL,
+            relationship_type TEXT NOT NULL,
+            properties TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by INTEGER,
+            FOREIGN KEY (source_node_id) REFERENCES knowledge_nodes(id),
+            FOREIGN KEY (target_node_id) REFERENCES knowledge_nodes(id)
+        )
+    """)
+
 
 def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     """

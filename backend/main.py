@@ -15,7 +15,11 @@ from app.core.database import init_db
 from app.core.csrf import CSRFMiddleware
 from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router
+from app.agent.knowledge.registry import KnowledgeProviderRegistry
+from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph
+
+knowledge_provider_registry = KnowledgeProviderRegistry()
 
 
 class SecurityHeadersMiddleware:
@@ -51,6 +55,14 @@ async def lifespan(app: FastAPI):
     print("[STARTUP] Starting Nile Key API...")
     init_db()
     print("[SUCCESS] Database initialized")
+    
+    # Register Knowledge Graph provider
+    try:
+        graph_provider = KnowledgeGraphProvider()
+        await knowledge_provider_registry.register(graph_provider)
+        print("[SUCCESS] Knowledge Graph provider registered")
+    except Exception as exc:
+        print(f"[WARNING] Knowledge Graph provider registration failed: {exc}")
     
     # Initialize ETA background scheduler
     try:
@@ -123,6 +135,7 @@ app.include_router(audit.router)
 app.include_router(workflow.router)
 app.include_router(agent.router)
 app.include_router(digital_export_manager_router)
+app.include_router(knowledge_graph.router)
 
 
 @app.get("/", tags=["Root"])
