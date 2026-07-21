@@ -130,7 +130,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | Risk Level | Issue | Status |
 |------------|-------|--------|
 | 🔴 CRITICAL | Database schema mismatch | ✅ WP-02A-H complete - all entities aligned |
-| 🟡 MEDIUM | Docker deployment unvalidated | ⏳ Static validation complete; runtime validation pending Docker daemon |
+| 🟡 MEDIUM | Docker deployment unvalidated | ✅ RESOLVED — Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
 | 🟢 LOW | Manual frontend types | ✅ Automatically generated types match API |
 
 ---

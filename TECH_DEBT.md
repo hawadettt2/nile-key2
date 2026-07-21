@@ -1,8 +1,8 @@
 ﻿# Technical Debt
 
-**Last Updated:** 2026-07-15
+**Last Updated:** 2026-07-21
 **Branch:** main
-**Phase:** 2.5 — WP-21 Milestone 5 Complete
+**Phase:** 3 — WP-40 Docker Compose Final Verification
 
 ---
 
@@ -11,7 +11,7 @@
 | Priority | Debt | Location | Notes |
 |----------|------|----------|-------|
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | Static validation complete; runtime validation pending Docker daemon availability |
+| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED — Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
 | MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |
 | MEDIUM | PostgreSQL migration path | Not started | PLAN.md Section 9.9 notes SQLite is implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |

@@ -115,26 +115,25 @@ grep -n "16.3" PLAN.md
 | WP-33 | ✅ CLOSED |
 | WP-33E | ✅ CLOSED |
 | Phase 2 | ✅ COMPLETE |
-| WP-40 | 🔴 ACTIVE (next) |
-
----
+| WP-40 | ✅ CLOSED |
 
 ## Handoff Status
 
-All planning documents are synchronized. The repository is ready for WP-40 implementation.
+All planning documents are synchronized. The repository is ready for WP-41 planning.
 
 - [x] Correction 1 applied (capability status table, line 197)
 - [x] Correction 2 applied (session continuity table, lines 779–787)
 - [x] Correction 3 applied (roadmap listing, line 250)
 - [x] Correction 4 applied (Phase 2 exit criteria, line 1076)
 - [x] Check 1 passes (no active WP-33 references)
-- [x] Check 2 passes (WP-40 is active)
+- [x] Check 2 passes (WP-40 is closed)
 - [x] Check 3 passes (CURRENT_STATUS.md aligns)
 - [x] Check 4 passes (CHANGELOG.md records closure)
 - [x] Check 5 passes (Phase 2 exit criteria satisfied)
+- [x] Check 6 passes (WP-40 closure verified; Docker build/run validated)
 
 ---
 
 ## Open Questions
 
-None. All planning decisions are resolved. The repository is in a fully synchronized planning state. WP-40 implementation may begin.
+None. All planning decisions are resolved. The repository is in a fully synchronized planning state. WP-40 is closed; WP-41 planning may begin.

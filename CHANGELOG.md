@@ -72,6 +72,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 equest.date_range for Pydantic V2 compatibility
   - Verification passed; Work Package officially closed
 
+- WP-40: Docker Compose Final Verification — completed
+  - Backend Docker image builds successfully
+  - Frontend Docker image builds successfully
+  - `docker compose up --build` completes with both services healthy
+  - Backend `/health` endpoint returns HTTP 200
+  - Frontend nginx serves content on port 3000
+  - Backend API reachable on port 8000
+  - Database persistence verified via Docker volume (`/app/data/nile_key.db`)
+  - Frontend TypeScript build errors resolved:
+    - `frontend/tsconfig.node.json`: Added `"vitest"` to types array
+    - `frontend/src/components/NotificationBell.test.tsx`: Removed unused `updateAuditLog` import; fixed mock types with `as any`
+    - `frontend/src/pages/Notifications.test.tsx`: Removed unused `updateAuditLog` import; fixed mock types with `as any`
+    - `frontend/src/components/NotificationBell.tsx`: Removed unused `getEntityIcon` function
+  - TECH_DEBT.md "Docker deployment unverified" item resolved
+  - Governance documents updated: CURRENT_STATUS.md, PLAN.md, CHANGELOG.md
+
 ## [1.0.0] - 2026-07-15
 
 ### Added

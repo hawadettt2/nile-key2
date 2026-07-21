@@ -307,7 +307,6 @@
 ## 8.4 Known Issues
 
 - Frontend lint warnings exist in shadcn/ui generated components (not project-specific)
-- Docker runtime validation pending Docker daemon availability (`docker compose up` not executed in this environment)
 - `__pycache__` directories remain scattered throughout Python tree (mostly gitignored)
 
 ---
@@ -775,16 +774,16 @@ without sacrificing simplicity.
 | البند | القيمة الحالية |
 |------|---------------|
 | آخر تحديث | 2026-07-21 |
-| المرحلة الحالية | 2 — المنصة الذكية |
-| Work Package الحالية | WP-33 (مكتملة) |
-| المرحلة التالية | WP-40 — Docker Compose Final Verification |
-| WP التالية الفورية | WP-40: Docker Compose Final Verification |
-| المهام المكتملة | WP-01 through WP-33 |
-| المهام المتبقية | WP-40, WP-41, WP-42 |
+| المرحلة الحالية | 3 — النشر والإنتاج |
+| Work Package الحالية | WP-40 (مكتملة) |
+| المرحلة التالية | WP-41 — توثيق الإنتاج الكامل |
+| WP التالية الفورية | WP-41: توثيق الإنتاج الكامل |
+| المهام المكتملة | WP-01 through WP-40 |
+| المهام المتبقية | WP-41, WP-42 |
 | المخاطر المعروفة | عدم وجود تكامل حقيقي مع ETA و Shipping APIs |
 | إجراءات الاستعادة | قراءة Master Roadmap v2.1 + CURRENT_STATUS.md + TECH_DEBT.md |
 | Branch الحالي | main |
-| Commit الأخير | docs(wp33): update documentation and close WP-33 |
+| Commit الأخير | docs(wp40): close WP-40 — Docker Compose Final Verification |
 
 ## 12.4 Session Recovery Rules
 
@@ -1021,7 +1020,7 @@ without sacrificing simplicity.
 ## 15.4 المرحلة 3: النشر والإنتاج
 
 ### WP-40: التحقق النهائي من Docker Compose
-- 🔴 مخطط
+- ✅ مكتمل
 
 ### WP-41: توثيق الإنتاج الكامل
 - 🔴 مخطط
@@ -1078,8 +1077,8 @@ without sacrificing simplicity.
 ## 16.4 المرحلة 3: النشر والإنتاج
 
 ✅ مكتملة عند:
-- [ ] WP-40: Docker Compose يعمل في الإنتاج
-- [ ] WP-41: توثيق الإنتاج كامل
+- [x] WP-40: Docker Compose يعمل في الإنتاج
+- [ ] WP-41: توثيق الإنتاج الكامل
 - [ ] WP-42: قبول المالك
 - [ ] لا的技术 Dept جديد يمنع الإنتاج
 - [ ] جميع الاختبارات نجحت
@@ -1159,7 +1158,7 @@ without sacrificing simplicity.
 |----------|------|----------|-------|
 | HIGH | Documentation drift | Multiple docs | Resolved in WP-17A/WP-17B |
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | Static validation complete; runtime validation pending Docker daemon availability |
+| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED — Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
 | MEDIUM | No rate limiting | Missing entirely | Listed in this document as required but not implemented |
 | MEDIUM | PostgreSQL migration path | Not started | This document notes SQLite is an implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
