@@ -17,3 +17,4 @@ slowapi==0.1.9
 tenacity==8.3.0
 apscheduler==3.10.4
 pytz==2024.1
+reportlab==4.2.4

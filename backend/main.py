@@ -17,9 +17,12 @@ from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_sch
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph
+from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
+from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph, trade_intelligence
 
 knowledge_provider_registry = KnowledgeProviderRegistry()
+memory_provider = SQLiteMemoryProvider(db_path="nile_key.db")
 
 
 class SecurityHeadersMiddleware:
@@ -63,6 +66,14 @@ async def lifespan(app: FastAPI):
         print("[SUCCESS] Knowledge Graph provider registered")
     except Exception as exc:
         print(f"[WARNING] Knowledge Graph provider registration failed: {exc}")
+    
+    # Wire Memory and Knowledge providers for Trade Intelligence
+    try:
+        set_memory_provider(memory_provider)
+        set_knowledge_registry(knowledge_provider_registry)
+        print("[SUCCESS] Trade Intelligence providers wired")
+    except Exception as exc:
+        print(f"[WARNING] Trade Intelligence provider wiring failed: {exc}")
     
     # Initialize ETA background scheduler
     try:
@@ -136,6 +147,7 @@ app.include_router(workflow.router)
 app.include_router(agent.router)
 app.include_router(digital_export_manager_router)
 app.include_router(knowledge_graph.router)
+app.include_router(trade_intelligence.router)
 
 
 @app.get("/", tags=["Root"])
