@@ -61,11 +61,6 @@ export function NotificationBell() {
     });
   }, []);
 
-  const getEntityIcon = (entityType: string) => {
-    const Icon = ENTITY_ICONS[entityType] || Bell;
-    return <Icon size={14} className="text-slate-500" />;
-  };
-
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();

@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/services/api', () => ({
   getAuditLogs: vi.fn(),
-  updateAuditLog: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -13,7 +12,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-import { getAuditLogs, updateAuditLog } from '@/services/api';
+import { getAuditLogs } from '@/services/api';
 import { Notifications } from '@/pages/Notifications';
 
 const mockLogs = [
@@ -46,7 +45,7 @@ const mockLogs = [
 describe('Notifications', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getAuditLogs).mockResolvedValue({ data: [] });
+    vi.mocked(getAuditLogs).mockResolvedValue({ data: [] } as any);
   });
 
   it('renders loading state initially', () => {
@@ -66,7 +65,7 @@ describe('Notifications', () => {
   });
 
   it('renders empty state when no notifications', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: [] });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: [] } as any);
     render(<Notifications />);
     await waitFor(() => {
       expect(screen.getByText(/notifications.noNotifications/)).toBeInTheDocument();
@@ -74,7 +73,7 @@ describe('Notifications', () => {
   });
 
   it('renders notification list when data is available', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(<Notifications />);
     await waitFor(() => {
       expect(screen.getByText('created')).toBeInTheDocument();
@@ -85,7 +84,7 @@ describe('Notifications', () => {
 
   it('filters notifications by unread', async () => {
     const user = userEvent.setup();
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(<Notifications />);
 
     await waitFor(() => {
@@ -100,7 +99,7 @@ describe('Notifications', () => {
 
   it('filters notifications by entity type', async () => {
     const user = userEvent.setup();
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(<Notifications />);
 
     await waitFor(() => {
@@ -116,7 +115,7 @@ describe('Notifications', () => {
 
   it('marks notification as read when clicked', async () => {
     const user = userEvent.setup();
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(<Notifications />);
 
     await waitFor(() => {
@@ -134,7 +133,7 @@ describe('Notifications', () => {
 
   it('marks all notifications as read when button is clicked', async () => {
     const user = userEvent.setup();
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(<Notifications />);
 
     await waitFor(() => {
@@ -153,8 +152,8 @@ describe('Notifications', () => {
   it('refreshes notifications when refresh button is clicked', async () => {
     const user = userEvent.setup();
     vi.mocked(getAuditLogs)
-      .mockResolvedValueOnce({ data: mockLogs })
-      .mockResolvedValueOnce({ data: [] });
+      .mockResolvedValueOnce({ data: mockLogs } as any)
+      .mockResolvedValueOnce({ data: [] } as any);
     render(<Notifications />);
 
     await waitFor(() => {

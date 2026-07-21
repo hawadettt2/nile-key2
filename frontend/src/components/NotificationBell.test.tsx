@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@/services/api', () => ({
   getAuditLogs: vi.fn(),
-  updateAuditLog: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -36,7 +35,7 @@ vi.mock('@/components/ui/popover', () => ({
   ),
 }));
 
-import { getAuditLogs, updateAuditLog } from '@/services/api';
+import { getAuditLogs } from '@/services/api';
 import { NotificationBell } from '@/components/NotificationBell';
 
 const mockLogs = [
@@ -61,7 +60,7 @@ const mockLogs = [
 describe('NotificationBell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getAuditLogs).mockResolvedValue({ data: [] });
+    vi.mocked(getAuditLogs).mockResolvedValue({ data: [] } as any);
   });
 
   it('renders bell icon', () => {
@@ -75,7 +74,7 @@ describe('NotificationBell', () => {
   });
 
   it('shows unread count badge when there are unread notifications', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(
       <MemoryRouter>
         <NotificationBell />
@@ -88,7 +87,7 @@ describe('NotificationBell', () => {
   });
 
   it('does not show badge when all notifications are read', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: [] });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: [] } as any);
     render(
       <MemoryRouter>
         <NotificationBell />
@@ -101,7 +100,7 @@ describe('NotificationBell', () => {
   });
 
   it('loads notifications on mount', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: mockLogs } as any);
     render(
       <MemoryRouter>
         <NotificationBell />
@@ -130,7 +129,7 @@ describe('NotificationBell', () => {
   });
 
   it('shows empty state when no notifications', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: [] });
+    vi.mocked(getAuditLogs).mockResolvedValueOnce({ data: [] } as any);
     render(
       <MemoryRouter>
         <NotificationBell />
@@ -150,7 +149,7 @@ describe('NotificationBell', () => {
   });
 
   it('shows notification list in dropdown', async () => {
-    vi.mocked(getAuditLogs).mockResolvedValue({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValue({ data: mockLogs } as any);
     render(
       <MemoryRouter>
         <NotificationBell />
@@ -172,7 +171,7 @@ describe('NotificationBell', () => {
 
   it('marks notification as read when clicked', async () => {
     const user = userEvent.setup();
-    vi.mocked(getAuditLogs).mockResolvedValue({ data: mockLogs });
+    vi.mocked(getAuditLogs).mockResolvedValue({ data: mockLogs } as any);
     render(
       <MemoryRouter>
         <NotificationBell />
