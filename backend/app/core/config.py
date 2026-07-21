@@ -58,6 +58,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        extra = "ignore"
 
     def model_post_init(self, __context: object) -> None:
         if self.SECRET_KEY == "change-me-in-production" or len(self.SECRET_KEY) < 32:
