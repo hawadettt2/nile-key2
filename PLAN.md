@@ -194,7 +194,7 @@
 | 6 | Invoice Management | إدارة الفواتير - إنشاء، تحقق، إلغاء | ETA Engine (مستقبلاً) | 🟡 جزئي |
 | 7 | Document Management | إدارة الوثائق - رفع، قوالب، ربط | Documents Service | ✅ منفذ |
 | 8 | Export Operations | عمليات التصدير - تنسيق، متطلبات، فرص | Resources + Customs | 🟡 جزئي |
-| 9 | Trade Intelligence | ذكاء السوق - تحليل، اتجاهات، مقارنات | Phase 2 | ⚪ مخطط |
+| 9 | Trade Intelligence | ذكاء السوق - تحليل، اتجاهات، مقارنات | Phase 2 | ✅ منفذ |
 | 10 | Knowledge Graph | رسم معرفي - عملاء، موردين، منتجات، علاقات | Phase 2 | ✅ منفذ |
 | 11 | AI Agent | وكيل ذكي - مساعد، اقتراحات، تنبيهات | Phase 2 | ⚪ مخطط |
 | 12 | AI Memory | ذاكرة سياقية - تفضيلات، قرارات سابقة | Phase 2 | ⚪ مخطط |
@@ -247,7 +247,7 @@
 - WP-30I: Advanced Features — ✅ مكتمل
 - WP-31: AI Memory — ذاكرة سياقية
 - WP-32: Knowledge Graph — رسم معرفي للتجارة
-- WP-33: Trade Intelligence — ذكاء السوق والموردين والعملاء
+- WP-33: Trade Intelligence — ذكاء السوق والموردين والعملاء — ✅ مكتمل
 
 ## المرحلة 3: النشر والإنتاج
 - WP-40: التحقق النهائي من Docker Compose
@@ -774,17 +774,17 @@ without sacrificing simplicity.
 
 | البند | القيمة الحالية |
 |------|---------------|
-| آخر تحديث | 2026-07-20 |
+| آخر تحديث | 2026-07-21 |
 | المرحلة الحالية | 2 — المنصة الذكية |
-| Work Package الحالية | WP-32 (مكتملة) |
-| المرحلة التالية | WP-33 — Trade Intelligence |
-| WP التالية الفورية | WP-33: Trade Intelligence |
-| المهام المكتملة | WP-01 through WP-32 |
-| المهام المتبقية | WP-33, WP-40, WP-41, WP-42 |
+| Work Package الحالية | WP-33 (مكتملة) |
+| المرحلة التالية | WP-40 — Docker Compose Final Verification |
+| WP التالية الفورية | WP-40: Docker Compose Final Verification |
+| المهام المكتملة | WP-01 through WP-33 |
+| المهام المتبقية | WP-40, WP-41, WP-42 |
 | المخاطر المعروفة | عدم وجود تكامل حقيقي مع ETA و Shipping APIs |
 | إجراءات الاستعادة | قراءة Master Roadmap v2.1 + CURRENT_STATUS.md + TECH_DEBT.md |
 | Branch الحالي | main |
-| Commit الأخير | docs(wp32): update documentation and close WP-32 |
+| Commit الأخير | docs(wp33): update documentation and close WP-33 |
 
 ## 12.4 Session Recovery Rules
 
@@ -1016,7 +1016,7 @@ without sacrificing simplicity.
   - [x] 105 اختبار نجحت
 
 ### WP-33: Trade Intelligence
-- 🔴 مخطط
+- ✅ مكتمل
 
 ## 15.4 المرحلة 3: النشر والإنتاج
 
@@ -1068,12 +1068,12 @@ without sacrificing simplicity.
 ## 16.3 المرحلة 2: المنصة الذكية
 
 ✅ مكتملة عند:
-- [ ] جميع WP-30 through WP-33 مكتملة
+- [x] جميع WP-30 through WP-33 مكتملة
 - [ ] AI Agent يستجيب لاستعلامات الأعمال
 - [ ] AI Memory يعمل Across الجلسات
 - [ ] Knowledge Graph يعرض علاقات الكيانات
-- [ ] Trade Intelligence يقدم تقارير
-- [ ] 100+ اختبار جديد نجحت
+- [x] Trade Intelligence يقدم تقارير
+- [x] 100+ اختبار جديد نجحت
 
 ## 16.4 المرحلة 3: النشر والإنتاج
 

@@ -63,6 +63,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Governance: ED-WP32-001 recorded — Document Edge Handling clarification
   - No modifications to existing entity tables or DEM core
 
+- WP-33: Trade Intelligence — completed
+  - Supplier analysis, buyer analysis, trend detection, entity comparisons, report generation
+  - 5 analysis service functions with Memory, Knowledge Graph, and audit integration
+  - 6 FastAPI endpoints under /api/v1/trade-intelligence
+  - 120 tests (75 service unit tests, 26 integration tests, 14 security tests, 5 performance tests)
+  - Runtime Router Bug fixed: date_range.model_dump() replaced with 
+equest.date_range for Pydantic V2 compatibility
+  - Verification passed; Work Package officially closed
+
 ## [1.0.0] - 2026-07-15
 
 ### Added
