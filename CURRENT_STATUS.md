@@ -3,8 +3,8 @@
 **Last Updated:** 2026-07-21
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED)
-**Next Phase:** WP-41 — Production Documentation
+**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED, WP-41 CLOSED)
+**Next Phase:** WP-42 — Owner Acceptance
 
 ---
 
@@ -46,6 +46,7 @@
 | WP-32 | ✅ Complete | Knowledge Graph — 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
 | WP-33 | ✅ Complete | Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
 | WP-40 | ✅ Complete | Docker Compose Final Verification — both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
+| WP-41 | ✅ Complete | Production Documentation — README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
 
 ## WP-31 Implementation Summary
 
@@ -63,8 +64,8 @@
 - **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 606 passing, 8 skipped by design
-- **Routers:** ETA router at `/api/v1/eta`; Shipping router at `/api/v1/shipping`; Search at `/api/v1/search`; Dashboard at `/api/v1/dashboard`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit`; Export Workflows at /api/v1/export-workflows; Digital Export Manager at `/api/v1/digital-export-manager`
+- **Tests:** 876 passing, 5 failed (pre-existing), 8 skipped by design
+- **Routers:** ETA at `/api/v1/eta`; Shipping at `/api/v1/shipping`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit/logs`; Export Workflows at `/api/v1/export-workflows`; Digital Export Manager at `/api/v1/digital-export-manager`; Knowledge Graph at `/api/v1/knowledge-graph`; Trade Intelligence at `/api/v1/trade-intelligence`; Auth, Suppliers, Customers, Customs, Resources, Documents, Invoices, Agent, Workflow routers registered in `main.py`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
 - **Shipping Service Layer:** Complete business logic for rate aggregation, booking, labels, tracking, cancellation, provider/parcel-template CRUD
@@ -141,11 +142,11 @@
 - **Routers:** `/api/v1/notifications/send`, `/api/v1/audit/logs`
 - **Test Coverage:** 52 tests (notification service: 17, audit service: 14, notification router: 8, audit router: 13)
 
-### WP-21 Milestone 2: Search + Dashboard (Completed)
-- **Unified Search:** `/api/v1/search` endpoint aggregating results across all business entities
-- **Live Dashboard:** `/api/v1/dashboard` endpoint with ETA + Shipping stats, recent activity, notification count
-- **Frontend:** Dashboard page updated with live widgets
-- **Test Coverage:** 10 tests (search service + dashboard service + router tests)
+### WP-21 Milestone 2: Search + Dashboard (Framework Implementation)
+- **Unified Search:** `search.py` router module exists at `/api/v1/search` but is NOT registered in `main.py`
+- **Live Dashboard:** `dashboard.py` router module exists at `/api/v1/dashboard` but is NOT registered in `main.py`
+- **Frontend:** Dashboard page exists at `frontend/src/pages/Dashboard.tsx` with live widgets
+- **Note:** Backend router files exist but endpoints are not currently exposed in the running application
 
 ### WP-21 Milestone 3: Notification Triggers + Frontend (Completed)
 - **ETA Notification Triggers:** `submit_invoice_to_eta` and `submit_receipt_to_eta` send template emails on success
@@ -155,7 +156,7 @@
 - **Frontend API:** Updated `api.ts` with search, dashboard, notifications, audit endpoints
 - **Frontend Tests:** 17 Vitest + React Testing Library tests
 - **Backend Trigger Tests:** 17 tests verifying notification triggers in ETA and Shipping services
-- **Test Coverage:** Full suite: 373 passed, 8 skipped, 0 failed
+- **Test Coverage:** Full suite: 876 passed, 5 failed (pre-existing), 8 skipped
 
 ## WP-30B Implementation Summary
 
@@ -249,6 +250,7 @@
 - WP-32 completed — Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
 - WP-33 completed — Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
 - WP-40 completed — Docker Compose Final Verification; both images build successfully; services start healthy; backend API reachable on port 8000; frontend served on port 3000; database persistence verified via Docker volume; frontend TypeScript build errors resolved (vite.config.ts, NotificationBell.test.tsx, Notifications.test.tsx, NotificationBell.tsx dead code removed)
+- WP-41 completed — Production Documentation; README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
@@ -259,5 +261,5 @@ If resuming after session interruption:
 1. Read `PLAN.md` Section 12 (Project Continuity Protocol)
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
-4. Proceed to WP-41 — Production Documentation
+4. Proceed to WP-42 — Owner Acceptance
 

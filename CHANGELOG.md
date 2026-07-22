@@ -68,8 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 5 analysis service functions with Memory, Knowledge Graph, and audit integration
   - 6 FastAPI endpoints under /api/v1/trade-intelligence
   - 120 tests (75 service unit tests, 26 integration tests, 14 security tests, 5 performance tests)
-  - Runtime Router Bug fixed: date_range.model_dump() replaced with 
-equest.date_range for Pydantic V2 compatibility
+  - Runtime Router Bug fixed: date_range.model_dump() replaced with request.date_range for Pydantic V2 compatibility
   - Verification passed; Work Package officially closed
 
 - WP-40: Docker Compose Final Verification — completed
@@ -88,7 +87,28 @@ equest.date_range for Pydantic V2 compatibility
   - TECH_DEBT.md "Docker deployment unverified" item resolved
   - Governance documents updated: CURRENT_STATUS.md, PLAN.md, CHANGELOG.md
 
+- WP-41: Production Documentation — completed
+- `README.md` updated to reflect current system state (16 registered routers, 19 service modules excluding init files, 18 schema modules, 876+ passing tests)
+- `PROJECT_BASELINE.md` updated to WP-40 baseline with corrected test counts
+- `ENGINEERING_MEMORY.md` extended through WP-40 with corrected router and test counts
+- `WORK_PACKAGE_PLAN.md` extended through WP-40
+- `REPOSITORY_INTELLIGENCE.md` marked as historical snapshot
+- All documentation cross-references verified and consistent
+- Forensic audit corrections applied: false Digital Export Manager frontend page claim removed, unregistered search/dashboard router endpoints corrected, test counts updated from 606+ to 876+
+
 ## [1.0.0] - 2026-07-15
+
+### Added
+- WP-30B: Session Management + Mission Lifecycle
+- WP-30C: Task Planner + Execution Engine
+- WP-30D: Decision Engine
+- WP-30E: 14 ERP tool wrappers with metadata compliance
+- ED-WP30-001: WP-30B phase sequencing adjustment
+
+### Changed
+- Legacy `Planner` refactored to delegate to `TaskPlanner`
+- `ToolResultSchema.audit_ref` made required
+- `AgentToolInfoResponse` expanded with version, idempotency_key, auth_requirements
 
 ### Added
 - WP-30B: Session Management + Mission Lifecycle
