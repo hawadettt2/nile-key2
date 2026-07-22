@@ -121,7 +121,7 @@ nile-key2/
 
 ## Testing
 
-- **876 passing pytest tests** covering:
+- **876+ passing pytest tests** covering:
   - Auth and RBAC
   - API endpoint coverage for all 16 registered routers
   - Service-layer unit tests for all service modules
