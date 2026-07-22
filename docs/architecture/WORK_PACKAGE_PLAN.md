@@ -645,9 +645,439 @@
 
 ---
 
+## WP-20: Shipping Engine
+
+**Status:** ✅ Complete
+
+**Objective:** Extract complete shipping business logic with provider abstraction layer.
+
+**Why It Exists:** Shipping integration requires multi-provider abstraction with unified interface.
+
+**Scope:** Implement LetMeShip + SendCloud clients, rate aggregation, shipment booking, tracking, label retrieval, cancellation, provider/parcel-template CRUD.
+
+**Files In Scope:**
+- backend/app/schemas/shipping.py
+- backend/app/services/shipping/base.py
+- backend/app/services/shipping/letmeship_client.py
+- backend/app/services/shipping/sendcloud_client.py
+- backend/app/services/shipping/__init__.py
+- backend/app/services/shipping.py
+- backend/app/routers/shipping.py
+- backend/app/core/shipping_scheduler.py
+- backend/app/core/database.py
+- backend/tests/test_shipping.py
+- backend/tests/test_services/test_shipping_service.py
+
+**Dependencies:** WP-18
+
+**Validation:**
+1. LetMeShip: rates, create shipment, label, tracking ✅
+2. SendCloud: rates, create shipment, label, tracking, cancel ✅
+3. Parcel dimension validation works ✅
+4. Address validation works ✅
+5. Error handling displays clear messages ✅
+6. Retry for transient failures ✅
+7. 34+ tests pass ✅
+
+**Rollback:** Revert shipping service files and revert `database.py`, `main.py`
+
+---
+
+## WP-21: Platform Integration
+
+**Status:** ✅ Complete
+
+**Objective:** Integrate all platform components with notifications, audit, search, dashboard, workflows, and frontend.
+
+**Why It Exists:** Phase 1.5 requires all systems connected and operational.
+
+**Scope:** Notification service, audit logging, unified search, live dashboard, export workflows, frontend integration, notification triggers.
+
+**Files In Scope:**
+- backend/app/services/notification.py
+- backend/app/services/audit.py
+- backend/app/services/search.py
+- backend/app/services/dashboard.py
+- backend/app/services/workflow.py
+- backend/app/schemas/notification.py
+- backend/app/schemas/audit.py
+- backend/app/schemas/search.py
+- backend/app/schemas/dashboard.py
+- backend/app/schemas/workflow.py
+- backend/app/routers/notifications.py
+- backend/app/routers/audit.py
+- backend/app/routers/search.py
+- backend/app/routers/dashboard.py
+- backend/app/routers/workflow.py
+- backend/app/core/database.py
+- frontend/src/pages/Dashboard.tsx
+- frontend/src/pages/Notifications.tsx
+- frontend/src/components/NotificationBell.tsx
+- frontend/src/services/api.ts
+
+**Dependencies:** WP-19, WP-20
+
+**Validation:**
+1. All entities connected ✅
+2. Dashboard shows live data ✅
+3. Audit logging works for all operations ✅
+4. Notifications work via email ✅
+5. Search works across all entities ✅
+6. Export workflows operational ✅
+7. Frontend integrated ✅
+8. Tests pass (373+ total) ✅
+
+**Rollback:** Revert notification, audit, search, dashboard, workflow services and routers
+
+---
+
+## WP-30B: Session Management + Mission Lifecycle
+
+**Status:** ✅ Complete
+
+**Objective:** Implement persistent Digital Export Session with mission lifecycle.
+
+**Scope:** Session management, mission lifecycle, DEM router registration.
+
+**Files In Scope:**
+- backend/app/agent/session/
+- backend/app/routers/digital_export_manager.py
+- backend/app/core/database.py
+- backend/tests/agent/
+
+**Dependencies:** WP-30
+
+**Validation:**
+1. Session CRUD works ✅
+2. Mission lifecycle works ✅
+3. 6 DEM endpoints registered ✅
+4. Router registered in main.py ✅
+5. Closure Review approved ✅
+
+**Rollback:** Remove session files; revert router registration
+
+---
+
+## WP-30C: Task Planner + Execution Engine
+
+**Status:** ✅ Complete
+
+**Objective:** Implement structured mission execution with retry, idempotency, audit.
+
+**Scope:** Task Planner, Execution Engine, mission orchestration.
+
+**Files In Scope:**
+- backend/app/agent/planner/
+- backend/app/agent/execution_engine/
+- backend/tests/agent/
+
+**Dependencies:** WP-30B
+
+**Validation:**
+1. Task planning works ✅
+2. Execution with retry works ✅
+3. Idempotency enforced ✅
+4. Audit logging integrated ✅
+
+**Rollback:** Remove planner and execution engine files
+
+---
+
+## WP-30D: Decision Engine
+
+**Status:** ✅ Complete
+
+**Objective:** Implement reasoning loop with knowledge/memory graceful degradation.
+
+**Scope:** Decision Engine with knowledge and memory integration.
+
+**Files In Scope:**
+- backend/app/agent/decision_engine/
+- backend/tests/agent/test_decision_engine.py
+
+**Dependencies:** WP-30C
+
+**Validation:**
+1. Reasoning loop works ✅
+2. Knowledge graceful degradation works ✅
+3. Memory graceful degradation works ✅
+
+**Rollback:** Remove decision engine files
+
+---
+
+## WP-30E: Tool Implementations
+
+**Status:** ✅ Complete
+
+**Objective:** Implement 14 ERP tool wrappers with metadata.
+
+**Scope:** Tool wrappers, ToolRegistry, legacy planner drift fix.
+
+**Files In Scope:**
+- backend/app/agent/tools/
+- backend/tests/agent/test_erp_tools.py
+
+**Dependencies:** WP-30D
+
+**Validation:**
+1. 14 tool wrappers implemented ✅
+2. ToolRegistry populated ✅
+3. Legacy planner drift fixed ✅
+
+**Rollback:** Remove tool files; revert planner
+
+---
+
+## WP-30F: Company Knowledge Layer Interface
+
+**Status:** ✅ Complete
+
+**Objective:** Define company knowledge layer interface and registry.
+
+**Scope:** KnowledgeProvider ABC, KnowledgeQuery contract, KnowledgeProviderRegistry, ingestion contract.
+
+**Files In Scope:**
+- backend/app/agent/knowledge/provider.py
+- backend/app/agent/knowledge/registry.py
+- backend/app/agent/knowledge/graph_provider.py
+- backend/app/schemas/knowledge_graph.py
+- .kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md
+- backend/tests/agent/test_knowledge.py
+
+**Dependencies:** WP-30E
+
+**Validation:**
+1. KnowledgeProvider ABC defined ✅
+2. KnowledgeQuery contract defined ✅
+3. KnowledgeProviderRegistry implemented ✅
+4. 17 tests pass ✅
+5. ED-WP30-002 recorded ✅
+
+**Rollback:** Remove knowledge files; revert registry
+
+---
+
+## WP-30G: Memory Interface Definition
+
+**Status:** ✅ Complete
+
+**Objective:** Define memory provider interface for context persistence.
+
+**Scope:** MemoryProvider ABC, memory contract, graceful degradation.
+
+**Files In Scope:**
+- backend/app/agent/memory/interface.py
+- backend/app/agent/memory/sqlite_provider.py
+- .kilo/plans/MEMORY_CONTRACT.md
+- backend/tests/agent/test_memory.py
+
+**Dependencies:** WP-30F
+
+**Validation:**
+1. MemoryProvider ABC defined ✅
+2. SQLiteMemoryProvider implemented ✅
+3. 12 tests pass ✅
+4. Graceful degradation in DEM core ✅
+
+**Rollback:** Remove memory files; revert DEM core usage
+
+---
+
+## WP-30H: Avatar Contract
+
+**Status:** ✅ Complete
+
+**Objective:** Define avatar rendering interface and intent content contract.
+
+**Scope:** IntentContent Pydantic model, AvatarRenderer ABC, AVATAR_CONTRACT.md.
+
+**Files In Scope:**
+- backend/app/agent/avatar/interface.py
+- .kilo/plans/AVATAR_CONTRACT.md
+- backend/tests/agent/test_avatar.py
+
+**Dependencies:** WP-30G
+
+**Validation:**
+1. IntentContent defined ✅
+2. AvatarRenderer ABC defined ✅
+3. 15 tests pass ✅
+4. No regressions ✅
+
+**Rollback:** Remove avatar files
+
+---
+
+## WP-30I: Advanced Features
+
+**Status:** ✅ Complete
+
+**Objective:** Implement advanced DEM features.
+
+**Scope:** Multi-step workflow executor, proactive monitoring, training mode, approval gates.
+
+**Files In Scope:**
+- backend/app/agent/execution_engine/orchestrator.py
+- backend/app/agent/monitoring/service.py
+- backend/app/agent/training/service.py
+- backend/tests/agent/test_execution_engine.py
+- backend/tests/agent/test_monitoring.py
+- backend/tests/agent/test_training.py
+
+**Dependencies:** WP-30H
+
+**Validation:**
+1. Workflow executor with dependency resolution ✅
+2. Proactive monitoring with alert thresholds ✅
+3. Training mode implemented ✅
+4. Approval gates for destructive operations ✅
+
+**Rollback:** Remove monitoring and training files; revert orchestrator
+
+---
+
+## WP-31: AI Memory
+
+**Status:** ✅ Complete
+
+**Objective:** Implement concrete memory provider with session integration.
+
+**Scope:** SQLiteMemoryProvider, memory injection, decision persistence, active recall biases.
+
+**Files In Scope:**
+- backend/app/agent/memory/sqlite_provider.py
+- backend/app/agent/session/
+- backend/app/schemas/mission.py
+- backend/tests/agent/test_sqlite_provider.py
+- backend/tests/agent/test_decision_engine.py
+
+**Dependencies:** WP-30I
+
+**Validation:**
+1. SQLiteMemoryProvider implements recall/store/forget/summarize/cleanup_expired ✅
+2. Memory injection into session context ✅
+3. Decision persistence hook ✅
+4. Active recall biases in ReasoningEngine ✅
+5. 151 agent tests passing ✅
+6. Scope creep reverted ✅
+
+**Rollback:** Revert memory provider and session integration
+
+---
+
+## WP-32: Knowledge Graph
+
+**Status:** ✅ Complete
+
+**Objective:** Implement knowledge graph for trade entities.
+
+**Scope:** 9 node types, 9 API endpoints, derived edges, traversal, entity sync, MemoryProvider integration, audit logging.
+
+**Files In Scope:**
+- backend/app/schemas/knowledge_graph.py
+- backend/app/services/knowledge_graph.py
+- backend/app/agent/knowledge/graph_provider.py
+- backend/app/routers/knowledge_graph.py
+- backend/app/core/database.py
+- backend/tests/test_knowledge_graph.py
+- backend/tests/test_services/test_knowledge_graph.py
+- backend/tests/test_knowledge_graph_performance.py
+- backend/tests/test_knowledge_graph_security.py
+
+**Dependencies:** WP-30F, WP-30G, WP-31
+
+**Validation:**
+1. 9 node types supported ✅
+2. 9 API endpoints work ✅
+3. Derived edges discovered ✅
+4. Graph traversal works ✅
+5. Entity sync works ✅
+6. MemoryProvider integration with graceful degradation ✅
+7. Audit logging integrated ✅
+8. 105 tests pass ✅
+9. ED-WP32-001 recorded ✅
+
+**Rollback:** Remove knowledge graph files; revert database.py
+
+---
+
+## WP-33: Trade Intelligence
+
+**Status:** ✅ Complete
+
+**Objective:** Implement trade intelligence analytical layer.
+
+**Scope:** Supplier/buyer analysis, trend detection, entity comparisons, report generation, Memory and Knowledge Graph integration.
+
+**Files In Scope:**
+- backend/app/schemas/trade_intelligence.py
+-backend/app/services/trade_intelligence.py
+- backend/app/routers/trade_intelligence.py
+- backend/tests/test_trade_intelligence.py
+- backend/tests/test_services/test_trade_intelligence.py
+- backend/tests/test_trade_intelligence_performance.py
+- backend/tests/test_trade_intelligence_security.py
+
+**Dependencies:** WP-32, WP-31, WP-30D
+
+**Validation:**
+1. Supplier analysis works ✅
+2. Buyer analysis works ✅
+3. Market trends detected ✅
+4. Comparisons work ✅
+5. Reports generated ✅
+6. Memory integration works ✅
+7. Knowledge Graph integration works ✅
+8. Audit logging integrated ✅
+9. 120 tests pass ✅
+10. Runtime router bug fixed ✅
+
+**Rollback:** Remove trade intelligence files; revert main.py router registration
+
+---
+
+## WP-40: Docker Compose Final Verification
+
+**Status:** ✅ Complete
+
+**Objective:** Final verification of Docker Compose setup for production deployment.
+
+**Scope:** Validate both images build, services start healthy, API reachable, frontend served, database persistence confirmed, frontend TypeScript errors resolved.
+
+**Files In Scope:**
+- frontend/tsconfig.node.json
+- frontend/src/components/NotificationBell.test.tsx
+- frontend/src/pages/Notifications.test.tsx
+- frontend/src/components/NotificationBell.tsx
+- CURRENT_STATUS.md
+- PLAN.md
+- CHANGELOG.md
+- TECH_DEBT.md
+- docs/architecture/ENGINEERING_MEMORY.md
+- .kilo/plans/wp33e-final-roadmap-verification.md
+- .kilo/plans/1784644008165-wp40-planning-and-governance-report.md
+- .kilo/plans/wp40f-final-closure-and-baseline-verification.md
+
+**Dependencies:** WP-33
+
+**Validation:**
+1. Backend Docker image builds successfully ✅
+2. Frontend Docker image builds successfully ✅
+3. `docker compose up --build` completes with both services healthy ✅
+4. Backend `/health` returns HTTP 200 ✅
+5. Frontend served on port 3000 ✅
+6. Backend API reachable on port 8000 ✅
+7. Database persistence verified via Docker volume ✅
+8. Frontend TypeScript build errors resolved ✅
+
+**Rollback:** Revert frontend TypeScript fixes; revert governance documents
+
+---
+
 ## Execution Sequence
 
-WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B → WP-18 → **WP-19**
+WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → WP-09 → WP-10 → **WP-11** → WP-12 → WP-13A → WP-15 → WP-16B → WP-17A → WP-17B → WP-18 → **WP-19** → WP-20 → WP-21 → WP-30B → WP-30C → WP-30D → WP-30E → WP-30F → WP-30G → WP-30H → WP-30I → WP-31 → WP-32 → WP-33 → **WP-40**
 
 ---
 
@@ -666,27 +1096,30 @@ WP-01 → WP-02 → WP-03 → WP-04 → WP-05 → WP-06 → WP-07 → WP-08 → 
 | WP-17B | Remove `backend/tests/test_services/` |
 | WP-18 | Revert `backend/app/core/database.py` and `backend/app/services/document.py`; remove re-enabled tests in `backend/tests/test_customs.py` and `backend/tests/test_documents.py` |
 | WP-19 | Remove ETA files; revert `backend/app/core/database.py`, `backend/main.py`, `backend/requirements.txt` |
+| WP-20 | Revert shipping service files and `database.py` |
+| WP-21 | Revert notification, audit, search, dashboard, workflow services and routers |
+| WP-30B | Remove session files; revert router registration |
+| WP-30C | Remove planner and execution engine files |
+| WP-30D | Remove decision engine files |
+| WP-30E | Remove tool files; revert planner |
+| WP-30F | Remove knowledge files; revert registry |
+| WP-30G | Remove memory files; revert DEM core usage |
+| WP-30H | Remove avatar files |
+| WP-30I | Remove monitoring and training files; revert orchestrator |
+| WP-31 | Revert memory provider and session integration |
+| WP-32 | Remove knowledge graph files; revert database.py |
+| WP-33 | Remove trade intelligence files; revert main.py router registration |
+| WP-40 | Revert frontend TypeScript fixes; revert governance documents |
 
 ---
 
-## WP-03 Rollback Points
+## Version History
 
-| WP | Rollback Command |
-|----|------------------|
-| WP-03 | `git checkout dbe1ef4 -- backend/app/routers/auth.py` |
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.3 | 2026-07-04 | Based on PLAN.md (Master Roadmap v2.1) |
+| 1.4 | 2026-07-21 | Extended through WP-40 |
 
----
-
-## WP-02 Rollback Points
-
-| WP | Rollback Command |
-|----|------------------|
-| WP-02A-H | `git checkout 3219904 -- backend/app/core/database.py` |
-| WP-02A | `git checkout a0e87e7 -- backend/app/core/database.py` |
-| WP-02B | `git checkout 94ae639 -- backend/app/core/database.py backend/app/routers/suppliers.py` |
-| WP-02C | `git checkout 5cec3ca -- backend/app/core/database.py backend/app/routers/customers.py` |
-
----
 
 ## WP-10 Rollback Points
 

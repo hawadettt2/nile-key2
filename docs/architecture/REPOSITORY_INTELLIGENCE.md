@@ -1,9 +1,11 @@
 # Repository Intelligence Report
 
-**Version:** 1.0
-**Generated:** 2026-06-30
-**Phases:** Architecture Audit (Phase 1) + Repository Intelligence (Phase 1.5)
-**Status:** Historical snapshot — Authority has moved to `PLAN.md` (Master Roadmap v2.1)
+**Version:** 1.0  
+**Generated:** 2026-06-30  
+**Phases:** Architecture Audit (Phase 1) + Repository Intelligence (Phase 1.5)  
+**Status:** Historical snapshot — Authority has moved to `PLAN.md` (Master Roadmap v2.1) and `docs/architecture/PROJECT_BASELINE.md`
+
+> **Note:** This report reflects the state as of 2026-06-30. All critical and high-priority issues listed in this document have been resolved through subsequent Work Packages. For the current project state, refer to `docs/architecture/PROJECT_BASELINE.md` and `docs/architecture/ENGINEERING_MEMORY.md`.
 
 ---
 
