@@ -1,0 +1,21 @@
+{
+  "name": "nile-key-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser Automation Platform — Nile Key E2E Tests",
+  "scripts": {
+    "test:smoke": "playwright test --grep @smoke --pass-with-no-tests",
+    "test:uat": "playwright test --grep @uat",
+    "test:regression": "playwright test --grep @regression",
+    "test:prod": "playwright test --grep @prod"
+  },
+  "devDependencies": {
+    "@playwright/mcp": "^0.0.78",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.61.1",
+    "playwright": "^1.61.0"
+  }
+}
