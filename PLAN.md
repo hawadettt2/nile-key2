@@ -849,6 +849,12 @@ without sacrificing simplicity.
 | OAuth2 client_credentials | معياري لـ ETA API | forensic analysis | API Key, Basic Auth | أمان vs بساطة | تكامل حقيقي مع ETA | عند تغيير ETA auth model |
 | جداول ETA منفصلة | فصل بيانات الاتصال عن سجلات الفواتير | WP-19 | دمج مع invoices | مساحة vs تنظيم | تتبع كامل لعمليات ETA | عند دمج النماذج |
 | Pydantic schemas مطابقة لـ ETA v1.0/v1.2 | توافق مع مواصفات ETA الرسمية | forensic analysis | schemas مخصصة | توافق vs مرونة | قبول من ETA | عند تحديث مواصفات ETA |
+| Browser Automation Platform — two-document structure | حوكمة تتطلب بنية وثائق مستقرة؛ المحتوى المتقلب ينفصل عن Architecture | BA-DEC-001 | Single document or three-way split | تبسيط مقابل تعقيد التوثيق | بنية وثائق مستقرة وقابلة للصيانة | عند إضافة بنية Browser Automation جديدة |
+| Browser Automation Platform — in-repo isolated subtree | الحاجة إلى منصة Browser Automation دائمة دون اقتران بوقت تشغيل التطبيق | BA-ARCH-001 Section 2، .playwright-mcp/ evidence | Runtime integration أو separate repository | تعقيد مقابل اقتران | بنية معزولة، صور Docker للتطبيق بدون تغيير | عند تغيير بنية Docker |
+| Browser Automation — Chromium only for initial release | تقليل flakiness وتقليل وقت التنفيذ | ADR-BA-002 | Support all three browsers (Chromium + Firefox + WebKit) | تغطية مقابل استقرار | أقل flakiness، أسرع تنفيذ | بعد استقرار المنصة |
+| Browser Automation — MCP as enhancement, not requirement | الضوابط يجب أن تعمل بدون MCP | ADR-BA-003، .playwright-mcp/ empty directory | Make MCP required for all test execution | تكامل ذكاء اصطناعي مقابل مرونة | منصة تعمل دائماً، MCP يعزز فقط | عند توفر @playwright/mcp |
+| Browser Automation Platform — Phase 0 approval | Project Owner approval of BA-ARCH-001 and BA-IMPL-001 per BA-DEC-001 | PO-BA-2026-001 | Defer or reject | approval vs delay | Phase 0 closed; Phase 1 authorized | Upon signature |
+| Browser Automation Platform — scope freeze | No changes to architecture or implementation scope without formal change request | BA-WP-001 Phase 0 Task 0.3 | Uncontrolled changes | freeze vs flexibility | Scope stable for execution | Upon change request |
 
 ---
 
@@ -1050,16 +1056,16 @@ without sacrificing simplicity.
   - [x] جدولة تقديم الدفعات تعمل (APScheduler)
   - [ ] تنبيهات البريد الإلكتروني تُرسل (مؤجل إلى WP-21)
   - [x] 50+ اختبار جديد نجحت (71 اختبار)
-- [ ] WP-20: Shipping Engine منفذ بالكامل
-  - [ ] LetMeShip API متكامل (أسعار، إنشاء، ملصق، تتبع)
-  - [ ] SendCloud API متكامل (أسعار، إنشاء، ملصق، تتبع، إلغاء)
-  - [ ] تحقق الطرود والعناوين يعمل
-  - [ ] 40+ اختبار جديد نجحت
-- [ ] WP-21: تكامل المنصة التجارية الأساسية مكتمل
-  - [ ] جميع الكيانات متصلة
-  - [ ] لوحة القيادة تعرض بيانات حية
-  - [ ] سجل التدقيق يعمل
-  - [ ] الإشعارات تعمل
+- [x] WP-20: Shipping Engine منفذ بالكامل
+  - [x] LetMeShip API متكامل (أسعار، إنشاء، ملصق، تتبع)
+  - [x] SendCloud API متكامل (أسعار، إنشاء، ملصق، تتبع، إلغاء)
+  - [x] تحقق الطرود والعناوين يعمل
+  - [x] 40+ اختبار جديد نجحت
+- [x] WP-21: تكامل المنصة التجارية الأساسية مكتمل
+  - [x] جميع الكيانات متصلة
+  - [x] لوحة القيادة تعرض بيانات حية
+  - [x] سجل التدقيق يعمل
+  - [x] الإشعارات تعمل
 - [ ] لا يوجد mock data في المسارات النشطة
 - [ ] جميع الاختبارات القديمة لا تزال نجحت
 - [ ] التوثيق محدث
