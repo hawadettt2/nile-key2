@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 
 from app.routers.auth import get_current_user, require_role
+from app.core.database import get_db
 from app.schemas.customs import (
     HSCode,
     CustomsDeclaration,
@@ -24,6 +25,23 @@ from app.services.customs import (
 )
 
 router = APIRouter(prefix="/api/v1/customs", tags=["Customs"])
+
+
+@router.get("/", response_model=list[dict])
+def list_customs_items(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user)
+):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, declaration_number, status, origin_country, destination_country FROM customs_declarations ORDER BY created_at DESC LIMIT ? OFFSET ?",
+        (limit, skip),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 
 @router.get("/hs-codes", response_model=list[HSCode])

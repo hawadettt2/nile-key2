@@ -1,6 +1,6 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-07-21
+**Last Updated:** 2026-07-26
 **Branch:** main
 **Commit:** HEAD
 **Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED, WP-41 CLOSED)
@@ -65,7 +65,7 @@
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
 - **Tests:** 876 passing, 5 failed (pre-existing), 8 skipped by design
-- **Routers:** ETA at `/api/v1/eta`; Shipping at `/api/v1/shipping`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit/logs`; Export Workflows at `/api/v1/export-workflows`; Digital Export Manager at `/api/v1/digital-export-manager`; Knowledge Graph at `/api/v1/knowledge-graph`; Trade Intelligence at `/api/v1/trade-intelligence`; Auth, Suppliers, Customers, Customs, Resources, Documents, Invoices, Agent, Workflow routers registered in `main.py`
+- **Routers:** ETA at `/api/v1/eta`; Shipping at `/api/v1/shipping`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit/logs`; Export Workflows at `/api/v1/export-workflows`; Digital Export Manager at `/api/v1/digital-export-manager`; Knowledge Graph at `/api/v1/knowledge-graph`; Trade Intelligence at `/api/v1/trade-intelligence`; Auth, Suppliers, Customers, Customs, Resources, Documents, Invoices, Agent, Workflow, Dashboard, Search routers registered in `main.py`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
 - **Shipping Service Layer:** Complete business logic for rate aggregation, booking, labels, tracking, cancellation, provider/parcel-template CRUD
@@ -142,11 +142,11 @@
 - **Routers:** `/api/v1/notifications/send`, `/api/v1/audit/logs`
 - **Test Coverage:** 52 tests (notification service: 17, audit service: 14, notification router: 8, audit router: 13)
 
-### WP-21 Milestone 2: Search + Dashboard (Framework Implementation)
-- **Unified Search:** `search.py` router module exists at `/api/v1/search` but is NOT registered in `main.py`
-- **Live Dashboard:** `dashboard.py` router module exists at `/api/v1/dashboard` but is NOT registered in `main.py`
+### WP-21 Milestone 2: Search + Dashboard (Completed)
+- **Unified Search:** `search.py` router module exists at `/api/v1/search` and is registered in `main.py`
+- **Live Dashboard:** `dashboard.py` router module exists at `/api/v1/dashboard` and is registered in `main.py`
 - **Frontend:** Dashboard page exists at `frontend/src/pages/Dashboard.tsx` with live widgets
-- **Note:** Backend router files exist but endpoints are not currently exposed in the running application
+- **Note:** Backend router files exist and endpoints are exposed in the running application. Verified by Verification Forensic Audit on 2026-07-26.
 
 ### WP-21 Milestone 3: Notification Triggers + Frontend (Completed)
 - **ETA Notification Triggers:** `submit_invoice_to_eta` and `submit_receipt_to_eta` send template emails on success
@@ -231,6 +231,7 @@
 
 ## Governance Notes
 
+- **Verification Forensic Audit completed 2026-07-26:** Confirmed `dashboard.router` and `search.router` registered in `main.py`; `/api/v1/dashboard`, `/api/v1/search`, `/api/v1/notifications/`, `/api/v1/customs/` present in OpenAPI and responding; frontend charset header corrected to `text/html; charset=utf-8`; Arabic title renders correctly.
 - **CR-M4-001 Rev.1:** Export Operations Integration specification updates approved with conditions. The draft → shipped bypass and /items endpoint are Engineering Decisions. Business stakeholder notification required within 5 business days of approval.
 
 ## Project Continuity Status

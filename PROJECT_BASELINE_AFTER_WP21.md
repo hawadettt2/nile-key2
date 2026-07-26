@@ -3,10 +3,10 @@
 **Document Status:** Official Project Baseline  
 **Purpose:** Defines the official project state after WP-21 Milestone 5 closure.  
 **Authoritative Sources:** PLAN.md, CURRENT_STATUS.md, TECH_DEBT.md, git history  
-**Date:** 2026-07-15  
+**Date:** 2026-07-26  
 **Baseline Commit:** 4bd7df8  
 **Branch:** main  
-**Working Tree:** Has untracked governance documents  
+**Working Tree:** Modified files present (runtime verification fixes applied 2026-07-26)  
 
 ---
 
@@ -22,8 +22,8 @@ WP-21 Milestone 5 has been officially closed. All 5 remediation packages (M5-R1 
 |----------|-------|
 | Branch | main |
 | Latest Commit | 4bd7df8 |
-| Working Tree | Has untracked governance documents |
-| Untracked Files | Present (Stage A/B/C governance documents) |
+| Working Tree | Modified files present (runtime verification fixes applied 2026-07-26) |
+| Untracked Files | Present (Stage A/B/C governance documents, nginx.conf, Final Baseline) |
 | Remote Status | Not verified |
 
 ---
@@ -80,14 +80,14 @@ All work packages from WP-01 through WP-21 are complete.
 | Customers | /api/v1/customers | 6 | RBAC |
 | Suppliers | /api/v1/suppliers | 5 | RBAC |
 | Invoices | /api/v1/invoices | 7 | RBAC |
-| Customs | /api/v1/customs | 8 | RBAC |
+| Customs | /api/v1/customs | 8 + list | RBAC |
 | Resources | /api/v1/resources | 6 | RBAC |
 | Documents | /api/v1/documents | 6 | RBAC |
 | ETA | /api/v1/eta | 11 | RBAC |
 | Shipping | /api/v1/shipping | 18 | RBAC |
 | Search | /api/v1/search | 1 | RBAC |
 | Dashboard | /api/v1/dashboard | 1 | RBAC |
-| Notifications | /api/v1/notifications | 1 | RBAC |
+| Notifications | /api/v1/notifications | 2 | RBAC |
 | Audit | /api/v1/audit | 1 | RBAC |
 | Export Workflows | /api/v1/export-workflows | 7 | RBAC |
 
@@ -113,8 +113,8 @@ Total: 20+ tables.
 
 | Document | Status | Last Updated |
 |----------|--------|--------------|
-| PLAN.md | ✅ Current | 2026-07-15 |
-| CURRENT_STATUS.md | ✅ Current | 2026-07-15 |
+| PLAN.md | ✅ Current | 2026-07-26 |
+| CURRENT_STATUS.md | ✅ Current | 2026-07-26 |
 | TECH_DEBT.md | ✅ Current | 2026-07-15 |
 | wp21-platform-integration-roadmap.md | ✅ Current | 2026-07-15 |
 | wp21-platform-integration-plan.md | ✅ Current | 2026-07-15 |

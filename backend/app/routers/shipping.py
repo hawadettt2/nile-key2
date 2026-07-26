@@ -38,17 +38,6 @@ from app.services.shipping.base import ShippingError
 router = APIRouter(prefix="/api/v1/shipping", tags=["Shipping"])
 
 
-@router.get("/rates", response_model=list[ShippingRate])
-def get_rates(request: ShippingRateRequest, current_user: dict = Depends(get_current_user)):
-    return _get_rates(request=request)
-
-
-@router.post("/rates", response_model=RateResponse)
-def post_rates(request: RateRequest, current_user: dict = Depends(get_current_user)):
-    rates = fetch_rates(request)
-    return RateResponse(rates=rates, provider="all")
-
-
 @router.get("/shipments", response_model=list[Shipment])
 def list_shipments(
     status: Optional[str] = None,
@@ -65,6 +54,17 @@ def list_shipments(
         skip=skip,
         limit=limit,
     )
+
+
+@router.get("/rates", response_model=list[ShippingRate])
+def get_rates(request: ShippingRateRequest, current_user: dict = Depends(get_current_user)):
+    return _get_rates(request=request)
+
+
+@router.post("/rates", response_model=RateResponse)
+def post_rates(request: RateRequest, current_user: dict = Depends(get_current_user)):
+    rates = fetch_rates(request)
+    return RateResponse(rates=rates, provider="all")
 
 
 @router.get("/track/{tracking_id}", response_model=ShipmentTrackingResponse)

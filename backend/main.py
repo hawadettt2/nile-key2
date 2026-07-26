@@ -19,7 +19,7 @@ from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph, trade_intelligence
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search
 
 knowledge_provider_registry = KnowledgeProviderRegistry()
 memory_provider = SQLiteMemoryProvider(db_path="nile_key.db")
@@ -148,6 +148,8 @@ app.include_router(agent.router)
 app.include_router(digital_export_manager_router)
 app.include_router(knowledge_graph.router)
 app.include_router(trade_intelligence.router)
+app.include_router(dashboard.router)
+app.include_router(search.router)
 
 
 @app.get("/", tags=["Root"])

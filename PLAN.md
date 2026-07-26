@@ -1,7 +1,7 @@
 ﻿# Master Roadmap v2.1 — منصة مفتاح النيل الرقمية
 # Nile Key Digital Platform — Master Roadmap v2.1
 
-**التاريخ:** 2026-07-12
+**التاريخ:** 2026-07-26
 **الإصدار:** 2.1.0
 **الحالة:** Constitution — authoritative reference for the lifetime of the project
 **العميل:** شركة مفتاح النيل للاستثمار والتجارة الدولية ذ.م.م

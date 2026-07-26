@@ -2,11 +2,29 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 
 from app.routers.auth import get_current_user, require_role
+from app.core.database import get_db
 from app.schemas.notification import NotificationSend, NotificationResponse
 from app.schemas.common import MessageResponse
 from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["Notifications"])
+
+
+@router.get("/", response_model=list[dict])
+def list_notifications(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user),
+):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, template_id, recipient, subject, status, sent_at FROM notification_logs ORDER BY sent_at DESC LIMIT ? OFFSET ?",
+        (limit, skip),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 
 @router.post("/send", response_model=NotificationResponse)
