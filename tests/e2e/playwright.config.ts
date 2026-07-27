@@ -11,7 +11,7 @@ export default defineConfig({
     ['json', { outputFile: 'evidence/results.json' }]
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:5173',
     apiURL: process.env.API_URL || 'http://localhost:8000',
     headless: false,
     trace: 'on-first-retry',
