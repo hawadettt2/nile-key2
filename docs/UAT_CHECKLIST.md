@@ -491,4 +491,49 @@
 
 ---
 
+## UAT Execution Notes — 2026-07-27
+
+### Test Scope
+This UAT round was executed via **Backend API only** (Python `urllib` / `TestClient`).
+No browser automation or GUI interaction was performed because the execution environment does not support a graphical browser.
+
+### Actors
+- **Tester:** Kilo AI agent
+- **Date:** 2026-07-27
+
+### Environment
+| Field | Value |
+|-------|-------|
+| API Base URL | http://localhost:8000 |
+| Auth | JWT via `/api/v1/auth/login` |
+| Test User | `uat_user8` / `UatPass123!` (or owner-equivalent roles created in-test) |
+
+### Results Summary
+| # | Scenario | Method | Final Result | Notes |
+|---|----------|--------|--------------|-------|
+| 1 | Login | POST `/api/v1/auth/login` | PASS | Works on first attempt |
+| 2 | Dashboard | GET `/api/v1/dashboard` | PASS | Returns data |
+| 3 | Create Customer | POST `/api/v1/customers` | PASS | Required fields accepted |
+| 4 | Create Supplier | POST `/api/v1/suppliers` | PASS | Works |
+| 5 | Create Shipment | POST `/api/v1/shipments` | PASS | Works |
+| 6 | Create Customs Declaration | POST `/api/v1/customs/declarations` | PASS | Requires `destination_country` |
+| 7 | List Documents | GET `/api/v1/documents` | PASS | Upload not tested here |
+| 8 | Create Invoice | POST `/api/v1/invoices/` | PASS | Requires `subtotal`, `total`, `issue_date`, `items`, `items[0].total` |
+| 9 | Search | GET `/api/v1/search` | PASS | Works |
+| 10 | Audit Logs / Notifications List | GET endpoints | PASS | Send not tested here |
+| 11 | Logout | POST `/api/v1/auth/logout` | PASS (after fix) | Previously NOT_IMPLEMENTED |
+
+### Known API Quirks
+- **Trailing slash:** `/api/v1/invoices` returns HTTP 307 redirect to `/api/v1/invoices/`. Use the trailing-slash form.
+- **Mandatory fields discovered during execution:**
+  - Customs declarations: `destination_country` is required.
+  - Invoices: `subtotal`, `total`, `issue_date`, `items`, `items[0].total` are required.
+
+### Excluded from This UAT
+- Frontend GUI rendering, navigation, React/UX behavior.
+- Actual SMTP delivery (notification send endpoint is present and permissioned; delivery depends on SMTP config).
+- Browser-side cookie CSRF token injection (verified via Authorization header in API tests).
+
+---
+
 *يرجى التأشير (- [x]) على كل اختبار بعد اجتيازه، وترك ملاحظات في حال الفشل.*

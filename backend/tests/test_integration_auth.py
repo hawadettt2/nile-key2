@@ -214,3 +214,21 @@ class TestLogoutFlow:
         resp = client.get("/api/v1/auth/me")
         assert resp.status_code == 200
 
+    def test_logout_revokes_token(self, client):
+        credentials = _unique_credentials()
+        client.post("/api/v1/auth/register", json=credentials)
+        login_resp = client.post("/api/v1/auth/login", json={
+            "username": credentials["username"],
+            "password": credentials["password"]
+        })
+        token = login_resp.json()["access_token"]
+
+        resp = client.get("/api/v1/auth/me")
+        assert resp.status_code == 200
+
+        logout_resp = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"})
+        assert logout_resp.status_code == 200
+
+        resp2 = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+        assert resp2.status_code == 401
+

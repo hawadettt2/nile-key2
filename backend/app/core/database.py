@@ -797,6 +797,18 @@ def _create_tables(c: sqlite3.Cursor):
         )
     """)
 
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS token_blacklist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            token TEXT NOT NULL,
+            user_id INTEGER,
+            reason TEXT DEFAULT 'logout',
+            expires_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    """)
+
 
 def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     """

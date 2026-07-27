@@ -12,9 +12,20 @@ from app.core.database import get_db, execute_update
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
 from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token, RegisterResponse
 from app.schemas.common import MessageResponse
+from app.services.audit import log_audit
+from app.schemas.audit import AuditLogCreate
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 limiter = Limiter(key_func=get_remote_address)
+
+
+def _is_token_blacklisted(token: str) -> bool:
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM token_blacklist WHERE token = ?", (token,))
+    row = cursor.fetchone()
+    conn.close()
+    return row is not None
 
 
 def _rate_limit(limit_str: str):
@@ -35,6 +46,8 @@ def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials
         token = credentials.credentials
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
+    if _is_token_blacklisted(token):
+        raise HTTPException(status_code=401, detail="Token has been revoked")
     payload = decode_token(token)
     if not payload or payload.get("type") != "access":
         raise HTTPException(status_code=401, detail="Invalid or expired token")
@@ -177,3 +190,45 @@ def update_me(update: UserUpdate, current_user: dict = Depends(get_current_user)
     ):
         return {"message": "No changes"}
     return {"message": "Profile updated successfully"}
+
+
+@router.post("/logout", response_model=MessageResponse)
+def logout(request: Request, response: Response, current_user: dict = Depends(get_current_user)):
+    token = request.cookies.get(settings.ACCESS_TOKEN_COOKIE_NAME)
+    if not token:
+        auth_header = request.headers.get("authorization", "")
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header[7:]
+    if token:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO token_blacklist (token, user_id, reason) VALUES (?, ?, ?)",
+            (token, current_user["id"], "logout"),
+        )
+        conn.commit()
+        conn.close()
+    response.delete_cookie(
+        key=settings.ACCESS_TOKEN_COOKIE_NAME,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+    )
+    response.delete_cookie(
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
+        domain=settings.COOKIE_DOMAIN,
+        path="/",
+        secure=settings.COOKIE_SECURE,
+        samesite=settings.COOKIE_SAMESITE,
+    )
+    try:
+        log_audit(
+            current_user=current_user,
+            data=AuditLogCreate(action="logout", entity_type="auth", entity_id=current_user["id"], details="User logged out"),
+            ip_address=request.client.host if request.client else None,
+            user_agent=request.headers.get("user-agent"),
+        )
+    except Exception:
+        pass
+    return {"message": "Logged out successfully"}
