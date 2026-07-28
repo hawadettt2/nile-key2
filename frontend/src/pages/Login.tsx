@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
-import { LogIn, UserPlus, AlertCircle } from 'lucide-react';
+import { LogIn, UserPlus, AlertCircle, AlertTriangle } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export function Login() {
   const { t } = useTranslation();
@@ -11,12 +12,26 @@ export function Login() {
   const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ username: '', password: '', email: '', full_name: '', phone: '', company: '' });
+  const [showWarning, setShowWarning] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
-    if (isRegister) { await register(form); if (!error) setIsRegister(false); }
-    else { await login(form.username, form.password); if (useAuthStore.getState().isAuthenticated) navigate('/'); }
+    if (isRegister) {
+      setShowWarning(true);
+      await register(form);
+      if (!error) { setIsRegister(false); setShowWarning(false); }
+    } else {
+      setShowWarning(false);
+      await login(form.username, form.password);
+      if (useAuthStore.getState().isAuthenticated) navigate('/');
+    }
+  };
+
+  const handleToggleMode = () => {
+    setIsRegister(!isRegister);
+    clearError();
+    setShowWarning(!isRegister);
   };
 
   return (
@@ -36,23 +51,30 @@ export function Login() {
               <AlertCircle size={16} />{error}
             </div>
           )}
+          {isRegister && showWarning && (
+            <Alert variant="warning" className="mb-4">
+              <AlertTriangle size={16} />
+              <AlertTitle>Registration notice</AlertTitle>
+              <AlertDescription>New accounts require company approval before access is granted.</AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.username')}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.username')} <span className="text-red-500 ml-1">*</span></label>
               <input type="text" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })}
                 className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.password')}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.password')} <span className="text-red-500 ml-1">*</span></label>
               <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required />
             </div>
             {isRegister && (
               <>
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.email')}</label>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.email')} <span className="text-red-500 ml-1">*</span></label>
                   <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required /></div>
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.fullName')}</label>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">{t('auth.fullName')} <span className="text-red-500 ml-1">*</span></label>
                   <input type="text" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" required /></div>
               </>
@@ -63,7 +85,7 @@ export function Login() {
             </button>
           </form>
           <div className="mt-6 text-center">
-            <button onClick={() => { setIsRegister(!isRegister); clearError(); }}
+            <button onClick={handleToggleMode}
               className="text-emerald-600 hover:text-emerald-700 text-sm font-medium">
               {isRegister ? t('auth.hasAccount') : t('auth.noAccount')}
             </button>

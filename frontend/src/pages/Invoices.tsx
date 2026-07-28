@@ -85,9 +85,18 @@ export function Invoices() {
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input type="date" required value={form.issue_date} onChange={(e) => setForm({...form, issue_date: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input type="date" value={form.due_date} onChange={(e) => setForm({...form, due_date: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input type="number" value={form.subtotal} onChange={(e) => setForm({...form, subtotal: Number(e.target.value)})} placeholder={t('invoice.subtotal')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('invoice.issueDate')} <span className="text-red-500 ml-1">*</span></label>
+                <input type="date" required value={form.issue_date} onChange={(e) => setForm({...form, issue_date: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('invoice.dueDate')}</label>
+                <input type="date" value={form.due_date} onChange={(e) => setForm({...form, due_date: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('invoice.subtotal')}</label>
+                <input type="number" value={form.subtotal} onChange={(e) => setForm({...form, subtotal: Number(e.target.value)})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -103,7 +112,7 @@ export function Invoices() {
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
               <span className="text-sm text-slate-600">Total: <span className="font-bold text-slate-900">{total.toFixed(2)}</span></span>
-              <button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">{submitting ? t('common.saving') : editingId ? t('common.update') : t('common.save')}</button>
+               <button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2">{submitting ? <><span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>{t('common.saving')}</> : editingId ? t('common.update') : t('common.save')}</button>
             </div>
           </form>
         </div>

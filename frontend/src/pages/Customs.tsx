@@ -129,10 +129,19 @@ export function Customs() {
           <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? t('customs.editDeclaration') : t('customs.addDeclaration')}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           {editLoading ? <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600" /></div> : (
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input value={declForm.origin_country} onChange={(e) => setDeclForm({...declForm, origin_country: e.target.value})} placeholder={t('shipment.origin')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input value={declForm.destination_country} onChange={(e) => setDeclForm({...declForm, destination_country: e.target.value})} placeholder={t('shipment.destination')} required className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input type="number" value={declForm.total_value} onChange={(e) => setDeclForm({...declForm, total_value: Number(e.target.value)})} placeholder="Total Value" className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <div className="md:col-span-3"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50">{submitting ? t('common.saving') : editingId ? t('common.update') : t('common.save')}</button></div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('shipment.origin')}</label>
+                <input value={declForm.origin_country} onChange={(e) => setDeclForm({...declForm, origin_country: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('shipment.destination')} <span className="text-red-500 ml-1">*</span></label>
+                <input value={declForm.destination_country} onChange={(e) => setDeclForm({...declForm, destination_country: e.target.value})} required className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Total Value</label>
+                <input type="number" value={declForm.total_value} onChange={(e) => setDeclForm({...declForm, total_value: Number(e.target.value)})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div className="md:col-span-3"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2">{submitting ? <><span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>{t('common.saving')}</> : editingId ? t('common.update') : t('common.save')}</button></div>
             </form>
           )}
         </div>

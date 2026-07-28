@@ -90,12 +90,27 @@ export function Resources() {
           <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editingId ? t('resource.editResource') : t('resource.addResource')}</h3><button onClick={cancelEdit} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           {editLoading ? <div className="text-sm text-slate-500">Loading...</div> : (
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} placeholder={t('resource.fieldTitle')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <select value={form.resource_type} onChange={(e) => setForm({...form, resource_type: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"><option value="guide">Guide</option><option value="regulation">Regulation</option><option value="opportunity">Opportunity</option><option value="contact">Contact</option></select>
-              <input value={form.category} onChange={(e) => setForm({...form, category: e.target.value})} placeholder={t('resource.category')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input value={form.url} onChange={(e) => setForm({...form, url: e.target.value})} placeholder={t('resource.url')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <input value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} placeholder={t('resource.country')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-              <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : (editingId ? 'Update' : t('common.save'))}</button></div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('resource.fieldTitle')} <span className="text-red-500 ml-1">*</span></label>
+                <input required value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('resource.type')}</label>
+                <select value={form.resource_type} onChange={(e) => setForm({...form, resource_type: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm"><option value="guide">Guide</option><option value="regulation">Regulation</option><option value="opportunity">Opportunity</option><option value="contact">Contact</option></select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('resource.category')}</label>
+                <input value={form.category} onChange={(e) => setForm({...form, category: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('resource.url')}</label>
+                <input value={form.url} onChange={(e) => setForm({...form, url: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('resource.country')}</label>
+                <input value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">{submitting ? <><span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>Saving...</> : (editingId ? 'Update' : t('common.save'))}</button></div>
             </form>
           )}
         </div>

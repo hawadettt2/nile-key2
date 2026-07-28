@@ -96,7 +96,7 @@ export function Profile() {
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               <Save size={16} />
-              {submitting ? t('common.saving') || 'Saving...' : t('common.save') || 'Save'}
+              {submitting ? <><span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>{t('common.saving') || 'Saving...'}</> : t('common.save') || 'Save'}
             </button>
           </div>
         </form>

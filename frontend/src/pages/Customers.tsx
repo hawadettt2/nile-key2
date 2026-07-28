@@ -49,11 +49,23 @@ export function Customers() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 mb-6">
           <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-semibold">{editing ? t('customer.editCustomer') : t('customer.addCustomer')}</h3><button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button></div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} placeholder={t('customer.name')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <input value={form.contact_person} onChange={(e) => setForm({...form, contact_person: e.target.value})} placeholder={t('customer.contact')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} placeholder={t('customer.email')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <input required value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} placeholder={t('customer.country')} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? 'Saving...' : t('common.save')}</button></div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.name')} <span className="text-red-500 ml-1">*</span></label>
+              <input required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.contact')}</label>
+              <input value={form.contact_person} onChange={(e) => setForm({...form, contact_person: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.email')}</label>
+              <input type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.country')} <span className="text-red-500 ml-1">*</span></label>
+              <input required value={form.country} onChange={(e) => setForm({...form, country: e.target.value})} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+            </div>
+            <div className="md:col-span-2"><button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">{submitting ? <><span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>Saving...</> : t('common.save')}</button></div>
           </form>
         </div>
       )}
