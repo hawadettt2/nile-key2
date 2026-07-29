@@ -773,17 +773,17 @@ without sacrificing simplicity.
 
 | البند | القيمة الحالية |
 |------|---------------|
-| آخر تحديث | 2026-07-21 |
+| آخر تحديث | 2026-07-29 |
 | المرحلة الحالية | 3 — النشر والإنتاج |
-| Work Package الحالية | WP-41 (مكتملة) |
-| المرحلة التالية | WP-42 — قبول المالك |
-| WP التالية الفورية | WP-42: قبول المالك |
-| المهام المكتملة | WP-01 through WP-41 |
-| المهام المتبقية | WP-42 |
+| Work Package الحالية | WP-42 (مكتملة) |
+| المرحلة التالية | إصدار |
+| WP التالية الفورية | Release Readiness Closure |
+| المهام المكتملة | WP-01 through WP-42 |
+| المهام المتبقية | Release validation |
 | المخاطر المعروفة | عدم وجود تكامل حقيقي مع ETA و Shipping APIs |
 | إجراءات الاستعادة | قراءة Master Roadmap v2.1 + CURRENT_STATUS.md + TECH_DEBT.md |
 | Branch الحالي | main |
-| Commit الأخير | docs(wp40): close WP-40 — Docker Compose Final Verification |
+| Commit الأخير | feat(ov-001): close Stage 6 UX verification and evidence |
 
 ## 12.4 Session Recovery Rules
 
@@ -1032,7 +1032,7 @@ without sacrificing simplicity.
 - ✅ مكتمل
 
 ### WP-42: قبول المالك
-- 🔴 مخطط
+- ✅ مكتمل
 
 ---
 
@@ -1085,8 +1085,8 @@ without sacrificing simplicity.
 ✅ مكتملة عند:
 - [x] WP-40: Docker Compose يعمل في الإنتاج
 - [x] WP-41: توثيق الإنتاج الكامل
-- [ ] WP-42: قبول المالك
-- [ ] لا的技术 Dept جديد يمنع الإنتاج
+- [x] WP-42: قبول المالك
+- [ ] لا يوجد دين تقني جديد يمنع الإنتاج
 - [ ] جميع الاختبارات نجحت
 - [ ] المراقبة والتنبيهات مفعلة
 
