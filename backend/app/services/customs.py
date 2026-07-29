@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Optional
 
@@ -19,6 +20,11 @@ def _customs_row_to_response(row: dict) -> dict:
     result = dict(row)
     if result.get("destination_country") is None:
         result["destination_country"] = ""
+    if isinstance(result.get("documents"), str):
+        try:
+            result["documents"] = json.loads(result["documents"])
+        except (json.JSONDecodeError, TypeError):
+            result["documents"] = []
     return result
 
 
