@@ -188,7 +188,7 @@ class TestSessionManager:
         self.mock_conn.commit.assert_called()
 
     def test_get_session_exists(self):
-        self.mock_cursor.fetchone.return_value = (
+        self.mock_conn.execute.return_value.fetchone.return_value = (
             "session-123",
             1,
             "active",
@@ -202,12 +202,12 @@ class TestSessionManager:
         assert session.user_id == 1
 
     def test_get_session_not_found(self):
-        self.mock_cursor.fetchone.return_value = None
+        self.mock_conn.execute.return_value.fetchone.return_value = None
         session = self.manager.get_session("nonexistent")
         assert session is None
 
     def test_end_session(self):
-        self.mock_cursor.fetchone.return_value = (
+        self.mock_conn.execute.return_value.fetchone.return_value = (
             "session-123",
             1,
             "active",
@@ -220,7 +220,7 @@ class TestSessionManager:
         self.mock_conn.commit.assert_called()
 
     def test_get_status(self):
-        self.mock_cursor.fetchone.return_value = (
+        self.mock_conn.execute.return_value.fetchone.return_value = (
             "session-123",
             1,
             "active",

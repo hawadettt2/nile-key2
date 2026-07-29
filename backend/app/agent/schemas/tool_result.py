@@ -10,6 +10,9 @@ class ToolResultSchema(BaseModel):
 
     model_config = {"from_attributes": True}
 
+    def to_dict(self) -> Dict[str, Any]:
+        return self.model_dump()
+
 
 class ToolExecutionRequest(BaseModel):
     tool_name: str
