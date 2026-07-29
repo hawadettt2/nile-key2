@@ -96,6 +96,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All documentation cross-references verified and consistent
 - Forensic audit corrections applied: false Digital Export Manager frontend page claim removed, unregistered search/dashboard router endpoints corrected, test counts updated from 606+ to 876+
 
+### Fixed
+- `backend/app/services/customs.py`: Deserialize `documents` JSON string in `_customs_row_to_response` to prevent 500 error on Customs Declaration GET
+- OV-20260727-003: Customs Declaration GET returns 500 due to `documents` field stored as JSON string but expected as list
+
+### Documentation
+- `PLAN.md`: Updated continuity section and closed WP-42 after Owner Operational Validation acceptance
+
 ## [1.0.0] - 2026-07-15
 
 ### Added
