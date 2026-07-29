@@ -1,0 +1,65 @@
+{
+  "stage": 4,
+  "name": "Workflow Validation",
+  "started_at": "2026-07-27T05:27:40.561007+00:00",
+  "tests": [
+    {
+      "id": "4.1",
+      "name": "Customer CSV Import",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.2",
+      "name": "Duty Calculator",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.3",
+      "name": "Shipment Tracking",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.4",
+      "name": "Shipping Label",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.5",
+      "name": "Invoice Validate",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.6",
+      "name": "Invoice Cancel",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.7",
+      "name": "Declaration Submit",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "4.8",
+      "name": "Profile Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    }
+  ],
+  "overall": "PASS",
+  "finished_at": "2026-07-27T05:27:43.262632+00:00"
+}

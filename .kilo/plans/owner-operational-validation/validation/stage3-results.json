@@ -1,0 +1,241 @@
+{
+  "stage": 3,
+  "name": "CRUD Validation",
+  "started_at": "2026-07-27T05:27:28.736945+00:00",
+  "tests": [
+    {
+      "id": "3.1",
+      "name": "Supplier Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.2",
+      "name": "Supplier Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.3",
+      "name": "Supplier Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.4",
+      "name": "Supplier Delete",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.5",
+      "name": "Customer Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.6",
+      "name": "Customer Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.7",
+      "name": "Customer Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.8",
+      "name": "Customer Delete",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.9",
+      "name": "Shipment Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.10",
+      "name": "Shipment Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.11",
+      "name": "Shipment Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.13",
+      "name": "Invoice Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.14",
+      "name": "Invoice Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.15",
+      "name": "Invoice Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.16",
+      "name": "Invoice Cancel",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.17",
+      "name": "Customs Declaration Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.18",
+      "name": "Customs Declaration Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.19",
+      "name": "Customs Declaration Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.20",
+      "name": "Customs Declaration Submit",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.21",
+      "name": "Document Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.22",
+      "name": "Document Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.23",
+      "name": "Document Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.24",
+      "name": "Document Delete",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.25",
+      "name": "Resource Create",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.26",
+      "name": "Resource Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.27",
+      "name": "Resource Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.28",
+      "name": "Resource Delete",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.29",
+      "name": "Profile Read",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    },
+    {
+      "id": "3.30",
+      "name": "Profile Update",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "_response": "<Response [200 OK]>"
+    }
+  ],
+  "overall": "PASS",
+  "finished_at": "2026-07-27T05:27:33.549062+00:00"
+}

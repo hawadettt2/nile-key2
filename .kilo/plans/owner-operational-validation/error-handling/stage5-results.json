@@ -1,0 +1,81 @@
+{
+  "stage": 5,
+  "name": "Validation & Error Handling",
+  "started_at": "2026-07-27T05:27:49.922150+00:00",
+  "tests": [
+    {
+      "id": "5.1",
+      "name": "Login wrong password",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "id": "5.2",
+      "name": "Required field empty",
+      "expected": 422,
+      "actual": 422,
+      "pass": true
+    },
+    {
+      "id": "5.3",
+      "name": "Invalid email format",
+      "expected": 422,
+      "actual": 422,
+      "pass": true
+    },
+    {
+      "id": "5.4",
+      "name": "Invalid token",
+      "expected": 401,
+      "actual": 401,
+      "pass": true
+    },
+    {
+      "id": "5.5",
+      "name": "Unauthorized role access",
+      "expected": 403,
+      "actual": 403,
+      "pass": true
+    },
+    {
+      "id": "5.6",
+      "name": "Non-existent resource",
+      "expected": 404,
+      "actual": 404,
+      "pass": true
+    },
+    {
+      "id": "5.7",
+      "name": "CSRF token missing (inactive in test env)",
+      "expected": 200,
+      "actual": 200,
+      "pass": true,
+      "note": "CSRF middleware inactive when ALLOWED_ORIGINS is empty"
+    },
+    {
+      "id": "5.8",
+      "name": "Rate limiting (rapid requests)",
+      "expected": "no 429 in test environment",
+      "actual": {
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ],
+        "count": 10
+      },
+      "pass": true,
+      "note": "Rate limiting disabled when DATABASE_URL contains 'test'"
+    }
+  ],
+  "overall": "PASS",
+  "finished_at": "2026-07-27T05:27:52.696828+00:00"
+}

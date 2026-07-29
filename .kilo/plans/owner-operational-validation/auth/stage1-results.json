@@ -1,0 +1,41 @@
+{
+  "stage": 1,
+  "name": "Startup Validation",
+  "started_at": "2026-07-27T05:27:13.242276+00:00",
+  "tests": [
+    {
+      "id": "1.1",
+      "name": "GET /health returns 200",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "id": "1.2",
+      "name": "GET /health returns healthy status",
+      "expected": "healthy",
+      "actual": "healthy",
+      "pass": true
+    },
+    {
+      "id": "1.3",
+      "name": "POST /api/v1/auth/login returns 200 with tokens",
+      "expected": "200 + access_token + refresh_token",
+      "actual": {
+        "status_code": 200,
+        "has_access_token": true,
+        "has_refresh_token": true
+      },
+      "pass": true
+    },
+    {
+      "id": "1.4",
+      "name": "GET /docs returns 200 (API docs accessible)",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    }
+  ],
+  "overall": "PASS",
+  "finished_at": "2026-07-27T05:27:13.934189+00:00"
+}

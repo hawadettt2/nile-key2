@@ -20,6 +20,7 @@ frontend/dist/
 Thumbs.db
 *.db
 *.sqlite3
+*.db-journal
 
 # Frontend generated artifacts
 frontend/tsconfig.app.tsbuildinfo
