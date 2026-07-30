@@ -196,7 +196,7 @@
 | 8 | Export Operations | ������ ������� - ����ޡ ������ʡ ��� | Resources + Customs | ?? ���� |
 | 9 | Trade Intelligence | ���� ����� - ����� ������ʡ ������� | Phase 2 | ? ���� |
 | 10 | Knowledge Graph | ��� ����� - ������ ������ �����ʡ ������ | Phase 2 | ? ���� |
-| 11 | AI Agent | ���� ��� - ����ϡ �������ʡ ������� | Phase 2 | ? ���� |
+| 11 | Digital Export Manager | ���� ��� - ����ϡ �������ʡ ������� | Phase 2 | ? ���� |
 | 12 | AI Memory | ����� ������ - ������ʡ ������ ����� | Phase 2 | ? ���� |
 | 13 | Opportunity Discovery | ������ ��� - ����� ����ɡ ����� | Phase 2 | ? ���� |
 | 14 | Market Analysis | ����� ����� - �����ѡ ������� | Phase 2 | ? ���� |
@@ -637,7 +637,7 @@ without sacrificing simplicity.
 
 ## 11.1 �����
 
-��� ����� ���� ��� ��� ��� ANY AI agent �� ����� ����� ����� ��� ��� ��������.
+��� ����� ���� ��� ��� ��� ANY Digital Export Manager �� ����� ����� ����� ��� ��� ��������.
 
 ## 11.2 ������� ���������
 
@@ -1108,7 +1108,7 @@ without sacrificing simplicity.
 | ������ ����� | Export Operations | WP-21 | Integration | WP-21 tests | WP-40 |
 | ���� ����� | Trade Intelligence | WP-33 | Intelligence Engine | WP-33 tests | WP-42 |
 | ��� ����� | Knowledge Graph | WP-32 | Knowledge Graph | WP-32 tests | WP-42 |
-| ���� ��� | AI Agent | WP-30 | AI Agent | WP-30 tests | WP-42 |
+| ���� ��� | Digital Export Manager | WP-30 | Digital Export Manager | WP-30 tests | WP-42 |
 | ����� ���� | Administration | WP-01�18 | Auth + Core | ? Complete | ? Ready |
 | ������ ����� ����� | Reports & Dashboard | WP-21 | Dashboard Integration | WP-21 tests | WP-40 |
 | ��� ����� | Audit & Compliance | WP-21 | Audit Logs | WP-21 tests | WP-40 |

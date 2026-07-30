@@ -1,9 +1,9 @@
 ﻿# Enterprise Architecture Refactoring Program (EARP)
 
 **Plan ID:** EARP-001  
-**Version:** 0.1.0-draft  
+**Version:** 1.0.0  
 **Created:** 2026-07-29  
-**Status:** Draft — Pending Executive Approval  
+**Status:** Closed — Final  
 **Authority:** PLAN.md Section 12 — Governance and Work Package Management  
 **Scope:** Executive Architecture Vision, Architecture Documentation Baseline, Conformance Audit, Gap Analysis, Executive Decision, Controlled Documentation Refactoring, Validation  
 **Non-Scope:** Code refactoring, Work Package execution, deployment changes, ERP integration implementation  
@@ -275,7 +275,7 @@ Internal execution machinery:
 4. EAD requires explicit Project Owner approval before Phase 5 begins.
 
 **Outputs:**
-- `EARP-001-EAD.md` (Executive Architecture Decision)
+- `EAD.md` (Executive Architecture Decision)
   - Restated target architecture
   - Approved terminology
   - Deprecated terminology and migration rules
@@ -372,7 +372,7 @@ All EARP-001 documents are stored under:
 | Baseline snapshot | `earp-001-baseline-snapshot.json` | Architecture Audit |
 | Phase 2 audit | `architecture-conformance-audit.md` | Architecture Audit |
 | Phase 3 gaps | `architecture-gap-analysis.md` | Architecture Audit |
-| Phase 4 decision | `EARP-001-EAD.md` | Project Owner + Architecture Lead |
+| Phase 4 decision | `EAD.md` | Project Owner + Architecture Lead |
 | Phase 5 change log | `architecture-refactoring-change-log.md` | Documentation Engineer |
 | Phase 6 validation | `architecture-validation-report.md` | Independent Reviewer |
 
@@ -447,7 +447,7 @@ Any change to EARP-001 scope, phases, or governing document set requires:
 
 ---
 
-**Plan Status:** Phase 1 Complete — Baseline Established — Pending Executive Approval of Baseline
-**Next Action:** Project Owner review and approval of EARP-001 Phase 1 Baseline
+**Plan Status:** Closed — All Phases Complete
+**Next Action:** None — Closure Verified
 **Plan Location:** `.kilo/plans/earp-001/README.md`
 

@@ -2,7 +2,7 @@
 
 **Plan:** EARP-001  
 **Document:** Executive Architecture Decision (EAD)  
-**Status:** Draft — Pending Executive Approval  
+**Status:** Approved — Effective  
 **Authority:** This document is the highest-authority architectural reference for EARP-001 Phase 5. All documentation updates in Phase 5 must conform to this decision. Any conflict between this document and any other project document is resolved in favor of this document.  
 **Supersedes:** All prior architecture naming and terminology statements in affected documents listed in Section 7.  
 **Does Not Supersede:** PLAN.md, ED-WP30-001, ED-WP30-002, ED-WP32-001, approved architecture specifications, or any code.
@@ -399,6 +399,6 @@ Approval signifies:
 
 ---
 
-**Status:** Draft — Pending Executive Approval  
-**Next Action:** Project Owner and Architecture Lead review and approval  
+**Status:** Approved — Effective  
+**Next Action:** None — Phase 5 Documentation Refactoring Complete  
 **Location:** `.kilo/plans/earp-001/EAD.md`

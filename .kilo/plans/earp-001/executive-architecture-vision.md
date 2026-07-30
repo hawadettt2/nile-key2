@@ -2,7 +2,7 @@
 
 **Plan:** EARP-001  
 **Document:** Executive Architecture Vision  
-**Status:** Draft — Pending Executive Approval  
+**Status:** Approved  
 **Authority:** This document is the highest-level architectural reference for EARP-001. All subsequent phases must conform to it.  
 
 ---
@@ -144,6 +144,6 @@ Every DEM action produces an immutable audit record.
 
 ---
 
-**Status:** Draft — Pending Executive Approval  
-**Next Action:** Project Owner review and approval of this Executive Architecture Vision  
+**Status:** Approved  
+**Next Action:** None — Vision Approved and Active  
 **Location:** `.kilo/plans/earp-001/executive-architecture-vision.md`

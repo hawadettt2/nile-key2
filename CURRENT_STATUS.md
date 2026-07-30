@@ -65,7 +65,7 @@
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
 - **Tests:** 876 passing, 5 failed (pre-existing), 8 skipped by design
-- **Routers:** ETA at `/api/v1/eta`; Shipping at `/api/v1/shipping`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit/logs`; Export Workflows at `/api/v1/export-workflows`; Digital Export Manager at `/api/v1/digital-export-manager`; Knowledge Graph at `/api/v1/knowledge-graph`; Trade Intelligence at `/api/v1/trade-intelligence`; Auth, Suppliers, Customers, Customs, Resources, Documents, Invoices, Agent, Workflow, Dashboard, Search routers registered in `main.py`
+- **Routers:** ETA at `/api/v1/eta`; Shipping at `/api/v1/shipping`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit/logs`; Export Workflows at `/api/v1/export-workflows`; Digital Export Manager at `/api/v1/digital-export-manager`; Knowledge Graph at `/api/v1/knowledge-graph`; Trade Intelligence at `/api/v1/trade-intelligence`; Auth, Suppliers, Customers, Customs, Resources, Documents, Invoices, Digital Export Manager, Workflow, Dashboard, Search routers registered in `main.py`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
 - **Shipping Service Layer:** Complete business logic for rate aggregation, booking, labels, tracking, cancellation, provider/parcel-template CRUD

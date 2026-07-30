@@ -2,7 +2,7 @@
 
 **Plan:** EARP-001
 **Document:** Architecture Knowledge Inventory (Baseline)
-**Status:** Approved — Phase 1 Baseline
+**Status:** Approved — Final Baseline
 **Authority:** EARP-001 Executive Architecture Decision (EAD)
 **Date:** 2026-07-30
 **Baseline For:** Phase 2 Conformance Audit, Phase 5 Controlled Refactoring

@@ -130,7 +130,7 @@ nile-key2/
   - Auth and RBAC
   - API endpoint coverage for all 16 registered routers
   - Service-layer unit tests for all service modules
-  - Agent, Memory, Knowledge Graph, Trade Intelligence tests
+  - Digital Export Manager, Memory, Knowledge Graph, Trade Intelligence tests
   - Frontend: Vitest + React Testing Library
 - Run backend tests: `cd backend && python -m pytest tests/ -v`
 - Run frontend tests: `cd frontend && npm test`
