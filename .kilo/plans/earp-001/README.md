@@ -1,4 +1,4 @@
-# Enterprise Architecture Refactoring Program (EARP)
+﻿# Enterprise Architecture Refactoring Program (EARP)
 
 **Plan ID:** EARP-001  
 **Version:** 0.1.0-draft  
@@ -59,7 +59,7 @@ The following documents are the governing references for EARP-001. No additional
 | 1 | PLAN.md | `PLAN.md` | Single Source of Truth |
 | 1 | ED-WP30-001.md | `.kilo/plans/ED-WP30-001.md` | Executive decision correcting WP-30 architecture and dependency chain |
 | 2 | wp30-architecture-compliance-review.md | `.kilo/plans/archive/1784079736812-wp30-architecture-compliance-review.md` | Level-0 architecture compliance review (archived) |
-| 1 | WORK_PACKAGE_PLAN.md | `docs/appendices/WORK_PACKAGE_PLAN.md` | Master Work Package governance |
+| 1 | WORK_PACKAGE_PLAN.md | `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` | Master Work Package governance |
 | 2 | wp30-implementation-plan.md | `.kilo/plans/archive/wp30-implementation-plan.md` | DEM implementation plan (archived) |
 | 2 | wp31-implementation-plan.md | `.kilo/plans/archive/wp31-implementation-plan.md` | Long-Term Memory implementation plan (archived) |
 | 2 | wp32-implementation-plan.md | `.kilo/plans/archive/wp32-implementation-plan.md` | Knowledge Graph implementation plan (archived) |
@@ -447,6 +447,7 @@ Any change to EARP-001 scope, phases, or governing document set requires:
 
 ---
 
-**Plan Status:** Draft — Pending Executive Approval  
-**Next Action:** Project Owner review and approval of EARP-001  
+**Plan Status:** Phase 1 Complete — Baseline Established — Pending Executive Approval of Baseline
+**Next Action:** Project Owner review and approval of EARP-001 Phase 1 Baseline
 **Plan Location:** `.kilo/plans/earp-001/README.md`
+

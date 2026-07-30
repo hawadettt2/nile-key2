@@ -1,0 +1,122 @@
+﻿[
+    {
+        "Tier":  1,
+        "Name":  "PLAN.md",
+        "Path":  "PLAN.md",
+        "SHA":  "e420c7c6442df07ac5bd3dd554e1fde5b1dbad69"
+    },
+    {
+        "Tier":  1,
+        "Name":  "ED-WP30-001.md",
+        "Path":  ".kilo/plans/ED-WP30-001.md",
+        "SHA":  "8f515795f7b3c320b5d2d6c3c062b6c397c73426"
+    },
+    {
+        "Tier":  1,
+        "Name":  "wp30-architecture-compliance-review.md",
+        "Path":  ".kilo/plans/archive/1784079736812-wp30-architecture-compliance-review.md",
+        "SHA":  "76c0e12b51de9f8fe7e24eb5d6e4a6cdd42826d3"
+    },
+    {
+        "Tier":  1,
+        "Name":  "WORK_PACKAGE_PLAN.md",
+        "Path":  ".kilo/plans/archive/WORK_PACKAGE_PLAN.md",
+        "SHA":  "910955d3cfaa08ff5b1f20d5ae049ad4d85bb33a"
+    },
+    {
+        "Tier":  2,
+        "Name":  "wp30-implementation-plan.md",
+        "Path":  ".kilo/plans/archive/wp30-implementation-plan.md",
+        "SHA":  "f10902dbdcfa9a12981be2a810cdae63440f7685"
+    },
+    {
+        "Tier":  2,
+        "Name":  "wp31-implementation-plan.md",
+        "Path":  ".kilo/plans/archive/wp31-implementation-plan.md",
+        "SHA":  "11041c3e43776b6ee044498acbbf4c3b7016d4c2"
+    },
+    {
+        "Tier":  2,
+        "Name":  "wp32-implementation-plan.md",
+        "Path":  ".kilo/plans/archive/wp32-implementation-plan.md",
+        "SHA":  "d310a321d3055b094510857197874f30d51a28d0"
+    },
+    {
+        "Tier":  2,
+        "Name":  "WP-32-spec.md",
+        "Path":  ".kilo/plans/WP-32-spec.md",
+        "SHA":  "6be0c6c7def975cb25e75bc716e56b0881035de2"
+    },
+    {
+        "Tier":  2,
+        "Name":  "WP-33-spec.md",
+        "Path":  ".kilo/plans/WP-33-spec.md",
+        "SHA":  "399138d9cb5a36783a356af81f4b9fa5a9c93fd8"
+    },
+    {
+        "Tier":  3,
+        "Name":  "MEMORY_CONTRACT.md",
+        "Path":  ".kilo/plans/MEMORY_CONTRACT.md",
+        "SHA":  "44e9429594c7db1755a1b64199bf0f80588ed9d7"
+    },
+    {
+        "Tier":  3,
+        "Name":  "KNOWLEDGE_INGESTION_CONTRACT.md",
+        "Path":  ".kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md",
+        "SHA":  "71582aa55ea354d0317c3f7b54f5e96a6947d2e9"
+    },
+    {
+        "Tier":  3,
+        "Name":  "AVATAR_CONTRACT.md",
+        "Path":  ".kilo/plans/AVATAR_CONTRACT.md",
+        "SHA":  "6782b9e333e4f7e5064dd03bb9026c810b56e2b6"
+    },
+    {
+        "Tier":  4,
+        "Name":  "CURRENT_STATUS.md",
+        "Path":  "CURRENT_STATUS.md",
+        "SHA":  "098048c58ed7191dc83f989ae67e8358a1260cef"
+    },
+    {
+        "Tier":  4,
+        "Name":  "ENGINEERING_MEMORY.md",
+        "Path":  "docs/architecture/ENGINEERING_MEMORY.md",
+        "SHA":  "70b180f5892be7db2dbf3404be45b0fc90459aaa"
+    },
+    {
+        "Tier":  5,
+        "Name":  "wp30d-reasoning-engine-plan.md",
+        "Path":  ".kilo/plans/archive/1784079736812-wp30d-reasoning-engine-plan.md",
+        "SHA":  "1b09e9b2b0b6d733fdcba07d96d045716bffdceb"
+    },
+    {
+        "Tier":  5,
+        "Name":  "wp31-forensic-audit-and-correction-plan.md",
+        "Path":  ".kilo/plans/archive/1784207193717-wp31-forensic-audit-and-correction-plan.md",
+        "SHA":  "ac895efcb8dd96681819ab4b13fd36e36d635ac5"
+    },
+    {
+        "Tier":  5,
+        "Name":  "1784505859302-wp32-knowledge-graph-plan.md",
+        "Path":  ".kilo/plans/archive/1784505859302-wp32-knowledge-graph-plan.md",
+        "SHA":  "8574039e41eb2890ef64da2d0547839fa555db59"
+    },
+    {
+        "Tier":  5,
+        "Name":  "wp33-implementation-plan.md",
+        "Path":  ".kilo/plans/archive/wp33-implementation-plan.md",
+        "SHA":  "433a53048ae71a78505dd3d8b18ed87a49bcdc31"
+    },
+    {
+        "Tier":  5,
+        "Name":  "CHANGELOG.md",
+        "Path":  "CHANGELOG.md",
+        "SHA":  "779c8b7b6b8cacf7ff5fd64f9f27e676b770aa50"
+    },
+    {
+        "Tier":  5,
+        "Name":  "README.md",
+        "Path":  "README.md",
+        "SHA":  "2530696fec2e2b8695cc8c54d65e03aae5b210e6"
+    }
+]
