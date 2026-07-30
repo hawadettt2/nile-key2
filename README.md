@@ -12,10 +12,15 @@ Digital platform for managing Egyptian exports — vegetables, fruits, and food 
 
 ```
 nile-key2/
-├── PLAN.md                    # Build plan (Master Roadmap v2.1)
-├── DEPLOYMENT.md              # Deployment guide
+├── PLAN.md                    # Build plan (Master Roadmap v2.1 — Single Source of Truth)
 ├── README.md                  # This file
 ├── CHANGELOG.md               # Version history
+├── CURRENT_STATUS.md          # Live project status
+├── TECH_DEBT.md               # Technical debt register
+└── docs/
+    └── appendices/
+        ├── UAT_CHECKLIST.md   # Manual UAT checklist
+        └── WORK_PACKAGE_PLAN.md # Historical archive: .kilo/plans/archive/WORK_PACKAGE_PLAN.md
 ├── TECH_DEBT.md               # Technical debt register
 ├── CURRENT_STATUS.md          # Project state
 ├── backend/                   # FastAPI backend
@@ -79,7 +84,7 @@ nile-key2/
 10. **Notifications** — Email triggers, notification preferences
 11. **Audit** — Centralized audit logging
 12. **Workflow** — Export workflow lifecycle management
-13. **Agent** — Digital Export Manager AI agent
+13. **Digital Export Manager** — Digital Export Manager
 14. **Digital Export Manager** — Session management, missions, tools facade
 15. **Knowledge Graph** — Entity relationship graph
 16. **Trade Intelligence** — Supplier/buyer analysis, trends, comparisons
@@ -98,7 +103,7 @@ nile-key2/
 | 8 | Export Operations | ✅ Implemented (WP-21) |
 | 9 | Trade Intelligence | ✅ Implemented (WP-33) |
 | 10 | Knowledge Graph | ✅ Implemented (WP-32) |
-| 11 | AI Agent | ✅ Implemented (WP-30) |
+| 11 | Digital Export Manager | ✅ Implemented (WP-30) |
 | 12 | AI Memory | ✅ Implemented (WP-31) |
 | 17 | Administration | ✅ Implemented |
 | 18 | Reports & Dashboard | ✅ Implemented (WP-21) |
@@ -154,7 +159,7 @@ npm run dev
 | Frontend | GitHub Pages / Docker | Free |
 | Backend | Docker Compose / PythonAnywhere | Free |
 
-See `DEPLOYMENT.md` for details.
+See PLAN.md Section 24 for deployment instructions.
 
 ## Work Packages
 

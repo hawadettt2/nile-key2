@@ -1,8 +1,8 @@
 # Nile Key - User Acceptance Testing
 
 ## Governing Document
-- `PROJECT_EXECUTION_RULES.md` is the governing execution constitution of the Nile Key project.
-- UAT is not considered complete unless all execution rules defined in `PROJECT_EXECUTION_RULES.md` are satisfied.
+- `PLAN.md` Section 23 is the governing execution constitution of the Nile Key project.
+- UAT is not considered complete unless all execution rules defined in `PLAN.md` Section 23 are satisfied.
 - Any failed UAT item immediately reopens the related Work Package or defect for re-work.
 
 ## Test Environment

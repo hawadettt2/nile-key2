@@ -65,7 +65,7 @@ Core Modules: (Reasoning Engine | Company Knowledge | Long-Term Memory | Knowled
 |------------|------|--------|--------|
 | WP-30F: Knowledge Layer Interface | Must be complete | ✅ Complete per PLAN.md Section 15.3 | PLAN.md Section 7 |
 | WP-31: AI Memory | Must be complete | ✅ Complete per PLAN.md Section 15.3 | PLAN.md Section 7 |
-| WP-30: AI Agent | Must be complete | ✅ Complete per PLAN.md Section 15.3 | PLAN.md Section 7 |
+| WP-30: Digital Export Manager | Must be complete | ✅ Complete per PLAN.md Section 15.3 | PLAN.md Section 7 |
 | Python FastAPI | Runtime | ✅ Available | Repository evidence |
 | SQLite | Database | ✅ Available | PLAN.md Section 3.1 |
 | Pydantic | Schema validation | ✅ Available | Repository evidence |

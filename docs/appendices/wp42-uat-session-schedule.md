@@ -81,7 +81,7 @@
 - `docs/UAT_CHECKLIST.md` — UAT checklist (255 items)
 - `.kilo/plans/wp42-uat-runbook.md` — UAT execution runbook
 - `.kilo/plans/wp42-uat-evidence/` — Evidence directory
-- `docs/architecture/FINAL_BASELINE.md` — Project baseline
+- `PLAN.md` Section 22 — Project baseline
 
 ---
 

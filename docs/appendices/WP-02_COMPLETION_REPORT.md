@@ -40,7 +40,7 @@ All 8 entities (users, suppliers, customers, shipments, invoices, customs_declar
 | `backend/app/routers/resources.py` | resources |
 | `backend/app/routers/documents.py` | documents |
 | `docs/architecture/ENGINEERING_MEMORY.md` | Documentation |
-| `docs/architecture/WORK_PACKAGE_PLAN.md` | Documentation |
+| `docs/appendices/WORK_PACKAGE_PLAN.md` | Documentation |
 | `docs/architecture/ADR-0001-shipments-legacy-columns.md` | Architecture Decision Record |
 
 ---

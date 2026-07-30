@@ -2,7 +2,7 @@
 
 **Plan ID:** BA-WP-001
 **Authority:** BA-DEC-001, BA-ARCH-001, BA-IMPL-001
-**Governing Documents:** PLAN.md, PROJECT_EXECUTION_RULES.md
+**Governing Documents:** PLAN.md, `PLAN.md` Section 23
 **Date:** 2026-07-22
 **Status:** Phase 0 Complete — Bootstrap Pending
 **Baseline:** ebc2181 (HEAD)
@@ -168,7 +168,7 @@ Phase 0 (Lock)
 | **M4: WP-42 Evidence Captured** | Phase 3 | Evidence package in `.kilo/plans/wp42-uat-evidence/` |
 | **M5: WP-42 Closed** | Phase 4 | Project Owner acceptance; WP-42 formally closed |
 | **M6: Regression Foundation Complete** | Phase 5 | Regression suite passes for all entity CRUD workflows |
-| **M7: Governance Updated** | Phase 6 | PROJECT_EXECUTION_RULES.md and TECH_DEBT.md updated |
+| **M7: Governance Updated** | Phase 6 | `PLAN.md` Section 23 and TECH_DEBT.md updated |
 | **M8: CI Ready** | Phase 7 | CI workflow executing tests; artifacts uploaded |
 
 ---
@@ -248,7 +248,7 @@ Phase 0 (Lock)
 | 3.1 | Prepare evidence directory structure | QA | 2.12 | `.kilo/plans/wp42-uat-evidence/` | Directory created with subdirs | Low |
 | 3.2 | Execute WP-42 UAT checklist with automation assistance | QA + Project Owner | 2.12, 3.1 | `.kilo/plans/wp42-uat-evidence/*` | All checklist items executed; evidence captured | High — Project Owner availability |
 | 3.3 | Capture screenshots and traces for each UAT step | QA | 3.2 | `.kilo/plans/wp42-uat-evidence/screenshots/`, `traces/` | Every step has evidence file | Medium |
-| 3.4 | Generate UAT execution report | QA | 3.3 | `.kilo/plans/wp42-uat-evidence/report.md` | Report references `docs/UAT_CHECKLIST.md` items | Low |
+| 3.4 | Generate UAT execution report | QA | 3.3 | `.kilo/plans/wp42-uat-evidence/report.md` | Report references `docs/appendices/UAT_CHECKLIST.md` items | Low |
 | 3.5 | Review evidence with Project Owner | Project Manager | 3.4 | `.kilo/plans/wp42-uat-evidence/` | Project Owner confirms evidence completeness | Medium |
 
 **Phase 3 Exit Criteria:**
@@ -271,7 +271,7 @@ Phase 0 (Lock)
 
 **Phase 4 Exit Criteria:**
 - WP-42 formally closed
-- All gates satisfied per PROJECT_EXECUTION_RULES.md Section 10
+- All gates satisfied per `PLAN.md` Section 23
 - Baseline created
 
 **Mode:** Sequential Mode only. Phase 4 requires Phase 3 completion.
@@ -309,13 +309,13 @@ Phase 0 (Lock)
 
 | Task ID | Task | Owner | Dependencies | Files | Completion Criteria | Risk |
 |---------|------|-------|--------------|-------|---------------------|------|
-| 6.1 | Update PROJECT_EXECUTION_RULES.md to include browser automation gates | Architect | 5.11 | `docs/PROJECT_EXECUTION_RULES.md` | New gates added per BA-ARCH-001 Section 18 | Low |
+| 6.1 | Update `PLAN.md` Section 23 to include browser automation gates | Architect | 5.11 | `PLAN.md` Section 23 | New gates added per BA-ARCH-001 Section 18 | Low |
 | 6.2 | Update TECH_DEBT.md to close related items | Architect | 6.1 | `TECH_DEBT.md` | Items marked resolved | Low |
 | 6.3 | Update CURRENT_STATUS.md to reflect platform readiness | Project Manager | 6.2 | `CURRENT_STATUS.md` | Status updated | Low |
 | 6.4 | Commit governance updates | DevOps | 6.1–6.3 | Modified files | Git commit with message `docs(ba): update governance for browser automation` | Low |
 
 **Phase 6 Exit Criteria:**
-- PROJECT_EXECUTION_RULES.md updated
+- `PLAN.md` Section 23 updated
 - TECH_DEBT.md updated
 - CURRENT_STATUS.md updated
 
@@ -411,14 +411,14 @@ To execute Phase 2 and Phase 5 in parallel:
 | Phase 3 | `.kilo/plans/wp42-uat-evidence/` populated; Project Owner confirms |
 | Phase 4 | WP-42 formally closed; baseline created |
 | Phase 5 | Regression suite passes; execution time < 30 min |
-| Phase 6 | PROJECT_EXECUTION_RULES.md and TECH_DEBT.md updated |
+| Phase 6 | `PLAN.md` Section 23 and TECH_DEBT.md updated |
 | Phase 7 | CI workflows executing; artifacts uploaded (future) |
 
 ---
 
 ## 11. Governance Compliance
 
-### 11.1 Decision Gates Mapping (PROJECT_EXECUTION_RULES.md Section 10)
+### 11.1 Decision Gates Mapping (`PLAN.md` Section 23)
 
 | Gate | Requirement | Representation in BA-WP-001 |
 |------|-------------|----------------------------|
@@ -432,7 +432,7 @@ To execute Phase 2 and Phase 5 in parallel:
 
 **Note:** Gates 2 and 6 are implicit in the plan. They are enforced by the project's standard PR workflow (PLAN.md Section 10.6: "PR requires at least one approval") and Phase 0 approval. No separate tasks are needed, but this mapping makes the governance alignment explicit.
 
-### 11.2 PROJECT_EXECUTION_RULES.md Compliance
+### 11.2 `PLAN.md` Section 23 Compliance
 
 | Requirement | Status | Evidence |
 |-------------|--------|----------|

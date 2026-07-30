@@ -4,9 +4,9 @@
 **Status:** Approved — Ready for Implementation
 **Date:** 2026-07-22
 **Baseline:** ebc2181 (HEAD)
-**Authority:** PLAN.md (Master Roadmap v2.1), docs/PROJECT_EXECUTION_RULES.md
+**Authority:** PLAN.md (Master Roadmap v2.1)
 **Deciders:** Chief Software Architect, Project Manager
-**Governing Documents:** PLAN.md, docs/PROJECT_EXECUTION_RULES.md, docs/UAT_CHECKLIST.md, NILE_KEY_RULES.md
+**Governing Documents:** PLAN.md, `PLAN.md` Section 23, `docs/appendices/UAT_CHECKLIST.md`
 
 ---
 
@@ -237,7 +237,7 @@ The Nile Key project has no governed, reproducible, version-controlled Browser A
 
 | Directory/File | Owner | Change Policy |
 |----------------|-------|---------------|
-| `tests/e2e/suites/*` | QA Engineer | Must align with `docs/UAT_CHECKLIST.md` |
+| `tests/e2e/suites/*` | QA Engineer | Must align with `docs/appendices/UAT_CHECKLIST.md` |
 | `tests/e2e/page-objects/*` | Dev/QA | Changes require architectural review |
 | `tests/e2e/fixtures/*` | QA Engineer | Seed data must be regeneratable |
 | `tests/e2e/playwright.config.ts` | Architect | Configuration changes require ADR |
@@ -308,7 +308,7 @@ MCP Host loads configuration-defined MCP server
 MCP → Playwright Test Engine
     │
     ▼
-Select UAT test scenario by ID (matches docs/UAT_CHECKLIST.md)
+Select UAT test scenario by ID (matches docs/appendices/UAT_CHECKLIST.md)
     │
     ▼
 Page Object opens browser → navigates to target URL
@@ -373,14 +373,14 @@ Exit with appropriate code (0 = pass, 1 = fail, 2 = infrastructure error)
 
 ### 13.1 Manual Assisted UAT
 
-**Purpose:** Assist Project Owner during Manual UAT execution per `PROJECT_EXECUTION_RULES.md` Section 16.
+**Purpose:** Assist Project Owner during Manual UAT execution per `PLAN.md` Section 23.
 
 | Aspect | Specification |
 |--------|---------------|
 | Trigger | User invokes MCP tool or runs test runner in assist mode |
 | Execution | Single test step at a time; waits for Project Owner observation |
 | Evidence | Screenshot + page state captured on each step |
-| Output | Markdown summary referencing `docs/UAT_CHECKLIST.md` item IDs |
+| Output | Markdown summary referencing `docs/appendices/UAT_CHECKLIST.md` item IDs |
 | Human-in-the-loop | Required — execution pauses between UAT items |
 
 ### 13.2 Automated UAT
@@ -394,7 +394,7 @@ Exit with appropriate code (0 = pass, 1 = fail, 2 = infrastructure error)
 | Evidence | HTML report with embedded screenshots; JUnit XML for CI |
 | Output | Pass/Fail per UAT checklist item |
 | Human-in-the-loop | Not required; designed for unattended execution |
-| Traceability | Each test case references `docs/UAT_CHECKLIST.md` section |
+| Traceability | Each test case references `docs/appendices/UAT_CHECKLIST.md` section |
 
 ### 13.3 Smoke Testing
 
@@ -418,7 +418,7 @@ Exit with appropriate code (0 = pass, 1 = fail, 2 = infrastructure error)
 | Trigger | Scheduled or on-demand |
 | Execution | Full entity CRUD workflows across all modules |
 | Time target | < 30 minutes (measured and optimized over time) |
-| Coverage | All UAT areas in `docs/UAT_CHECKLIST.md` executable via browser |
+| Coverage | All UAT areas in `docs/appendices/UAT_CHECKLIST.md` executable via browser |
 | Evidence | Full HTML report with traces; HAR files for network debugging |
 | Output | Pass/Fail with detailed breakdown per entity |
 
@@ -604,8 +604,8 @@ CLI arguments                        ← Runtime overrides (highest precedence)
 
 | Rule | Enforcement |
 |------|------------|
-| Every UAT assistance test must reference an item in `docs/UAT_CHECKLIST.md` | Test naming convention: `uat-{section}-{item-id}` |
-| Every smoke test must reference an API or route in DEPLOYMENT.md | Test justification section in each file |
+| Every UAT assistance test must reference an item in `docs/appendices/UAT_CHECKLIST.md` | Test naming convention: `uat-{section}-{item-id}` |
+| Every smoke test must reference an API or route in `PLAN.md` Section 24 | Test justification section in each file |
 | Every regression test must map to a documented user workflow | Traceability matrix updated with each WP that changes the UI |
 
 ### 18.2 Evidence Retention
@@ -630,7 +630,7 @@ CLI arguments                        ← Runtime overrides (highest precedence)
 | Rule | Enforcement |
 |------|------------|
 | Existing backend/frontend tests must not be modified | No changes to `backend/tests/` or `frontend` test files |
-| UAT checklist (`docs/UAT_CHECKLIST.md`) is source of truth | Test additions must not modify the checklist |
+| UAT checklist (`docs/appendices/UAT_CHECKLIST.md`) is source of truth | Test additions must not modify the checklist |
 | Application Docker images must not grow | Test dependencies are in separate image only |
 
 ---
@@ -743,10 +743,10 @@ CLI arguments                        ← Runtime overrides (highest precedence)
 | Document | Section | Alignment |
 |----------|---------|-----------|
 | `PLAN.md` | Section 9.14 (Documentation Rules), Section 10.11 (Architecture Preservation) | Platform adds new capability without modifying existing architecture |
-| `docs/PROJECT_EXECUTION_RULES.md` | Section 5 (Evidence-Based), Section 10 (Decision Gates), Section 16 (UAT) | Platform enforces evidence capture; supports but does not replace Manual UAT |
-| `docs/UAT_CHECKLIST.md` | All sections | Test artifacts directly map to checklist items |
+| `PLAN.md` Section 23 | Section 5 (Evidence-Based), Section 10 (Decision Gates), Section 16 (UAT) | Platform enforces evidence capture; supports but does not replace Manual UAT |
+| `docs/appendices/UAT_CHECKLIST.md` | All sections | Test artifacts directly map to checklist items |
 | `NILE_KEY_RULES.md` | Section 13 (Forbidden Actions), Section 3 (Architecture Rules) | No application code changes; isolation maintained |
-| `ARCHITECTURE_CHARTER.md` | Deprecated — content merged into `PLAN.md` | Platform follows consolidation principle |
+| `PLAN.md` | Deprecated — content merged into `PLAN.md` | Platform follows consolidation principle |
 
 ---
 

@@ -423,7 +423,7 @@ The Avatar is the **presentation layer** through which users perceive the Digita
 | Tool base class contract | `backend/app/agent/tools/base.py` | Add `idempotency_key`, `auth_requirements` structured field, `version`. |
 | Tool result envelope | `backend/app/agent/schemas/tool_result.py` | Make `audit_ref` required. |
 | Session context model | `backend/app/agent/session/manager.py` | Add typed export-domain state: `active_workflows`, `linked_entities`, `standing_orders`, `user_preferences`. |
-| Execution Engine | `backend/app/agent/core/orchestrator.py` | Rename from `AgentOrchestrator`. Accepts `Mission` objects (not free-text intents). Add graceful degradation, idempotency propagation, structured step trace. |
+| Execution Engine | `backend/app/agent/core/orchestrator.py` | Rename to `ExecutionEngine`. Accepts `Mission` objects (not free-text intents). Add graceful degradation, idempotency propagation, structured step trace. |
 | Mission Planner | `backend/app/agent/core/planner.py` | Rename from `Planner`. Accepts `Decision` objects. Decomposes into `Mission` objects with ordered `Task` lists. Never uses free-text keyword matching. |
 | Agent schemas | `backend/app/schemas/agent/`, `backend/app/agent/schemas/` | Consolidate. Replace `intent` with `mission_type` and typed fields. Define `Mission` Pydantic model with execution metadata + payload. Define `MissionRequest` as discriminated union at API boundary. |
 | Agent router | `backend/app/routers/agent.py` | Evolve from `/execute` (intent-based) to `/missions` (mission-oriented). Document as "Create a Digital Export Manager operation." Keep `/health`, `/tools`, `/sessions`. |
@@ -435,7 +435,7 @@ The Avatar is the **presentation layer** through which users perceive the Digita
 |-----------|----------|--------------|
 | Decision Engine | NEW: `backend/app/agent/decision_engine/` | Extract reasoning logic from orchestrator/planner into a distinct `DecisionEngine` that: (1) receives user requests, (2) queries Company Knowledge Layer and Memory Interface, (3) evaluates options, (4) produces a `Decision` object passed to Mission Planner. |
 | Mission Planner | NEW: `backend/app/agent/mission_planner/` | Rename from `Planner`. Accepts `Decision` objects. Decomposes into `Mission` objects with ordered `Task` lists. Consults standing orders and user preferences. Never uses free-text keyword matching. |
-| Execution Engine | `backend/app/agent/core/orchestrator.py` | Rename from `AgentOrchestrator`. Accepts `Mission` objects. Executes tasks via Tool Registry. Supports parallel steps, retry, structured step trace. |
+| Execution Engine | `backend/app/agent/core/orchestrator.py` | Rename to `ExecutionEngine`. Accepts `Mission` objects. Executes tasks via Tool Registry. Supports parallel steps, retry, structured step trace. |
 | Company Knowledge Layer | `backend/app/agent/knowledge/` | Rename from "Knowledge Provider" to "Company Knowledge Layer". Define `KnowledgeProvider` interface (not a single implementation). Define `KnowledgeQuery` contract. Document ingestion contract. Zero implementations in WP-30. |
 | Memory Interface | `backend/app/agent/memory/` | Define `MemoryProvider` interface: `recall`, `store`, `forget`, `summarize`. Zero implementations in WP-31. |
 | Avatar Contract | `backend/app/agent/avatar/` | Define `IntentContentContract`. Agent produces structured intents, never UI markup. |
@@ -477,7 +477,7 @@ The Avatar is the **presentation layer** through which users perceive the Digita
 
 | Requirement | Current State | Gap |
 |-------------|---------------|-----|
-| Digital Export Manager as root bounded context | Partial — core loop exists as "Agent Orchestrator" | Rename/reorganize internal architecture to reflect DEM hierarchy |
+| Digital Export Manager as root bounded context | Partial — core loop exists as the orchestrator component | Rename/reorganize internal architecture to reflect DEM hierarchy |
 | Decision Engine | Not implemented | New bounded context; extracts reasoning from orchestrator |
 | Mission Planner | Partial — `Planner` exists but is keyword-based | Refactor to accept structured decisions |
 | Execution Engine | Partial — `AgentOrchestrator` exists | Rename and align with mission-based execution |

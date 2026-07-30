@@ -19,7 +19,7 @@
 | WP-03 | ✅ Complete | dbe1ef4 | Aligned OAuth2 status codes: 401 for missing auth, 403 for missing role |
 | WP-04 | ✅ Complete | — | All CRUD operations verified working against aligned schema |
 | WP-02-Infra | ✅ Complete | 98838d1 | Added ensure_columns() helper for reusable schema migrations |
-| Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, WORK_PACKAGE_PLAN.md, PROJECT_BASELINE.md, REPOSITORY_INTELLIGENCE.md, ARCHITECTURE_CHARTER.md |
+| Doc-01 | ✅ Complete | 9a1682d | Established ENGINEERING_MEMORY.md, docs/appendices/WORK_PACKAGE_PLAN.md, PLAN.md Section 22, docs/architecture/REPOSITORY_INTELLIGENCE.md (archived), ARCHITECTURE_CHARTER.md (archived) |
 | WP-05 | ✅ Complete | — | Frontend builds successfully |
 | WP-06 | ✅ Complete | — | Integration testing complete; 21 pytest tests pass |
 | WP-07 | ✅ Complete | — | SECRET_KEY externalized, CORS configuration replaced with settings.ALLOWED_ORIGINS |
@@ -163,7 +163,7 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 | ETA Engine | ✅ Implemented (WP-19); OAuth2, batch submission, scheduler, 71 tests |
 | Shipping Engine | ✅ Implemented (WP-20); LetMeShip + SendCloud, 34+ tests |
 | Platform Integration | ✅ Complete (WP-21); notifications, audit, search, dashboard, workflows |
-| AI Agent | ✅ Complete (WP-30B-30I); session management, task planner, decision engine, tools, knowledge, memory, avatar, monitoring |
+| Digital Export Manager | ✅ Complete (WP-30B-30I); session management, task planner, decision engine, tools, knowledge, memory, avatar, monitoring |
 | AI Memory | ✅ Complete (WP-31); SQLiteMemoryProvider, 151 agent tests |
 | Knowledge Graph | ✅ Complete (WP-32); 9 node types, 9 endpoints, 105 tests |
 | Trade Intelligence | ✅ Complete (WP-33); analysis, trends, comparisons, 120 tests |

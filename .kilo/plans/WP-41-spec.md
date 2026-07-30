@@ -33,11 +33,11 @@ The work consists of updating six stale official documents to reflect the actual
 | Component | Description | Source |
 |-----------|-------------|--------|
 | **README.md update** | Update project overview to reflect all completed work packages | PLAN.md Section 9.14, repository evidence |
-| **DEPLOYMENT.md update** | Update deployment guide to reflect validated Docker setup | PLAN.md Section 10.7, repository evidence |
-| **PROJECT_BASELINE.md update** | Update baseline snapshot to current WP-40 state | Repository evidence: current file dated 2026-07-12 |
+| **PLAN.md Section 24 update** | Update deployment section to reflect validated Docker setup | PLAN.md Section 10.7, repository evidence |
+| **PLAN.md Section 22 update** | Update baseline section to current WP-40 state | Repository evidence: current file dated 2026-07-12 |
 | **ENGINEERING_MEMORY.md update** | Extend WP completion table through WP-40 | Repository evidence: current file ends at WP-19 |
-| **WORK_PACKAGE_PLAN.md update** | Add WP-20 through WP-40 to execution sequence | Repository evidence: current file ends at WP-19 |
-| **REPOSITORY_INTELLIGENCE.md update** | Mark as historical snapshot or update to current state | Repository evidence: current file dated 2026-06-30 |
+| **.kilo/plans/archive/WORK_PACKAGE_PLAN.md update** | Add WP-20 through WP-40 to execution sequence | Repository evidence: current file ends at WP-19 |
+| **`.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` update** | Mark as historical snapshot or update to current state | Repository evidence: current file dated 2026-06-30 |
 | **Cross-reference verification** | Verify all doc cross-references resolve and are consistent | PLAN.md Section 9.14 |
 | **Documentation accuracy gate** | Verify no documentation claims features not present in repository | PLAN.md Section 9.14, Section 10.8 |
 
@@ -101,8 +101,8 @@ The README.md MUST be updated to reflect the current system state:
 
 **Source:** PLAN.md Section 9.14, repository evidence.
 
-### FR-41.2: DEPLOYMENT.md Accuracy
-The DEPLOYMENT.md MUST be updated to reflect the validated deployment configuration:
+### FR-41.2: `PLAN.md` Section 24 Accuracy
+The `PLAN.md` Section 24 MUST be updated to reflect the validated deployment configuration:
 - Environment variables MUST match those defined in `backend/app/core/config.py`
 - Docker Compose services MUST match `docker-compose.yml` (backend + frontend)
 - Port mappings MUST match `docker-compose.yml` (8000, 3000)
@@ -112,8 +112,8 @@ The DEPLOYMENT.md MUST be updated to reflect the validated deployment configurat
 
 **Source:** PLAN.md Section 10.7, repository evidence.
 
-### FR-41.3: PROJECT_BASELINE.md Accuracy
-The PROJECT_BASELINE.md MUST be updated to reflect current baseline:
+### FR-41.3: `PLAN.md` Section 22 Accuracy
+The `PLAN.md` Section 22 MUST be updated to reflect current baseline:
 - Baseline commit MUST reference current HEAD (195b204 or later)
 - Work Package status MUST reflect WP-40 completion (not WP-19 as currently documented)
 - Test count MUST reflect current count (606+, not 176)
@@ -121,7 +121,7 @@ The PROJECT_BASELINE.md MUST be updated to reflect current baseline:
 - Known critical blockers MUST reflect resolved items per TECH_DEBT.md
 - Source of truth chain MUST reflect current authoritative documents
 
-**Source:** Repository evidence: current PROJECT_BASELINE.md dated 2026-07-12 references WP-19.
+**Source:** Repository evidence: current `PLAN.md` Section 22 dated 2026-07-12 references WP-19.
 
 ### FR-41.4: ENGINEERING_MEMORY.md Accuracy
 The ENGINEERING_MEMORY.md MUST be updated to include all completed Work Packages:
@@ -133,22 +133,22 @@ The ENGINEERING_MEMORY.md MUST be updated to include all completed Work Packages
 
 **Source:** Repository evidence: current ENGINEERING_MEMORY.md dated 2026-07-12 ends at WP-19.
 
-### FR-41.5: WORK_PACKAGE_PLAN.md Accuracy
-The WORK_PACKAGE_PLAN.md MUST be updated to include all completed Work Packages:
+### FR-41.5: `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` Accuracy
+The `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` MUST be updated to include all completed Work Packages:
 - Execution sequence MUST include WP-20, WP-21, WP-30B-30I, WP-31, WP-32, WP-33, WP-40
 - Rollback points table MUST include entries for WP-20 through WP-40
 - Each completed WP MUST include status, validation results, and rollback commands where applicable
 
-**Source:** Repository evidence: current WORK_PACKAGE_PLAN.md ends at WP-19.
+**Source:** Repository evidence: current `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` ends at WP-19.
 
-### FR-41.6: REPOSITORY_INTELLIGENCE.md Disposition
-The REPOSITORY_INTELLIGENCE.md (dated 2026-06-30) MUST be either:
+### FR-41.6: `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` Disposition
+The `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` (dated 2026-06-30) MUST be:
 - Marked explicitly as "Historical Snapshot — superseded by PROJECT_BASELINE.md and ENGINEERING_MEMORY.md", OR
 - Updated to reflect current architecture state
 
 The file MUST NOT remain unchanged, as it documents critical issues as "CRITICAL" that are now resolved.
 
-**Source:** Repository evidence: current REPOSITORY_INTELLIGENCE.md lists database schema mismatch and hardcoded secrets as CRITICAL — both resolved by WP-02A-H and WP-07.
+**Source:** Repository evidence: current `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` lists database schema mismatch and hardcoded secrets as CRITICAL — both resolved by WP-02A-H and WP-07.
 
 ### FR-41.7: CURRENT_STATUS.md Verification
 The CURRENT_STATUS.md MUST be verified to reflect current state:
@@ -199,7 +199,7 @@ All documentation statements MUST be verifiable against repository artifacts. No
 **Source:** PLAN.md Section 9.14.
 
 ### NFR-41.2: Completeness
-All Work Packages from WP-01 through WP-40 MUST be documented in at least one official document (WORK_PACKAGE_PLAN.md, ENGINEERING_MEMORY.md, or CHANGELOG.md).
+All Work Packages from WP-01 through WP-40 MUST be documented in at least one official document (`.kilo/plans/archive/WORK_PACKAGE_PLAN.md`, ENGINEERING_MEMORY.md, or CHANGELOG.md).
 
 **Source:** PLAN.md Section 10.7.
 
@@ -227,11 +227,11 @@ Updated documentation MUST be structured to allow straightforward updates in fut
 | File | Change Type | Verification Method |
 |------|-------------|---------------------|
 | `README.md` | Modify | Diff review against current state |
-| `DEPLOYMENT.md` | Modify | Diff review against current state |
-| `docs/architecture/PROJECT_BASELINE.md` | Modify | Diff review against current state |
+| `PLAN.md` Section 24 | Modify | Diff review against current state |
+| `PLAN.md` Section 22 | Modify | Diff review against current state |
 | `docs/architecture/ENGINEERING_MEMORY.md` | Modify | Diff review against current state |
-| `docs/architecture/WORK_PACKAGE_PLAN.md` | Modify | Diff review against current state |
-| `docs/architecture/REPOSITORY_INTELLIGENCE.md` | Modify or Archive | Diff review or header addition |
+| `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` | Modify | Diff review against current state |
+| `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` | Modify or Archive | Diff review or header addition |
 
 ### 8.2 Verification Artifacts
 
@@ -267,12 +267,12 @@ The updated README.md MUST include:
 | Testing | 606+ passing pytest tests, 8 skipped by design | CURRENT_STATUS.md |
 | Frontend Pages | All 12 pages listed | Repository evidence: frontend/src/pages/ |
 | Quick Start | Backend and frontend start commands | Existing README |
-| Deployment | Reference to DEPLOYMENT.md | Existing README |
+| **Deployment** | Reference to `PLAN.md` Section 24 | Existing README |
 | Version | Current version and build date | Repository convention |
 
-### 9.2 DEPLOYMENT.md Content Requirements
+### 9.2 `PLAN.md` Section 24 Content Requirements
 
-The updated DEPLOYMENT.md MUST include:
+The `PLAN.md` Section 24 MUST include:
 
 | Section | Required Content | Source |
 |---------|------------------|--------|
@@ -282,12 +282,12 @@ The updated DEPLOYMENT.md MUST include:
 | Health Checks | `/health` endpoint, nginx PID check | Repository evidence: docker-compose.yml, backend/main.py |
 | Volumes | `db-data` volume for SQLite persistence | Repository evidence: docker-compose.yml |
 | Port Mappings | Backend 8000, Frontend 3000 | Repository evidence: docker-compose.yml |
-| Quick Start | Docker Compose and manual start commands | Existing DEPLOYMENT.md |
+| Quick Start | Docker Compose and manual start commands | `PLAN.md` Section 24 |
 | API Endpoints | All 18 router prefixes | Repository evidence: backend/main.py |
 
-### 9.3 PROJECT_BASELINE.md Content Requirements
+### 9.3 `PLAN.md` Section 22 Content Requirements
 
-The updated PROJECT_BASELINE.md MUST include:
+The `PLAN.md` Section 22 MUST include:
 
 | Section | Required Content | Source |
 |---------|------------------|--------|
@@ -320,9 +320,9 @@ The updated ENGINEERING_MEMORY.md MUST include:
 | Known Risks | Current open risks per TECH_DEBT.md | TECH_DEBT.md |
 | Current Project Status | Backend, Frontend, Tests, Alembic, Docker, Services, ETA, Shipping, Scheduler states | CURRENT_STATUS.md |
 
-### 9.5 WORK_PACKAGE_PLAN.md Content Requirements
+### 9.5 `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` Content Requirements
 
-The updated WORK_PACKAGE_PLAN.md MUST include:
+The `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` MUST include:
 
 | Section | Required Content | Source |
 |---------|------------------|--------|
@@ -330,7 +330,7 @@ The updated WORK_PACKAGE_PLAN.md MUST include:
 | WP-20 through WP-40 | Status, objective, scope, files, dependencies, validation, rollback for each | Repository evidence: git log, PLAN.md |
 | Rollback Points | Complete rollback table for all WPs | Repository evidence |
 
-### 9.6 REPOSITORY_INTELLIGENCE.md Content Requirements
+### 9.6 `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` Disposition
 
 The REPOSITORY_INTELLIGENCE.md MUST be updated to include:
 
@@ -409,7 +409,7 @@ For each updated document:
 
 | Check | Method |
 |-------|--------|
-| Router count consistency | Count routers in WORK_PACKAGE_PLAN.md, README.md, ENGINEERING_MEMORY.md, PROJECT_BASELINE.md — must match |
+| Router count consistency | Count routers in .kilo/plans/archive/WORK_PACKAGE_PLAN.md, README.md, ENGINEERING_MEMORY.md, PROJECT_BASELINE.md — must match |
 | Service count consistency | Count services in all docs — must match |
 | Test count consistency | Verify test count is identical across all docs |
 | WP status consistency | Verify all 40 WPs have identical status across all docs |
@@ -443,14 +443,14 @@ For each factual claim in updated documentation:
 | AC-41.3 | README.md lists all 12 frontend pages | Manual review |
 | AC-41.4 | README.md test count matches CURRENT_STATUS.md (606+) | Cross-reference check |
 | AC-41.5 | README.md tech stack matches requirements.txt and package.json | Cross-reference check |
-| AC-41.6 | DEPLOYMENT.md environment variables match config.py exactly | Cross-reference check |
-| AC-41.7 | DEPLOYMENT.md Docker setup matches docker-compose.yml | Cross-reference check |
-| AC-41.8 | PROJECT_BASELINE.md reflects WP-40 baseline (not WP-19) | Manual review |
-| AC-41.9 | PROJECT_BASELINE.md test count matches CURRENT_STATUS.md | Cross-reference check |
+| AC-41.6 | `PLAN.md` Section 24 environment variables match config.py exactly | Cross-reference check |
+| AC-41.7 | `PLAN.md` Section 24 Docker setup matches docker-compose.yml | Cross-reference check |
+| AC-41.8 | `PLAN.md` Section 22 reflects WP-40 baseline (not WP-19) | Manual review |
+| AC-41.9 | `PLAN.md` Section 22 test count matches CURRENT_STATUS.md | Cross-reference check |
 | AC-41.10 | ENGINEERING_MEMORY.md WP table extends to WP-40 | Manual review |
 | AC-41.11 | ENGINEERING_MEMORY.md includes all commit hashes through WP-40 | Cross-reference check |
-| AC-41.12 | WORK_PACKAGE_PLAN.md includes WP-20 through WP-40 | Manual review |
-| AC-41.13 | REPOSITORY_INTELLIGENCE.md is marked historical or fully updated | Manual review |
+| AC-41.12 | `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` includes WP-20 through WP-40 | Manual review |
+| AC-41.13 | `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` is marked historical or fully updated | Manual review |
 | AC-41.14 | No documentation claims features not present in repository | Accuracy gate |
 | AC-41.15 | All internal cross-references resolve correctly | Cross-reference check |
 | AC-41.16 | All doc cross-references to external files are consistent | Cross-reference check |
@@ -487,7 +487,7 @@ For each factual claim in updated documentation:
 | Section 15.4: WP-41 | All requirements derived from WP-41 definition |
 | Section 16.4: Phase 3 Exit Criteria | AC-41.20, AC-41.21 satisfy documentation requirement |
 | Section 6.2: Business Capability Map | README.md service descriptions |
-| Section 7: Roadmap | WORK_PACKAGE_PLAN.md update |
+| Section 7: Roadmap | `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` update |
 | Section 8: Current Status | ENGINEERING_MEMORY.md update |
 | Section 13: Architectural Decision Log | ENGINEERING_MEMORY.md decision records |
 
@@ -515,7 +515,7 @@ For each factual claim in updated documentation:
 | Stale document not identified | Some docs may appear current but contain subtle inaccuracies | Medium | Medium | Systematic cross-reference check per Section 11.3 |
 | Scope creep to code changes | Documentation work may reveal code issues | Low | Low | Strictly enforce doc-only scope per PLAN.md Section 15.4 |
 | Count discrepancies between docs | Different docs may reference different counts | Medium | Medium | Automated cross-reference checks per Section 11.3 |
-| REPOSITORY_INTELLIGENCE.md disposition unclear | No explicit guidance on historical vs. updated | Medium | Low | Require explicit archival header or full update |
+| `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` disposition unclear | No explicit guidance on historical vs. updated | Medium | Low | Require explicit archival header or full update |
 
 ---
 
@@ -551,11 +551,11 @@ For each factual claim in updated documentation:
 | Requirement | Evidence | Status |
 |-------------|----------|--------|
 | Update README.md | File exists in repository | ✅ Supported |
-| Update DEPLOYMENT.md | File exists in repository | ✅ Supported |
-| Update PROJECT_BASELINE.md | File exists in repository | ✅ Supported |
+| **`PLAN.md` Section 24 update** | File exists in repository | ✅ Supported |
+| **`PLAN.md` Section 22 update** | File exists in repository | ✅ Supported |
 | Update ENGINEERING_MEMORY.md | File exists in repository | ✅ Supported |
-| Update WORK_PACKAGE_PLAN.md | File exists in repository | ✅ Supported |
-| Update REPOSITORY_INTELLIGENCE.md | File exists in repository | ✅ Supported |
+| **`.kilo/plans/archive/WORK_PACKAGE_PLAN.md` update** | File exists in repository | ✅ Supported |
+| **`.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` update** | File exists in repository | ✅ Supported |
 | Verify CURRENT_STATUS.md | File exists in repository | ✅ Supported |
 | Verify TECH_DEBT.md | File exists in repository | ✅ Supported |
 | Verify CHANGELOG.md | File exists in repository | ✅ Supported |
@@ -573,8 +573,8 @@ For each factual claim in updated documentation:
 
 | Gap | Severity | Resolution |
 |-----|----------|------------|
-| No explicit operations runbook | Low | Out of scope per PLAN.md; deployment and startup documented in DEPLOYMENT.md |
-| No database schema diagram | Low | Schema documented in text form in PROJECT_BASELINE.md |
+| No explicit operations runbook | Low | Out of scope per `PLAN.md`; deployment and startup documented in `PLAN.md` Section 24 |
+| No database schema diagram | Low | Schema documented in text form in `PLAN.md` Section 22 |
 | No API reference beyond OpenAPI | Low | OpenAPI docs at `/docs` serve as API reference |
 | MonitoringService not exposed as HTTP endpoint | Low | Documented as internal agent component; not a production monitoring gap |
 
@@ -587,11 +587,11 @@ For each factual claim in updated documentation:
 All of the following must be true for WP-41 to be considered complete:
 
 - [ ] README.md updated to reflect current system state
-- [ ] DEPLOYMENT.md updated to reflect current deployment configuration
-- [ ] PROJECT_BASELINE.md updated to WP-40 baseline
+- [ ] `PLAN.md` Section 24 updated to reflect current deployment configuration
+- [ ] `PLAN.md` Section 22 updated to WP-40 baseline
 - [ ] ENGINEERING_MEMORY.md extended through WP-40
-- [ ] WORK_PACKAGE_PLAN.md extended through WP-40
-- [ ] REPOSITORY_INTELLIGENCE.md disposition resolved (archived or updated)
+- [ ] `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` extended through WP-40
+- [ ] `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` disposition resolved (archived or updated)
 - [ ] CURRENT_STATUS.md verified current
 - [ ] TECH_DEBT.md verified current
 - [ ] CHANGELOG.md updated with WP-41 entry
@@ -626,12 +626,12 @@ Any deviation requires a documented architectural decision recorded in the Archi
 - `CURRENT_STATUS.md` — Project state
 - `TECH_DEBT.md` — Technical debt register
 - `CHANGELOG.md` — Version history
-- `docs/architecture/PROJECT_BASELINE.md` — Project baseline
+- `PLAN.md` Section 22 — Project baseline
 - `docs/architecture/ENGINEERING_MEMORY.md` — Engineering memory
-- `docs/architecture/WORK_PACKAGE_PLAN.md` — Work package plan
-- `docs/architecture/REPOSITORY_INTELLIGENCE.md` — Repository intelligence
+- `.kilo/plans/archive/WORK_PACKAGE_PLAN.md` — Work package plan
+- `.kilo/plans/archive/REPOSITORY_INTELLIGENCE.md` — Repository intelligence
 - `README.md` — Project readme
-- `DEPLOYMENT.md` — Deployment guide
+- `PLAN.md` Section 24 — Deployment guide
 - `backend/main.py` — Application entry point and router registration
 - `backend/app/core/config.py` — Application settings
 - `backend/app/core/database.py` — Database initialization

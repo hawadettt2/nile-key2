@@ -3,7 +3,7 @@
 **Plan ID:** BA-IMPL-001
 **Authority:** BA-DEC-001 (Executive Decision)
 **Reference Architecture:** BA-ARCH-001
-**Governing Documents:** PLAN.md, docs/PROJECT_EXECUTION_RULES.md
+**Governing Documents:** PLAN.md, `PLAN.md` Section 23
 **Date:** 2026-07-22
 **Status:** Ready for Execution
 **Baseline:** ebc2181 (HEAD)
@@ -338,7 +338,7 @@ Configurations are layered, with later configs overriding earlier ones:
 | **Phase 3: Evidence** | Run WP-42 UAT; capture evidence package | `.kilo/plans/wp42-uat-evidence/` populated | QA + Project Owner | 2 days |
 | **Phase 4: Sign-off** | WP-42 closure with evidence review | WP-42 closure report | Project Owner | 1 day |
 | **Phase 5: Extend** | Implement regression suite for full entity coverage | `tests/e2e/suites/regression/` populated | QA | 5 days |
-| **Phase 6: Governance** | Update PROJECT_EXECUTION_RULES.md and TECH_DEBT.md | Resolved debt; updated rules | Architect | 1 day |
+| **Phase 6: Governance** | Update `PLAN.md` Section 23 and TECH_DEBT.md | Resolved debt; updated rules | Architect | 1 day |
 | **Phase 7: CI Ready** | Wire test image to CI | CI workflow configuration | DevOps | Future WP |
 
 ### 9.3 Rollback Points

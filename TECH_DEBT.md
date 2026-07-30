@@ -1,17 +1,17 @@
-ï»¿# Technical Debt
+# Technical Debt
 
-**Last Updated:** 2026-07-21
+**Last Updated:** 2026-07-29
 **Branch:** main
-**Phase:** 3 â€” WP-40 Docker Compose Final Verification
+**Phase:** 3 — WP-40 Docker Compose Final Verification
+**Authority:** PLAN.md (Master Roadmap v2.1) — Single Source of Truth
 
 ---
-
 ## Active Technical Debt
 
 | Priority | Debt | Location | Notes |
 |----------|------|----------|-------|
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED â€” Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
+| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED — Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
 | MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |
 | MEDIUM | PostgreSQL migration path | Not started | PLAN.md Section 9.9 notes SQLite is implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
@@ -21,7 +21,7 @@
 | LOW | Production CORS origins | `backend/main.py` | `ALLOWED_ORIGINS` configurable via settings; production origins (`nile-key.com`) to be set before deployment |
 | LOW | Shipping backward-compat alias complexity | `app/services/shipping/__init__.py` | Shim pattern resolves circular imports; can be simplified after full migration to new package |
 
-| LOW | Engineering Decision formalization | `app/services/workflow.py` | `draft â†’ shipped` bypass approved via CR-M4-001 Rev.1; optional business requirement formalization pending |
+| LOW | Engineering Decision formalization | `app/services/workflow.py` | `draft ? shipped` bypass approved via CR-M4-001 Rev.1; optional business requirement formalization pending |
 
 | LOW | Email notifications operational | ackend/app/services/notification.py | SMTP code implemented; notification audit logging added in M5-R2 |
 | LOW | Dashboard live data | rontend/src/pages/Dashboard.tsx | Auto-refresh polling added in M5-R1 |
@@ -35,7 +35,7 @@ otification_logs integration added in M5-R2 |
 
 | Debt | Resolution | Work Package |
 |------|------------|--------------|
-| Schema-database mismatch | `_create_tables()` and `_ensure_*_schema()` aligned | WP-02Aâ€“H |
+| Schema-database mismatch | `_create_tables()` and `_ensure_*_schema()` aligned | WP-02A–H |
 | Hardcoded SECRET_KEY | Externalized to environment; fails fast when missing | WP-07 |
 | Wildcard CORS default | Reads from `ALLOWED_ORIGINS` | WP-07 |
 | Code duplication in UPDATE helpers | `execute_update()` extracted and integrated into 8 routers | WP-09 |
@@ -55,7 +55,7 @@ otification_logs integration added in M5-R2 |
 | ETA error mapping | Implemented user-friendly error message mapping | WP-19 |
 | ETA status polling | Implemented `poll_pending_invoice_statuses` for scheduled status updates | WP-19 |
 | ETA audit logging | Implemented `create_eta_log` and `update_eta_log_documents` | WP-19 |
-| ETA datetime conversion | Implemented `eta_datetime_issued_format` with Cairo timezone â†’ UTC conversion | WP-19 |
+| ETA datetime conversion | Implemented `eta_datetime_issued_format` with Cairo timezone ? UTC conversion | WP-19 |
 | ETA tax rounding | Implemented `eta_round` with 5 decimal places precision | WP-19 |
 | ETA batch delay logic | Implemented `delay_in_hours` logic in `submit_pending_batch` | WP-19 |
 | ETA APScheduler | Integrated APScheduler with hourly status polling and batch submission jobs | WP-19 |
