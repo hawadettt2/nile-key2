@@ -12,7 +12,7 @@ client = TestClient(app)
 
 def test_app_imports_successfully():
     assert app is not None
-    assert app.title == "Nile Key API"
+    assert app.title == "Digital Export Manager API"
 
 
 EXPECTED_PATH_PREFIXES = [

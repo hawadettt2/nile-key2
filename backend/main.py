@@ -1,6 +1,6 @@
 """
-Nile Key API v1.0
-منصة مفتاح النيل الرقمية
+Digital Export Manager API v1.0
+Digital Export Manager — Intelligent Operating Platform for export operations
 FastAPI Backend — Entry Point
 """
 
@@ -19,7 +19,7 @@ from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router
 
 knowledge_provider_registry = KnowledgeProviderRegistry()
 memory_provider = SQLiteMemoryProvider(db_path="nile_key.db")
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
     - Shutdown: إيقاف ETA Scheduler + تنظيف الموارد
     """
     # ========== STARTUP ==========
-    print("[STARTUP] Starting Nile Key API...")
+    print("[STARTUP] Starting Digital Export Manager API...")
     init_db()
     print("[SUCCESS] Database initialized")
     
@@ -93,7 +93,7 @@ async def lifespan(app: FastAPI):
     
     yield
     # ========== SHUTDOWN ==========
-    print("[SHUTDOWN] Shutting down Nile Key API...")
+    print("[SHUTDOWN] Shutting down Digital Export Manager API...")
     try:
         shutdown_scheduler()
         print("[SUCCESS] ETA scheduler stopped")
@@ -108,8 +108,8 @@ async def lifespan(app: FastAPI):
 
 # إنشاء تطبيق FastAPI
 app = FastAPI(
-    title="Nile Key API",
-    description="منصة مفتاح النيل الرقمية — بوابة استراتيجية للصادرات المصرية",
+    title="Digital Export Manager API",
+    description="Digital Export Manager — Intelligent Operating Platform for export operations",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -150,13 +150,15 @@ app.include_router(knowledge_graph.router)
 app.include_router(trade_intelligence.router)
 app.include_router(dashboard.router)
 app.include_router(search.router)
+app.include_router(users_router)
+app.include_router(roles_router)
 
 
 @app.get("/", tags=["Root"])
 def root():
     """الصفحة الرئيسية — معلومات التطبيق"""
     return {
-        "message": "Nile Key API v1.0",
+        "message": "Digital Export Manager API v1.0",
         "status": "running",
         "docs": "/docs",
         "health": "/health",

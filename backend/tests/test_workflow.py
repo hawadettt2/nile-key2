@@ -133,11 +133,26 @@ def test_get_export_workflow_summary_authorized(client):
 
 
 def test_add_export_workflow_item_authorized(client):
-    token, _ = _register_and_login(client, role="logistics")
-    create_resp = client.post("/api/v1/export-workflows", json={
-        "customer_id": 1,
-        "supplier_id": 1,
+    token, _ = _register_and_login(client, role="owner")
+    customer_resp = client.post("/api/v1/customers/", json={
+        "name": "Test Customer",
+        "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
+    assert customer_resp.status_code == 200
+    customer_id = customer_resp.json()["id"]
+
+    supplier_resp = client.post("/api/v1/suppliers/", json={
+        "name": "Test Supplier",
+        "country": "Egypt",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert supplier_resp.status_code == 200
+    supplier_id = supplier_resp.json()["id"]
+
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": customer_id,
+        "supplier_id": supplier_id,
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert create_resp.status_code == 200
     workflow_id = create_resp.json()["id"]
 
     response = client.post(f"/api/v1/export-workflows/{workflow_id}/items", json={

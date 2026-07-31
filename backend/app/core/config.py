@@ -8,7 +8,7 @@ from typing import List, Optional
 
 class Settings(BaseSettings):
     # ========== App ==========
-    APP_NAME: str = "Nile Key API"
+    APP_NAME: str = "Digital Export Manager API"
     APP_VERSION: str = "1.0.0"
     DEBUG: str = "False"
 
