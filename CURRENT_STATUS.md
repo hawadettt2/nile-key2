@@ -170,6 +170,9 @@
 - **Governance:** WP-30B Official Closure Review approved; ED-WP30-001 recorded
 - **Architecture:** Business façade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
 - **Backward Compatibility:** Existing agent router unchanged; all original endpoints intact
+- **Mission Execution Model:** Synchronous within HTTP request lifecycle: `POST /missions → Reasoning → TaskPlanner → ExecutionPlanner → ToolOrchestrator → Status Update → Save`. Mission does not remain `pending` after request completion; terminal states are `completed` or `failed` only.
+- **Mission Runner / Scheduler:** NOT REQUIRED in current phase. No queued missions, no background workers, no resume/retry-across-requests mechanism exists, and none is mandated by current architecture contracts. Treated as Future Work Package only if future requirements emerge for queued missions, execution outside HTTP request lifecycle, distributed workers, or cross-request retry/resume.
+- **Idempotency:** `idempotency_key` is generated per mission and propagated through `ToolOrchestrator` during execution; it prevents duplicate tool calls within a single execution, but it is not stored on the Mission object and does not provide cross-request deduplication or resume capability.
 
 ## WP-30F Implementation Summary
 
@@ -178,9 +181,18 @@
 - **KnowledgeQuery Contract:** `AgentKnowledgeQueryRequest` and `AgentKnowledgeQueryResponse` Pydantic models; request includes query, context, scope, sources, limit; response includes results, confidence, sources
 - **KnowledgeProviderRegistry:** Registry implementation following ToolRegistry pattern; supports register, unregister, get, list_providers, exists, query; validates sources on registration
 - **Ingestion Contract:** Documented in `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`; principles, registration contract, future pipeline contract, versioning rules
+- **KnowledgeGraphProvider:** Implemented as concrete `KnowledgeProvider`; queries existing Knowledge Graph service layer (`app.services.knowledge_graph.search_nodes()`); registered in `KnowledgeProviderRegistry`; returns graph nodes as knowledge results with confidence scoring
+- **CompanyKnowledgeProvider:** Implemented as interim `KnowledgeProvider`; queries existing resources service layer (`app.services.resource.search_resources()`/`list_resources()`); registered in `KnowledgeProviderRegistry`; returns company resources as knowledge results with confidence scoring
+- **Registry → ReasoningEngine → DEM wiring:** Operational; `ReasoningEngine` accepts `knowledge_provider_registry` and queries all registered providers; results merged into `decision.context["knowledge"]`
 - **Governance:** ED-WP30-002 recorded — scope limited to Tasks 6.1–6.4; Task 6.5 excluded
-- **Tests:** 17 new tests for interface, registry, and schemas
+- **Tests:** 17 new tests for interface, registry, and schemas; 11 additional tests for `CompanyKnowledgeProvider`; 9 additional tests for `KnowledgeGraphProvider.query()` implementation; all passing
 - **Backward Compatibility:** Existing Decision Engine stubs unchanged; no breaking changes to existing code
+
+### Company Knowledge Ingestion Status (Deferred)
+- **Ingestion Pipeline:** NOT IMPLEMENTED — deferred to future Work Package per `KNOWLEDGE_INGESTION_CONTRACT.md` Section 5 and `WP-30I-spec.md` Section 3
+- **Current Data Source:** `resources` table via seed data + CRUD API (`/api/v1/resources`) — manual/external entry only; no automated ingestion, bulk import, external system integration, or confidence scoring algorithm implemented
+- **CompanyKnowledgeProvider Role:** Query adapter/interim provider for existing `resources` corpus; NOT an ingestion implementation
+- **Future Requirement:** When implemented, ingestion pipeline must read raw knowledge items from external systems, transform into `query()` return shape, assign confidence scores, and register via `KnowledgeProviderRegistry` — without modifying DEM core
 
 ## WP-30G Implementation Summary
 

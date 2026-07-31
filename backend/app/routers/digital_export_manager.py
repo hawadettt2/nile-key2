@@ -15,6 +15,12 @@ from app.agent.schemas.api_response import MissionResponse
 from app.agent.tools.registry import tool_registry
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.agent.decision_engine.engine import ReasoningEngine
+from app.agent.knowledge.registry import KnowledgeProviderRegistry
+from app.agent.mission_planner.planner import TaskPlanner
+from app.agent.execution_planner.planner import ExecutionPlanner
+from app.agent.execution_engine.orchestrator import ToolOrchestrator
+from app.agent.audit.recorder import AuditRecorder
+from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
 
 router = APIRouter(prefix="/api/v1/digital-export-manager", tags=["digital-export-manager"])
@@ -30,8 +36,12 @@ def get_memory_provider() -> SQLiteMemoryProvider:
 
 def get_reasoning_engine(
     memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
+    knowledge_provider_registry: KnowledgeProviderRegistry = Depends(get_knowledge_registry),
 ) -> ReasoningEngine:
-    return ReasoningEngine(memory_provider=memory_provider)
+    return ReasoningEngine(
+        knowledge_provider_registry=knowledge_provider_registry,
+        memory_provider=memory_provider,
+    )
 
 
 class ConnectResponse(BaseModel):
@@ -69,9 +79,9 @@ async def health():
             "session_management": "available",
             "mission_lifecycle": "available",
             "reasoning_engine": "available",
-            "task_planner": "not_implemented",
-            "execution_engine": "not_implemented",
-            "company_knowledge": "not_implemented",
+            "task_planner": "available",
+            "execution_engine": "available",
+            "company_knowledge": "available",
             "long_term_memory": "available",
             "avatar": "not_implemented",
         },
@@ -112,7 +122,6 @@ async def create_mission(
     if session.status != "active":
         raise HTTPException(status_code=400, detail=f"Session is {session.status}. Only active sessions can accept missions.")
 
-    mission_id = str(__import__("uuid").uuid4())
     now = datetime.now(timezone.utc)
     correlation_id = str(__import__("uuid").uuid4())
     idempotency_key = str(__import__("uuid").uuid4())
@@ -135,37 +144,70 @@ async def create_mission(
     requires_approval = decision.get("requires_approval", False)
     approval_status = decision.get("approval_status", "pending")
 
-    mission = Mission(
-        mission_id=mission_id,
-        mission_type=mission_type_value,
-        objective=decision.get("reasoning", f"Execute {mission_type_value} mission"),
-        priority=5,
-        requester={"user_id": session.user_id},
-        context={
-            "session_id": session_id,
-            "decision": decision_context,
-        },
-        constraints=decision_context.get("constraints", []),
-        approval_policy={"requires_approval": requires_approval, "status": approval_status},
-        execution_policy={"mode": "sequential", "retry_count": 0, "timeout_seconds": 300},
-        created_at=now,
-        correlation_id=correlation_id,
-        idempotency_key=idempotency_key,
-        audit_context={"source": "api", "session_id": session_id, "chosen_path": chosen_path},
-        payload=request.payload,
-        status="pending",
-    )
+    decision_for_planner = {
+        "decision_id": str(__import__("uuid").uuid4()),
+        "session_id": session_id,
+        "chosen_path": chosen_path,
+        "reasoning": decision.get("reasoning", f"Execute {mission_type_value} mission"),
+        "context": decision_context,
+        "requires_approval": requires_approval,
+        "approval_status": approval_status,
+    }
+    session_context = session_manager.get_context(session_id) or {}
 
-    saved = session_manager.add_mission(session_id, mission)
-    if not saved:
-        raise HTTPException(status_code=500, detail="Failed to save mission to session")
+    try:
+        task_planner = TaskPlanner(tool_registry=tool_registry)
+        plan_result = task_planner.plan(decision_for_planner, session_context)
+        mission = plan_result["mission"]
 
-    return MissionResponse(
-        mission_id=mission_id,
-        session_id=session_id,
-        status="pending",
-        created_at=now,
-    )
+        execution_planner = ExecutionPlanner()
+        execution_result = await execution_planner.plan(mission.model_dump(mode="json"))
+        execution_plan = execution_result["execution_plan"]
+
+        audit_recorder = AuditRecorder(get_db)
+        tool_orchestrator = ToolOrchestrator(
+            tool_registry=tool_registry,
+            audit_recorder=audit_recorder,
+            session_manager=session_manager,
+        )
+
+        session_context_with_idempotency = dict(session_context)
+        session_context_with_idempotency["idempotency_key"] = idempotency_key
+
+        execution_output = await tool_orchestrator.execute(
+            execution_plan,
+            session_context=session_context_with_idempotency,
+        )
+
+        final_status = "completed" if execution_output.get("mission_status") == "completed" else "failed"
+        mission.status = final_status
+        mission.result = execution_output.get("results")
+        mission.error = execution_output.get("failure_summary", {}).get("error")
+        mission.updated_at = datetime.now(timezone.utc)
+
+        session_manager.update_mission_status(
+            session_id=session_id,
+            mission_id=mission.mission_id,
+            status=final_status,
+            result=execution_output.get("results"),
+        )
+
+        saved = session_manager.add_mission(session_id, mission)
+        if not saved:
+            raise HTTPException(status_code=500, detail="Failed to save mission to session")
+
+        return MissionResponse(
+            mission_id=mission.mission_id,
+            session_id=session_id,
+            status=final_status,
+            created_at=now,
+            completed_at=datetime.now(timezone.utc),
+            result=execution_output.get("results"),
+            error=mission.error,
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Mission execution failed: {e}")
 
 
 @router.get("/sessions/{session_id}", response_model=SessionDetailResponse)

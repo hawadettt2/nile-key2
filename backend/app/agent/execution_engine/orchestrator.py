@@ -414,6 +414,8 @@ class ToolOrchestrator:
             retry_policy = execution_policy.get("retry_policy", {})
             if isinstance(retry_policy, dict):
                 policy.update(retry_policy)
+            elif "retry_count" in execution_policy:
+                policy["max_retries"] = execution_policy.get("retry_count", 2)
 
         if session_context and isinstance(session_context, dict):
             ctx_policy = session_context.get("execution_policy", {})

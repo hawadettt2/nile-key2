@@ -32,6 +32,11 @@ def set_knowledge_registry(registry) -> None:
     _knowledge_registry = registry
 
 
+def get_knowledge_registry():
+    """Return the application-wide KnowledgeProviderRegistry, if set."""
+    return _knowledge_registry
+
+
 async def _get_knowledge_provider(source_id: str = "knowledge-graph"):
     if _knowledge_registry is None:
         return None

@@ -49,6 +49,9 @@ class TaskPlanner:
             tasks = self._create_tasks(mission, standing_orders, user_preferences)
             execution_plan = self._create_execution_plan(mission, tasks)
 
+            mission.tasks = [task.model_dump(mode="json") for task in tasks]
+            mission.execution_plan = execution_plan.model_dump(mode="json")
+
             return {
                 "mission": mission,
                 "execution_plan": execution_plan,

@@ -17,9 +17,10 @@ from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_sch
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
+from app.agent.knowledge.company_knowledge_provider import CompanyKnowledgeProvider
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, agent, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router
 
 knowledge_provider_registry = KnowledgeProviderRegistry()
 memory_provider = SQLiteMemoryProvider(db_path="nile_key.db")
@@ -59,13 +60,20 @@ async def lifespan(app: FastAPI):
     init_db()
     print("[SUCCESS] Database initialized")
     
-    # Register Knowledge Graph provider
+    # Register Knowledge providers
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)
         print("[SUCCESS] Knowledge Graph provider registered")
     except Exception as exc:
         print(f"[WARNING] Knowledge Graph provider registration failed: {exc}")
+
+    try:
+        company_knowledge_provider = CompanyKnowledgeProvider()
+        await knowledge_provider_registry.register(company_knowledge_provider)
+        print("[SUCCESS] Company Knowledge provider registered")
+    except Exception as exc:
+        print(f"[WARNING] Company Knowledge provider registration failed: {exc}")
     
     # Wire Memory and Knowledge providers for Trade Intelligence
     try:
@@ -144,7 +152,6 @@ app.include_router(eta.router)
 app.include_router(notifications.router)
 app.include_router(audit.router)
 app.include_router(workflow.router)
-app.include_router(agent.router)
 app.include_router(digital_export_manager_router)
 app.include_router(knowledge_graph.router)
 app.include_router(trade_intelligence.router)

@@ -15,7 +15,8 @@ class ReasoningEngine:
     and Memory Interface, evaluating options against company rules.
     """
 
-    def __init__(self, knowledge_provider=None, memory_provider=None, approval_gate=None):
+    def __init__(self, knowledge_provider_registry=None, memory_provider=None, approval_gate=None, knowledge_provider=None):
+        self.knowledge_provider_registry = knowledge_provider_registry
         self.knowledge_provider = knowledge_provider
         self.memory_provider = memory_provider
         self.approval_gate = approval_gate or ApprovalGate()
@@ -246,15 +247,46 @@ class ReasoningEngine:
             return []
 
     async def _query_knowledge(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Query KnowledgeProvider with graceful degradation."""
-        if not self.knowledge_provider:
-            return []
+        """Query KnowledgeProviderRegistry or single KnowledgeProvider with graceful degradation."""
+        results: List[Dict[str, Any]] = []
 
-        try:
-            return await self.knowledge_provider.query(
-                intent,
-                context=parameters,
-                limit=10,
-            )
-        except Exception:
-            return []
+        if self.knowledge_provider_registry is not None:
+            try:
+                providers_info = await self.knowledge_provider_registry.list_providers()
+                for source in providers_info:
+                    source_id = source.get("id")
+                    if not source_id:
+                        continue
+                    try:
+                        data = await self.knowledge_provider_registry.query(
+                            source_id=source_id,
+                            query=intent,
+                            context=parameters,
+                            limit=10,
+                        )
+                        if isinstance(data, dict):
+                            source_results = data.get("results")
+                            if isinstance(source_results, list):
+                                results.extend(source_results)
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+
+        if not results and self.knowledge_provider is not None:
+            try:
+                data = await self.knowledge_provider.query(
+                    intent,
+                    context=parameters,
+                    limit=10,
+                )
+                if isinstance(data, dict):
+                    provider_results = data.get("results")
+                    if isinstance(provider_results, list):
+                        results.extend(provider_results)
+                elif isinstance(data, list):
+                    results.extend(data)
+            except Exception:
+                pass
+
+        return results
