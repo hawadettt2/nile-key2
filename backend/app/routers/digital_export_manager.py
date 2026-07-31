@@ -261,8 +261,8 @@ async def close_session(
 
 @router.get("/tools")
 async def list_tools():
+    tools = tool_registry.list_tools()
     return {
-        "detail": "Tool listing is not implemented in Phase 1.",
-        "reason": "Tool implementations will be available in Phase 2",
-        "tools_available": len(tool_registry.list_tools()),
+        "tools": tools,
+        "count": len(tools),
     }
