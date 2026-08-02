@@ -51,3 +51,6 @@ uat_verify*.py
 tests/e2e/evidence/html-report/
 tests/e2e/evidence/results.json
 tests/e2e/evidence/test-results/
+
+# Vitest test artifacts
+test-results/
