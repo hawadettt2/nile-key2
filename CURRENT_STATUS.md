@@ -1,10 +1,10 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-07-30
+**Last Updated:** 2026-08-02
 **Branch:** main
 **Commit:** HEAD
 **Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED, WP-41 CLOSED)
-**Next Phase:** WP-42 — Owner Acceptance (DEFERRED — OPEN)
+**Next Phase:** Frontend AI/DEM UX — Owner Acceptance Closure
 
 ---
 
@@ -64,7 +64,7 @@
 - **ETA Tables Added:** `eta_connectors`, `eta_logs`, `eta_log_documents`; invoices table extended with ETA columns
 - **Shipping Tables Added:** `shipping_providers`, `shipping_parcel_templates`, `shipping_labels`, `shipping_logs`, `contacts`, `addresses`; shipments table extended with shipping columns
 - **Frontend:** Builds successfully with TypeScript + Vite + Tailwind CSS
-- **Tests:** 876 passing, 5 failed (pre-existing), 8 skipped by design
+- **Tests:** 933 passing, 2 failed (pre-existing), 8 skipped by design
 - **Routers:** ETA at `/api/v1/eta`; Shipping at `/api/v1/shipping`; Notifications/Audit at `/api/v1/notifications` and `/api/v1/audit/logs`; Export Workflows at `/api/v1/export-workflows`; Digital Export Manager at `/api/v1/digital-export-manager`; Knowledge Graph at `/api/v1/knowledge-graph`; Trade Intelligence at `/api/v1/trade-intelligence`; Auth, Suppliers, Customers, Customs, Resources, Documents, Invoices, Digital Export Manager, Workflow, Dashboard, Search routers registered in `main.py`
 - **Shipping Schemas:** Pydantic schemas for RateRequest, CreateShipmentRequest, ShipmentResult, TrackingResponse, provider/template schemas
 - **Shipping Clients:** LetMeShip + SendCloud HTTP clients with tenacity retry
@@ -264,6 +264,7 @@
 - WP-33 completed — Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
 - WP-40 completed — Docker Compose Final Verification; both images build successfully; services start healthy; backend API reachable on port 8000; frontend served on port 3000; database persistence verified via Docker volume; frontend TypeScript build errors resolved (vite.config.ts, NotificationBell.test.tsx, Notifications.test.tsx, NotificationBell.tsx dead code removed)
 - WP-41 completed — Production Documentation; README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent
+- Frontend AI/DEM UX completed — DEM Connect/Disconnect, Mission Composer (8 types), Mission Dashboard, Execution Progress polling, Reasoning Viewer, Approval Inbox with RBAC + agent_audit_logs persistence, Knowledge Explorer, Trade Intelligence dashboard, i18n; 11 DEM backend tests + 35 frontend tests passing; UAT checklist updated
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/archive/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
@@ -274,6 +275,6 @@ If resuming after session interruption:
 1. Read `PLAN.md` Section 12 (Project Continuity Protocol)
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
-4. Proceed to WP-42 — Owner Acceptance (DEFERRED — Manual UAT postponed per Project Owner decision 2026-07-25)
+4. Proceed to Frontend AI/DEM UX Owner Acceptance Closure
 
 

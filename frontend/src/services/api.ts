@@ -154,4 +154,34 @@ export const sendNotification = (data: { template_id: number; recipient: string;
 export const getAuditLogs = (params?: Record<string, unknown>) =>
   api.get('/api/v1/audit/logs', { params });
 
+export const connectToDEM = (data: { user_id: number; metadata?: Record<string, unknown> }) =>
+  api.post('/api/v1/digital-export-manager/connect', data);
+export const getDEMSessions = () => api.get('/api/v1/digital-export-manager/sessions');
+export const getDEMSession = (sessionId: string) =>
+  api.get(`/api/v1/digital-export-manager/sessions/${sessionId}`);
+export const disconnectDEM = (sessionId: string) =>
+  api.post(`/api/v1/digital-export-manager/sessions/${sessionId}/close`);
+export const createMission = (sessionId: string, data: { mission_type: string; payload: Record<string, unknown> }) =>
+  api.post(`/api/v1/digital-export-manager/missions?session_id=${sessionId}`, data);
+export const getDEMTools = () => api.get('/api/v1/digital-export-manager/tools');
+export const getApprovals = () => api.get('/api/v1/digital-export-manager/approvals');
+export const approveMission = (approvalId: string) =>
+  api.post(`/api/v1/digital-export-manager/approvals/${approvalId}/approve`);
+export const rejectMission = (approvalId: string) =>
+  api.post(`/api/v1/digital-export-manager/approvals/${approvalId}/reject`);
+
+export const getGraphNode = (entityType: string, entityId: number) =>
+  api.get(`/api/v1/knowledge-graph/nodes/${entityType}/${entityId}`);
+export const searchGraph = (query: string, entityType?: string) =>
+  api.get('/api/v1/knowledge-graph/search', { params: { query, entity_type: entityType } });
+export const traverseGraph = (entityType: string, entityId: number, depth?: number) =>
+  api.get(`/api/v1/knowledge-graph/traverse/${entityType}/${entityId}`, { params: { depth } });
+export const getGraphRelationships = (entityType: string, entityId: number) =>
+  api.get(`/api/v1/knowledge-graph/nodes/${entityType}/${entityId}/relationships`);
+
+export const analyzeSupplier = (data: { supplier_id: number; analysis_type?: string; date_range?: Record<string, unknown> }) =>
+  api.post('/api/v1/trade-intelligence/suppliers/analyze', data);
+export const detectTrends = (data: { entity_type: string; trend_parameters?: Record<string, unknown> }) =>
+  api.post('/api/v1/trade-intelligence/trends/detect', data);
+
 export default api;

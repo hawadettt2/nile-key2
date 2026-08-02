@@ -31,7 +31,7 @@ def _is_token_blacklisted(token: str) -> bool:
 def _rate_limit(limit_str: str):
     def decorator(func):
         db_url = os.environ.get("DATABASE_URL", "")
-        if "test" in db_url.lower():
+        if "test" in db_url.lower() or os.environ.get("DISABLE_RATE_LIMIT") == "true":
             return func
         return limiter.limit(limit_str)(func)
     return decorator

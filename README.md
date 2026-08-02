@@ -110,7 +110,7 @@ nile-key2/
 | 19 | Audit & Compliance | ✅ Implemented (WP-21) |
 | 20 | Notifications | ✅ Implemented (WP-21) |
 
-## Frontend Pages (11)
+## Frontend Pages (22)
 
 1. **Login** — Authentication page
 2. **Dashboard** — Live statistics and widgets
@@ -123,6 +123,14 @@ nile-key2/
 9. **Resources** — Guides and regulations
 10. **Notifications** — Notification list and management
 11. **Profile** — User profile management
+12. **Digital Export Manager** — DEM landing, connect/disconnect, session management
+13. **DEM Sessions** — Session history and detail
+14. **DEM Missions** — Mission dashboard and detail with execution progress
+15. **DEM Mission Composer** — Submit new missions (8 types)
+16. **DEM Approvals** — Manager approval inbox
+17. **DEM Tools** — Tools registry viewer
+18. **Knowledge Graph** — Entity search and relationship exploration
+19. **Trade Intelligence** — Supplier analysis and trend detection
 
 ## Testing
 

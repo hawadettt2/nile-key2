@@ -1351,7 +1351,7 @@ class TestExecutionEngineApprovalGates:
         session_context = {"chosen_path": "shipping", "intent": "cancel shipment"}
         result = await engine.execute(plan, session_context=session_context)
 
-        assert result["mission_status"] == MissionStatus.FAILED.value
+        assert result["mission_status"] == MissionStatus.PENDING_APPROVAL.value
         assert result["execution_trace"][0]["execution_status"] == "pending_approval"
         assert result["execution_trace"][0]["result"]["error"] == "Approval required before execution"
 

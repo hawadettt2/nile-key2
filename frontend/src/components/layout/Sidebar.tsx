@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, Settings, LogOut, Menu, X, User, Bell } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, Settings, LogOut, Menu, X, User, Bell, Brain, Network, BarChart3 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 
@@ -11,6 +11,9 @@ interface SidebarProps {
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'dashboard' },
+  { path: '/digital-export-manager', icon: Brain, label: 'digitalExportManager' },
+  { path: '/knowledge-graph', icon: Network, label: 'knowledgeGraph' },
+  { path: '/trade-intelligence', icon: BarChart3, label: 'tradeIntelligence' },
   { path: '/suppliers', icon: Truck, label: 'suppliers' },
   { path: '/customers', icon: Users, label: 'customers' },
   { path: '/shipments', icon: Globe, label: 'shipments' },

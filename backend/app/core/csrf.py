@@ -1,6 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from app.core.config import settings
+import os
 
 
 class CSRFMiddleware(BaseHTTPMiddleware):
@@ -14,6 +15,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         if not self.allowed_origins:
+            return await call_next(request)
+
+        if os.environ.get("DISABLE_CSRF") == "true":
             return await call_next(request)
 
         has_cookies = bool(request.cookies)

@@ -85,3 +85,4 @@ class AuditRecorder:
                 db.commit()
         except Exception:
             pass
+

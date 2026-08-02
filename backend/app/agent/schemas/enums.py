@@ -17,6 +17,7 @@ class MissionStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+    PENDING_APPROVAL = "pending_approval"
 
 
 class TaskStatus(str, Enum):

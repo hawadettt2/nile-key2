@@ -22,6 +22,7 @@ from app.agent.execution_engine.orchestrator import ToolOrchestrator
 from app.agent.audit.recorder import AuditRecorder
 from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
+from app.routers.auth import get_current_user, require_role
 
 router = APIRouter(prefix="/api/v1/digital-export-manager", tags=["digital-export-manager"])
 
@@ -179,7 +180,13 @@ async def create_mission(
             session_context=session_context_with_idempotency,
         )
 
-        final_status = "completed" if execution_output.get("mission_status") == "completed" else "failed"
+        execution_mission_status = execution_output.get("mission_status", "failed")
+        if execution_mission_status == "completed":
+            final_status = "completed"
+        elif execution_mission_status == "pending_approval":
+            final_status = "pending_approval"
+        else:
+            final_status = "failed"
         mission.status = final_status
         mission.result = execution_output.get("results")
         mission.error = execution_output.get("failure_summary", {}).get("error")
@@ -204,6 +211,9 @@ async def create_mission(
             completed_at=datetime.now(timezone.utc),
             result=execution_output.get("results"),
             error=mission.error,
+            reasoning=decision.get("reasoning"),
+            requires_approval=requires_approval,
+            approval_status=approval_status,
         )
 
     except Exception as e:
@@ -259,6 +269,48 @@ async def close_session(
     )
 
 
+class SessionSummary(BaseModel):
+    session_id: str
+    user_id: int
+    status: str
+    started_at: datetime
+    ended_at: Optional[datetime] = None
+    mission_count: int = 0
+
+
+@router.get("/sessions", response_model=List[SessionSummary])
+async def list_sessions(
+    current_user: dict = Depends(get_current_user),
+    session_manager: SessionManager = Depends(get_session_manager),
+):
+    try:
+        with session_manager.db_session_factory() as db:
+            rows = db.execute(
+                "SELECT id, user_id, status, started_at, ended_at FROM agent_sessions WHERE user_id = ? ORDER BY started_at DESC",
+                (current_user.get("id"),),
+            ).fetchall()
+
+        summaries = []
+        for row in rows:
+            session_id, user_id, status, started_at, ended_at = row
+            try:
+                context = session_manager.get_context(session_id) or {}
+                mission_count = len(context.get("missions", []))
+            except Exception:
+                mission_count = 0
+            summaries.append(SessionSummary(
+                session_id=session_id,
+                user_id=user_id,
+                status=status,
+                started_at=datetime.fromisoformat(started_at),
+                ended_at=datetime.fromisoformat(ended_at) if ended_at else None,
+                mission_count=mission_count,
+            ))
+        return summaries
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to list sessions: {exc}")
+
+
 @router.get("/tools")
 async def list_tools():
     tools = tool_registry.list_tools()
@@ -266,3 +318,100 @@ async def list_tools():
         "tools": tools,
         "count": len(tools),
     }
+
+
+class ApprovalItem(BaseModel):
+    mission_id: str
+    session_id: str
+    user_id: int
+    mission_type: Optional[str] = None
+    status: str
+    requires_approval: bool = False
+    approval_status: str = "pending"
+    reasoning: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class ApprovalDecisionResponse(BaseModel):
+    mission_id: str
+    decision: str
+    approved_by: int
+    decided_at: str
+    message: str
+
+
+@router.get("/approvals", response_model=List[ApprovalItem])
+async def list_approvals(
+    current_user: dict = Depends(require_role(["owner", "manager"])),
+    session_manager: SessionManager = Depends(get_session_manager),
+):
+    approvals = session_manager.get_pending_approvals(user_id=current_user.get("id"))
+    return approvals
+
+
+@router.post("/approvals/{approval_id}/approve", response_model=ApprovalDecisionResponse)
+async def approve_approval(
+    approval_id: str,
+    current_user: dict = Depends(require_role(["owner", "manager"])),
+    session_manager: SessionManager = Depends(get_session_manager),
+    audit_recorder: AuditRecorder = Depends(lambda: AuditRecorder(get_db)),
+):
+    session_id = None
+    for session in session_manager.get_pending_approvals():
+        if session.get("mission_id") == approval_id:
+            session_id = session.get("session_id")
+            break
+
+    if not session_id:
+        raise HTTPException(status_code=404, detail="Approval not found")
+
+    decided_at = datetime.now(timezone.utc).isoformat()
+    audit_recorder.record_agent_action(
+        session_id=session_id,
+        agent_id=current_user.get("username", "unknown"),
+        action="approval_decision",
+        input_data={"approval_id": approval_id, "decision": "approved"},
+        output_data={"decision": "approved", "approved_by": current_user.get("id"), "decided_at": decided_at},
+    )
+
+    return ApprovalDecisionResponse(
+        mission_id=approval_id,
+        decision="approved",
+        approved_by=current_user.get("id", 0),
+        decided_at=decided_at,
+        message="Approval recorded. Mission remains in pending_approval state.",
+    )
+
+
+@router.post("/approvals/{approval_id}/reject", response_model=ApprovalDecisionResponse)
+async def reject_approval(
+    approval_id: str,
+    current_user: dict = Depends(require_role(["owner", "manager"])),
+    session_manager: SessionManager = Depends(get_session_manager),
+    audit_recorder: AuditRecorder = Depends(lambda: AuditRecorder(get_db)),
+):
+    session_id = None
+    for session in session_manager.get_pending_approvals():
+        if session.get("mission_id") == approval_id:
+            session_id = session.get("session_id")
+            break
+
+    if not session_id:
+        raise HTTPException(status_code=404, detail="Approval not found")
+
+    decided_at = datetime.now(timezone.utc).isoformat()
+    audit_recorder.record_agent_action(
+        session_id=session_id,
+        agent_id=current_user.get("username", "unknown"),
+        action="approval_decision",
+        input_data={"approval_id": approval_id, "decision": "rejected"},
+        output_data={"decision": "rejected", "rejected_by": current_user.get("id"), "decided_at": decided_at},
+    )
+
+    return ApprovalDecisionResponse(
+        mission_id=approval_id,
+        decision="rejected",
+        approved_by=current_user.get("id", 0),
+        decided_at=decided_at,
+        message="Rejection recorded. Mission remains in pending_approval state.",
+    )

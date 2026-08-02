@@ -194,7 +194,7 @@ class ToolOrchestrator:
                     ).to_dict()
                 )
                 failed_task_id = task_id
-                mission_status = MissionStatus.FAILED.value
+                mission_status = MissionStatus.PENDING_APPROVAL.value
                 if self.monitoring_service:
                     self.monitoring_service.record_task_execution(
                         mission_id=mission_id or "",

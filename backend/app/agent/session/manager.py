@@ -221,3 +221,50 @@ class SessionManager:
             })
         except Exception:
             return False
+
+    def get_pending_approvals(self, user_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Find all missions with pending_approval status across sessions."""
+        try:
+            with self.db_session_factory() as db:
+                rows = db.execute(
+                    "SELECT id, user_id, context FROM agent_sessions WHERE status = ?",
+                    ("active",),
+                ).fetchall()
+
+            approvals = []
+            for row in rows:
+                session_id, row_user_id, context_json = row
+                if user_id is not None and row_user_id != user_id:
+                    continue
+                try:
+                    context = json.loads(context_json) if context_json else {}
+                except Exception:
+                    continue
+                missions = context.get("missions", [])
+                for mission in missions:
+                    if mission.get("status") == "pending_approval":
+                        approvals.append({
+                            "mission_id": mission.get("mission_id"),
+                            "session_id": session_id,
+                            "user_id": row_user_id,
+                            "mission_type": mission.get("mission_type"),
+                            "status": mission.get("status"),
+                            "requires_approval": mission.get("requires_approval", False),
+                            "approval_status": mission.get("approval_status", "pending"),
+                            "reasoning": mission.get("reasoning"),
+                            "created_at": mission.get("created_at"),
+                        })
+            return approvals
+        except Exception:
+            return []
+
+    def get_mission_by_id(self, session_id: str, mission_id: str) -> Optional[Dict[str, Any]]:
+        """Get a specific mission from a session."""
+        context = self.get_context(session_id)
+        if context is None:
+            return None
+        missions = context.get("missions", [])
+        for mission in missions:
+            if mission.get("mission_id") == mission_id:
+                return mission
+        return None

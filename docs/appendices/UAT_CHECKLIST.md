@@ -536,4 +536,37 @@ No browser automation or GUI interaction was performed because the execution env
 
 ---
 
+## AI / Digital Export Manager (DEM)
+
+### Connect / Disconnect
+- [ ] Connect creates a DEM session and updates the landing state
+- [ ] Disconnect closes the active session
+- [ ] Session history lists created sessions with mission counts
+
+### Mission Composer
+- [ ] New Mission page opens only when a session is active
+- [ ] All supported mission types are selectable
+- [ ] Submitting a mission returns `reasoning`, `requires_approval`, and `approval_status`
+
+### Mission Dashboard
+- [ ] Missions list loads missions from the active session
+- [ ] Mission detail shows Results and Decision Trace tabs
+- [ ] Execution Progress polls while mission is pending/running
+
+### Approval Flow
+- [ ] `pending_approval` missions remain in `pending_approval` state after manager approval
+- [ ] Approval Inbox requires owner/manager role
+- [ ] Approve/Reject records an `approval_decision` audit log entry
+- [ ] Rejecting an approval does not auto-fail or resume the mission
+
+### Knowledge Explorer
+- [ ] Search returns entities by query and optional entity type
+- [ ] Selecting an entity shows its relationships
+
+### Trade Intelligence
+- [ ] Supplier analysis accepts a supplier ID and returns analysis results
+- [ ] Trend detection accepts an entity type and returns trend data
+
+---
+
 *يرجى التأشير (- [x]) على كل اختبار بعد اجتيازه، وترك ملاحظات في حال الفشل.*

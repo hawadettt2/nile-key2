@@ -11,3 +11,6 @@ class MissionResponse(BaseModel):
     error: Optional[str] = None
     created_at: datetime
     completed_at: Optional[datetime] = None
+    reasoning: Optional[str] = None
+    requires_approval: bool = False
+    approval_status: str = "pending"

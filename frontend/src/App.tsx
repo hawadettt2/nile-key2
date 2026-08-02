@@ -12,6 +12,16 @@ import { Documents } from '@/pages/Documents';
 import { Resources } from '@/pages/Resources';
 import { Profile } from '@/pages/Profile';
 import { Notifications } from '@/pages/Notifications';
+import { DEMLanding } from '@/pages/DEMLanding';
+import { DEMSessions } from '@/pages/DEMSessions';
+import { DEMSessionDetail } from '@/pages/DEMSessionDetail';
+import { DEMMissions } from '@/pages/DEMMissions';
+import { DEMMissionDetail } from '@/pages/DEMMissionDetail';
+import { DEMMissionComposer } from '@/pages/DEMMissionComposer';
+import { DEMApprovals } from '@/pages/DEMApprovals';
+import { DEMTools } from '@/pages/DEMTools';
+import { KnowledgeGraph } from '@/pages/KnowledgeGraph';
+import { TradeIntelligence } from '@/pages/TradeIntelligence';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -42,6 +52,16 @@ function App() {
           <Route path="resources" element={<Resources />} />
           <Route path="profile" element={<Profile />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="digital-export-manager" element={<DEMLanding />} />
+          <Route path="digital-export-manager/sessions" element={<DEMSessions />} />
+          <Route path="digital-export-manager/sessions/:sessionId" element={<DEMSessionDetail />} />
+          <Route path="digital-export-manager/missions" element={<DEMMissions />} />
+          <Route path="digital-export-manager/missions/new" element={<DEMMissionComposer />} />
+          <Route path="digital-export-manager/missions/:missionId" element={<DEMMissionDetail />} />
+          <Route path="digital-export-manager/approvals" element={<DEMApprovals />} />
+          <Route path="digital-export-manager/tools" element={<DEMTools />} />
+          <Route path="knowledge-graph" element={<KnowledgeGraph />} />
+          <Route path="trade-intelligence" element={<TradeIntelligence />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
