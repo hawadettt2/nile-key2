@@ -104,6 +104,52 @@ def delete_user(user_id: int, current_user: dict = Depends(require_role(["owner"
     return {"message": "User deleted successfully"}
 
 
+@router.get("/pending", response_model=List[User])
+def list_pending_users(current_user: dict = Depends(require_role(["owner", "manager"]))):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE approval_status = 'pending' ORDER BY id ASC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [_user_row_to_response(row) for row in rows]
+
+
+@router.post("/{user_id}/approve", response_model=MessageResponse)
+def approve_user(user_id: int, role: Optional[str] = Query(None), current_user: dict = Depends(require_role(["owner", "manager"]))):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    update_fields = {"approval_status": "approved", "is_active": 1}
+    if role:
+        update_fields["role"] = role
+    if not execute_update(conn=conn, table_name="users", record_id=user_id,
+                          data=type("U", (), {"model_dump": lambda self, exclude_unset=True: update_fields})()):
+        conn.close()
+        return {"message": "No changes"}
+    conn.close()
+    return {"message": "User approved successfully"}
+
+
+@router.post("/{user_id}/reject", response_model=MessageResponse)
+def reject_user(user_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    cursor.execute(
+        "UPDATE users SET approval_status = 'rejected', is_active = 0, updated_at = ? WHERE id = ?",
+        (datetime.utcnow().isoformat(), user_id)
+    )
+    conn.commit()
+    conn.close()
+    return {"message": "User rejected successfully"}
+
+
 def _user_row_to_response(row) -> dict:
     return {
         "id": row["id"],
@@ -114,6 +160,7 @@ def _user_row_to_response(row) -> dict:
         "phone": row.get("phone"),
         "company": row.get("company"),
         "is_active": bool(row.get("is_active", 1)),
+        "approval_status": row.get("approval_status"),
         "created_at": row.get("created_at"),
         "updated_at": row.get("updated_at"),
     }

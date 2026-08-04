@@ -3,29 +3,39 @@ import uuid
 import pytest
 
 
-def _unique_credentials(role="staff"):
+def _unique_credentials(role: str = "customer") -> dict:
     unique_id = str(uuid.uuid4())[:8]
     return {
         "email": f"test_{unique_id}@example.com",
         "username": f"test_user_{unique_id}",
         "full_name": "Test User",
         "password": "TestPassword123!",
-        "role": role,
     }
 
 
-def _register_and_login(client, role="staff"):
-    credentials = _unique_credentials(role)
-    client.post("/api/v1/auth/register", json=credentials)
-    login_resp = client.post("/api/v1/auth/login", json={
-        "username": credentials["username"],
-        "password": credentials["password"]
+def _register_and_login(client, role: str = "customer") -> tuple[dict, str]:
+    user = _unique_credentials(role=role)
+    if "role" in user:
+        del user["role"]
+    reg_resp = client.post("/api/v1/auth/register", json=user)
+    assert reg_resp.status_code == 200
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
     })
-    return login_resp.json()["access_token"], credentials
+    assert owner_resp.status_code == 200
+    client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
+    response = client.post("/api/v1/auth/login", json={
+        "username": user["username"],
+        "password": user["password"],
+    })
+    token = response.json()["access_token"]
+    return user, token
 
 
 def test_get_rates_authorized(client):
-    token, _ = _register_and_login(client)
+    _, token = _register_and_login(client)
     response = client.request("GET", "/api/v1/shipping/rates", json={
         "origin": "EG",
         "destination": "US",
@@ -41,14 +51,14 @@ def test_get_rates_authorized(client):
 
 
 def test_list_shipments_authorized(client):
-    token, _ = _register_and_login(client)
+    _, token = _register_and_login(client)
     response = client.get("/api/v1/shipping/shipments", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
 
 def test_track_shipment_authorized(client):
-    token, _ = _register_and_login(client, role="sales")
+    _, token = _register_and_login(client, role="sales")
     create_resp = client.post("/api/v1/shipping/shipments", json={
         "origin": "EG",
         "destination": "US",
@@ -62,14 +72,14 @@ def test_track_shipment_authorized(client):
 
 
 def test_track_shipment_not_found(client):
-    token, _ = _register_and_login(client)
+    _, token = _register_and_login(client)
     response = client.get("/api/v1/shipping/track/UNKNOWN123", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 404
     assert "Shipment not found" in response.json().get("detail", "")
 
 
 def test_get_shipment_authorized(client):
-    token, _ = _register_and_login(client, role="sales")
+    _, token = _register_and_login(client, role="sales")
     create_resp = client.post("/api/v1/shipping/shipments", json={
         "origin": "EG",
         "destination": "US",
@@ -83,7 +93,7 @@ def test_get_shipment_authorized(client):
 
 
 def test_create_shipment_with_sales_role(client):
-    token, _ = _register_and_login(client, role="sales")
+    _, token = _register_and_login(client, role="sales")
     response = client.post("/api/v1/shipping/shipments", json={
         "origin": "EG",
         "destination": "US",
@@ -97,7 +107,7 @@ def test_create_shipment_with_sales_role(client):
 
 
 def test_create_shipment_with_staff_role_forbidden(client):
-    token, _ = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/shipping/shipments", json={
         "origin": "EG",
         "destination": "US",
@@ -109,7 +119,7 @@ def test_create_shipment_with_staff_role_forbidden(client):
 
 
 def test_update_shipment_with_manager_role(client):
-    token, _ = _register_and_login(client, role="manager")
+    _, token = _register_and_login(client, role="manager")
     create_resp = client.post("/api/v1/shipping/shipments", json={
         "origin": "EG",
         "destination": "US",
@@ -125,7 +135,7 @@ def test_update_shipment_with_manager_role(client):
 
 
 def test_get_label_authorized(client):
-    token, _ = _register_and_login(client, role="sales")
+    _, token = _register_and_login(client, role="sales")
     create_resp = client.post("/api/v1/shipping/shipments", json={
         "origin": "EG",
         "destination": "US",

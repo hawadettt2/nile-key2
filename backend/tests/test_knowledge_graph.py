@@ -7,7 +7,7 @@ def _unique_email(role):
     return f"kg_{role}_{uuid.uuid4().hex[:8]}@example.com"
 
 
-def _register_and_login(client, role="owner"):
+def _register_and_login(client, role="customer"):
     email = _unique_email(role)
     password = "TestPassword123!"
 
@@ -16,13 +16,18 @@ def _register_and_login(client, role="owner"):
         "username": email,
         "full_name": "KG Test User",
         "password": password,
-        "role": role,
         "phone": "000",
         "company": "TestCo"
     })
     if reg.status_code != 200:
         raise RuntimeError(f"Registration failed: {reg.status_code} {reg.text}")
-
+    user_id = reg.json().get("user_id") or reg.json().get("id")
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
     res = client.post("/api/v1/auth/login", json={
         "username": email,
         "password": password
@@ -30,7 +35,14 @@ def _register_and_login(client, role="owner"):
     if res.status_code != 200:
         raise RuntimeError(f"Login failed: {res.status_code} {res.text}")
 
-    return res.json()["access_token"]
+    user = {
+        "email": email,
+        "username": email,
+        "full_name": "KG Test User",
+        "password": password,
+    }
+    token = res.json()["access_token"]
+    return user, token
 
 
 def _auth_headers(token):
@@ -97,7 +109,7 @@ def test_sync_requires_authentication(client):
 
 
 def test_create_node_forbidden_for_staff(client):
-    token = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -107,13 +119,13 @@ def test_create_node_forbidden_for_staff(client):
 
 
 def test_delete_node_forbidden_for_staff(client):
-    token = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.delete("/api/v1/knowledge-graph/nodes/customer/1", headers=_auth_headers(token))
     assert response.status_code == 403
 
 
 def test_create_edge_forbidden_for_staff(client):
-    token = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/knowledge-graph/edges", json={
         "source_node_id": "customer:1",
         "target_node_id": "supplier:1",
@@ -123,13 +135,13 @@ def test_create_edge_forbidden_for_staff(client):
 
 
 def test_delete_edge_forbidden_for_staff(client):
-    token = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.delete("/api/v1/knowledge-graph/edges/edge-1", headers=_auth_headers(token))
     assert response.status_code == 403
 
 
 def test_sync_forbidden_for_staff(client):
-    token = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/knowledge-graph/sync", headers=_auth_headers(token))
     assert response.status_code == 403
 
@@ -138,13 +150,13 @@ def test_sync_forbidden_for_staff(client):
 
 
 def test_get_node_not_found(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.get("/api/v1/knowledge-graph/nodes/customer/999999", headers=_auth_headers(token))
     assert response.status_code == 404
 
 
 def test_create_and_get_node(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     create_resp = client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -162,7 +174,7 @@ def test_create_and_get_node(client):
 
 
 def test_update_node_via_upsert(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -179,7 +191,7 @@ def test_update_node_via_upsert(client):
 
 
 def test_delete_node(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -198,7 +210,7 @@ def test_delete_node(client):
 
 
 def test_create_and_get_edge(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -225,7 +237,7 @@ def test_create_and_get_edge(client):
 
 
 def test_create_edge_source_not_found(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.post("/api/v1/knowledge-graph/edges", json={
         "source_node_id": "missing:1",
         "target_node_id": "supplier:1",
@@ -235,7 +247,7 @@ def test_create_edge_source_not_found(client):
 
 
 def test_create_edge_target_not_found(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -251,7 +263,7 @@ def test_create_edge_target_not_found(client):
 
 
 def test_delete_edge(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -275,7 +287,7 @@ def test_delete_edge(client):
 
 
 def test_delete_edge_not_found(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.delete("/api/v1/knowledge-graph/edges/nonexistent", headers=_auth_headers(token))
     assert response.status_code == 404
 
@@ -284,7 +296,7 @@ def test_delete_edge_not_found(client):
 
 
 def test_get_relationships_returns_derived_and_explicit(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -300,7 +312,7 @@ def test_get_relationships_returns_derived_and_explicit(client):
 
 
 def test_get_relationships_not_found(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.get("/api/v1/knowledge-graph/nodes/customer/999999/relationships", headers=_auth_headers(token))
     assert response.status_code == 404
 
@@ -309,7 +321,7 @@ def test_get_relationships_not_found(client):
 
 
 def test_traverse_node(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -325,7 +337,7 @@ def test_traverse_node(client):
 
 
 def test_traverse_invalid_depth(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.get("/api/v1/knowledge-graph/traverse/customer/1?depth=0", headers=_auth_headers(token))
     assert response.status_code == 422
 
@@ -334,7 +346,7 @@ def test_traverse_invalid_depth(client):
 
 
 def test_search_nodes(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -349,7 +361,7 @@ def test_search_nodes(client):
 
 
 def test_search_nodes_with_entity_type_filter(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     client.post("/api/v1/knowledge-graph/nodes", json={
         "entity_type": "customer",
         "entity_id": 1,
@@ -363,7 +375,7 @@ def test_search_nodes_with_entity_type_filter(client):
 
 
 def test_search_nodes_empty_query(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.get("/api/v1/knowledge-graph/search?query=", headers=_auth_headers(token))
     assert response.status_code == 422
 
@@ -372,13 +384,13 @@ def test_search_nodes_empty_query(client):
 
 
 def test_sync_requires_manager_role(client):
-    token = _register_and_login(client, role="staff")
+    _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/knowledge-graph/sync", headers=_auth_headers(token))
     assert response.status_code == 403
 
 
 def test_sync_with_owner_role(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     response = client.post("/api/v1/knowledge-graph/sync", headers=_auth_headers(token))
     assert response.status_code == 200
     data = response.json()

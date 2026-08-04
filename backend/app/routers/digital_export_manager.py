@@ -26,6 +26,8 @@ from app.routers.auth import get_current_user, require_role
 
 router = APIRouter(prefix="/api/v1/digital-export-manager", tags=["digital-export-manager"])
 
+INTERNAL_ROLES = ["owner", "manager", "sales", "admin_staff", "accountant", "logistics"]
+
 
 def get_session_manager() -> SessionManager:
     return SessionManager(get_db)
@@ -92,6 +94,7 @@ async def health():
 @router.post("/connect", response_model=ConnectResponse)
 async def connect(
     request: SessionCreateRequest,
+    current_user: dict = Depends(require_role(INTERNAL_ROLES)),
     session_manager: SessionManager = Depends(get_session_manager),
     memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
 ):
@@ -113,6 +116,7 @@ async def connect(
 async def create_mission(
     request: MissionRequest,
     session_id: str,
+    current_user: dict = Depends(require_role(INTERNAL_ROLES)),
     session_manager: SessionManager = Depends(get_session_manager),
     reasoning_engine: ReasoningEngine = Depends(get_reasoning_engine),
 ):
@@ -223,6 +227,7 @@ async def create_mission(
 @router.get("/sessions/{session_id}", response_model=SessionDetailResponse)
 async def get_session(
     session_id: str,
+    current_user: dict = Depends(require_role(INTERNAL_ROLES)),
     session_manager: SessionManager = Depends(get_session_manager),
 ):
     session = session_manager.get_session(session_id)
@@ -247,6 +252,7 @@ async def get_session(
 @router.post("/sessions/{session_id}/close", response_model=CloseSessionResponse)
 async def close_session(
     session_id: str,
+    current_user: dict = Depends(require_role(INTERNAL_ROLES)),
     session_manager: SessionManager = Depends(get_session_manager),
 ):
     session = session_manager.get_session(session_id)
@@ -280,7 +286,7 @@ class SessionSummary(BaseModel):
 
 @router.get("/sessions", response_model=List[SessionSummary])
 async def list_sessions(
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_role(INTERNAL_ROLES)),
     session_manager: SessionManager = Depends(get_session_manager),
 ):
     try:
@@ -312,7 +318,9 @@ async def list_sessions(
 
 
 @router.get("/tools")
-async def list_tools():
+async def list_tools(
+    current_user: dict = Depends(get_current_user),
+):
     tools = tool_registry.list_tools()
     return {
         "tools": tools,

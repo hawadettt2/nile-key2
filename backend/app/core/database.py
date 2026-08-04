@@ -108,6 +108,7 @@ def _ensure_users_schema(c: sqlite3.Cursor):
         "username": "TEXT",
         "phone": "TEXT",
         "company": "TEXT",
+        "approval_status": "TEXT DEFAULT 'pending'",
         "updated_at": "TIMESTAMP"
     })
 
@@ -447,7 +448,7 @@ def _create_tables(c: sqlite3.Cursor):
             username TEXT UNIQUE,
             phone TEXT,
             company TEXT,
-            role TEXT NOT NULL DEFAULT 'staff',
+            role TEXT NOT NULL DEFAULT 'customer',
             is_active INTEGER DEFAULT 1,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP
@@ -834,14 +835,16 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
                 "Set OWNER_PASSWORD environment variable before starting the application."
             )
         c.execute("""
-            INSERT INTO users (email, password_hash, full_name, username, role)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users (email, password_hash, full_name, username, role, is_active, approval_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             "owner@nile-key.com",
             get_password_hash(owner_password),
             "Owner",
             "owner",
-            "owner"
+            "owner",
+            1,
+            "approved"
         ))
     elif not owner_row[1]:
         c.execute("UPDATE users SET username = ? WHERE email = ?", ("owner", "owner@nile-key.com"))

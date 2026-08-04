@@ -8,20 +8,27 @@ from app.agent.session.manager import SessionManager
 from app.core.database import get_db, init_db
 
 
-def _unique_credentials(role: str = "staff") -> dict:
+def _unique_credentials(role: str = "customer") -> dict:
     unique_id = str(uuid.uuid4())[:8]
     return {
         "email": f"dem_{unique_id}@example.com",
         "username": f"dem_user_{unique_id}",
         "full_name": "DEM Test User",
         "password": "TestPassword123!",
-        "role": role,
     }
 
 
-def _register_and_login(client, role: str = "staff") -> tuple[dict, str]:
+def _register_and_login(client, role: str = "customer") -> tuple[dict, str]:
     user = _unique_credentials(role=role)
-    client.post("/api/v1/auth/register", json=user)
+    reg_resp = client.post("/api/v1/auth/register", json=user)
+    assert reg_resp.status_code == 200
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
     response = client.post("/api/v1/auth/login", json={
         "username": user["username"],
         "password": user["password"],
@@ -56,7 +63,7 @@ def test_mission_response_has_new_fields():
 
 
 def test_connect_creates_session(client):
-    _, token = _register_and_login(client)
+    _, token = _register_and_login(client, role="sales")
     response = client.post(
         "/api/v1/digital-export-manager/connect",
         json={"user_id": 1},
@@ -69,7 +76,7 @@ def test_connect_creates_session(client):
 
 
 def test_list_tools_endpoint(client):
-    _, token = _register_and_login(client)
+    _, token = _register_and_login(client, role="sales")
     response = client.get(
         "/api/v1/digital-export-manager/tools",
         headers=_auth_headers(token),
@@ -143,9 +150,16 @@ def test_approve_creates_audit_log_entry(client):
         "username": f"audit_user_{unique_id}",
         "full_name": "Audit Test User",
         "password": "TestPassword123!",
-        "role": "manager",
     }
-    client.post("/api/v1/auth/register", json=credentials)
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    assert reg_resp.status_code == 200
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    client.post(f"/api/v1/users/{user_id}/approve?role=manager", json={})
     response = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"],

@@ -1,0 +1,15 @@
+﻿node.exe : (node:1488) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead 
+to security vulnerabilities, as the arguments are not escaped, only concatenated.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\OSAMA\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:1488) [DE...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+[1/2] [chromium] › suites\uat\ai-dem-journey.spec.ts:33:7 › AI/DEM User Experience — E2E › Login → DEM Connect → Create Mission → Execution → Results → Reasoning → Disconnect
+[2/2] [chromium] › suites\uat\ai-dem-journey.spec.ts:83:7 › AI/DEM User Experience — E2E › Mission requiring approval → Manager sees pending approval → Approve
+  2 passed (19.9s)

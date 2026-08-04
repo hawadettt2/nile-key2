@@ -10,19 +10,19 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'dashboard' },
-  { path: '/digital-export-manager', icon: Brain, label: 'digitalExportManager' },
-  { path: '/knowledge-graph', icon: Network, label: 'knowledgeGraph' },
-  { path: '/trade-intelligence', icon: BarChart3, label: 'tradeIntelligence' },
-  { path: '/suppliers', icon: Truck, label: 'suppliers' },
-  { path: '/customers', icon: Users, label: 'customers' },
-  { path: '/shipments', icon: Globe, label: 'shipments' },
-  { path: '/invoices', icon: FileText, label: 'invoices' },
-  { path: '/customs', icon: FileArchive, label: 'customs' },
-  { path: '/documents', icon: BookOpen, label: 'documents' },
-  { path: '/resources', icon: Settings, label: 'resources' },
-  { path: '/profile', icon: User, label: 'profile' },
-  { path: '/notifications', icon: Bell, label: 'notifications' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics', 'supplier', 'customer'] },
+  { path: '/digital-export-manager', icon: Brain, label: 'digitalExportManager', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
+  { path: '/knowledge-graph', icon: Network, label: 'knowledgeGraph', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
+  { path: '/trade-intelligence', icon: BarChart3, label: 'tradeIntelligence', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
+  { path: '/suppliers', icon: Truck, label: 'suppliers', roles: ['owner', 'manager', 'admin_staff', 'logistics'] },
+  { path: '/customers', icon: Users, label: 'customers', roles: ['owner', 'manager', 'sales', 'admin_staff'] },
+  { path: '/shipments', icon: Globe, label: 'shipments', roles: ['owner', 'manager', 'sales', 'admin_staff', 'logistics', 'customer'] },
+  { path: '/invoices', icon: FileText, label: 'invoices', roles: ['owner', 'manager', 'sales', 'accountant', 'customer'] },
+  { path: '/customs', icon: FileArchive, label: 'customs', roles: ['owner', 'manager', 'admin_staff', 'logistics'] },
+  { path: '/documents', icon: BookOpen, label: 'documents', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
+  { path: '/resources', icon: Settings, label: 'resources', roles: ['owner', 'manager', 'admin_staff'] },
+  { path: '/profile', icon: User, label: 'profile', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics', 'supplier', 'customer'] },
+  { path: '/notifications', icon: Bell, label: 'notifications', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics', 'supplier', 'customer'] },
 ];
 
 export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
@@ -31,6 +31,10 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
   const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const visibleNavItems = user
+    ? navItems.filter(item => item.roles.includes(user.role))
+    : navItems;
 
   const sidebarContent = (
     <div className={`h-full bg-slate-900 text-white flex flex-col transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}>
@@ -55,7 +59,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
 
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-1 px-2">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
             return (

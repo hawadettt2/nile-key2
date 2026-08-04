@@ -84,15 +84,15 @@ def register(user_data: UserCreate, request: Request):
     hashed = get_password_hash(user_data.password)
     now = datetime.utcnow().isoformat()
     cursor.execute(
-        """INSERT INTO users (email, username, full_name, password_hash, role, phone, company, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        """INSERT INTO users (email, username, full_name, password_hash, phone, company, is_active, approval_status, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (user_data.email, user_data.username, user_data.full_name, hashed,
-         user_data.role, user_data.phone, user_data.company, now)
+         user_data.phone, user_data.company, 0, 'pending', now)
     )
     conn.commit()
     user_id = cursor.lastrowid
     conn.close()
-    return {"message": "User registered successfully", "user_id": user_id}
+    return {"message": "Registration pending approval", "user_id": user_id}
 
 
 @router.post("/login", response_model=Token)
@@ -108,6 +108,10 @@ def login(credentials: UserLogin, request: Request, response: Response):
     user = dict(row)
     if not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
+    if user.get("approval_status") == "pending":
+        raise HTTPException(status_code=403, detail="Your account is pending approval. Please wait for an administrator to approve your registration.")
+    if not user.get("is_active"):
+        raise HTTPException(status_code=403, detail="Your account is inactive. Please contact an administrator.")
     access = create_access_token({"sub": str(user["id"]), "role": user["role"]})
     refresh = create_refresh_token({"sub": str(user["id"])})
     response.set_cookie(
@@ -173,6 +177,7 @@ def get_me(current_user: dict = Depends(get_current_user)):
         "phone": current_user["phone"],
         "company": current_user["company"],
         "is_active": bool(current_user["is_active"]),
+        "approval_status": current_user.get("approval_status"),
         "created_at": current_user.get("created_at"),
         "updated_at": current_user.get("updated_at"),
     }

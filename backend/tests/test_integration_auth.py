@@ -17,7 +17,6 @@ def _unique_credentials():
         "username": f"test_user_{unique_id}",
         "full_name": "Test User",
         "password": "TestPassword123!",
-        "role": "staff",
     }
 
 
@@ -26,8 +25,13 @@ class TestFullLoginFlow:
 
     def test_full_login_flow_with_cookies(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
-
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         login_resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -47,7 +51,13 @@ class TestFullLoginFlow:
 
     def test_login_then_multiple_authenticated_requests(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -64,7 +74,13 @@ class TestSessionRestoration:
 
     def test_session_restored_with_cookies(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -79,7 +95,13 @@ class TestSessionRestoration:
 
     def test_session_invalid_without_cookies(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -96,7 +118,13 @@ class TestTransitionalHeaderAuth:
 
     def test_bearer_header_authenticates_without_cookies(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         login_resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -109,7 +137,13 @@ class TestTransitionalHeaderAuth:
 
     def test_bearer_header_after_login_still_works(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         login_resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -132,7 +166,13 @@ class TestCSRFIntegration:
             pytest.skip("ALLOWED_ORIGINS not set")
 
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -151,7 +191,13 @@ class TestCSRFIntegration:
             pytest.skip("ALLOWED_ORIGINS not set")
 
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -166,7 +212,13 @@ class TestRefreshFlow:
 
     def test_refresh_with_bearer_header(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         login_resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -186,7 +238,13 @@ class TestRefreshFlow:
 
     def test_refresh_then_authenticated_request(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         login_resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -205,7 +263,13 @@ class TestLogoutFlow:
 
     def test_logout_clears_local_state(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
@@ -216,7 +280,13 @@ class TestLogoutFlow:
 
     def test_logout_revokes_token(self, client):
         credentials = _unique_credentials()
-        client.post("/api/v1/auth/register", json=credentials)
+        reg_resp = client.post("/api/v1/auth/register", json=credentials)
+        user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+        client.post("/api/v1/auth/login", json={
+            "username": "owner",
+            "password": "TestOwnerPass123!"
+        })
+        client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
         login_resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]

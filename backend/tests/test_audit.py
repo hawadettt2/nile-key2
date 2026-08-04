@@ -8,7 +8,7 @@ def _unique_email(role):
     return f"audit_{role}_{uuid.uuid4().hex[:8]}@example.com"
 
 
-def _register_and_login(client, role="manager"):
+def _register_and_login(client, role="customer"):
     email = _unique_email(role)
     password = "Test1234!"
 
@@ -17,13 +17,18 @@ def _register_and_login(client, role="manager"):
         "username": email,
         "full_name": "Test User",
         "password": password,
-        "role": role,
         "phone": "000",
         "company": "TestCo"
     })
     if reg.status_code != 200:
         raise RuntimeError(f"Registration failed: {reg.status_code} {reg.text}")
-
+    user_id = reg.json().get("user_id") or reg.json().get("id")
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
     res = client.post("/api/v1/auth/login", json={
         "username": email,
         "password": password
@@ -31,7 +36,14 @@ def _register_and_login(client, role="manager"):
     if res.status_code != 200:
         raise RuntimeError(f"Login failed: {res.status_code} {res.text}")
 
-    return res.json()["access_token"]
+    user = {
+        "email": email,
+        "username": email,
+        "full_name": "Test User",
+        "password": password,
+    }
+    token = res.json()["access_token"]
+    return user, token
 
 
 def _seed_audit_logs(client):
@@ -80,7 +92,7 @@ def test_get_audit_logs_requires_authorization(client):
 
 
 def test_get_audit_logs_authorized_with_owner(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -94,7 +106,7 @@ def test_get_audit_logs_authorized_with_owner(client):
 
 
 def test_get_audit_logs_authorized_with_manager(client):
-    token = _register_and_login(client, role="manager")
+    _, token = _register_and_login(client, role="manager")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -105,7 +117,7 @@ def test_get_audit_logs_authorized_with_manager(client):
 
 
 def test_get_audit_logs_authorized_with_admin_staff(client):
-    token = _register_and_login(client, role="admin_staff")
+    _, token = _register_and_login(client, role="admin_staff")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -116,7 +128,7 @@ def test_get_audit_logs_authorized_with_admin_staff(client):
 
 
 def test_get_audit_logs_forbidden_for_sales(client):
-    token = _register_and_login(client, role="sales")
+    _, token = _register_and_login(client, role="sales")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -130,7 +142,7 @@ def test_get_audit_logs_forbidden_for_sales(client):
 
 
 def test_get_audit_logs_filters_by_user_id(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -145,7 +157,7 @@ def test_get_audit_logs_filters_by_user_id(client):
 
 
 def test_get_audit_logs_filters_by_entity_type(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -160,7 +172,7 @@ def test_get_audit_logs_filters_by_entity_type(client):
 
 
 def test_get_audit_logs_filters_by_action(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -175,7 +187,7 @@ def test_get_audit_logs_filters_by_action(client):
 
 
 def test_get_audit_logs_filters_by_date_range(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     now = datetime.utcnow()
@@ -193,7 +205,7 @@ def test_get_audit_logs_filters_by_date_range(client):
 
 
 def test_get_audit_logs_pagination_skip(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -207,7 +219,7 @@ def test_get_audit_logs_pagination_skip(client):
 
 
 def test_get_audit_logs_pagination_limit(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -221,7 +233,7 @@ def test_get_audit_logs_pagination_limit(client):
 
 
 def test_get_audit_logs_response_model(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(
@@ -238,7 +250,7 @@ def test_get_audit_logs_response_model(client):
 
 
 def test_get_audit_logs_empty_result(client):
-    token = _register_and_login(client, role="owner")
+    _, token = _register_and_login(client, role="owner")
     _seed_audit_logs(client)
 
     response = client.get(

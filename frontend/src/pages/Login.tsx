@@ -13,6 +13,7 @@ export function Login() {
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ username: '', password: '', email: '', full_name: '', phone: '', company: '' });
   const [showWarning, setShowWarning] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +21,14 @@ export function Login() {
     if (isRegister) {
       setShowWarning(true);
       await register(form);
-      if (!error) { setIsRegister(false); setShowWarning(false); }
+      if (!error) {
+        setIsRegister(false);
+        setShowWarning(false);
+        setPendingApproval(true);
+      }
     } else {
       setShowWarning(false);
+      setPendingApproval(false);
       await login(form.username, form.password);
       if (useAuthStore.getState().isAuthenticated) navigate('/');
     }
@@ -51,11 +57,17 @@ export function Login() {
               <AlertCircle size={16} />{error}
             </div>
           )}
-          {isRegister && showWarning && (
+          {isRegister && showWarning && !pendingApproval && (
             <Alert variant="warning" className="mb-4">
               <AlertTriangle size={16} />
               <AlertTitle>Registration notice</AlertTitle>
               <AlertDescription>New accounts require company approval before access is granted.</AlertDescription>
+            </Alert>
+          )}
+          {pendingApproval && (
+            <Alert variant="default" className="mb-4">
+              <AlertTitle>{t('auth.register')} - Pending Approval</AlertTitle>
+              <AlertDescription>Your account has been submitted for approval. You will be able to log in once an administrator approves your registration.</AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">

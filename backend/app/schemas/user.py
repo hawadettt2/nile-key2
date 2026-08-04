@@ -9,11 +9,11 @@ class UserBase(BaseModel):
     full_name: str
     phone: Optional[str] = None
     company: Optional[str] = None
+    approval_status: Optional[str] = None
 
 
 class UserCreate(UserBase):
     password: str
-    role: str = "Customer"
 
 
 class UserLogin(BaseModel):
@@ -33,6 +33,7 @@ class User(UserBase):
     id: int
     role: str
     is_active: bool
+    approval_status: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

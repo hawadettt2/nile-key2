@@ -10,7 +10,6 @@ def _unique_credentials():
         "username": f"test_user_{unique_id}",
         "full_name": "Test User",
         "password": "TestPassword123!",
-        "role": "staff"
     }
 
 
@@ -21,16 +20,23 @@ def test_csrf_allows_post_with_valid_origin(client):
         pytest.skip("ALLOWED_ORIGINS not set; CSRF middleware is inactive in this environment")
 
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
     client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
     })
-    response = client.post("/api/v1/auth/login", json={
+
+    resp = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
     }, headers={"Origin": "http://localhost:5173"})
-    assert response.status_code == 200
+    assert resp.status_code == 200
 
 
 def test_csrf_blocks_post_with_invalid_origin(client):
@@ -40,11 +46,18 @@ def test_csrf_blocks_post_with_invalid_origin(client):
         pytest.skip("ALLOWED_ORIGINS not set; CSRF middleware is inactive in this environment")
 
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
     client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
     })
+
     response = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
@@ -60,11 +73,18 @@ def test_csrf_blocks_post_without_origin_or_referer(client):
         pytest.skip("ALLOWED_ORIGINS not set; CSRF middleware is inactive in this environment")
 
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
     client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
     })
+
     response = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
@@ -80,7 +100,13 @@ def test_csrf_allows_post_with_authorization_header(client):
         pytest.skip("ALLOWED_ORIGINS not set; CSRF middleware is inactive in this environment")
 
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
     login_resp = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
@@ -100,10 +126,17 @@ def test_csrf_allows_get_requests(client):
         pytest.skip("ALLOWED_ORIGINS not set; CSRF middleware is inactive in this environment")
 
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    client.post(f"/api/v1/users/{user_id}/approve?role=customer", json={})
     client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
     })
+
     response = client.get("/api/v1/auth/me")
     assert response.status_code == 200

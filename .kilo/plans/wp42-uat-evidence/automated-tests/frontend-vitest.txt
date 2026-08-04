@@ -1,0 +1,136 @@
+﻿node.exe : (node:9696) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead 
+to security vulnerabilities, as the arguments are not escaped, only concatenated.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\OSAMA\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:9696) [DE...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mF:/nilekey/nile-key-project/nile-key2/frontend[39m
+
+[90mstderr[2m | src/components/NotificationBell.test.tsx[2m > [22m[2mNotificationBell[2m > [22m[2mrenders bell 
+icon[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. 
+You can use the `v7_startTransition` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the 
+`v7_relativeSplatPath` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+Warning: An update to NotificationBell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at 
+https://reactjs.org/link/wrap-tests-with-act
+    at NotificationBell (F:\nilekey\nile-key-project\nile-key2\frontend\src\components\NotificationBell.tsx:25:49)
+    at Router 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1203:17)
+    at MemoryRouter 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1097:7)
+Warning: An update to NotificationBell inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at 
+https://reactjs.org/link/wrap-tests-with-act
+    at NotificationBell (F:\nilekey\nile-key-project\nile-key2\frontend\src\components\NotificationBell.tsx:25:49)
+    at Router 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1203:17)
+    at MemoryRouter 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1097:7)
+
+[90mstderr[2m | src/pages/DEMApprovals.test.tsx[2m > [22m[2mDEMApprovals[2m > [22m[2mrenders approval inbox 
+title[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. 
+You can use the `v7_startTransition` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the 
+`v7_relativeSplatPath` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+Warning: An update to DEMApprovals inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at 
+https://reactjs.org/link/wrap-tests-with-act
+    at DEMApprovals (F:\nilekey\nile-key-project\nile-key2\frontend\src\pages\DEMApprovals.tsx:30:59)
+    at Router 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1203:17)
+    at MemoryRouter 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1097:7)
+
+ [32m✓[39m src/components/NotificationBell.test.tsx [2m ([22m[2m8 tests[22m[2m)[22m[33m 1178[2mms[22m[39m
+[90mstderr[2m | src/pages/DEMApprovals.test.tsx[2m > [22m[2mDEMApprovals[2m > [22m[2mshows permission denied 
+for non-manager role[22m[39m
+Warning: An update to DEMApprovals inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at 
+https://reactjs.org/link/wrap-tests-with-act
+    at DEMApprovals (F:\nilekey\nile-key-project\nile-key2\frontend\src\pages\DEMApprovals.tsx:30:59)
+    at Router 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1203:17)
+    at MemoryRouter 
+(F:\nilekey\nile-key-project\nile-key2\frontend\node_modules\react-router\dist\umd\react-router.development.js:1097:7)
+
+ [32m✓[39m src/pages/DEMApprovals.test.tsx [2m ([22m[2m6 tests[22m[2m)[22m[33m 791[2mms[22m[39m
+ [32m✓[39m src/pages/Notifications.test.tsx [2m ([22m[2m9 tests[22m[2m)[22m[33m 1348[2mms[22m[39m
+[90mstderr[2m | src/pages/KnowledgeGraph.test.tsx[2m > [22m[2mKnowledgeGraph[2m > [22m[2mrenders knowledge 
+explorer title[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. 
+You can use the `v7_startTransition` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the 
+`v7_relativeSplatPath` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/pages/DEMMissionComposer.test.tsx[2m > [22m[2mDEMMissionComposer[2m > [22m[2mrenders new 
+mission title[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. 
+You can use the `v7_startTransition` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the 
+`v7_relativeSplatPath` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/pages/DEMMissionComposer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[33m 572[2mms[22m[39m
+ [32m✓[39m src/pages/KnowledgeGraph.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[33m 1185[2mms[22m[39m
+[90mstderr[2m | src/pages/TradeIntelligence.test.tsx[2m > [22m[2mTradeIntelligence[2m > [22m[2mrenders trade 
+intelligence title[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. 
+You can use the `v7_startTransition` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the 
+`v7_relativeSplatPath` future flag to opt-in early. For more information, see 
+https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/pages/TradeIntelligence.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[33m 963[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m35 passed[39m[22m[90m (35)[39m
+[2m   Start at [22m 05:31:36
+[2m   Duration [22m 12.01s[2m (transform 1.78s, setup 1.47s, collect 9.26s, tests 6.04s, environment 12.94s, prepare 1.80s)[22m
+

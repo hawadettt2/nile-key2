@@ -11,13 +11,25 @@ def _unique_credentials():
         "username": f"test_user_{unique_id}",
         "full_name": "Test User",
         "password": "TestPassword123!",
-        "role": "staff"
     }
+
+
+def _register_and_approve(client, credentials, role="customer"):
+    reg_resp = client.post("/api/v1/auth/register", json=credentials)
+    assert reg_resp.status_code == 200
+    user_id = reg_resp.json().get("user_id") or reg_resp.json().get("id")
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    response = client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
+    assert response.status_code == 200
 
 
 def test_get_me_authorized(client):
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    _register_and_approve(client, credentials)
     login_resp = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
@@ -37,7 +49,7 @@ def test_get_me_unauthorized(client):
 
 def test_refresh_token_success(client):
     credentials = _unique_credentials()
-    client.post("/api/v1/auth/register", json=credentials)
+    _register_and_approve(client, credentials)
     login_resp = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
