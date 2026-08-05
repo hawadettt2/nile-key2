@@ -14,6 +14,21 @@
   "resource": { "title": "Resources", "type": "Type", "category": "Category", "country": "Country", "addResource": "Add Resource", "editResource": "Edit Resource", "details": "Resource Details", "url": "URL", "status": "Status", "fieldTitle": "Title" },
   "notifications": { "all": "All", "unread": "Unread", "read": "Read", "allTypes": "All types", "noNotifications": "No notifications yet", "noRead": "No read notifications", "allRead": "All notifications have been read", "markAllRead": "Mark all read" },
   "knowledgeGraph": { "title": "Knowledge Explorer", "subtitle": "Search entities and explore relationships", "searchPlaceholder": "Search entities...", "allTypes": "All Types", "supplier": "Supplier", "customer": "Customer", "shipment": "Shipment", "searching": "Searching...", "searchResults": "Search Results", "entityDetail": "Entity Detail", "emptySearch": "Search for entities to explore the knowledge graph", "selectedEntity": "Selected Entity", "id": "ID", "type": "Type", "label": "Label", "relationships": "Relationships", "noRelationshipsFound": "No relationships found", "selectDetail": "Select an entity from search results to view details" },
-  "tradeIntelligence": { "title": "Trade Intelligence", "subtitle": "Supplier analysis and market trend detection", "supplierAnalysis": "Supplier Analysis", "trends": "Trends", "supplierId": "Supplier ID", "analyze": "Analyze", "analyzing": "Analyzing...", "analysisComplete": "Analysis Complete", "analysisGenerated": "Supplier analysis generated", "analysisFailed": "Analysis failed", "analyzeFailed": "Failed to analyze supplier", "supplierAnalysisResults": "Supplier Analysis Results", "enterSupplierId": "Enter a supplier ID to run analysis", "detectTrends": "Detect Trends", "selectEntityTrends": "Select an entity type and detect trends", "detectedTrends": "Detected Trends", "selectEntityTypeTrends": "Select an entity type and detect trends" }
+  "tradeIntelligence": { "title": "Trade Intelligence", "subtitle": "Supplier analysis and market trend detection", "supplierAnalysis": "Supplier Analysis", "trends": "Trends", "supplierId": "Supplier ID", "analyze": "Analyze", "analyzing": "Analyzing...", "analysisComplete": "Analysis Complete", "analysisGenerated": "Supplier analysis generated", "analysisFailed": "Analysis failed", "analyzeFailed": "Failed to analyze supplier", "supplierAnalysisResults": "Supplier Analysis Results", "enterSupplierId": "Enter a supplier ID to run analysis", "detectTrends": "Detect Trends", "selectEntityTrends": "Select an entity type and detect trends", "detectedTrends": "Detected Trends", "selectEntityTypeTrends": "Select an entity type and detect trends" },
+  "landing": {
+    "hero": {
+      "subtitle": "The integrated digital platform for managing Egyptian export operations",
+      "description": "We connect suppliers, customers, and logistics partners in one digital ecosystem enabling shipment tracking, invoice management, and streamlined customs procedures."
+    },
+    "features": {
+      "shipments": { "title": "Shipment Management", "description": "Track shipments from origin to destination" },
+      "invoicing": { "title": "E-Invoicing", "description": "Manage invoices and taxes" },
+      "customs": { "title": "Customs Clearance", "description": "Streamlined customs procedures" },
+      "intelligence": { "title": "Trade Intelligence", "description": "Market analysis and trends" },
+      "dem": { "title": "Digital Export Manager", "description": "Executive intelligence layer for automating export tasks" },
+      "knowledgeGraph": { "title": "Knowledge Graph", "description": "Explore relationships between entities" }
+    },
+    "footer": { "copyright": "© 2026 Nile Key for Investment & International Trade. All rights reserved." }
+  }
 }
 

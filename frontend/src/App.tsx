@@ -82,8 +82,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={isAuthenticated ? <PrivateRoute><Layout /></PrivateRoute> : <PublicLanding />} />
-        <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+        <Route path="/" element={isAuthenticated ? <PrivateRoute><Layout /></PrivateRoute> : <PublicLanding />}>
           <Route index element={<RoleRedirect />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="suppliers" element={<Suppliers />} />
