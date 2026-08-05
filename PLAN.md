@@ -1265,7 +1265,40 @@ PLAN.md (Master Roadmap v2.1) ? ������ ������
 
 ---
 
-# 22. Current System State
+# 22. Architecture Vision Statement
+
+## 22.1 Target Architecture
+
+Nile Key is an Intelligent Operating Platform, not a traditional ERP with AI features.
+
+Digital Export Manager (DEM) is the first Executive Intelligence Layer in the platform.
+
+Architecture layers:
+- Executive Intelligence: DEM
+- Cognitive: Reasoning Engine, Company Knowledge Layer, Long-Term Memory (WP-31)
+- Planning: Task Planner, Execution Planner
+- Orchestration: Tool Orchestrator
+- Business / ERP Services: Shipping, ETA, Customs, Suppliers, Customers, Documents, Resources, Notifications, Audit, Workflow, Dashboard, Search
+- Database: SQLite (MVP) → PostgreSQL (Production)
+
+## 22.2 Current Implementation Status
+
+Current intelligence implementation is Deterministic/Scaffolded Intelligence — rule-based, interfaces, and registry-driven.
+
+No LLM Provider is currently connected. No final decision yet on LLM Provider, operating cost, Memory Intelligence, Knowledge Ingestion, or Avatar Renderer.
+
+Absence of a current LLM is not an architectural failure; it is an architecture-ready step toward a future target.
+
+## 22.3 Deferred / Future
+
+- LLM integration — abstraction layer exists in plan, actual implementation deferred
+- Knowledge Ingestion Pipeline — contract defined, implementation deferred
+- Avatar Renderer — contract defined, implementation deferred
+- Goal and Plan reasoning layers — deferred to future work packages
+- Multi-agent coordination — future
+- Full export operations autonomy — future
+
+---
 
 ## 22.1 Backend Status
 

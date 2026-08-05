@@ -6,6 +6,8 @@ Digital platform for managing Egyptian exports — vegetables, fruits, and food 
 
 **Client:** شركة مفتاح النيل للاستثمار والتجارة الدولية ذ.م.م
 
+Nile Key is an Intelligent Operating Platform with Digital Export Manager (DEM) as the Executive Intelligence Layer. The ERP and operational services are the execution layer; DEM is the executive intelligence layer that coordinates and orchestrates export operations autonomously.
+
 ---
 
 ## Structure
