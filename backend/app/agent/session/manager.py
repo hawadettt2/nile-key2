@@ -200,6 +200,84 @@ class SessionManager:
         except Exception:
             return False
 
+    async def enrich_context(self, session_id: str, memory_provider) -> Dict[str, Any]:
+        """Enrich session context with recent memory items.
+
+        This method proactively enriches the session context by recalling
+        standing orders, user preferences, and recent decisions from memory.
+        It is called before mission execution to provide the Reasoning Engine
+        with richer context.
+
+        Graceful degradation: any failure returns the current context unchanged.
+        """
+        if not memory_provider:
+            return self.get_context(session_id) or {}
+
+        try:
+            context = self.get_context(session_id) or {}
+
+            standing_orders = []
+            user_preferences = []
+            recent_decisions = []
+
+            try:
+                standing_orders = await memory_provider.recall(
+                    session_id=session_id,
+                    query="standing_order",
+                    limit=10,
+                )
+            except Exception:
+                pass
+
+            try:
+                user_preferences = await memory_provider.recall(
+                    session_id=session_id,
+                    query="preference",
+                    limit=10,
+                )
+            except Exception:
+                pass
+
+            try:
+                recent_decisions = await memory_provider.recall(
+                    session_id=session_id,
+                    query="decision",
+                    limit=10,
+                )
+            except Exception:
+                pass
+
+            if standing_orders:
+                context["standing_orders"] = standing_orders
+
+            if user_preferences:
+                context["user_preferences"] = {
+                    p.get("key"): p.get("value") for p in user_preferences if p.get("key")
+                }
+
+            if recent_decisions:
+                context["recent_decisions"] = [
+                    {
+                        "decision_id": d.get("key"),
+                        "chosen_path": d.get("value", {}).get("chosen_path") if isinstance(d.get("value"), dict) else None,
+                        "created_at": d.get("created_at"),
+                    }
+                    for d in recent_decisions[:5]
+                ]
+
+            context["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+            with self.db_session_factory() as db:
+                db.execute(
+                    "UPDATE agent_sessions SET context = ? WHERE id = ?",
+                    (json.dumps(context, default=str), session_id),
+                )
+                db.commit()
+
+            return context
+        except Exception:
+            return self.get_context(session_id) or {}
+
     async def initialize_session_memory(self, session_id: str, memory_provider, user_id: int) -> bool:
         """إثراء سياق الجلسة بالذكريات التاريخية للمستخدم عند بدء الجلسة.
 

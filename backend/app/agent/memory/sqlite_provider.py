@@ -81,19 +81,25 @@ class SQLiteMemoryProvider(MemoryProvider):
                             OR value LIKE ?
                           )
                       AND (expires_at IS NULL OR expires_at > ?)
-                    ORDER BY importance DESC
-                    LIMIT ?
                     """,
                     (
                         session_id,
                         f"%{query}%",
                         f"%{query}%",
                         datetime.utcnow().isoformat(),
-                        limit,
                     ),
                 )
                 rows = cursor.fetchall()
                 conn.close()
+
+                memory_type_weights = {
+                    "standing_order": 1.5,
+                    "preference": 1.3,
+                    "decision": 1.2,
+                    "context": 1.0,
+                }
+
+                query_lower = query.lower()
                 results = []
                 for row in rows:
                     item = dict(row)
@@ -101,8 +107,34 @@ class SQLiteMemoryProvider(MemoryProvider):
                         item["value"] = json.loads(item["value"]) if item["value"] is not None else None
                     except json.JSONDecodeError:
                         item["value"] = item["value"]
+
+                    key_lower = (item.get("key") or "").lower()
+                    value_lower = (str(item.get("value") or "")).lower()
+
+                    exact_match = query_lower == key_lower
+                    key_contains = query_lower in key_lower
+                    value_contains = query_lower in value_lower
+
+                    score = 0.0
+                    if exact_match:
+                        score += 2.0
+                    if key_contains:
+                        score += 1.0
+                    if value_contains:
+                        score += 0.5
+
+                    importance = item.get("importance", 5)
+                    if isinstance(importance, int):
+                        score += importance * 0.1
+
+                    memory_type = item.get("memory_type") or "context"
+                    score += memory_type_weights.get(memory_type, 1.0)
+
+                    item["recall_score"] = score
                     results.append(item)
-                return results
+
+                results.sort(key=lambda r: r.get("recall_score", 0), reverse=True)
+                return results[:limit]
 
             return await self._run(_query)
         except Exception as exc:

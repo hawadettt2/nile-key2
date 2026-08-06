@@ -36,7 +36,7 @@ class TestReasoningEngineCore:
         import asyncio
         request = {
             "intent": "Ship my package to Germany",
-            "parameters": {},
+            "parameters": {"destination": "Germany"},
             "context": {},
         }
 
@@ -92,7 +92,7 @@ class TestReasoningEngineCore:
         import asyncio
         request = {
             "intent": "Show dashboard statistics",
-            "parameters": {},
+            "parameters": {"view": "summary"},
             "context": {},
         }
 
@@ -106,7 +106,7 @@ class TestReasoningEngineCore:
         import asyncio
         request = {
             "intent": "Send notification to user",
-            "parameters": {},
+            "parameters": {"user_id": 1},
             "context": {},
         }
 
@@ -120,7 +120,7 @@ class TestReasoningEngineCore:
         import asyncio
         request = {
             "intent": "Transition workflow to next step",
-            "parameters": {},
+            "parameters": {"workflow_id": "wf-123"},
             "context": {},
         }
 
@@ -159,6 +159,64 @@ class TestReasoningEngineCore:
         assert isinstance(result["reasoning"], str)
         assert len(result["reasoning"]) > 0
 
+    def test_reason_includes_memory_influence_in_reasoning(self):
+        import asyncio
+        from app.agent.memory.interface import MemoryProvider
+        from unittest.mock import AsyncMock
+
+        memory_provider = AsyncMock(spec=MemoryProvider)
+        memory_provider.recall.return_value = [
+            {"value": {"preferred_path": "shipping"}, "memory_type": "preference"}
+        ]
+        engine = ReasoningEngine(memory_provider=memory_provider)
+
+        request = {
+            "intent": "Ship package",
+            "parameters": {},
+            "context": {},
+        }
+
+        result = asyncio.get_event_loop().run_until_complete(
+            engine.reason("session-123", request)
+        )
+
+        assert "Memory:" in result["reasoning"]
+        assert "preference" in result["reasoning"]
+
+    def test_reason_includes_knowledge_influence_in_reasoning(self):
+        import asyncio
+        from app.agent.knowledge.provider import KnowledgeProvider
+        from unittest.mock import AsyncMock
+
+        knowledge_provider = AsyncMock(spec=KnowledgeProvider)
+        knowledge_provider.query.return_value = [
+            {"path": "shipping", "source_id": "sop-shipping"}
+        ]
+        engine = ReasoningEngine(knowledge_provider=knowledge_provider)
+
+        request = {
+            "intent": "Ship package",
+            "parameters": {},
+            "context": {},
+        }
+
+        result = asyncio.get_event_loop().run_until_complete(
+            engine.reason("session-123", request)
+        )
+
+        assert "Knowledge:" in result["reasoning"]
+        assert "sop-shipping" in result["reasoning"]
+
+    def test_reason_includes_fallback_indicator(self):
+        import asyncio
+        request = {"intent": "do something completely random"}
+
+        result = asyncio.get_event_loop().run_until_complete(
+            self.engine.reason("session-123", request)
+        )
+
+        assert "fallback" in result["reasoning"].lower() or "no matching intent" in result["reasoning"].lower()
+
     def test_reason_deterministic_output(self):
         import asyncio
         request = {
@@ -177,23 +235,62 @@ class TestReasoningEngineCore:
         assert result1["chosen_path"] == result2["chosen_path"]
         assert result1["alternatives"] == result2["alternatives"]
 
-    def test_reason_missing_intent_raises(self):
+    def test_reason_missing_intent_falls_back_to_search(self):
+        import asyncio
         request = {}
 
-        with pytest.raises(DecisionEngineException):
-            import asyncio
-            asyncio.get_event_loop().run_until_complete(
-                self.engine.reason("session-123", request)
-            )
+        result = asyncio.get_event_loop().run_until_complete(
+            self.engine.reason("session-123", request)
+        )
 
-    def test_reason_empty_intent_raises(self):
+        assert result["chosen_path"] == "search"
+
+    def test_reason_empty_intent_falls_back_to_search(self):
+        import asyncio
         request = {"intent": ""}
 
-        with pytest.raises(DecisionEngineException):
-            import asyncio
-            asyncio.get_event_loop().run_until_complete(
-                self.engine.reason("session-123", request)
-            )
+        result = asyncio.get_event_loop().run_until_complete(
+            self.engine.reason("session-123", request)
+        )
+
+        assert result["chosen_path"] == "search"
+
+    def test_reason_forbidden_path_falls_back_to_search(self):
+        import asyncio
+        from app.agent.memory.interface import MemoryProvider
+        from unittest.mock import AsyncMock
+
+        memory_provider = AsyncMock(spec=MemoryProvider)
+        memory_provider.recall.return_value = [
+            {"value": {"forbidden_path": "shipping"}, "memory_type": "standing_order"}
+        ]
+        engine = ReasoningEngine(memory_provider=memory_provider)
+
+        request = {
+            "intent": "Ship package to Germany",
+            "parameters": {},
+            "context": {},
+        }
+
+        result = asyncio.get_event_loop().run_until_complete(
+            engine.reason("session-123", request)
+        )
+
+        assert result["chosen_path"] == "search"
+
+    def test_reason_low_confidence_falls_back_to_search(self):
+        import asyncio
+        request = {
+            "intent": "ship",
+            "parameters": {},
+            "context": {},
+        }
+
+        result = asyncio.get_event_loop().run_until_complete(
+            self.engine.reason("session-123", request)
+        )
+
+        assert result["chosen_path"] == "search"
 
 
 class TestReasoningEngineApprovalGates:
@@ -385,7 +482,7 @@ class TestReasoningEngineProviderIntegration:
 
         request = {
             "intent": "Ship package",
-            "parameters": {},
+            "parameters": {"package_id": "pkg-123"},
             "context": {},
         }
 
@@ -400,7 +497,7 @@ class TestReasoningEngineProviderIntegration:
 
         request = {
             "intent": "Ship package",
-            "parameters": {},
+            "parameters": {"package_id": "pkg-123"},
             "context": {},
         }
 

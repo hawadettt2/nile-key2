@@ -118,6 +118,7 @@ async def create_mission(
     session_id: str,
     current_user: dict = Depends(require_role(INTERNAL_ROLES)),
     session_manager: SessionManager = Depends(get_session_manager),
+    memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
     reasoning_engine: ReasoningEngine = Depends(get_reasoning_engine),
 ):
     session = session_manager.get_session(session_id)
@@ -126,6 +127,8 @@ async def create_mission(
 
     if session.status != "active":
         raise HTTPException(status_code=400, detail=f"Session is {session.status}. Only active sessions can accept missions.")
+
+    await session_manager.enrich_context(session_id, memory_provider)
 
     now = datetime.now(timezone.utc)
     correlation_id = str(__import__("uuid").uuid4())

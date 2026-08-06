@@ -41,7 +41,7 @@ class ReasoningEngine:
 
             candidates = self._map_intent_to_candidates(intent, parameters)
             if not candidates:
-                raise DecisionEngineException(f"No valid candidates found for intent: {intent}")
+                candidates = [{"path": "search", "mission_type": MissionType.SEARCH_ENTITIES.value, "confidence": 0.5, "match_count": 0, "score": 0.5}]
 
             memories = await self._query_memory(session_id, intent)
             knowledge = await self._query_knowledge(intent, parameters)
@@ -153,6 +153,7 @@ class ReasoningEngine:
 
             for candidate in candidates:
                 path = candidate.get("path")
+                candidate.setdefault("score", candidate["confidence"])
 
                 if mem_type == "standing_order" and value.get("forbidden_path") == path:
                     candidate["score"] = -100.0
@@ -176,7 +177,7 @@ class ReasoningEngine:
         evaluated = []
 
         for candidate in candidates:
-            score = candidate["confidence"]
+            score = candidate.get("score", candidate["confidence"])
 
             if parameters:
                 score += 0.1
@@ -200,6 +201,14 @@ class ReasoningEngine:
             raise DecisionEngineException("No candidates available for selection")
 
         best = scored_candidates[0]
+        best_score = best.get("score", best.get("confidence", 0))
+
+        if best_score < 0:
+            return "search", [c["path"] for c in scored_candidates]
+
+        if best_score < 0.3:
+            return "search", [c["path"] for c in scored_candidates]
+
         chosen_path = best["path"]
         alternatives = [c["path"] for c in scored_candidates[1:]]
 
@@ -217,18 +226,45 @@ class ReasoningEngine:
         knowledge: List[Dict[str, Any]],
     ) -> str:
         """Build human-readable reasoning for the decision."""
-        best = scored_candidates[0] if scored_candidates else {}
+        if not scored_candidates:
+            return "No candidates available for decision."
+
+        best = scored_candidates[0]
         confidence = best.get("confidence", 0)
         score = best.get("score", 0)
+        match_count = best.get("match_count", 0)
+        is_fallback = match_count == 0
 
-        reasoning_parts = [
-            f"Selected '{chosen_path}' with confidence {confidence:.2f} (score {score:.2f}).",
-        ]
+        if is_fallback:
+            reasoning_parts = [
+                f"No matching intent found. Using fallback: '{chosen_path}' (confidence {confidence:.2f})."
+            ]
+        else:
+            reasoning_parts = [
+                f"Selected '{chosen_path}' with confidence {confidence:.2f} (score {score:.2f})."
+            ]
 
         if memories:
-            reasoning_parts.append(f"Considered {len(memories)} memory entries.")
+            memory_types = [m.get("memory_type") for m in memories if isinstance(m, dict)]
+            memory_types = [t for t in memory_types if t]
+            if memory_types:
+                unique_types = sorted(set(memory_types))
+                reasoning_parts.append(f"Memory: {len(memories)} entries from {', '.join(unique_types)}.")
+            else:
+                reasoning_parts.append(f"Memory: {len(memories)} entries considered.")
+
         if knowledge:
-            reasoning_parts.append(f"Considered {len(knowledge)} knowledge entries.")
+            sources = []
+            for k in knowledge:
+                if isinstance(k, dict):
+                    source = k.get("source_id") or k.get("path")
+                    if source:
+                        sources.append(source)
+            if sources:
+                unique_sources = sorted(set(sources))[:3]
+                reasoning_parts.append(f"Knowledge: {len(knowledge)} entries from {', '.join(unique_sources)}.")
+            else:
+                reasoning_parts.append(f"Knowledge: {len(knowledge)} entries considered.")
 
         if len(scored_candidates) > 1:
             alternatives = [c["path"] for c in scored_candidates[1:]]

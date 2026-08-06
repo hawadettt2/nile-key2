@@ -232,6 +232,66 @@ class TestSessionManager:
         assert status is not None
         assert status.session_id == "session-123"
 
+    @pytest.mark.asyncio
+    async def test_enrich_context_adds_standing_orders(self):
+        mock_memory = MagicMock()
+        mock_memory.recall = AsyncMock(side_effect=[
+            [{"key": "so-1", "value": {"forbidden_path": "shipping"}, "memory_type": "standing_order", "created_at": "2026-01-01T00:00:00Z"}],
+            [],
+            [],
+        ])
+
+        self.mock_conn.execute.return_value.fetchone.return_value = (
+            "session-123",
+            1,
+            "active",
+            datetime.now(timezone.utc).isoformat(),
+            None,
+            json.dumps({}),
+        )
+
+        context = await self.manager.enrich_context("session-123", mock_memory)
+
+        assert "standing_orders" in context
+        assert len(context["standing_orders"]) == 1
+        assert context["standing_orders"][0]["key"] == "so-1"
+
+    @pytest.mark.asyncio
+    async def test_enrich_context_adds_user_preferences(self):
+        mock_memory = MagicMock()
+        mock_memory.recall = AsyncMock(side_effect=[
+            [],
+            [{"key": "pref-1", "value": {"preferred_path": "eta"}, "memory_type": "preference", "created_at": "2026-01-01T00:00:00Z"}],
+            [],
+        ])
+
+        self.mock_conn.execute.return_value.fetchone.return_value = (
+            "session-123",
+            1,
+            "active",
+            datetime.now(timezone.utc).isoformat(),
+            None,
+            json.dumps({}),
+        )
+
+        context = await self.manager.enrich_context("session-123", mock_memory)
+
+        assert "user_preferences" in context
+        assert context["user_preferences"]["pref-1"] == {"preferred_path": "eta"}
+
+    @pytest.mark.asyncio
+    async def test_enrich_context_handles_memory_failure_gracefully(self):
+        mock_memory = MagicMock()
+        mock_memory.recall = AsyncMock(side_effect=Exception("Memory unavailable"))
+
+        self.mock_conn.execute.return_value.fetchone.return_value = (
+            json.dumps({"existing": "context"}),
+        )
+
+        context = await self.manager.enrich_context("session-123", mock_memory)
+
+        assert context["existing"] == "context"
+
 
 class TestAuditRecorder:
     def setup_method(self):
