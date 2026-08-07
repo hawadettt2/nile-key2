@@ -136,3 +136,54 @@ def test_login_pending_user_forbidden(client):
     })
     assert response.status_code == 403
     assert "pending approval" in response.json().get("detail", "").lower()
+
+
+def test_register_creates_pending_inactive_user(client):
+    credentials = _unique_credentials()
+    response = client.post("/api/v1/auth/register", json=credentials)
+    assert response.status_code == 200
+    user_id = response.json().get("user_id") or response.json().get("id")
+    assert user_id is not None
+
+    user_resp = client.get(f"/api/v1/users/{user_id}", headers={"Authorization": "Bearer dummy"})
+    assert user_resp.status_code in (401, 403)
+
+    import sqlite3
+    from app.core.config import settings
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    conn.close()
+    assert row is not None
+    assert row["is_active"] == 0
+    assert row["approval_status"] == "pending"
+
+
+def test_register_rejects_arbitrary_role_from_client(client):
+    credentials = _unique_credentials()
+    credentials["role"] = "owner"
+    response = client.post("/api/v1/auth/register", json=credentials)
+    assert response.status_code == 422
+
+
+def test_approve_assigns_role(client):
+    credentials = _unique_credentials()
+    _register_and_approve(client, credentials, role="sales")
+    response = client.post("/api/v1/auth/login", json={
+        "username": credentials["username"],
+        "password": credentials["password"]
+    })
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    me_resp = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me_resp.status_code == 200
+    assert me_resp.json()["role"] == "sales"
+
+
+def test_register_response_has_no_role(client):
+    credentials = _unique_credentials()
+    response = client.post("/api/v1/auth/register", json=credentials)
+    assert response.status_code == 200
+    data = response.json()
+    assert "role" not in data

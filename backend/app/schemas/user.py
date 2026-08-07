@@ -15,6 +15,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+    class Config:
+        extra = 'forbid'
+
 
 class UserLogin(BaseModel):
     username: str

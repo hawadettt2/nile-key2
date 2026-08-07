@@ -236,3 +236,65 @@ def test_approve_creates_audit_log_entry(client):
     assert output_data["approved_by"] == data["approved_by"]
 
 
+def test_connect_requires_internal_role(client):
+    _, token = _register_and_login(client, role="supplier")
+    response = client.post(
+        "/api/v1/digital-export-manager/connect",
+        json={"user_id": 1},
+        headers=_auth_headers(token),
+    )
+    assert response.status_code == 403
+
+
+def test_connect_requires_internal_role_customer(client):
+    _, token = _register_and_login(client, role="customer")
+    response = client.post(
+        "/api/v1/digital-export-manager/connect",
+        json={"user_id": 1},
+        headers=_auth_headers(token),
+    )
+    assert response.status_code == 403
+
+
+def test_missions_requires_internal_role(client):
+    _, token = _register_and_login(client, role="supplier")
+    response = client.post(
+        "/api/v1/digital-export-manager/missions",
+        json={"mission_type": "export_readiness", "payload": {}},
+        headers=_auth_headers(token),
+    )
+    assert response.status_code == 403
+
+
+def test_sessions_list_requires_internal_role(client):
+    _, token = _register_and_login(client, role="customer")
+    response = client.get(
+        "/api/v1/digital-export-manager/sessions",
+        headers=_auth_headers(token),
+    )
+    assert response.status_code == 403
+
+
+def test_session_detail_requires_internal_role(client):
+    _, token = _register_and_login(client, role="supplier")
+    response = client.get(
+        "/api/v1/digital-export-manager/sessions/nonexistent-session",
+        headers=_auth_headers(token),
+    )
+    assert response.status_code == 403
+
+
+def test_close_session_requires_internal_role(client):
+    _, token = _register_and_login(client, role="customer")
+    response = client.post(
+        "/api/v1/digital-export-manager/sessions/nonexistent-session/close",
+        headers=_auth_headers(token),
+    )
+    assert response.status_code == 403
+
+
+def test_tools_requires_authentication(client):
+    response = client.get("/api/v1/digital-export-manager/tools")
+    assert response.status_code == 401
+
+
