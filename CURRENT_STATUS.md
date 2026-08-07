@@ -50,7 +50,7 @@
 
 ## WP-31 Implementation Summary
 
-### WP-31: AI Memory (In Progress)
+### WP-31: AI Memory (Completed)
 - **SQLiteMemoryProvider:** Concrete implementation with recall/store/forget/summarize/cleanup_expired
 - **Memory Integration:** Session memory injection, decision persistence, active recall biases
 - **Schema:** Mission extended with tasks and execution_plan fields
@@ -259,6 +259,7 @@
 - WP-30E completed — 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
 - WP-30F completed — Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
 - WP-30G completed — MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
+- WP-31 completed — Long-Term Memory (AI Memory); SQLiteMemoryProvider implementation with recall/store/forget/summarize; 13 tests; MemoryProvider integration verified
 - WP-30H completed — Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions
 - WP-32 completed — Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
 - WP-33 completed — Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
