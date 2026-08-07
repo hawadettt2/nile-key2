@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- WP-LLM-001: LLM Provider Integration completed
+  - `GeminiProvider` implemented in `backend/app/agent/llm/provider.py`
+  - `llm_registry` registration in `backend/main.py` lifespan
+  - `ReasoningEngine` integrated with `llm_registry` for candidate enhancement and reasoning improvement
+  - LLM config added to `backend/app/core/config.py` and `backend/.env.example`
+  - 12 unit tests for provider (`tests/agent/test_llm.py`)
+  - 6 integration tests for DEM-LLM interaction (`tests/agent/test_llm_integration.py`)
+  - 6 performance tests per DR-004 (`tests/agent/test_llm_performance.py`)
+  - All 90 affected tests passing; no regression
+
 - Documentation Consolidation & SSOT � completed
   - `PLAN.md` restructured as Single Source of Truth (1,746 lines, 27 sections)
   - 6 new sections added: 22�27 (System State, Execution Governance, Deployment, Repository Architecture, Decision Index, Appendices)

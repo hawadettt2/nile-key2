@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     SMTP_FROM: str = ""
     SMTP_USE_TLS: bool = True
 
+    # ========== LLM ==========
+    LLM_PROVIDER: str = "gemini"
+    LLM_API_KEY: str = ""
+    LLM_MODEL: str = "gemini-2.0-flash"
+    LLM_TIMEOUT_SECONDS: int = 30
+    LLM_MAX_RETRIES: int = 2
+
     # ========== CORS ==========
     ALLOWED_ORIGINS: List[str] = []
 

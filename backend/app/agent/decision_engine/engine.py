@@ -15,11 +15,57 @@ class ReasoningEngine:
     and Memory Interface, evaluating options against company rules.
     """
 
-    def __init__(self, knowledge_provider_registry=None, memory_provider=None, approval_gate=None, knowledge_provider=None):
+    def __init__(self, knowledge_provider_registry=None, memory_provider=None, approval_gate=None, knowledge_provider=None, llm_registry=None):
         self.knowledge_provider_registry = knowledge_provider_registry
         self.knowledge_provider = knowledge_provider
         self.memory_provider = memory_provider
         self.approval_gate = approval_gate or ApprovalGate()
+        self.llm_registry = llm_registry
+
+    async def _get_llm_provider(self):
+        if not self.llm_registry:
+            return None
+        return self.llm_registry.get_provider("gemini")
+
+    async def _enhance_candidates_with_llm(self, intent: str, scored_candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        provider = await self._get_llm_provider()
+        if not provider or not scored_candidates:
+            return scored_candidates
+
+        best = scored_candidates[0]
+        if best.get("confidence", 0) >= 0.5:
+            return scored_candidates
+
+        try:
+            paths = [c["path"] for c in scored_candidates]
+            prompt = f"Which path best matches this intent? Options: {', '.join(paths)}. Intent: {intent}. Answer with only the path name."
+            response = await provider.generate(prompt=prompt, parameters={"max_output_tokens": 20})
+            suggested = response.content.strip().lower()
+            for c in scored_candidates:
+                if c["path"] in suggested:
+                    c["score"] = max(c.get("score", c["confidence"]), 0.6)
+                    break
+        except Exception:
+            pass
+
+        scored_candidates.sort(key=lambda c: c.get("score", c.get("confidence", 0)), reverse=True)
+        return scored_candidates
+
+    async def _enhance_reasoning_with_llm(self, intent: str, chosen_path: str, base_reasoning: str) -> str:
+        provider = await self._get_llm_provider()
+        if not provider:
+            return base_reasoning
+
+        try:
+            prompt = f"Improve this reasoning text to be more natural and helpful. Keep it brief. Original: {base_reasoning}"
+            response = await provider.generate(prompt=prompt, parameters={"max_output_tokens": 100})
+            enhanced = response.content.strip()
+            if enhanced and len(enhanced) > 10:
+                return enhanced
+        except Exception:
+            pass
+
+        return base_reasoning
 
     async def reason(self, session_id: str, request: Dict[str, Any]) -> Dict[str, Any]:
         """Produce a Decision from a user request.
@@ -48,6 +94,9 @@ class ReasoningEngine:
 
             candidates = self._apply_memory_biases(candidates, memories)
             scored_candidates = self._evaluate_options(candidates, memories, knowledge, parameters)
+
+            scored_candidates = await self._enhance_candidates_with_llm(intent, scored_candidates)
+
             chosen_path, alternatives = self._select_best_option(scored_candidates)
 
             is_destructive, approval_status = self._check_approval(chosen_path, intent, parameters)
@@ -58,6 +107,8 @@ class ReasoningEngine:
                 memories=memories,
                 knowledge=knowledge,
             )
+
+            reasoning = await self._enhance_reasoning_with_llm(intent, chosen_path, reasoning)
 
             decision = Decision(
                 decision_id=str(uuid.uuid4()),

@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock, AsyncMock, patch
 from datetime import datetime, timezone
 
 from app.agent.decision_engine.engine import ReasoningEngine
@@ -585,3 +585,123 @@ class TestReasoningEngineTaskPlannerIntegration:
         mission = result["mission"]
 
         assert mission.approval_policy["requires_approval"] is False
+
+
+class TestReasoningEngineLLMIntegration:
+    """Tests for LLM integration (Phase 3)."""
+
+    def setup_method(self):
+        self.engine = ReasoningEngine()
+
+    @pytest.mark.asyncio
+    async def test_llm_registry_passed_to_reasoning_engine(self):
+        from app.agent.llm.provider import LLMProviderRegistry, GeminiProvider
+
+        registry = LLMProviderRegistry()
+        provider = GeminiProvider(api_key="test-key")
+        registry.register(provider)
+
+        engine = ReasoningEngine(llm_registry=registry)
+        assert engine.llm_registry is registry
+
+    @pytest.mark.asyncio
+    async def test_reason_without_llm_registry_unchanged(self):
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {},
+        }
+
+        result = await self.engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+        assert isinstance(result["reasoning"], str)
+        assert len(result["reasoning"]) > 0
+
+    @pytest.mark.asyncio
+    async def test_llm_enhances_candidates_when_confidence_low(self):
+        from app.agent.llm.provider import LLMProviderRegistry, GeminiProvider
+
+        mock_response = MagicMock()
+        mock_response.content = "shipping"
+        mock_response.usage_metadata = None
+
+        registry = LLMProviderRegistry()
+        provider = GeminiProvider(api_key="test-key")
+        provider.generate = AsyncMock(return_value=mock_response)
+        registry.register(provider)
+
+        engine = ReasoningEngine(llm_registry=registry)
+
+        request = {
+            "intent": "send stuff abroad",
+            "parameters": {"destination": "Germany"},
+            "context": {},
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert isinstance(result, dict)
+        assert "chosen_path" in result
+
+    @pytest.mark.asyncio
+    async def test_llm_enhances_reasoning_text(self):
+        from app.agent.llm.provider import LLMProviderRegistry, GeminiProvider
+
+        mock_response = MagicMock()
+        mock_response.content = "Enhanced reasoning: ship to Germany based on intent."
+        mock_response.usage_metadata = None
+
+        registry = LLMProviderRegistry()
+        provider = GeminiProvider(api_key="test-key")
+        provider.generate = AsyncMock(return_value=mock_response)
+        registry.register(provider)
+
+        engine = ReasoningEngine(llm_registry=registry)
+
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {},
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert isinstance(result["reasoning"], str)
+        assert len(result["reasoning"]) > 0
+
+    @pytest.mark.asyncio
+    async def test_graceful_degradation_when_llm_fails(self):
+        from app.agent.llm.provider import LLMProviderRegistry, GeminiProvider
+
+        registry = LLMProviderRegistry()
+        provider = GeminiProvider(api_key="test-key")
+        provider.generate = AsyncMock(side_effect=Exception("LLM error"))
+        registry.register(provider)
+
+        engine = ReasoningEngine(llm_registry=registry)
+
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {},
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+        assert isinstance(result["reasoning"], str)
+
+    @pytest.mark.asyncio
+    async def test_graceful_degradation_when_no_llm_provider(self):
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {},
+        }
+
+        result = await self.engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+        assert isinstance(result["reasoning"], str)
+        assert len(result["reasoning"]) > 0

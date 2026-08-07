@@ -19,6 +19,7 @@ from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
 from app.agent.knowledge.company_knowledge_provider import CompanyKnowledgeProvider
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
+from app.agent.llm.provider import GeminiProvider, llm_registry
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
 from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router
 
@@ -59,6 +60,20 @@ async def lifespan(app: FastAPI):
     print("[STARTUP] Starting Digital Export Manager API...")
     init_db()
     print("[SUCCESS] Database initialized")
+
+    # Register LLM provider
+    try:
+        if settings.LLM_API_KEY:
+            llm_provider = GeminiProvider(
+                api_key=settings.LLM_API_KEY,
+                model=settings.LLM_MODEL,
+            )
+            await llm_registry.register(llm_provider)
+            print(f"[SUCCESS] LLM provider registered: {settings.LLM_PROVIDER}")
+        else:
+            print("[WARNING] LLM_API_KEY is not configured. LLM provider not registered.")
+    except Exception as exc:
+        print(f"[WARNING] LLM provider registration failed: {exc}")
     
     # Register Knowledge providers
     try:

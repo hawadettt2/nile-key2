@@ -20,8 +20,8 @@ Current implementation status:
 - Phase 1 + Phase 1.5 complete
 - Phase 2 in progress: WP-30B–WP-30I complete as scaffolding/intelligence layer
 - Current intelligence is Deterministic/Scaffolded Intelligence — rule-based, interfaces, and registry-driven
-- No LLM Provider is currently connected
-- No final decision yet on LLM Provider, operating cost, Knowledge Ingestion, or Avatar Renderer
+- LLM Provider connected: Google AI (Gemini) via WP-LLM-001
+- No final decision yet on operating cost, Knowledge Ingestion, or Avatar Renderer
 - Absence of a current LLM is not an architectural failure; it is an architecture-ready step toward a future target
 
 Deferred / Future:

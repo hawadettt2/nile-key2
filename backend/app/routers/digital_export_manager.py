@@ -20,6 +20,7 @@ from app.agent.mission_planner.planner import TaskPlanner
 from app.agent.execution_planner.planner import ExecutionPlanner
 from app.agent.execution_engine.orchestrator import ToolOrchestrator
 from app.agent.audit.recorder import AuditRecorder
+from app.agent.llm.provider import llm_registry
 from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
 from app.routers.auth import get_current_user, require_role
@@ -44,6 +45,7 @@ def get_reasoning_engine(
     return ReasoningEngine(
         knowledge_provider_registry=knowledge_provider_registry,
         memory_provider=memory_provider,
+        llm_registry=llm_registry,
     )
 
 

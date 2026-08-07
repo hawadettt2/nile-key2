@@ -1003,7 +1003,18 @@ without sacrificing simplicity.
 - ? �����
 
 ### WP-31: AI Memory
-- ? �����
+- **Status:** ✅ Completed
+- **Description:** Long-Term Memory layer implemented via SQLiteMemoryProvider with MemoryProvider interface
+- **Dependencies:** WP-30F, WP-30G, WP-30I completed
+- **Deliverables:** MemoryProvider interface, SQLite persistence, graceful degradation, 13 tests
+- **Completion Date:** 2026-07-26
+
+### WP-LLM-001: LLM Provider Integration
+- **Status:** ✅ Completed
+- **Description:** Google AI (Gemini) provider integrated via `backend/app/agent/llm/provider.py`; DEM reasoning enhanced with LLM candidate selection and reasoning text improvement; graceful degradation when LLM unavailable
+- **Dependencies:** WP-30 (DEM Core), WP-30F, WP-30G completed
+- **Deliverables:** GeminiProvider implementation, LLM registry integration, DEM-LLM reasoning enhancement, 24 tests (12 unit + 6 integration + 6 performance)
+- **Completion Date:** 2026-08-07
 
 ### WP-32: Knowledge Graph
 - �����: ��� ����� �������� �������� �� ������ ������ ������� ������� ��������
@@ -1283,15 +1294,17 @@ Architecture layers:
 
 ## 22.2 Current Implementation Status
 
-Current intelligence implementation is Deterministic/Scaffolded Intelligence — rule-based, interfaces, and registry-driven.
+Current intelligence implementation includes Deterministic/Scaffolded Intelligence — rule-based, interfaces, and registry-driven — plus an active LLM Provider integration (WP-LLM-001).
 
-No LLM Provider is currently connected. No final decision yet on LLM Provider, operating cost, Memory Intelligence, Knowledge Ingestion, or Avatar Renderer.
+- **LLM Provider:** Google AI (Gemini) integrated via `backend/app/agent/llm/provider.py`
+- **LLM Registry:** `llm_registry` singleton manages provider registration
+- **DEM Integration:** `ReasoningEngine` uses `llm_registry` for candidate enhancement and reasoning improvement with graceful degradation
+- **Config:** `LLM_PROVIDER`, `LLM_API_KEY`, `LLM_MODEL`, `LLM_TIMEOUT_SECONDS`, `LLM_MAX_RETRIES` in `backend/app/core/config.py`
 
 Absence of a current LLM is not an architectural failure; it is an architecture-ready step toward a future target.
 
 ## 22.3 Deferred / Future
 
-- LLM integration — abstraction layer exists in plan, actual implementation deferred
 - Knowledge Ingestion Pipeline — contract defined, implementation deferred
 - Avatar Renderer — contract defined, implementation deferred
 - Goal and Plan reasoning layers — deferred to future work packages
