@@ -124,6 +124,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 - `PLAN.md`: Corrected WP-42 status from CLOSED to DEFERRED (OPEN) per forensic audit; Manual UAT postponed Project Owner decision 2026-07-25
+- `CURRENT_STATUS.md`: Added WP-42 closure entry
+- `.kilo/plans/wp42-uat-execution-report.md`: Updated defect disposition — Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; WP-42 administratively closed
+
+### Fixed
+- `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 
 ## [1.0.0] - 2026-07-15
 

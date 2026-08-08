@@ -1,0 +1,89 @@
+{
+  "results": [
+    {
+      "category": "Authentication",
+      "item": "Login with valid credentials",
+      "result": "PASS",
+      "notes": "Returns 200 with tokens",
+      "timestamp": "2026-08-08T02:53:38.580503"
+    },
+    {
+      "category": "Authentication",
+      "item": "Login with invalid credentials",
+      "result": "PASS",
+      "notes": "Returns 401",
+      "timestamp": "2026-08-08T02:53:38.583619"
+    },
+    {
+      "category": "Authentication",
+      "item": "Protected endpoint without token",
+      "result": "PASS",
+      "notes": "Returns 401",
+      "timestamp": "2026-08-08T02:53:38.599270"
+    },
+    {
+      "category": "Authentication",
+      "item": "Protected endpoint with valid token",
+      "result": "PASS",
+      "notes": "Returns 200 with data",
+      "timestamp": "2026-08-08T02:53:38.614778"
+    },
+    {
+      "category": "API",
+      "item": "GET /health",
+      "result": "PASS",
+      "notes": "Returns healthy status",
+      "timestamp": "2026-08-08T02:53:38.631408"
+    },
+    {
+      "category": "API",
+      "item": "GET /openapi.json",
+      "result": "PASS",
+      "notes": "Returns valid schema",
+      "timestamp": "2026-08-08T02:53:39.065138"
+    },
+    {
+      "category": "Suppliers",
+      "item": "GET /suppliers list",
+      "result": "PASS",
+      "notes": "Returns 200",
+      "timestamp": "2026-08-08T02:53:39.076991"
+    },
+    {
+      "category": "Customers",
+      "item": "GET /customers list",
+      "result": "PASS",
+      "notes": "Returns 200",
+      "timestamp": "2026-08-08T02:53:39.108244"
+    },
+    {
+      "category": "Shipments",
+      "item": "GET /shipments list",
+      "result": "FAIL",
+      "notes": "Status: 404",
+      "timestamp": "2026-08-08T02:53:39.108244"
+    },
+    {
+      "category": "Invoices",
+      "item": "GET /invoices/ list",
+      "result": "PASS",
+      "notes": "Returns 200",
+      "timestamp": "2026-08-08T02:53:39.133415"
+    },
+    {
+      "category": "Documents",
+      "item": "GET /documents list",
+      "result": "PASS",
+      "notes": "Returns 200",
+      "timestamp": "2026-08-08T02:53:39.150276"
+    },
+    {
+      "category": "Resources",
+      "item": "GET /resources list",
+      "result": "PASS",
+      "notes": "Returns 200",
+      "timestamp": "2026-08-08T02:53:39.167381"
+    }
+  ],
+  "defects": []
+}

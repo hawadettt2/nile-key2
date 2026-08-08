@@ -6,7 +6,7 @@
 **Authority:** PLAN.md (Master Roadmap v2.1) — Single Source of Truth  
 **Governing Documents:** `PLAN.md` Section 23, `docs/appendices/UAT_CHECKLIST.md`  
 **Date:** 2026-07-22  
-**Status:** Draft — Pending Approval  
+**Status:** Approved — Ready for Execution
 
 ---
 
@@ -345,7 +345,7 @@ This document defines the specification for WP-42.
 
 All UAT activities, acceptance documentation, and closure procedures for WP-42 MUST derive from this document and the referenced authoritative sources.
 
-**Status:** Draft — Pending Approval
+**Status:** Approved — Ready for Execution
 
 ---
 

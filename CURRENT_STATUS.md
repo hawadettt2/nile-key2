@@ -47,6 +47,7 @@
 | WP-33 | ✅ Complete | Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
 | WP-40 | ✅ Complete | Docker Compose Final Verification — both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
 | WP-41 | ✅ Complete | Production Documentation — README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
+| WP-42 | ✅ Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; all exit criteria met per WP-42-spec Section 13 |
 
 ## WP-31 Implementation Summary
 
@@ -276,6 +277,6 @@ If resuming after session interruption:
 1. Read `PLAN.md` Section 12 (Project Continuity Protocol)
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
-4. Proceed to Frontend AI/DEM UX Owner Acceptance Closure
+4. Proceed to WP-42 Owner Acceptance + Release validation
 
 

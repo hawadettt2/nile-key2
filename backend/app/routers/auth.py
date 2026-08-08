@@ -138,6 +138,8 @@ def login(credentials: UserLogin, request: Request, response: Response):
 @router.post("/refresh", response_model=Token)
 @_rate_limit("5/minute")
 def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security), request: Request = None, response: Response = None):
+    if not credentials or not credentials.credentials:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
     token = credentials.credentials
     payload = decode_token(token)
     if not payload or payload.get("type") != "refresh":
