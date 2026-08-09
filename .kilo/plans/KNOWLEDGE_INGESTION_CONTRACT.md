@@ -80,6 +80,38 @@ class KnowledgeProvider(ABC):
 
 ---
 
+## 3.1 Knowledge Ingestion — Definition and Boundaries
+
+**Knowledge Ingestion** is the capability to receive, import, transform, and register knowledge and data from external systems into the Company Knowledge Layer.
+
+### In Scope — Knowledge Ingestion Responsibilities
+
+- Reading raw knowledge items from external systems (document stores, regulations databases, file imports, APIs).
+- Transforming items into the `KnowledgeProvider.query()` return shape.
+- Assigning metadata and versioning information.
+- Registering providers via `KnowledgeProviderRegistry.register()`.
+- Supporting append-only updates and version tracking.
+- Ensuring zero changes to DEM core logic; only provider implementations change.
+
+### Out of Scope — Explicit Boundaries
+
+The following capabilities are **NOT** part of Knowledge Ingestion:
+
+- **External Research:** Active searching, querying, or retrieving information from external sources on demand.
+- **Business Analysis:** Interpreting, analyzing, or drawing conclusions from ingested knowledge.
+- **Plan Generation:** Converting knowledge into executable plans or strategies.
+- **Execution:** Running or orchestrating any business process.
+- **Reasoning:** Deriving new insights or decisions from knowledge.
+- **LLM Orchestration:** Using language models to generate, summarize, or enhance knowledge content.
+- **Evidence Verification:** Validating the accuracy, authenticity, or trustworthiness of external sources.
+- **Source Provenance Tracking:** Maintaining audit trails of where information originated beyond basic `source_id`.
+- **Knowledge Quality Scoring:** Advanced algorithms for confidence scoring beyond basic metadata.
+- **Deduplication:** Advanced duplicate detection beyond registry overwrite rules.
+
+These capabilities must be implemented as separate concerns, potentially as future work packages, and must not be introduced into the Ingestion contract.
+
+---
+
 ## 4. Registration Contract
 
 ```python
@@ -101,9 +133,11 @@ An ingestion pipeline is **out of scope for WP-30F**. When implemented in a futu
 
 1. Read raw knowledge items from an external system (document store, regulations DB, etc.).
 2. Transform items into the `query()` return shape.
-3. Assign confidence scores based on source authority and freshness.
+3. Assign metadata and versioning information.
 4. Register the provider via `KnowledgeProviderRegistry.register()`.
 5. Never mutate the DEM core; only the provider implementation changes.
+
+**Boundary reminder:** The ingestion pipeline is limited to import, transform, and registration. It does not include external research, business analysis, plan generation, execution, reasoning, LLM orchestration, evidence verification, source provenance tracking, knowledge quality scoring, or deduplication. See Section 3.1 for the full boundary definition.
 
 ---
 
@@ -119,11 +153,25 @@ An ingestion pipeline is **out of scope for WP-30F**. When implemented in a futu
 
 ## 7. Out of Scope for WP-30F
 
+The following are explicitly out of scope for this contract and must not be introduced into the Knowledge Ingestion capability:
+
 - Concrete knowledge source implementations
 - Ingestion pipeline implementation
 - Database persistence for knowledge items
 - Confidence scoring algorithms
 - Source deprecation or archival logic
+- **External Research** — active searching or querying external sources on demand
+- **Business Analysis** — interpreting or analyzing ingested knowledge
+- **Plan Generation** — converting knowledge into executable plans
+- **Execution** — running or orchestrating business processes
+- **Reasoning** — deriving new insights or decisions from knowledge
+- **LLM Orchestration** — using language models to generate or enhance knowledge content
+- **Evidence Verification** — validating accuracy or authenticity of sources
+- **Source Provenance Tracking** — maintaining detailed audit trails beyond basic `source_id`
+- **Knowledge Quality Scoring** — advanced algorithms beyond basic metadata
+- **Deduplication** — advanced duplicate detection beyond registry overwrite rules
+
+These capabilities may be addressed in future work packages as separate concerns.
 
 ---
 
@@ -132,3 +180,20 @@ An ingestion pipeline is **out of scope for WP-30F**. When implemented in a futu
 - `.kilo/plans/wp30-implementation-plan.md` Phase 6 (Tasks 6.1–6.4)
 - `.kilo/plans/1784079736812-wp30-architecture-compliance-review.md` Phase 6
 - `.kilo/plans/ED-WP30-002.md` — WP-30F scope clarification
+- `PLAN.md` Section 22.3 — Deferred / Future items
+- `CURRENT_STATUS.md` — WP-30F implementation summary
+
+---
+
+## 9. Architectural Decision Record
+
+**Decision:** Knowledge Ingestion is bounded to import, transform, and registration only.
+
+**Rationale:** The project vision is an Intelligent Operating Platform where the Digital Export Manager acts as an Executive Intelligence Layer. Knowledge Ingestion provides the data foundation, but active reasoning, external research, business analysis, and execution are separate capabilities that must not be conflated with data import.
+
+**Implications:**
+- Future work packages must respect these boundaries.
+- External Research, Evidence Verification, and Business Analysis are separate future capabilities.
+- The Knowledge Ingestion contract does not preclude future expansion; it defines the minimum viable boundary for the current phase.
+
+---
