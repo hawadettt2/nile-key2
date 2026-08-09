@@ -17,7 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 6 performance tests per DR-004 (`tests/agent/test_llm_performance.py`)
   - All 90 affected tests passing; no regression
 
-- Documentation Consolidation & SSOT � completed
+- WP-34: External Research Capability completed
+  - Research Request/Result models with full traceability
+  - Research Lifecycle Orchestrator with 7 stages (Planning → Discovery → Retrieval → Processing → Evidence Capture → Structuring → Verification)
+  - Source Registry & Discovery with preference-based and scope-based discovery
+  - Retrieval Abstraction with multi-source isolation and Content Processor
+  - Evidence & Provenance Capture with deterministic provenance records
+  - Result Structuring & Output with Evidence → Finding → ResearchResult chain
+  - Verification/Quality/Failure Handling with deterministic quality checks and partial/failed result support
+  - 103 WP-34 tests passing; no regressions in existing 30 related tests
+
+- Documentation Consolidation & SSOT — completed
   - `PLAN.md` restructured as Single Source of Truth (1,746 lines, 27 sections)
   - 6 new sections added: 22�27 (System State, Execution Governance, Deployment, Repository Architecture, Decision Index, Appendices)
   - 47 historical/superseded documents archived to `.kilo/plans/archive/`

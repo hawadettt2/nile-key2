@@ -1032,7 +1032,18 @@ without sacrificing simplicity.
   - [x] 105 ������ ����
 
 ### WP-33: Trade Intelligence
-- ? �����
+- **Status:** ✅ Completed
+- **Description:** Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation
+- **Dependencies:** WP-30F, WP-30G, WP-31, WP-32 completed
+- **Deliverables:** Intelligence engine, 6 API endpoints, 120 tests (75 service + 26 integration + 14 security + 5 performance)
+- **Completion Date:** 2026-08-09
+
+### WP-34: External Research Capability
+- **Status:** ✅ Completed
+- **Description:** External Research lifecycle with full traceability
+- **Dependencies:** WP-30F, WP-30G, WP-30H, WP-31, WP-32, WP-33
+- **Deliverables:** Research Request/Result models, orchestrator, source registry, retrieval abstraction, evidence/provenance capture, result structuring, verification/quality, 103+ tests
+- **Completion Date:** 2026-08-09
 
 ## 15.4 ������� 3: ����� ��������
 

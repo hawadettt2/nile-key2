@@ -45,6 +45,7 @@
 | WP-30H | ✅ Complete | Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions |
 | WP-32 | ✅ Complete | Knowledge Graph — 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
 | WP-33 | ✅ Complete | Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
+| WP-34 | ✅ Complete | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality completed |
 | WP-40 | ✅ Complete | Docker Compose Final Verification — both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
 | WP-41 | ✅ Complete | Production Documentation — README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
 | WP-42 | ✅ Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; all exit criteria met per WP-42-spec Section 13 |

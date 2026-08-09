@@ -21,7 +21,7 @@ from app.agent.knowledge.company_knowledge_provider import CompanyKnowledgeProvi
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.agent.llm.provider import GeminiProvider, llm_registry
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
-from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router
+from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router, research
 
 knowledge_provider_registry = KnowledgeProviderRegistry()
 memory_provider = SQLiteMemoryProvider(db_path="nile_key.db")
@@ -174,6 +174,7 @@ app.include_router(dashboard.router)
 app.include_router(search.router)
 app.include_router(users_router)
 app.include_router(roles_router)
+app.include_router(research.router)
 
 
 @app.get("/", tags=["Root"])
