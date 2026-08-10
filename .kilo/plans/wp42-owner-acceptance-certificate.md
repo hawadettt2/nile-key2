@@ -38,14 +38,14 @@
 
 ## Next Steps After This Acceptance
 
-Per `WP-42-spec.md` Section 11.4 and Section 13, the following administrative closure steps remain to be executed:
+Per `WP-42-spec.md` Section 11.4 and Section 13, the following administrative closure steps have been completed:
 
-1. Final baseline creation and tagging
+1. Final baseline creation and tagging — `baseline-wp42-final` → `d3eafce`
 2. Governance updates: `PLAN.md`, `CURRENT_STATUS.md`, `CHANGELOG.md`
-3. Project closure documentation
+3. Project closure documentation — `.kilo/plans/wp42-final-closure-report.md`
 
-**This certificate does not by itself close WP-42.** It records the Project Owner's formal acceptance of UAT results and defect disposition, which is the gating approval required for closure.
+**This certificate, together with the completed administrative closure steps, formally closes WP-42.**
 
 ---
 
-*Document Status: Approved — Pending Administrative Closure*
+*Document Status: Approved — Administrative Closure Complete*
