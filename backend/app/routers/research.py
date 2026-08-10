@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from typing import Optional
 
+from app.core.config import settings
 from app.routers.auth import get_current_user
 from app.research.orchestrator import ResearchOrchestrator, PlanningStage, DiscoveryStage, RetrievalStage, ProcessingStage, EvidenceCaptureStage, StructuringStage, VerificationStage
 from app.research.sources.registry import SourceRegistry
 from app.research.sources.discovery import SourceDiscovery
 from app.research.retrieval.orchestrator import RetrievalOrchestrator
-from app.research.retrieval.contracts import SourceRetriever, ContentProcessor
+from app.research.retrieval.providers.router import SearchProviderRouter
 from app.research.retrieval.stubs import StubRetriever, StubProcessor
 from app.schemas.research import (
     ResearchRequest,
@@ -23,10 +24,16 @@ router = APIRouter(prefix="/api/v1/research", tags=["External Research"])
 _source_registry = SourceRegistry()
 _source_discovery = SourceDiscovery(registry=_source_registry)
 
-_retrieval_orchestrator = RetrievalOrchestrator(
-    retriever=StubRetriever(),
-    processor=StubProcessor(),
-)
+if settings.SEARCH_STUB_FALLBACK:
+    _retrieval_orchestrator = RetrievalOrchestrator(
+        retriever=StubRetriever(),
+        processor=StubProcessor(),
+    )
+else:
+    _retrieval_orchestrator = RetrievalOrchestrator(
+        retriever=SearchProviderRouter(),
+        processor=StubProcessor(),
+    )
 
 _orchestrator = ResearchOrchestrator()
 _orchestrator.register_stage(PlanningStage())

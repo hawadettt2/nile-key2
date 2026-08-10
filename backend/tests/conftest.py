@@ -42,6 +42,7 @@ def _isolated_database():
     init_db()
 
     os.environ["DISABLE_CSRF"] = "true"
+    os.environ["SEARCH_STUB_FALLBACK"] = "true"
 
     # Disable rate limiting for tests to avoid cross-test state leakage.
     if hasattr(app.state, "limiter") and app.state.limiter is not None:

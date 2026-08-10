@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     LLM_TIMEOUT_SECONDS: int = 30
     LLM_MAX_RETRIES: int = 2
 
+    # ========== Research Search Provider Router ==========
+    SEARCH_STUB_FALLBACK: bool = False
+
     # ========== CORS ==========
     ALLOWED_ORIGINS: List[str] = []
 
