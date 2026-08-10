@@ -1,10 +1,10 @@
-﻿# Current Status
+# Current Status
 
 **Last Updated:** 2026-08-02
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED, WP-41 CLOSED)
-**Next Phase:** Frontend AI/DEM UX — Owner Acceptance Closure
+**Phase:** 3 � Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED, WP-41 CLOSED)
+**Next Phase:** Frontend AI/DEM UX � Owner Acceptance Closure
 
 ---
 
@@ -12,43 +12,43 @@
 
 | Work Package | Status | Notes |
 |--------------|--------|-------|
-| WP-01 | âœ… Complete | Backend runtime stability; startup and health verified |
-| WP-02Aâ€“H | âœ… Complete | Database contract alignment for all 8 entities |
-| WP-03 | âœ… Complete | Authentication status codes aligned; bcrypt confirmed |
-| WP-04 | âœ… Complete | CRUD integrity verified against aligned schema |
-| WP-05 | âœ… Complete | Frontend build stable (`npm run build` passes) |
-| WP-06 | âœ… Complete | Integration testing complete; 21 pytest tests passing |
-| WP-07 | âœ… Complete | Security hardening: SECRET_KEY externalized, CORS configurable |
-| WP-08 | âœ… Complete | Architecture cleanup: `.env.example` aligned, `execute_update()` helper added |
-| WP-09 | âœ… Complete | Refactoring: legacy compatibility shims removed, UPDATE duplication eliminated |
-| WP-10 | âœ… Complete | Alembic migration system initialized; legacy column cleanup migrations committed |
-| WP-11 | âœ… Complete | Project documentation synchronized with implementation state |
-| WP-12 | âœ… Complete | Docker hardening and Compose configuration finalized |
-| WP-13A | âœ… Complete | Supplier and customer business logic extracted into service layer |
-| WP-15 | âœ… Complete | Service layer extraction complete for all remaining domains (resources, customs, documents, shipping, invoices) |
-| WP-16B | âœ… Complete | Shared service base infrastructure introduced (base.py, standardized helpers) |
-| WP-17A | âœ… Complete | API endpoint test coverage expanded; 48 new tests added across 6 domains |
-| WP-17B | âœ… Complete | Service-layer unit tests added; 59 new tests across 7 service modules; production code unchanged |
-| WP-18 | âœ… Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
-| WP-19 | âœ… Complete | ETA Engine â€” full implementation with production-ready infrastructure |
-| WP-20 | âœ… Complete | Shipping Engine â€” provider abstraction, LetMeShip + SendCloud clients, scheduler, 34+ tests |
-| WP-21 M1 | âœ… Complete | Notification service + audit logging foundation; 52 tests |
-| WP-21 M2 | âœ… Complete | Unified search + live dashboard; 10 tests |
-| WP-21 M3 | âœ… Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
-| WP-21 M4 | âœ… Complete | Export workflow service + router + database tables + summary generator; 33 tests; CLOSED WITH CONDITIONS per CR-M4-001 Rev.1 |
-| WP-30B | ✅ Complete | Session Management + Mission Lifecycle; 6 DEM endpoints; router registered; Closure Review approved; ED-WP30-001 recorded |
-| WP-30C | ✅ Complete | Task Planner + Execution Engine; structured mission execution; retry, idempotency, audit |
-| WP-30D | ✅ Complete | Decision Engine; reasoning loop with knowledge/memory graceful degradation |
-| WP-30E | ✅ Complete | 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed |
-| WP-30F | ✅ Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
-| WP-30G | ✅ Complete | MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests |
-| WP-30H | ✅ Complete | Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions |
-| WP-32 | ✅ Complete | Knowledge Graph — 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
-| WP-33 | ✅ Complete | Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
-| WP-34 | ✅ Complete | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality completed |
-| WP-40 | ✅ Complete | Docker Compose Final Verification — both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
-| WP-41 | ✅ Complete | Production Documentation — README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
-| WP-42 | ✅ Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; all exit criteria met per WP-42-spec Section 13 |
+| WP-01 | ✅ Complete | Backend runtime stability; startup and health verified |
+| WP-02A–H | ✅ Complete | Database contract alignment for all 8 entities |
+| WP-03 | ✅ Complete | Authentication status codes aligned; bcrypt confirmed |
+| WP-04 | ✅ Complete | CRUD integrity verified against aligned schema |
+| WP-05 | ✅ Complete | Frontend build stable (`npm run build` passes) |
+| WP-06 | ✅ Complete | Integration testing complete; 21 pytest tests passing |
+| WP-07 | ✅ Complete | Security hardening: SECRET_KEY externalized, CORS configurable |
+| WP-08 | ✅ Complete | Architecture cleanup: `.env.example` aligned, `execute_update()` helper added |
+| WP-09 | ✅ Complete | Refactoring: legacy compatibility shims removed, UPDATE duplication eliminated |
+| WP-10 | ✅ Complete | Alembic migration system initialized; legacy column cleanup migrations committed |
+| WP-11 | ✅ Complete | Project documentation synchronized with implementation state |
+| WP-12 | ✅ Complete | Docker hardening and Compose configuration finalized |
+| WP-13A | ✅ Complete | Supplier and customer business logic extracted into service layer |
+| WP-15 | ✅ Complete | Service layer extraction complete for all remaining domains (resources, customs, documents, shipping, invoices) |
+| WP-16B | ✅ Complete | Shared service base infrastructure introduced (base.py, standardized helpers) |
+| WP-17A | ✅ Complete | API endpoint test coverage expanded; 48 new tests added across 6 domains |
+| WP-17B | ✅ Complete | Service-layer unit tests added; 59 new tests across 7 service modules; production code unchanged |
+| WP-18 | ✅ Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
+| WP-19 | ✅ Complete | ETA Engine — full implementation with production-ready infrastructure |
+| WP-20 | ✅ Complete | Shipping Engine — provider abstraction, LetMeShip + SendCloud clients, scheduler, 34+ tests |
+| WP-21 M1 | ✅ Complete | Notification service + audit logging foundation; 52 tests |
+| WP-21 M2 | ✅ Complete | Unified search + live dashboard; 10 tests |
+| WP-21 M3 | ✅ Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
+| WP-21 M4 | ✅ Complete | Export workflow service + router + database tables + summary generator; 33 tests; CLOSED WITH CONDITIONS per CR-M4-001 Rev.1 |
+| WP-30B | ? Complete | Session Management + Mission Lifecycle; 6 DEM endpoints; router registered; Closure Review approved; ED-WP30-001 recorded |
+| WP-30C | ? Complete | Task Planner + Execution Engine; structured mission execution; retry, idempotency, audit |
+| WP-30D | ? Complete | Decision Engine; reasoning loop with knowledge/memory graceful degradation |
+| WP-30E | ? Complete | 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed |
+| WP-30F | ? Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
+| WP-30G | ? Complete | MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests |
+| WP-30H | ? Complete | Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions |
+| WP-32 | ? Complete | Knowledge Graph � 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
+| WP-33 | ? Complete | Trade Intelligence � supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
+| WP-34 | ? Complete | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality completed |
+| WP-40 | ? Complete | Docker Compose Final Verification � both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
+| WP-41 | ? Complete | Production Documentation � README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
+| WP-42 | ? Complete | Owner Acceptance � UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
 
 ## WP-31 Implementation Summary
 
@@ -85,10 +85,10 @@
 - **ETA Pydantic Schemas:** InvoiceSubmit (v1.0), ReceiptSubmit (v1.2), ETAAuthConfig
 - **ETA HTTP Client (ETAClient):** OAuth2 with 3-minute token buffer, tenacity retry (3 attempts, exponential backoff), idempotency keys
 - **Business Logic from Reference Repo:**
-  - `eta_round` â€” tax rounding with 5 decimal places (from `utils.py`)
-  - `eta_datetime_issued_format` â€” Cairo timezone â†’ UTC conversion with Z suffix (from `utils.py`)
+  - `eta_round` — tax rounding with 5 decimal places (from `utils.py`)
+  - `eta_datetime_issued_format` — Cairo timezone → UTC conversion with Z suffix (from `utils.py`)
   - `delay_in_hours` logic in batch submission (from `main.py` get_batch_invoices)
-  - `check_existing_eta_logs` â€” log existence check (from `main.py`)
+  - `check_existing_eta_logs` — log existence check (from `main.py`)
   - Notification preparation functions (from `utils.py`)
 - **Invoice Operations:** submit, cancel, status, PDF download
 - **Receipt Operations:** submit e-receipts with POS-specific OAuth2 headers
@@ -170,9 +170,9 @@
 - **API Endpoints:** POST /connect, POST /missions, GET /sessions/{id}, POST /sessions/{id}/close, GET /health, GET /tools
 - **Router Registration:** DEM router registered in main.py and routers/__init__.py
 - **Governance:** WP-30B Official Closure Review approved; ED-WP30-001 recorded
-- **Architecture:** Business façade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
+- **Architecture:** Business fa�ade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
 - **Backward Compatibility:** Existing agent router unchanged; all original endpoints intact
-- **Mission Execution Model:** Synchronous within HTTP request lifecycle: `POST /missions → Reasoning → TaskPlanner → ExecutionPlanner → ToolOrchestrator → Status Update → Save`. Mission does not remain `pending` after request completion; terminal states are `completed` or `failed` only.
+- **Mission Execution Model:** Synchronous within HTTP request lifecycle: `POST /missions ? Reasoning ? TaskPlanner ? ExecutionPlanner ? ToolOrchestrator ? Status Update ? Save`. Mission does not remain `pending` after request completion; terminal states are `completed` or `failed` only.
 - **Mission Runner / Scheduler:** NOT REQUIRED in current phase. No queued missions, no background workers, no resume/retry-across-requests mechanism exists, and none is mandated by current architecture contracts. Treated as Future Work Package only if future requirements emerge for queued missions, execution outside HTTP request lifecycle, distributed workers, or cross-request retry/resume.
 - **Idempotency:** `idempotency_key` is generated per mission and propagated through `ToolOrchestrator` during execution; it prevents duplicate tool calls within a single execution, but it is not stored on the Mission object and does not provide cross-request deduplication or resume capability.
 
@@ -185,16 +185,16 @@
 - **Ingestion Contract:** Documented in `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`; principles, registration contract, future pipeline contract, versioning rules
 - **KnowledgeGraphProvider:** Implemented as concrete `KnowledgeProvider`; queries existing Knowledge Graph service layer (`app.services.knowledge_graph.search_nodes()`); registered in `KnowledgeProviderRegistry`; returns graph nodes as knowledge results with confidence scoring
 - **CompanyKnowledgeProvider:** Implemented as interim `KnowledgeProvider`; queries existing resources service layer (`app.services.resource.search_resources()`/`list_resources()`); registered in `KnowledgeProviderRegistry`; returns company resources as knowledge results with confidence scoring
-- **Registry → ReasoningEngine → DEM wiring:** Operational; `ReasoningEngine` accepts `knowledge_provider_registry` and queries all registered providers; results merged into `decision.context["knowledge"]`
-- **Governance:** ED-WP30-002 recorded — scope limited to Tasks 6.1–6.4; Task 6.5 excluded
+- **Registry ? ReasoningEngine ? DEM wiring:** Operational; `ReasoningEngine` accepts `knowledge_provider_registry` and queries all registered providers; results merged into `decision.context["knowledge"]`
+- **Governance:** ED-WP30-002 recorded � scope limited to Tasks 6.1�6.4; Task 6.5 excluded
 - **Tests:** 17 new tests for interface, registry, and schemas; 11 additional tests for `CompanyKnowledgeProvider`; 9 additional tests for `KnowledgeGraphProvider.query()` implementation; all passing
 - **Backward Compatibility:** Existing Decision Engine stubs unchanged; no breaking changes to existing code
 
 ### Company Knowledge Ingestion Status (Deferred)
-- **Ingestion Pipeline:** NOT IMPLEMENTED — deferred to future Work Package per `KNOWLEDGE_INGESTION_CONTRACT.md` Section 5 and `WP-30I-spec.md` Section 3
-- **Current Data Source:** `resources` table via seed data + CRUD API (`/api/v1/resources`) — manual/external entry only; no automated ingestion, bulk import, external system integration, or confidence scoring algorithm implemented
+- **Ingestion Pipeline:** NOT IMPLEMENTED � deferred to future Work Package per `KNOWLEDGE_INGESTION_CONTRACT.md` Section 5 and `WP-30I-spec.md` Section 3
+- **Current Data Source:** `resources` table via seed data + CRUD API (`/api/v1/resources`) � manual/external entry only; no automated ingestion, bulk import, external system integration, or confidence scoring algorithm implemented
 - **CompanyKnowledgeProvider Role:** Query adapter/interim provider for existing `resources` corpus; NOT an ingestion implementation
-- **Future Requirement:** When implemented, ingestion pipeline must read raw knowledge items from external systems, transform into `query()` return shape, assign confidence scores, and register via `KnowledgeProviderRegistry` — without modifying DEM core
+- **Future Requirement:** When implemented, ingestion pipeline must read raw knowledge items from external systems, transform into `query()` return shape, assign confidence scores, and register via `KnowledgeProviderRegistry` � without modifying DEM core
 
 ## WP-30G Implementation Summary
 
@@ -227,7 +227,7 @@
 - **KnowledgeProvider:** `KnowledgeGraphProvider` registered in `KnowledgeProviderRegistry`
 - **API Endpoints:** 9 endpoints under `/api/v1/knowledge-graph`: nodes CRUD, edges CRUD, relationships, traverse, search, sync
 - **Database Tables:** `knowledge_nodes`, `knowledge_edges`
-- **Governance:** ED-WP32-001 recorded — Document Edge Handling clarification
+- **Governance:** ED-WP32-001 recorded � Document Edge Handling clarification
 - **Tests:** 105 tests (59 service unit tests, 35 integration tests, 4 performance tests, 7 security tests); all passing
 - **Backward Compatibility:** No modifications to existing entity tables; no modifications to DEM core
 
@@ -246,28 +246,28 @@
 ## Governance Notes
 
 - **Verification Forensic Audit completed 2026-07-26:** Confirmed `dashboard.router` and `search.router` registered in `main.py`; `/api/v1/dashboard`, `/api/v1/search`, `/api/v1/notifications/`, `/api/v1/customs/` present in OpenAPI and responding; frontend charset header corrected to `text/html; charset=utf-8`; Arabic title renders correctly.
-- **CR-M4-001 Rev.1:** Export Operations Integration specification updates approved with conditions. The draft → shipped bypass and /items endpoint are Engineering Decisions. Business stakeholder notification required within 5 business days of approval.
+- **CR-M4-001 Rev.1:** Export Operations Integration specification updates approved with conditions. The draft ? shipped bypass and /items endpoint are Engineering Decisions. Business stakeholder notification required within 5 business days of approval.
 
 ## Project Continuity Status
 
 - All WP-01 through WP-18 closed successfully
-- WP-19 completed — ETA Engine fully implemented with production-ready infrastructure
-- WP-20 completed — Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
-- WP-21 M1-M3 completed — Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
-- WP-21 completed — All milestones closed
-- WP-30B completed — Session Management + Mission Lifecycle; 6 DEM endpoints; Closure Review approved; ED-WP30-001 recorded
-- WP-30C completed — Task Planner + Execution Engine; structured mission execution
-- WP-30D completed — Decision Engine; reasoning loop with knowledge/memory graceful degradation
-- WP-30E completed — 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
-- WP-30F completed — Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
-- WP-30G completed — MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
-- WP-31 completed — Long-Term Memory (AI Memory); SQLiteMemoryProvider implementation with recall/store/forget/summarize; 13 tests; MemoryProvider integration verified
-- WP-30H completed — Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions
-- WP-32 completed — Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
-- WP-33 completed — Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
-- WP-40 completed — Docker Compose Final Verification; both images build successfully; services start healthy; backend API reachable on port 8000; frontend served on port 3000; database persistence verified via Docker volume; frontend TypeScript build errors resolved (vite.config.ts, NotificationBell.test.tsx, Notifications.test.tsx, NotificationBell.tsx dead code removed)
-- WP-41 completed — Production Documentation; README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent
-- Frontend AI/DEM UX completed — DEM Connect/Disconnect, Mission Composer (8 types), Mission Dashboard, Execution Progress polling, Reasoning Viewer, Approval Inbox with RBAC + agent_audit_logs persistence, Knowledge Explorer, Trade Intelligence dashboard, i18n; 11 DEM backend tests + 35 frontend tests passing; UAT checklist updated
+- WP-19 completed � ETA Engine fully implemented with production-ready infrastructure
+- WP-20 completed � Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
+- WP-21 M1-M3 completed � Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
+- WP-21 completed � All milestones closed
+- WP-30B completed � Session Management + Mission Lifecycle; 6 DEM endpoints; Closure Review approved; ED-WP30-001 recorded
+- WP-30C completed � Task Planner + Execution Engine; structured mission execution
+- WP-30D completed � Decision Engine; reasoning loop with knowledge/memory graceful degradation
+- WP-30E completed � 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
+- WP-30F completed � Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
+- WP-30G completed � MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
+- WP-31 completed � Long-Term Memory (AI Memory); SQLiteMemoryProvider implementation with recall/store/forget/summarize; 13 tests; MemoryProvider integration verified
+- WP-30H completed � Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions
+- WP-32 completed � Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
+- WP-33 completed � Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
+- WP-40 completed � Docker Compose Final Verification; both images build successfully; services start healthy; backend API reachable on port 8000; frontend served on port 3000; database persistence verified via Docker volume; frontend TypeScript build errors resolved (vite.config.ts, NotificationBell.test.tsx, Notifications.test.tsx, NotificationBell.tsx dead code removed)
+- WP-41 completed � Production Documentation; README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent
+- Frontend AI/DEM UX completed � DEM Connect/Disconnect, Mission Composer (8 types), Mission Dashboard, Execution Progress polling, Reasoning Viewer, Approval Inbox with RBAC + agent_audit_logs persistence, Knowledge Explorer, Trade Intelligence dashboard, i18n; 11 DEM backend tests + 35 frontend tests passing; UAT checklist updated
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/archive/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
