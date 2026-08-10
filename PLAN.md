@@ -287,6 +287,7 @@
 | WP-30F | ? ????? | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract |
 | WP-30G | ? ????? | Memory Interface Definition; MemoryProvider ABC with recall/store/forget/summarize; graceful degradation in DEM core |
 | WP-30H | ? ????? | Avatar Contract; IntentContent and AvatarRenderer interfaces defined; structured intents confirmed; 15 tests |
+| WP-37 | ? ????? | Knowledge Ingestion Pipeline — File-based Regulations Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests |
 
 ## 8.2 ?????? ???????? ???????
 
