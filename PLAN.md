@@ -1316,7 +1316,10 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 
 ## 22.3 Deferred / Future
 
-- Knowledge Ingestion Pipeline — contract defined, implementation deferred
+- Knowledge Ingestion Pipeline — File-based Regulations Provider completed (WP-37)
+  - Baseline: `baseline-wp37-final`
+  - Contract: `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` — vertical slice executed
+  - Next: Real external source integration (future WP, out of scope for WP-37)
 - Avatar Renderer — contract defined, implementation deferred
 - Goal and Plan reasoning layers — deferred to future work packages
 - Multi-agent coordination — future
