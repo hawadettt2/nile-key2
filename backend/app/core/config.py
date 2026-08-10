@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     SEARXNG_API_KEY: str = ""
     SEARXNG_TIMEOUT_SECONDS: float = 10.0
 
+    # ========== Knowledge Ingestion (WP-37) ==========
+    REGULATIONS_FILE_PATH: str = "backend/data/regulations.json"
+
     # ========== CORS ==========
     ALLOWED_ORIGINS: List[str] = []
 

@@ -26,7 +26,6 @@ Current implementation status:
 
 Deferred / Future:
 - LLM integration — completed via WP-LLM-001 (Google AI / Gemini provider integrated)
-- Knowledge Ingestion Pipeline — contract defined, implementation deferred
 - Avatar Renderer — contract defined, implementation deferred
 - Goal and Plan reasoning layers — deferred to future work packages
 - Multi-agent coordination — future
@@ -80,6 +79,7 @@ Deferred / Future:
 | WP-31 | ✅ Complete | working tree | AI Memory: SQLiteMemoryProvider concrete implementation; memory injection; 151 agent tests passing |
 | WP-32 | ✅ Complete | working tree | Knowledge Graph: 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests |
 | WP-33 | ✅ Complete | working tree | Trade Intelligence: supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests |
+| WP-37 | ✅ Complete | working tree | Knowledge Ingestion Pipeline: RegulationsKnowledgeProvider; JSON file ingestion; REGULATIONS_FILE_PATH configurable; 12 tests; no regressions |
 | WP-40 | ✅ Complete | c30a935 / a0dfd20 / 195b204 | Docker Compose Final Verification: both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified, frontend TypeScript build errors resolved |
 
 ---

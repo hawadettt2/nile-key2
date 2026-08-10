@@ -18,6 +18,7 @@ from app.core.shipping_scheduler import init_scheduler as init_shipping_schedule
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
 from app.agent.knowledge.company_knowledge_provider import CompanyKnowledgeProvider
+from app.agent.knowledge.regulations_provider import RegulationsKnowledgeProvider
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.agent.llm.provider import GeminiProvider, llm_registry
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
@@ -89,6 +90,13 @@ async def lifespan(app: FastAPI):
         print("[SUCCESS] Company Knowledge provider registered")
     except Exception as exc:
         print(f"[WARNING] Company Knowledge provider registration failed: {exc}")
+
+    try:
+        regulations_provider = RegulationsKnowledgeProvider(file_path=settings.REGULATIONS_FILE_PATH)
+        await knowledge_provider_registry.register(regulations_provider)
+        print("[SUCCESS] Regulations Knowledge provider registered")
+    except Exception as exc:
+        print(f"[WARNING] Regulations Knowledge provider registration failed: {exc}")
     
     # Wire Memory and Knowledge providers for Trade Intelligence
     try:

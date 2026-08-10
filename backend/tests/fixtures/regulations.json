@@ -1,0 +1,46 @@
+[
+  {
+    "id": "reg-001",
+    "title": "ETA Invoice Requirements",
+    "description": "Invoices must include customer VAT number and tax line items.",
+    "regulation_type": "tax",
+    "category": "invoicing",
+    "country": "EG",
+    "effective_date": "2025-01-01",
+    "source_url": "https://example.com/eta-regs",
+    "version": "1.0.0"
+  },
+  {
+    "id": "reg-002",
+    "title": "Customs HS Code Classification",
+    "description": "All shipments must declare HS codes for customs clearance.",
+    "regulation_type": "customs",
+    "category": "classification",
+    "country": "EG",
+    "effective_date": "2024-06-15",
+    "source_url": "",
+    "version": "1.0.0"
+  },
+  {
+    "id": "reg-003",
+    "title": "Export Documentation Mandate",
+    "description": "Export operations require certificate of origin and packing list.",
+    "regulation_type": "export",
+    "category": "documentation",
+    "country": "SA",
+    "effective_date": "",
+    "source_url": "https://example.com/export-docs",
+    "version": "1.0.0"
+  },
+  {
+    "id": "reg-004",
+    "title": "Shipping Label Requirements",
+    "description": "Parcel labels must include weight, dimensions, and destination country.",
+    "regulation_type": "shipping",
+    "category": "labeling",
+    "country": "EG",
+    "effective_date": "2025-03-01",
+    "source_url": "https://example.com/shipping-labels",
+    "version": "1.0.0"
+  }
+]

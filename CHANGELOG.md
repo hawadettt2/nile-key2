@@ -144,6 +144,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defect #2: Fixed & Verified in Docker Runtime
 - Defect #1: Accepted Known Defect (deferred to future architectural change)
 - Final baseline: `baseline-wp42-final` ? `d3eafce`
+
+- WP-37: Knowledge Ingestion Pipeline — File-based Regulations Provider completed
+  - `RegulationsKnowledgeProvider` implemented in `backend/app/agent/knowledge/regulations_provider.py`
+  - JSON file ingestion with configurable `REGULATIONS_FILE_PATH` in `backend/app/core/config.py`
+  - Bootstrap registration in `backend/main.py` lifespan
+  - Confidence scoring: 0.5 if effective_date missing, 0.85 if source_url present, 0.75 if source_url absent
+  - `updated_at` derived from file mtime in ISO-8601 UTC format
+  - 8 unit tests + 4 integration tests = 12 WP-37 tests passing
+  - Append-only semantics: file is single source of truth, re-read on startup only
+  - No regressions in knowledge layer; 2 pre-existing Decision Engine test failures documented
+  - Closure: `.kilo/plans/wp37-final-closure-report.md`, `.kilo/plans/wp37-owner-acceptance-certificate.md`
+
 ### Fixed
 - `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 

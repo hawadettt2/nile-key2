@@ -3,7 +3,7 @@
 **Last Updated:** 2026-08-10
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-40 CLOSED, WP-41 CLOSED)
+**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED)
 **Next Phase:** Frontend AI/DEM UX — Owner Acceptance Closure
 
 ---
@@ -49,6 +49,7 @@
 | WP-40 | ? Complete | Docker Compose Final Verification — both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
 | WP-41 | ? Complete | Production Documentation — README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
 | WP-42 | ? Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
+| WP-37 | ? Complete | Knowledge Ingestion Pipeline — File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
 
 ## WP-31 Implementation Summary
 
@@ -58,6 +59,20 @@
 - **Schema:** Mission extended with tasks and execution_plan fields
 - **Tests:** 235-line test suite for SQLiteMemoryProvider; 151 agent tests passing
 - **Governance:** Scope creep identified: TextAvatarRenderer and DatabaseKnowledgeProvider are out of scope per ED-WP30-002 and WP-30H contract
+
+## WP-37 Implementation Summary
+
+### WP-37: Knowledge Ingestion Pipeline — File-based Regulations Provider (Completed)
+- **RegulationsKnowledgeProvider:** New `KnowledgeProvider` implementation reading local JSON regulation files
+- **File Format:** JSON array of objects with id, title, description, regulation_type, category, country, effective_date, source_url, version
+- **Configuration:** `REGULATIONS_FILE_PATH` added to `config.py` with default `backend/data/regulations.json`
+- **Bootstrap:** Provider registered in `main.py` lifespan alongside existing providers
+- **Confidence Rules:** 0.5 if effective_date missing; 0.85 if source_url present; 0.75 if source_url absent
+- **Updated At:** Derived from file mtime in ISO-8601 UTC format
+- **Semantics:** Append-only; file is single source of truth; re-read on startup only
+- **Tests:** 12 new tests (8 unit + 4 integration); all passing
+- **Regression:** No regressions in knowledge layer; 2 pre-existing failures in unrelated reasoning engine tests confirmed
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV/External API support
 
 ## Current System State
 
