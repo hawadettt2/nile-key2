@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     # ========== Research Search Provider Router ==========
     SEARCH_STUB_FALLBACK: bool = False
 
+    # ========== SearXNG (WP-36 — First Search Provider) ==========
+    SEARXNG_BASE_URL: str = ""
+    SEARXNG_API_KEY: str = ""
+    SEARXNG_TIMEOUT_SECONDS: float = 10.0
+
     # ========== CORS ==========
     ALLOWED_ORIGINS: List[str] = []
 

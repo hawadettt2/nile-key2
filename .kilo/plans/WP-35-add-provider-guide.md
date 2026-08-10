@@ -12,6 +12,44 @@ Guide for adding a new search provider adapter to WP-35 without modifying WP-34 
 
 ---
 
+## Concrete Example: SearXNG
+SearXNG is the first concrete search provider implemented in this project. It is an example of how to implement a `SearchProviderAdapter` above the WP-35 abstraction layer. SearXNG is **not** an architectural primary; it is one pluggable adapter among potentially many future adapters.
+
+### SearXNG-specific configuration
+SearXNG is configured via environment variables:
+- `SEARXNG_BASE_URL`: URL of the SearXNG instance
+- `SEARXNG_API_KEY`: optional API key if the instance requires authentication
+- `SEARXNG_TIMEOUT_SECONDS`: request timeout in seconds
+
+### SearXNGAdapter registration in production
+```python
+from app.research.retrieval.providers.capability import ProviderCapability
+from app.research.retrieval.providers.searxng_adapter import SearXNGAdapter
+from app.research.retrieval.providers.router import SearchProviderRouter
+
+router = SearchProviderRouter()
+adapter = SearXNGAdapter(
+    capability=ProviderCapability(
+        provider_id="searxng",
+        supports_web_search=True,
+        supports_snippets=True,
+        supports_source_urls=True,
+        requires_api_key=bool(settings.SEARXNG_API_KEY),
+        priority=10,
+        enabled=True,
+    ),
+    base_url=settings.SEARXNG_BASE_URL,
+    api_key=settings.SEARXNG_API_KEY,
+    timeout=settings.SEARXNG_TIMEOUT_SECONDS,
+)
+router.register_adapter(adapter)
+```
+
+**Rules:**
+- SearXNGAdapter is one concrete implementation. Other adapters can be added/registered alongside it.
+- Do not declare SearXNG as the only or primary provider in architecture.
+- `StubRetriever` remains an explicit fallback only when `SEARCH_STUB_FALLBACK=true` is set.
+
 ## Step 1: Define ProviderCapability
 Create a capability descriptor in your new adapter file or a shared config module.
 

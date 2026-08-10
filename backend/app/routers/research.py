@@ -8,7 +8,9 @@ from app.research.orchestrator import ResearchOrchestrator, PlanningStage, Disco
 from app.research.sources.registry import SourceRegistry
 from app.research.sources.discovery import SourceDiscovery
 from app.research.retrieval.orchestrator import RetrievalOrchestrator
+from app.research.retrieval.providers.capability import ProviderCapability
 from app.research.retrieval.providers.router import SearchProviderRouter
+from app.research.retrieval.providers.searxng_adapter import SearXNGAdapter
 from app.research.retrieval.stubs import StubRetriever, StubProcessor
 from app.schemas.research import (
     ResearchRequest,
@@ -30,8 +32,26 @@ if settings.SEARCH_STUB_FALLBACK:
         processor=StubProcessor(),
     )
 else:
+    _search_router = SearchProviderRouter()
+    if settings.SEARXNG_BASE_URL:
+        _search_router.register_adapter(
+            SearXNGAdapter(
+                capability=ProviderCapability(
+                    provider_id="searxng",
+                    supports_web_search=True,
+                    supports_snippets=True,
+                    supports_source_urls=True,
+                    requires_api_key=bool(settings.SEARXNG_API_KEY),
+                    priority=10,
+                    enabled=True,
+                ),
+                base_url=settings.SEARXNG_BASE_URL,
+                api_key=settings.SEARXNG_API_KEY or "",
+                timeout=settings.SEARXNG_TIMEOUT_SECONDS,
+            )
+        )
     _retrieval_orchestrator = RetrievalOrchestrator(
-        retriever=SearchProviderRouter(),
+        retriever=_search_router,
         processor=StubProcessor(),
     )
 
