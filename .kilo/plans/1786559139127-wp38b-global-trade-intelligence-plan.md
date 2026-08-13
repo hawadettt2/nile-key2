@@ -1,12 +1,13 @@
 ﻿# WP-38b Plan: Global Trade Intelligence — First Provider Implementation
 
 **Work Package:** WP-38b — Global Trade Intelligence (TradeData First Provider)  
-**Status:** Approved — G1 Approved — Ready for Task 1  
+**Status:** Closed — All gates passed, baseline created, owner acceptance obtained.  
 **Date:** 2026-08-13  
 **Authority:** `.kilo/plans/1786359213310-real-external-source-integration.md` Section 5.2, Section 14, Section 15  
 **Governing Contract:** `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Prerequisite:** WP-38a closed and baselined at `baseline-wp38a-final` (`13fb461b`)  
 **Path:** `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md`
+**Baseline:** `baseline-wp38b-final` at commit `02bad55`
 
 ---
 
@@ -15,12 +16,12 @@
 | Decision | Value |
 |----------|-------|
 | WP-38a Status | **Closed** — `baseline-wp38a-final` at commit `13fb461b0ae3944a0e0f0a3d55440d3463cf3697` |
-| WP-38b Status | **Approved as next Sub-WP** |
-| First Provider | **TradeData API** (`tradedata.io`) — Approved for WP-38b implementation |
+| WP-38b Status | **Closed** — `baseline-wp38b-final` at commit `02bad55bc85f66a10e1369a1df461b2eb3dfe72e` |
+| First Provider | **TradeData API** (`tradedata.io`) — Implemented as WP-38b First Provider |
 | Approval Basis | Project Owner approval of WP-38b plan following WP-38a closure |
 | Sequence Compliance | WP-38a → WP-38b → WP-38c → WP-38d (fixed unless amended) |
 
-**Note:** TradeData is approved as the **first provider** for WP-38b. G1 approval has been obtained. Implementation may proceed through Tasks 2–8 following the standard integration pattern.
+**Note:** TradeData is approved as the **first provider** for WP-38b. All gates G0–G5 passed. Implementation completed through Tasks 1–8. Baseline tagged `baseline-wp38b-final`. Owner Acceptance obtained.
 
 ---
 
@@ -261,18 +262,16 @@ The following task sequence is applied uniformly to TradeData within WP-38b. The
 | Field | Value |
 |-------|-------|
 | Baseline Tag | `baseline-wp38b-final` |
-| Commit | To be created at closure |
-| Date | TBD |
+| Commit | `02bad55bc85f66a10e1369a1df461b2eb3dfe72e` |
+| Date | 2026-08-13 |
 
 ---
 
-## 11. Next Steps After This Approval
+## 11. Next Steps After Closure
 
-1. Proceed to WP-38b Task 1 — TradeData Source Evaluation & Access Verification
-2. Resolve remaining verification items (Egypt coverage, rate limits, schema mapping) during Task 1
-3. Project Owner approval of TradeData as WP-38b First Provider — Already obtained (G1 Approved)
-4. Proceed through Tasks 2–8 following the standard integration pattern
-5. Tag `baseline-wp38b-final` upon closure
+1. WP-38b is formally closed as of 2026-08-13
+2. Proceed to WP-38c — Jordan/UAE/Saudi/GCC Sources (requires WP-38b closure)
+3. No work on WP-38c or WP-38d until WP-38b is fully closed and baselined
 
 **No work on WP-38c or WP-38d until WP-38b is fully closed and baselined.**
 
@@ -291,4 +290,4 @@ The following task sequence is applied uniformly to TradeData within WP-38b. The
 
 ---
 
-*Plan Status: Approved — G1 Approved — Ready for Task 1*
+*Plan Status: Closed — All gates passed, baseline created, owner acceptance obtained.*

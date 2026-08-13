@@ -51,7 +51,7 @@
 | WP-42 | ? Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
 | WP-37 | ? Complete | Knowledge Ingestion Pipeline — File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
 | WP-38a | ? Complete | External Source Integration — Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
-| WP-38b | ? Complete | Global Trade Intelligence — TradeData API adapter; retry/backoff; provenance metadata; registry registration; 21 tests (14 unit + 7 integration); no regressions |
+| WP-38b | ? Complete | Global Trade Intelligence — TradeData API adapter; retry/backoff; provenance metadata; registry registration; 21 tests (14 unit + 7 integration); no regressions; baseline `baseline-wp38b-final` at `02bad55`; Owner Acceptance obtained |
 
 ## WP-38a Implementation Summary
 
@@ -79,7 +79,8 @@
 - **Field Mapping:** dataSource?source_authority, date?effective_date, buyerName/supplierName/hsCodeDesc/productKeyword?content, originCountryCode/destinationCountryCode?country, masterBl/containerNo?source_url, otherInfo?legal_act_reference
 - **Tests:** 21 new tests (14 unit + 7 integration); all passing
 - **Regression:** No regressions in Moaah tests (15/15 passing)
-- **Baseline:** Pending G5 closure
+- **Baseline:** `baseline-wp38b-final` at commit `02bad55`
+- **Owner Acceptance:** Obtained — `.kilo/plans/wp38b-owner-acceptance-certificate.md`
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
 
 ## Current System State

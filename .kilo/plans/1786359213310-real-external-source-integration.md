@@ -56,14 +56,16 @@ WP-38 is the **parent Work Package** for introducing External Intelligence Sourc
 | **G5 — Closure** | **Approved** | Closure report created; baseline tagged `baseline-wp38a-final`; Owner Acceptance Certificate executed. |
 | **G0 — WP-38b Plan Approval** | **Approved** | Project Owner approval of WP-38b plan obtained. |
 | **G1 — TradeData Source Selection** | **Approved** | Project Owner approval obtained for TradeData API as WP-38b First Provider. |
-| **G2 — Adapter Review** | **Pending** | Adapter specification not yet created. |
-| **G3 — Implementation Review** | **Pending** | Implementation not yet started. |
-| **G4 — Verification** | **Pending** | Verification not yet started. |
-| **G5 — Closure** | **Pending** | Closure not yet started. |
+| **G2 — Adapter Review** | **Approved** | Adapter specification approved: `.kilo/plans/wp38b-task2-tradedata-adapter-spec.md` |
+| **G3 — Implementation Review** | **Approved** | Implementation matches adapter spec; Provider-Agnostic architecture verified. |
+| **G4 — Verification** | **Approved** | Verification evidence package approved: `.kilo/plans/wp38b-task7-verification-evidence-package.md` |
+| **G5 — Closure** | **Approved** | Closure report created; baseline tagged `baseline-wp38b-final`; Owner Acceptance Certificate executed. |
 
 **WP-38a Status:** Closed — All gates passed, baseline created, owner acceptance obtained.
 
-**Next Sub-WP:** WP-38b — Global Trade Intelligence (approved; TradeData API first provider; G1 Approved)
+**WP-38b Status:** Closed — All gates passed, baseline created, owner acceptance obtained.
+
+**Next Sub-WP:** WP-38c — Jordan/UAE/Saudi/GCC Sources (pending; requires WP-38b closure)
 
 ---
 

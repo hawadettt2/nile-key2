@@ -176,6 +176,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Field mapping: dataSource?source_authority, date?effective_date, buyerName/supplierName/hsCodeDesc/productKeyword?content, originCountryCode/destinationCountryCode?country, masterBl/containerNo?source_url, otherInfo?legal_act_reference
   - 14 unit tests + 7 integration tests = 21 WP-38b tests passing
   - No regressions in knowledge layer; Moaah tests (15/15) passing
+  - Baseline: `baseline-wp38b-final` at `02bad55`
+  - Owner Acceptance: obtained — `.kilo/plans/wp38b-owner-acceptance-certificate.md`
   - Plan updated: `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md`
   - Verification evidence: `.kilo/plans/wp38b-task7-verification-evidence-package.md`
 

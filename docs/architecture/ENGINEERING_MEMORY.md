@@ -82,7 +82,7 @@ Deferred / Future:
 | WP-34 | ✅ Complete | working tree | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality |
 | WP-37 | ✅ Complete | working tree | Knowledge Ingestion Pipeline: RegulationsKnowledgeProvider; JSON file ingestion; REGULATIONS_FILE_PATH configurable; 12 tests; no regressions |
 | WP-38a | ✅ Complete | working tree | External Source Integration: Moaah API adapter with retry/backoff, provenance metadata, registry registration, 15 tests (9 unit + 6 integration); no regressions |
-| WP-38b | ✅ Complete | working tree | Global Trade Intelligence: TradeData API adapter with retry/backoff, provenance metadata, registry registration, 21 tests (14 unit + 7 integration); no regressions |
+| WP-38b | ✅ Complete | working tree | Global Trade Intelligence: TradeData API adapter with retry/backoff, provenance metadata, registry registration, 21 tests (14 unit + 7 integration); no regressions; baseline `baseline-wp38b-final` at `02bad55`; Owner Acceptance obtained |
 | WP-40 | ✅ Complete | c30a935 / a0dfd20 / 195b204 | Docker Compose Final Verification: both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified, frontend TypeScript build errors resolved |
 
 ---
@@ -91,6 +91,8 @@ Deferred / Future:
 
 | Hash | Message | Date |
 |------|---------|------|
+| 02bad55 | feat(wp-38b): finalize TradeData first provider implementation | 2026-08-13 |
+| 13fb461 | feat(wp-38a): finalize Moaah first provider implementation | 2026-08-13 |
 | 195b204 | docs(wp40): add WP-40 planning and closure reports | 2026-07-21 |
 | a0dfd20 | docs(wp40): update governance documents and close WP-40 | 2026-07-21 |
 | c30a935 | fix(frontend): resolve TypeScript build errors for Docker deployment | 2026-07-21 |
@@ -264,4 +266,4 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
-*Memory Last Updated: WP-38b Task 8 documentation — TradeData adapter documented; 21 tests passing; no regressions.*
+*Memory Last Updated: WP-38b closure — baseline `baseline-wp38b-final` at `02bad55`; Owner Acceptance obtained; 36/36 tests passing; no regressions.*
