@@ -51,8 +51,38 @@
 | WP-42 | ? Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
 | WP-37 | ? Complete | Knowledge Ingestion Pipeline — File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
 | WP-38a | ? Complete | External Source Integration — Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
+| WP-38b | ? Complete | Global Trade Intelligence — TradeData API adapter; retry/backoff; provenance metadata; registry registration; 21 tests (14 unit + 7 integration); no regressions |
 
-## WP-31 Implementation Summary
+## WP-38a Implementation Summary
+
+### WP-38a: External Source Integration — Moaah First Provider (Closed)
+- **MoaahExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from Moaah `/regs-search` REST API
+- **MoaahApiClient:** Isolated HTTP client with 3-attempt retry and exponential backoff (1s?2s) for timeouts, network errors, and HTTP 429
+- **Configuration:** `MOAAH_BASE_URL`, `MOAAH_API_KEY`, `MOAAH_TIMEOUT_SECONDS`, `MOAAH_SOURCE_ID`, `MOAAH_SOURCE_NAME`, `MOAAH_SOURCE_TYPE`, `MOAAH_SOURCE_VERSION` added to `config.py`
+- **Bootstrap:** Provider conditionally registered in `main.py` `lifespan()` wrapped in try/except
+- **Confidence Rules:** 0.75 if source_url absent; 0.85 if source_url present and effective_date present; 0.90 if legal_act_reference present
+- **Provenance Metadata:** source_id, source_url, source_authority, effective_date, legal_act_reference, fetch_timestamp, record_hash, retrieval_status assigned by adapter
+- **Tests:** 15 new tests (9 unit + 6 integration); all passing
+- **Regression:** No regressions; 1 pre-existing failure in unrelated ReasoningEngine reasoning text formatting confirmed
+- **Baseline:** `baseline-wp38a-final` at commit `13fb461b`
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support
+
+## WP-38b Implementation Summary
+
+### WP-38b: Global Trade Intelligence — TradeData First Provider (Closed)
+- **TradeDataExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from TradeData `/api/v1/tradeDetail` REST API
+- **TradeDataApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s?2s; network/5xx: 2 attempts exponential 2s?4s)
+- **Configuration:** `TRADEDATA_BASE_URL`, `TRADEDATA_API_KEY`, `TRADEDATA_TIMEOUT_SECONDS`, `TRADEDATA_SOURCE_ID`, `TRADEDATA_SOURCE_NAME`, `TRADEDATA_SOURCE_TYPE`, `TRADEDATA_SOURCE_VERSION` added to `config.py`
+- **Bootstrap:** Provider conditionally registered in `main.py` `lifespan()` wrapped in try/except when `TRADEDATA_API_KEY` and `TRADEDATA_BASE_URL` are configured
+- **Confidence Rules:** 0.85 if dataSource + date + country code present; 0.75 if dataSource or date present; 0.65 if only hsCode/buyerName/supplierName present; 0.50 otherwise; +0.05 for hs_code/buyer_name/supplier_name filter matches (cap 0.95); -0.10 for out-of-range dates (floor 0.50); -0.05 for lower-priority sources (floor 0.50)
+- **Provenance Metadata:** source_id, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status assigned by adapter
+- **Field Mapping:** dataSource?source_authority, date?effective_date, buyerName/supplierName/hsCodeDesc/productKeyword?content, originCountryCode/destinationCountryCode?country, masterBl/containerNo?source_url, otherInfo?legal_act_reference
+- **Tests:** 21 new tests (14 unit + 7 integration); all passing
+- **Regression:** No regressions in Moaah tests (15/15 passing)
+- **Baseline:** Pending G5 closure
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+## Current System State
 
 ### WP-31: AI Memory (Completed)
 - **SQLiteMemoryProvider:** Concrete implementation with recall/store/forget/summarize/cleanup_expired

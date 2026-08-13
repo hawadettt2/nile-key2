@@ -1,13 +1,15 @@
-# WP-38: Real External Source Integration — Knowledge Ingestion Pipeline Extension
+﻿# WP-38: Real External Source Integration — Knowledge Ingestion Pipeline Extension
 
 **Work Package:** WP-38 — Knowledge Ingestion Pipeline Extension (Phase 2.2)  
-**Status:** Draft — G0/G1 Approved — Proceeding to G2  
+**Status:** WP-38a Closed — WP-38b Approved — Ready for Execution  
 **Authority:** `PLAN.md` (Master Roadmap v2.1) — Single Source of Truth  
 **Governing Contract:** `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Prerequisite:** WP-37 — File-based Regulations Ingestion Provider (`baseline-wp37-final`)  
 **Date:** 2026-08-12  
 **Plan Path:** `.kilo/plans/1786359213310-real-external-source-integration.md`  
-**WP-38a First Provider:** Moaah API (approved by Project Owner in current work session following comparative analysis of Moaah, TradeData, and NBD)
+**WP-38a First Provider:** Moaah API (closed 2026-08-13)  
+**WP-38b First Provider Candidate:** TradeData API (approved 2026-08-13)  
+**WP-38b Plan:** `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md`
 
 **Task 2 Deliverable:** `.kilo/plans/wp38-task2-moaah-adapter-spec.md`
 
@@ -48,11 +50,20 @@ WP-38 is the **parent Work Package** for introducing External Intelligence Sourc
 |------|--------|-------------------|
 | **G0 — WP-38 Plan Approval** | **Approved** | Project Owner approval obtained in current work session. |
 | **G1 — Moaah Source Selection** | **Approved** | Project Owner approval obtained in current work session. Moaah is the WP-38a First Provider. |
-| **G2 — Adapter Review** | **Pending Review** | Adapter specification created: `.kilo/plans/wp38-task2-moaah-adapter-spec.md`. Pending formal review and approval. |
+| **G2 — Adapter Review** | **Approved** | Adapter specification approved: `.kilo/plans/wp38-task2-moaah-adapter-spec.md` |
 | **G3 — Implementation Review** | **Approved** | Implementation matches adapter spec; Provider-Agnostic architecture verified. |
-| **G4 — Verification** | **Pending Review** | Verification evidence package created: `.kilo/plans/wp38-task7-verification-evidence-package.md`. Pending formal review. |
+| **G4 — Verification** | **Approved** | Verification evidence package approved: `.kilo/plans/wp38-task7-verification-evidence-package.md` |
+| **G5 — Closure** | **Approved** | Closure report created; baseline tagged `baseline-wp38a-final`; Owner Acceptance Certificate executed. |
+| **G0 — WP-38b Plan Approval** | **Approved** | Project Owner approval of WP-38b plan obtained. |
+| **G1 — TradeData Source Selection** | **Approved** | Project Owner approval obtained for TradeData API as WP-38b First Provider. |
+| **G2 — Adapter Review** | **Pending** | Adapter specification not yet created. |
+| **G3 — Implementation Review** | **Pending** | Implementation not yet started. |
+| **G4 — Verification** | **Pending** | Verification not yet started. |
+| **G5 — Closure** | **Pending** | Closure not yet started. |
 
-**Next Gate:** G5 — Closure
+**WP-38a Status:** Closed — All gates passed, baseline created, owner acceptance obtained.
+
+**Next Sub-WP:** WP-38b — Global Trade Intelligence (approved; TradeData API first provider; G1 Approved)
 
 ---
 
@@ -441,9 +452,10 @@ The following task sequence is applied uniformly to each provider within each Su
 | **WP-38d** | 16–20 | GCC-Stat (if API verified; else Qatar Customs) | 4th | WP-38c closed |
 
 **Important:** 
-- WP-38a is the **only Sub-WP that executes in the current phase** (WP-38).
-- WP-38b, WP-38c, WP-38d are **planned but deferred**. They become active only after WP-38a closure and explicit Project Owner approval to proceed.
-- Within each Sub-WP, only **one provider is implemented at a time**. Remaining sources in the Sub-WP are future providers following the same gate sequence.
+- WP-38a is **Closed** — `baseline-wp38a-final` created.
+- **WP-38b is the active next Sub-WP.** TradeData API is the approved first provider candidate. WP-38b becomes fully active after G0 plan approval and G1 TradeData source selection approval.
+- WP-38c and WP-38d are **planned but deferred**. They become active only after WP-38b closure and explicit Project Owner approval to proceed.
+- Within each Sub-WP, only **one** provider is implemented at a time. Remaining sources in the Sub-WP are future providers following the same gate sequence.
 - If a Tier A source's API cannot be verified during Task 1, it reverts to Tier B and the evaluation order within the Sub-WP is adjusted accordingly.
 
 ---

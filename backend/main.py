@@ -99,6 +99,28 @@ async def lifespan(app: FastAPI):
             print("[WARNING] Moaah API credentials are not configured. Moaah adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] Moaah External Source Adapter registration failed: {exc}")
+    # Register TradeData External Source Adapter when configured
+    try:
+        if settings.TRADEDATA_API_KEY and settings.TRADEDATA_BASE_URL:
+            from app.agent.knowledge.tradedata_provider import TradeDataExternalSourceAdapter
+            tradedata_adapter = TradeDataExternalSourceAdapter(
+                config={
+                    "source_id": settings.TRADEDATA_SOURCE_ID,
+                    "name": settings.TRADEDATA_SOURCE_NAME,
+                    "type": settings.TRADEDATA_SOURCE_TYPE,
+                    "version": settings.TRADEDATA_SOURCE_VERSION,
+                    "updated_at": "2026-08-13T00:00:00Z",
+                    "base_url": settings.TRADEDATA_BASE_URL,
+                    "api_key": settings.TRADEDATA_API_KEY,
+                    "timeout_seconds": settings.TRADEDATA_TIMEOUT_SECONDS,
+                }
+            )
+            await knowledge_provider_registry.register(tradedata_adapter)
+            print(f"[SUCCESS] TradeData External Source Adapter registered: {settings.TRADEDATA_SOURCE_ID}")
+        else:
+            print("[WARNING] TradeData API credentials are not configured. TradeData adapter not registered.")
+    except Exception as exc:
+        print(f"[WARNING] TradeData External Source Adapter registration failed: {exc}")
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)

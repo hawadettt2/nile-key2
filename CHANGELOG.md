@@ -167,6 +167,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Plan updated: `.kilo/plans/1786359213310-real-external-source-integration.md`
   - Closure report: `.kilo/plans/wp38-task1-source-evaluation-report.md`
 
+- WP-38b: Global Trade Intelligence — TradeData API completed
+  - `TradeDataExternalSourceAdapter` implemented in `backend/app/agent/knowledge/tradedata_provider.py`
+  - `TradeDataApiClient` isolated HTTP client in `backend/app/agent/knowledge/tradedata_client.py` with retry/backoff
+  - Config fields added to `backend/app/core/config.py`: `TRADEDATA_BASE_URL`, `TRADEDATA_API_KEY`, `TRADEDATA_TIMEOUT_SECONDS`, `TRADEDATA_SOURCE_*`
+  - Conditional registration in `backend/main.py` lifespan when credentials are configured
+  - Confidence/provenance metadata: source_id, confidence, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status
+  - Field mapping: dataSource?source_authority, date?effective_date, buyerName/supplierName/hsCodeDesc/productKeyword?content, originCountryCode/destinationCountryCode?country, masterBl/containerNo?source_url, otherInfo?legal_act_reference
+  - 14 unit tests + 7 integration tests = 21 WP-38b tests passing
+  - No regressions in knowledge layer; Moaah tests (15/15) passing
+  - Plan updated: `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md`
+  - Verification evidence: `.kilo/plans/wp38b-task7-verification-evidence-package.md`
+
 ### Fixed
 - `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 

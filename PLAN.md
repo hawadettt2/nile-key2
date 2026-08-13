@@ -1046,6 +1046,13 @@ without sacrificing simplicity.
 - **Deliverables:** Research Request/Result models, orchestrator, source registry, retrieval abstraction, evidence/provenance capture, result structuring, verification/quality, 103+ tests
 - **Completion Date:** 2026-08-09
 
+### WP-38a: External Source Integration — Moaah First Provider
+- **Status:** ? Closed — Completed
+- **Description:** External Source Integration — Moaah API adapter with retry/backoff, provenance metadata, registry registration, 15 tests (9 unit + 6 integration); no regressions
+- **Dependencies:** WP-37 completed
+- **Deliverables:** MoaahExternalSourceAdapter, MoaahApiClient, 15 tests, closure report, owner acceptance certificate, baseline `baseline-wp38a-final`
+- **Completion Date:** 2026-08-13
+
 ## 15.4 ??????? 3: ????? ????????
 
 ### WP-40: ?????? ??????? ?? Docker Compose

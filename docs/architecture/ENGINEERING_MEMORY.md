@@ -82,6 +82,7 @@ Deferred / Future:
 | WP-34 | ✅ Complete | working tree | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality |
 | WP-37 | ✅ Complete | working tree | Knowledge Ingestion Pipeline: RegulationsKnowledgeProvider; JSON file ingestion; REGULATIONS_FILE_PATH configurable; 12 tests; no regressions |
 | WP-38a | ✅ Complete | working tree | External Source Integration: Moaah API adapter with retry/backoff, provenance metadata, registry registration, 15 tests (9 unit + 6 integration); no regressions |
+| WP-38b | ✅ Complete | working tree | Global Trade Intelligence: TradeData API adapter with retry/backoff, provenance metadata, registry registration, 21 tests (14 unit + 7 integration); no regressions |
 | WP-40 | ✅ Complete | c30a935 / a0dfd20 / 195b204 | Docker Compose Final Verification: both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified, frontend TypeScript build errors resolved |
 
 ---
@@ -205,6 +206,51 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
+## WP-37 Implementation Summary
+
+### WP-37: Knowledge Ingestion Pipeline — File-based Regulations Provider (Completed)
+- **RegulationsKnowledgeProvider:** New `KnowledgeProvider` implementation reading local JSON regulation files
+- **File Format:** JSON array of objects with id, title, description, regulation_type, category, country, effective_date, source_url, version
+- **Configuration:** `REGULATIONS_FILE_PATH` added to `config.py` with default `backend/data/regulations.json`
+- **Bootstrap:** Provider registered in `main.py` lifespan alongside existing providers
+- **Confidence Rules:** 0.5 if effective_date missing; 0.85 if source_url present; 0.75 if source_url absent
+- **Updated At:** Derived from file mtime in ISO-8601 UTC format
+- **Semantics:** Append-only; file is single source of truth; re-read on startup only
+- **Tests:** 12 new tests (8 unit + 4 integration); all passing
+- **Regression:** No regressions in knowledge layer; 2 pre-existing failures in unrelated reasoning engine tests confirmed
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV/External API support
+
+## WP-38a Implementation Summary
+
+### WP-38a: External Source Integration — Moaah First Provider (Closed)
+- **MoaahExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from Moaah `/regs-search` REST API
+- **MoaahApiClient:** Isolated HTTP client with 3-attempt retry and exponential backoff (1s→2s) for timeouts, network errors, and HTTP 429
+- **Configuration:** `MOAAH_BASE_URL`, `MOAAH_API_KEY`, `MOAAH_TIMEOUT_SECONDS`, `MOAAH_SOURCE_ID`, `MOAAH_SOURCE_NAME`, `MOAAH_SOURCE_TYPE`, `MOAAH_SOURCE_VERSION` added to `config.py`
+- **Bootstrap:** Provider conditionally registered in `main.py` `lifespan()` wrapped in try/except
+- **Confidence Rules:** 0.75 if source_url absent; 0.85 if source_url present and effective_date present; 0.90 if legal_act_reference present
+- **Provenance Metadata:** source_id, source_url, source_authority, effective_date, legal_act_reference, fetch_timestamp, record_hash, retrieval_status assigned by adapter
+- **Tests:** 15 new tests (9 unit + 6 integration); all passing
+- **Regression:** No regressions; 1 pre-existing failure in unrelated ReasoningEngine reasoning text formatting confirmed
+- **Baseline:** `baseline-wp38a-final` at commit `13fb461b`
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support
+
+## WP-38b Implementation Summary
+
+### WP-38b: Global Trade Intelligence — TradeData First Provider (Closed)
+- **TradeDataExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from TradeData `/api/v1/tradeDetail` REST API
+- **TradeDataApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s→2s; network/5xx: 2 attempts exponential 2s→4s)
+- **Configuration:** `TRADEDATA_BASE_URL`, `TRADEDATA_API_KEY`, `TRADEDATA_TIMEOUT_SECONDS`, `TRADEDATA_SOURCE_ID`, `TRADEDATA_SOURCE_NAME`, `TRADEDATA_SOURCE_TYPE`, `TRADEDATA_SOURCE_VERSION` added to `config.py`
+- **Bootstrap:** Provider conditionally registered in `main.py` `lifespan()` wrapped in try/except when `TRADEDATA_API_KEY` and `TRADEDATA_BASE_URL` are configured
+- **Confidence Rules:** 0.85 if dataSource + date + country code present; 0.75 if dataSource or date present; 0.65 if only hsCode/buyerName/supplierName present; 0.50 otherwise; +0.05 for hs_code/buyer_name/supplier_name filter matches (cap 0.95); -0.10 for out-of-range dates (floor 0.50); -0.05 for lower-priority sources (floor 0.50)
+- **Provenance Metadata:** source_id, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status assigned by adapter
+- **Field Mapping:** dataSource→source_authority, date→effective_date, buyerName/supplierName/hsCodeDesc/productKeyword→content, originCountryCode/destinationCountryCode→country, masterBl/containerNo→source_url, otherInfo→legal_act_reference
+- **Tests:** 21 new tests (14 unit + 7 integration); all passing
+- **Regression:** No regressions in Moaah tests (15/15 passing)
+- **Baseline:** Pending G5 closure
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+---
+
 ## Engineering Decisions Log
 
 | Decision | Date | Status |
@@ -218,4 +264,4 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 
 ---
 
-*Memory Last Updated: WP-41 closure — 876+ tests, Docker validated, TypeScript errors resolved, documentation updated.*
+*Memory Last Updated: WP-38b Task 8 documentation — TradeData adapter documented; 21 tests passing; no regressions.*

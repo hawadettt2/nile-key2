@@ -75,6 +75,15 @@ class Settings(BaseSettings):
     MOAAH_SOURCE_NAME: str = "Moaah External Knowledge"
     MOAAH_SOURCE_TYPE: str = "external"
     MOAAH_SOURCE_VERSION: str = "1.0.0"
+
+    # ========== TradeData External Source Adapter (WP-38b Task 2) ==========
+    TRADEDATA_BASE_URL: str = "https://api.tradedata.io"
+    TRADEDATA_API_KEY: str = ""
+    TRADEDATA_TIMEOUT_SECONDS: float = 30.0
+    TRADEDATA_SOURCE_ID: str = "tradedata"
+    TRADEDATA_SOURCE_NAME: str = "TradeData API"
+    TRADEDATA_SOURCE_TYPE: str = "external_trade_intelligence"
+    TRADEDATA_SOURCE_VERSION: str = "1.0"
     # ========== Knowledge Ingestion (WP-37) ==========
     REGULATIONS_FILE_PATH: str = "backend/data/regulations.json"
 
