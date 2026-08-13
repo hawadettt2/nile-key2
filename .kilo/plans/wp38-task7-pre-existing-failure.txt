@@ -1,0 +1,93 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-8.2.2, pluggy-1.6.0 -- C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\python.exe
+cachedir: .pytest_cache
+rootdir: F:\nilekey\nile-key-project\nile-key2\backend
+configfile: pytest.ini
+plugins: anyio-4.14.1, asyncio-0.23.7, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT
+timeout: 60.0s
+timeout method: thread
+timeout func_only: False
+collecting ... collected 1 item
+
+tests/agent/test_company_knowledge_provider.py::TestCompanyKnowledgeProviderQuery::test_query_end_to_end_with_reasoning_engine FAILED [100%]
+
+================================== FAILURES ===================================
+_ TestCompanyKnowledgeProviderQuery.test_query_end_to_end_with_reasoning_engine _
+
+self = <tests.agent.test_company_knowledge_provider.TestCompanyKnowledgeProviderQuery object at 0x0000015EEB84F710>
+
+    @pytest.mark.asyncio
+    async def test_query_end_to_end_with_reasoning_engine(self):
+        """CompanyKnowledgeProvider feeds into ReasoningEngine via registry."""
+        fake_resources = [
+            {
+                "id": 1,
+                "title": "ETA Egypt",
+                "description": "����� ������� ������� � �������� �����������",
+                "resource_type": "government",
+                "category": "tax",
+                "url": "https://invoicing.eta.gov.eg",
+                "country": "Egypt",
+                "metadata": {"tags": "tax,e-invoice,government"},
+                "is_active": 1,
+                "created_at": "2026-07-20T00:00:00Z",
+                "updated_at": "2026-07-20T00:00:00Z",
+            }
+        ]
+    
+        with patch("app.services.resource.search_resources", return_value=fake_resources):
+            registry = KnowledgeProviderRegistry()
+            provider = CompanyKnowledgeProvider()
+            await registry.register(provider)
+    
+            engine = ReasoningEngine(knowledge_provider_registry=registry)
+            decision = await engine.reason("session-123", {
+                "intent": "Submit invoice",
+                "parameters": {},
+                "context": {},
+            })
+    
+        assert "knowledge" in decision["context"]
+        assert len(decision["context"]["knowledge"]) == 1
+        assert decision["context"]["knowledge"][0]["source_id"] == "company-knowledge"
+>       assert "Considered 1 knowledge entries" in decision["reasoning"]
+E       assert 'Considered 1 knowledge entries' in "Selected 'search' with confidence 0.25 (score 0.25). Knowledge: 1 entries from company-knowledge."
+
+tests\agent\test_company_knowledge_provider.py:246: AssertionError
+----------------------------- Captured log setup ------------------------------
+WARNING  passlib.handlers.bcrypt:bcrypt.py:622 (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+============================== warnings summary ===============================
+C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_config.py:284: 20 warnings
+  C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_config.py:284: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+app\schemas\eta.py:55
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:55: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("id", pre=True)
+
+app\schemas\eta.py:110
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("itemType")
+
+app\schemas\eta.py:126
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:126: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("swiftCode")
+
+app\schemas\eta.py:211
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:211: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("id", pre=True)
+
+app\schemas\eta.py:230
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:230: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("orderdeliveryMode")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/agent/test_company_knowledge_provider.py::TestCompanyKnowledgeProviderQuery::test_query_end_to_end_with_reasoning_engine
+======================= 1 failed, 25 warnings in 3.94s ========================

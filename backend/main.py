@@ -1,7 +1,7 @@
-"""
+﻿"""
 Digital Export Manager API v1.0
-Digital Export Manager — Intelligent Operating Platform for export operations
-FastAPI Backend — Entry Point
+Digital Export Manager â€” Intelligent Operating Platform for export operations
+FastAPI Backend â€” Entry Point
 """
 
 from contextlib import asynccontextmanager
@@ -53,9 +53,9 @@ class SecurityHeadersMiddleware:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    إدارة دورة حياة التطبيق:
-    - Startup: تهيئة قاعدة البيانات + تشغيل ETA Scheduler
-    - Shutdown: إيقاف ETA Scheduler + تنظيف الموارد
+    ط¥ط¯ط§ط±ط© ط¯ظˆط±ط© ط­ظٹط§ط© ط§ظ„طھط·ط¨ظٹظ‚:
+    - Startup: طھظ‡ظٹط¦ط© ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ + طھط´ط؛ظٹظ„ ETA Scheduler
+    - Shutdown: ط¥ظٹظ‚ط§ظپ ETA Scheduler + طھظ†ط¸ظٹظپ ط§ظ„ظ…ظˆط§ط±ط¯
     """
     # ========== STARTUP ==========
     print("[STARTUP] Starting Digital Export Manager API...")
@@ -77,6 +77,28 @@ async def lifespan(app: FastAPI):
         print(f"[WARNING] LLM provider registration failed: {exc}")
     
     # Register Knowledge providers
+    # Register Moaah External Source Adapter when configured
+    try:
+        if settings.MOAAH_API_KEY and settings.MOAAH_BASE_URL:
+            from app.agent.knowledge.mooadapter import MoaahExternalSourceAdapter
+            moaah_adapter = MoaahExternalSourceAdapter(
+                config={
+                    "source_id": settings.MOAAH_SOURCE_ID,
+                    "name": settings.MOAAH_SOURCE_NAME,
+                    "type": settings.MOAAH_SOURCE_TYPE,
+                    "version": settings.MOAAH_SOURCE_VERSION,
+                    "updated_at": "2026-08-12T00:00:00Z",
+                    "base_url": settings.MOAAH_BASE_URL,
+                    "api_key": settings.MOAAH_API_KEY,
+                    "timeout_seconds": settings.MOAAH_TIMEOUT_SECONDS,
+                }
+            )
+            await knowledge_provider_registry.register(moaah_adapter)
+            print(f"[SUCCESS] Moaah External Source Adapter registered: {settings.MOAAH_SOURCE_ID}")
+        else:
+            print("[WARNING] Moaah API credentials are not configured. Moaah adapter not registered.")
+    except Exception as exc:
+        print(f"[WARNING] Moaah External Source Adapter registration failed: {exc}")
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)
@@ -137,10 +159,10 @@ async def lifespan(app: FastAPI):
         print(f"[WARNING] Shipping scheduler shutdown error: {exc}")
 
 
-# إنشاء تطبيق FastAPI
+# ط¥ظ†ط´ط§ط، طھط·ط¨ظٹظ‚ FastAPI
 app = FastAPI(
     title="Digital Export Manager API",
-    description="Digital Export Manager — Intelligent Operating Platform for export operations",
+    description="Digital Export Manager â€” Intelligent Operating Platform for export operations",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -150,7 +172,7 @@ app = FastAPI(
 app.state.limiter = auth.limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# إعداد CORS — يُعدل في الإنتاج ليكون أكثر تحديداً
+# ط¥ط¹ط¯ط§ط¯ CORS â€” ظٹظڈط¹ط¯ظ„ ظپظٹ ط§ظ„ط¥ظ†طھط§ط¬ ظ„ظٹظƒظˆظ† ط£ظƒط«ط± طھط­ط¯ظٹط¯ط§ظ‹
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -162,7 +184,7 @@ app.add_middleware(
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CSRFMiddleware)
 
-# ========== تسجيل الـ Routers ==========
+# ========== طھط³ط¬ظٹظ„ ط§ظ„ظ€ Routers ==========
 app.include_router(auth.router)
 app.include_router(shipping.router)
 app.include_router(invoice.router)
@@ -187,7 +209,7 @@ app.include_router(research.router)
 
 @app.get("/", tags=["Root"])
 def root():
-    """الصفحة الرئيسية — معلومات التطبيق"""
+    """ط§ظ„طµظپط­ط© ط§ظ„ط±ط¦ظٹط³ظٹط© â€” ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„طھط·ط¨ظٹظ‚"""
     return {
         "message": "Digital Export Manager API v1.0",
         "status": "running",
@@ -199,9 +221,10 @@ def root():
 
 @app.get("/health", tags=["Health"])
 def health_check():
-    """فحص صحة التطبيق — يُستخدم في Monitoring"""
+    """ظپط­طµ طµط­ط© ط§ظ„طھط·ط¨ظٹظ‚ â€” ظٹظڈط³طھط®ط¯ظ… ظپظٹ Monitoring"""
     return {
         "status": "healthy",
         "version": "1.0.0",
         "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
     }
+

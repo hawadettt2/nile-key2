@@ -81,6 +81,7 @@ Deferred / Future:
 | WP-33 | ✅ Complete | working tree | Trade Intelligence: supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests |
 | WP-34 | ✅ Complete | working tree | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality |
 | WP-37 | ✅ Complete | working tree | Knowledge Ingestion Pipeline: RegulationsKnowledgeProvider; JSON file ingestion; REGULATIONS_FILE_PATH configurable; 12 tests; no regressions |
+| WP-38a | ✅ Complete | working tree | External Source Integration: Moaah API adapter with retry/backoff, provenance metadata, registry registration, 15 tests (9 unit + 6 integration); no regressions |
 | WP-40 | ✅ Complete | c30a935 / a0dfd20 / 195b204 | Docker Compose Final Verification: both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified, frontend TypeScript build errors resolved |
 
 ---

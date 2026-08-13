@@ -156,6 +156,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - No regressions in knowledge layer; 2 pre-existing Decision Engine test failures documented
   - Closure: `.kilo/plans/wp37-final-closure-report.md`, `.kilo/plans/wp37-owner-acceptance-certificate.md`
 
+- WP-38a: External Source Integration — Moaah API completed
+  - `MoaahExternalSourceAdapter` implemented in `backend/app/agent/knowledge/mooadapter.py`
+  - `MoaahApiClient` isolated HTTP client in `backend/app/agent/knowledge/mooadapter_client.py` with retry/backoff
+  - Config fields added to `backend/app/core/config.py`: `MOAAH_BASE_URL`, `MOAAH_API_KEY`, `MOAAH_TIMEOUT_SECONDS`, `MOAAH_SOURCE_*`
+  - Conditional registration in `backend/main.py` lifespan when credentials are configured
+  - Confidence/provenance metadata: source_id, fetch_timestamp, record_hash, retrieval_status
+  - 9 unit tests + 6 integration tests = 15 WP-38a tests passing
+  - No regressions in knowledge layer; 1 pre-existing ReasoningEngine test failure documented
+  - Plan updated: `.kilo/plans/1786359213310-real-external-source-integration.md`
+  - Closure report: `.kilo/plans/wp38-task1-source-evaluation-report.md`
+
 ### Fixed
 - `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 

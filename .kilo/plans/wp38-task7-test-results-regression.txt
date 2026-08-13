@@ -1,0 +1,69 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-8.2.2, pluggy-1.6.0 -- C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\python.exe
+cachedir: .pytest_cache
+rootdir: F:\nilekey\nile-key-project\nile-key2\backend
+configfile: pytest.ini
+plugins: anyio-4.14.1, asyncio-0.23.7, cov-5.0.0, timeout-2.4.0
+asyncio: mode=Mode.STRICT
+timeout: 60.0s
+timeout method: thread
+timeout func_only: False
+collecting ... collected 29 items
+
+tests/agent/test_knowledge.py::TestKnowledgeProviderInterface::test_interface_is_abstract PASSED [  3%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderInterface::test_concrete_provider_implements_query PASSED [  6%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderInterface::test_concrete_provider_implements_get_sources PASSED [ 10%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_register_single_provider PASSED [ 13%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_register_multiple_providers PASSED [ 17%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_register_provider_without_sources_raises PASSED [ 20%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_unregister_provider PASSED [ 24%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_get_provider PASSED [ 27%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_get_nonexistent_provider_returns_none PASSED [ 31%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_list_providers PASSED [ 34%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_query_registered_source PASSED [ 37%]
+tests/agent/test_knowledge.py::TestKnowledgeProviderRegistry::test_query_unregistered_source_raises PASSED [ 41%]
+tests/agent/test_knowledge.py::TestKnowledgeQuerySchemas::test_request_schema_defaults PASSED [ 44%]
+tests/agent/test_knowledge.py::TestKnowledgeQuerySchemas::test_request_schema_with_all_fields PASSED [ 48%]
+tests/agent/test_knowledge.py::TestKnowledgeQuerySchemas::test_request_schema_validates_limit_range PASSED [ 51%]
+tests/agent/test_knowledge.py::TestKnowledgeQuerySchemas::test_response_schema PASSED [ 55%]
+tests/agent/test_knowledge.py::TestKnowledgeQuerySchemas::test_response_schema_defaults PASSED [ 58%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_get_sources_returns_expected_structure PASSED [ 62%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_query_with_matching_query_returns_correct_shape PASSED [ 65%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_query_with_no_query_returns_all_records_up_to_limit PASSED [ 68%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_query_returns_empty_list_when_no_matches PASSED [ 72%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_confidence_scores_within_range PASSED [ 75%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_query_handles_missing_file_gracefully PASSED [ 79%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_query_handles_malformed_json_gracefully PASSED [ 82%]
+tests/agent/test_regulations_knowledge_provider.py::TestRegulationsKnowledgeProvider::test_get_sources_raises_value_error_when_no_sources PASSED [ 86%]
+tests/agent/test_regulations_knowledge_integration.py::TestRegulationsKnowledgeProviderIntegration::test_provider_registers_successfully_in_registry PASSED [ 89%]
+tests/agent/test_regulations_knowledge_integration.py::TestRegulationsKnowledgeProviderIntegration::test_provider_is_queryable_via_registry PASSED [ 93%]
+tests/agent/test_regulations_knowledge_integration.py::TestRegulationsKnowledgeProviderIntegration::test_reasoning_engine_can_query_provider_through_registry PASSED [ 96%]
+tests/agent/test_regulations_knowledge_integration.py::TestRegulationsKnowledgeProviderIntegration::test_existing_providers_still_register_after_new_provider PASSED [100%]
+
+============================== warnings summary ===============================
+C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_config.py:284: 20 warnings
+  C:\Users\OSAMA\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_config.py:284: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+app\schemas\eta.py:55
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:55: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("id", pre=True)
+
+app\schemas\eta.py:110
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:110: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("itemType")
+
+app\schemas\eta.py:126
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:126: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("swiftCode")
+
+app\schemas\eta.py:211
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:211: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("id", pre=True)
+
+app\schemas\eta.py:230
+  F:\nilekey\nile-key-project\nile-key2\backend\app\schemas\eta.py:230: PydanticDeprecatedSince20: Pydantic V1 style `@validator` validators are deprecated. You should migrate to Pydantic V2 style `@field_validator` validators, see the migration guide for more details. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.7/migration/
+    @validator("orderdeliveryMode")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 29 passed, 25 warnings in 118.66s (0:01:58) =================

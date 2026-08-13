@@ -1,0 +1,4 @@
+﻿Query time: 3.44 ms
+Results count: 1
+Confidence: 0.9
+First item keys: ['id', 'content', 'source_id', 'confidence', 'metadata']

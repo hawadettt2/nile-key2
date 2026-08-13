@@ -1,5 +1,5 @@
-"""
-إعدادات التطبيق — تُحمل من متغيرات البيئة
+﻿"""
+ط¥ط¹ط¯ط§ط¯ط§طھ ط§ظ„طھط·ط¨ظٹظ‚ â€” طھظڈط­ظ…ظ„ ظ…ظ† ظ…طھط؛ظٹط±ط§طھ ط§ظ„ط¨ظٹط¦ط©
 """
 
 from pydantic_settings import BaseSettings
@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./nile_key.db"
 
     # ========== JWT ==========
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 ساعة
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7       # 7 أيام
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 ط³ط§ط¹ط©
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7       # 7 ط£ظٹط§ظ…
     ALGORITHM: str = "HS256"
 
     # ========== Cookies ==========
@@ -61,11 +61,20 @@ class Settings(BaseSettings):
     # ========== Research Search Provider Router ==========
     SEARCH_STUB_FALLBACK: bool = False
 
-    # ========== SearXNG (WP-36 — First Search Provider) ==========
+    # ========== SearXNG (WP-36 â€” First Search Provider) ==========
     SEARXNG_BASE_URL: str = ""
     SEARXNG_API_KEY: str = ""
     SEARXNG_TIMEOUT_SECONDS: float = 10.0
 
+
+    # ========== Moaah External Source Adapter (WP-38a Task 2) ==========
+    MOAAH_BASE_URL: str = ""
+    MOAAH_API_KEY: str = ""
+    MOAAH_TIMEOUT_SECONDS: float = 10.0
+    MOAAH_SOURCE_ID: str = "moaah"
+    MOAAH_SOURCE_NAME: str = "Moaah External Knowledge"
+    MOAAH_SOURCE_TYPE: str = "external"
+    MOAAH_SOURCE_VERSION: str = "1.0.0"
     # ========== Knowledge Ingestion (WP-37) ==========
     REGULATIONS_FILE_PATH: str = "backend/data/regulations.json"
 
@@ -92,5 +101,6 @@ class Settings(BaseSettings):
             )
 
 
-# نسخة وحيدة من الإعدادات (Singleton)
+# ظ†ط³ط®ط© ظˆط­ظٹط¯ط© ظ…ظ† ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ (Singleton)
 settings = Settings()
+
