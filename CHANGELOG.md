@@ -181,6 +181,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Plan updated: `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md`
   - Verification evidence: `.kilo/plans/wp38b-task7-verification-evidence-package.md`
 
+- WP-38c: Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs completed
+  - `ZatcaExternalSourceAdapter` implemented in `backend/app/agent/knowledge/zatca_provider.py`
+  - `ZatcaApiClient` isolated HTTP client in `backend/app/agent/knowledge/zatca_client.py` with retry/backoff
+  - Config fields added to `backend/app/core/config.py`: `ZATCA_BASE_URL`, `ZATCA_API_KEY`, `ZATCA_TIMEOUT_SECONDS`, `ZATCA_SOURCE_*`
+  - Conditional registration in `backend/main.py` lifespan when credentials are configured
+  - Confidence/provenance metadata: source_id, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status
+  - Field mapping: description/port_name/traffic_type/quantity/weight/amount ? content (metrics), date ? effective_date, endpoint ? source_url, country ? SA
+  - 13 unit tests + 6 integration tests = 19 WP-38c tests passing
+  - No regressions in knowledge layer; TradeData tests (21/21) and Moaah tests (15/15) passing
+  - Plan updated: `.kilo/plans/1786559140128-wp38c-jordan-uae-saudi-gcc-sources-plan.md`
+  - Verification evidence: `.kilo/plans/wp38c-task7-verification-evidence-package.md`
+  - Closure report: `.kilo/plans/wp38c-final-closure-report.md`
+  - Owner Acceptance Certificate: `.kilo/plans/wp38c-owner-acceptance-certificate.md`
+
 ### Fixed
 - `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 

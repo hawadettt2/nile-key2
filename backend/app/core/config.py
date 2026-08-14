@@ -84,6 +84,15 @@ class Settings(BaseSettings):
     TRADEDATA_SOURCE_NAME: str = "TradeData API"
     TRADEDATA_SOURCE_TYPE: str = "external_trade_intelligence"
     TRADEDATA_SOURCE_VERSION: str = "1.0"
+
+    # ========== ZATCA External Source Adapter (WP-38c Task 2) ==========
+    ZATCA_BASE_URL: str = ""
+    ZATCA_API_KEY: str = ""
+    ZATCA_TIMEOUT_SECONDS: float = 30.0
+    ZATCA_SOURCE_ID: str = "zatca"
+    ZATCA_SOURCE_NAME: str = "ZATCA Open Data APIs"
+    ZATCA_SOURCE_TYPE: str = "external_trade_intelligence"
+    ZATCA_SOURCE_VERSION: str = "1.0"
     # ========== Knowledge Ingestion (WP-37) ==========
     REGULATIONS_FILE_PATH: str = "backend/data/regulations.json"
 

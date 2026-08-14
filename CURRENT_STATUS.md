@@ -51,7 +51,7 @@
 | WP-42 | ? Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
 | WP-37 | ? Complete | Knowledge Ingestion Pipeline — File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
 | WP-38a | ? Complete | External Source Integration — Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
-| WP-38b | ? Complete | Global Trade Intelligence — TradeData API adapter; retry/backoff; provenance metadata; registry registration; 21 tests (14 unit + 7 integration); no regressions; baseline `baseline-wp38b-final` at `02bad55`; Owner Acceptance obtained |
+| WP-38c | ? Complete | Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 19 tests (13 unit + 6 integration); no regressions |
 
 ## WP-38a Implementation Summary
 
@@ -81,6 +81,20 @@
 - **Regression:** No regressions in Moaah tests (15/15 passing)
 - **Baseline:** `baseline-wp38b-final` at commit `02bad55`
 - **Owner Acceptance:** Obtained — `.kilo/plans/wp38b-owner-acceptance-certificate.md`
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+## WP-38c Implementation Summary
+
+### WP-38c: Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs (Task 8 Completed)
+- **ZatcaExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from ZATCA Open Data APIs (`zatca.gov.sa`)
+- **ZatcaApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s?2s; network/5xx: 2 attempts exponential 2s?4s)
+- **Configuration:** `ZATCA_BASE_URL`, `ZATCA_API_KEY`, `ZATCA_TIMEOUT_SECONDS`, `ZATCA_SOURCE_ID`, `ZATCA_SOURCE_NAME`, `ZATCA_SOURCE_TYPE`, `ZATCA_SOURCE_VERSION` added to `config.py`
+- **Bootstrap:** Provider conditionally registered in `main.py` `lifespan()` wrapped in try/except when `ZATCA_API_KEY` and `ZATCA_BASE_URL` are configured
+- **Confidence Rules:** 0.85 if valid data with timestamp present; 0.75 if timestamp missing but core fields present; 0.65 if only minimal fields present; 0.50 if malformed/incomplete; +0.05 for port_name/traffic_type filter matches (cap 0.95); -0.10 for out-of-range dates (floor 0.50)
+- **Provenance Metadata:** source_id, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status assigned by adapter
+- **Field Mapping:** description/port_name/traffic_type/quantity/weight/amount ? content (metrics), date ? effective_date, endpoint ? source_url, country ? SA
+- **Tests:** 19 new tests (13 unit + 6 integration); all passing
+- **Regression:** No regressions in TradeData (21/21) and Moaah (15/15) tests
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
 
 ## Current System State

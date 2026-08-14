@@ -121,6 +121,28 @@ async def lifespan(app: FastAPI):
             print("[WARNING] TradeData API credentials are not configured. TradeData adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] TradeData External Source Adapter registration failed: {exc}")
+    # Register ZATCA External Source Adapter when configured
+    try:
+        if settings.ZATCA_API_KEY and settings.ZATCA_BASE_URL:
+            from app.agent.knowledge.zatca_provider import ZatcaExternalSourceAdapter
+            zatca_adapter = ZatcaExternalSourceAdapter(
+                config={
+                    "source_id": settings.ZATCA_SOURCE_ID,
+                    "name": settings.ZATCA_SOURCE_NAME,
+                    "type": settings.ZATCA_SOURCE_TYPE,
+                    "version": settings.ZATCA_SOURCE_VERSION,
+                    "updated_at": "2026-08-14T00:00:00Z",
+                    "base_url": settings.ZATCA_BASE_URL,
+                    "api_key": settings.ZATCA_API_KEY,
+                    "timeout_seconds": settings.ZATCA_TIMEOUT_SECONDS,
+                }
+            )
+            await knowledge_provider_registry.register(zatca_adapter)
+            print(f"[SUCCESS] ZATCA External Source Adapter registered: {settings.ZATCA_SOURCE_ID}")
+        else:
+            print("[WARNING] ZATCA API credentials are not configured. ZATCA adapter not registered.")
+    except Exception as exc:
+        print(f"[WARNING] ZATCA External Source Adapter registration failed: {exc}")
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)
