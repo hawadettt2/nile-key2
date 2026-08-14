@@ -93,6 +93,17 @@ class Settings(BaseSettings):
     ZATCA_SOURCE_NAME: str = "ZATCA Open Data APIs"
     ZATCA_SOURCE_TYPE: str = "external_trade_intelligence"
     ZATCA_SOURCE_VERSION: str = "1.0"
+
+    # ========== FAOSTAT External Source Adapter (Portfolio Re-Evaluation Task 3) ==========
+    FAOSTAT_BASE_URL: str = "https://faostatservices.fao.org/api/v1"
+    FAOSTAT_API_KEY: str = ""
+    FAOSTAT_TIMEOUT_SECONDS: float = 30.0
+    FAOSTAT_SOURCE_ID: str = "faostat"
+    FAOSTAT_SOURCE_NAME: str = "FAOSTAT External Knowledge"
+    FAOSTAT_SOURCE_TYPE: str = "external_agrifood_intelligence"
+    FAOSTAT_SOURCE_VERSION: str = "1.0.0"
+    FAOSTAT_DEFAULT_DOMAIN: str = "QCL"
+
     # ========== Knowledge Ingestion (WP-37) ==========
     REGULATIONS_FILE_PATH: str = "backend/data/regulations.json"
 

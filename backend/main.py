@@ -165,6 +165,29 @@ async def lifespan(app: FastAPI):
             print("[WARNING] GCCSTAT_BASE_URL is not configured. GCC-Stat adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] GCC-Stat External Source Adapter registration failed: {exc}")
+    # Register FAOSTAT External Source Adapter when configured
+    try:
+        if settings.FAOSTAT_BASE_URL:
+            from app.agent.knowledge.faostat_provider import FaostatExternalSourceAdapter
+            faostat_adapter = FaostatExternalSourceAdapter(
+                config={
+                    "source_id": settings.FAOSTAT_SOURCE_ID,
+                    "name": settings.FAOSTAT_SOURCE_NAME,
+                    "type": settings.FAOSTAT_SOURCE_TYPE,
+                    "version": settings.FAOSTAT_SOURCE_VERSION,
+                    "updated_at": "2026-08-14T00:00:00Z",
+                    "base_url": settings.FAOSTAT_BASE_URL,
+                    "api_key": settings.FAOSTAT_API_KEY,
+                    "timeout_seconds": settings.FAOSTAT_TIMEOUT_SECONDS,
+                    "default_domain": settings.FAOSTAT_DEFAULT_DOMAIN,
+                }
+            )
+            await knowledge_provider_registry.register(faostat_adapter)
+            print(f"[SUCCESS] FAOSTAT External Source Adapter registered: {settings.FAOSTAT_SOURCE_ID}")
+        else:
+            print("[WARNING] FAOSTAT_BASE_URL is not configured. FAOSTAT adapter not registered.")
+    except Exception as exc:
+        print(f"[WARNING] FAOSTAT External Source Adapter registration failed: {exc}")
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)

@@ -1,0 +1,108 @@
+{
+  "timestamp": 85,
+  "base_url": "https://faostatservices.fao.org/api/v1",
+  "probed_paths": [
+    {
+      "path": "/en/data/QCL",
+      "status_code": 200,
+      "headers": {
+        "content-type": "application/json;charset=utf-8",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "date": "Fri, 14 Aug 2026 19:32:05 GMT",
+        "server": "nginx/1.28.0",
+        "access-control-allow-origin": "*",
+        "x-cache": "Hit from cloudfront",
+        "via": "1.1 daf70188b3522aaba175a76b5a990d30.cloudfront.net (CloudFront)",
+        "x-amz-cf-pop": "MRS53-P3",
+        "x-amz-cf-id": "uhTcENzCagI08J7E9Yre96m6gEZeqC8aFVCqRFj99FW-lViBLBaWNA==",
+        "age": "37"
+      },
+      "element_count": 14
+    }
+  ],
+  "vi3": {
+    "evidence": {
+      "endpoint": "https://faostatservices.fao.org/api/v1/en/data/QCL?format=json&area=100&year=2020",
+      "http_status": 200,
+      "domain": "QCL",
+      "element_count": 14,
+      "elements": [
+        {
+          "element_code": "5312",
+          "element_description": "Area harvested"
+        },
+        {
+          "element_code": "5412",
+          "element_description": "Yield"
+        },
+        {
+          "element_code": "5510",
+          "element_description": "Production"
+        },
+        {
+          "element_code": "5111",
+          "element_description": "Stocks"
+        },
+        {
+          "element_code": "5114",
+          "element_description": "Stocks"
+        },
+        {
+          "element_code": "5320",
+          "element_description": "Producing Animals/Slaughtered"
+        },
+        {
+          "element_code": "5112",
+          "element_description": "Stocks"
+        },
+        {
+          "element_code": "5413",
+          "element_description": "Yield"
+        },
+        {
+          "element_code": "5424",
+          "element_description": "Yield/Carcass Weight"
+        },
+        {
+          "element_code": "5513",
+          "element_description": "Production"
+        },
+        {
+          "element_code": "5313",
+          "element_description": "Laying"
+        },
+        {
+          "element_code": "5417",
+          "element_description": "Yield/Carcass Weight"
+        },
+        {
+          "element_code": "5321",
+          "element_description": "Producing Animals/Slaughtered"
+        },
+        {
+          "element_code": "5318",
+          "element_description": "Milk Animals"
+        }
+      ],
+      "dsd_element_fields": [
+        {
+          "label": "Element Code",
+          "type": "code",
+          "key": "Element Code",
+          "dimension_id": "element",
+          "data_type": "string"
+        },
+        {
+          "label": "Element",
+          "type": "label",
+          "key": "Element",
+          "dimension_id": "element",
+          "data_type": "string"
+        }
+      ]
+    },
+    "finding": "Live API returned 14 unique QCL elements with codes and descriptions from /en/data/QCL",
+    "status": "CLOSED"
+  }
+}
