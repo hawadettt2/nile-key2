@@ -60,15 +60,15 @@ WP-38 is the **parent Work Package** for introducing External Intelligence Sourc
 | **G3 — Implementation Review** | **Approved** | Implementation matches adapter spec; Provider-Agnostic architecture verified. |
 | **G4 — Verification** | **Approved** | Verification evidence package approved: `.kilo/plans/wp38b-task7-verification-evidence-package.md` |
 | **G5 — Closure** | **Approved** | Closure report created; baseline tagged `baseline-wp38b-final`; Owner Acceptance Certificate executed. |
-| **G5 — Closure** | **Approved** | Closure report created; baseline tagging pending G5; Owner Acceptance Certificate executed. |
+| **G5 — Closure** | **Approved** | Closure report created; baseline tagged `baseline-wp38c-final` at `e10295d`; Owner Acceptance Certificate executed. |
 
 **WP-38a Status:** Closed — All gates passed, baseline created, owner acceptance obtained.
 
 **WP-38b Status:** Closed — All gates passed, baseline created, owner acceptance obtained.
 
-**WP-38c Status:** Closed — Task 8 completed; documentation updated; Owner Acceptance obtained; pending G5 Closure Review and baseline tagging.
+**WP-38c Status:** Closed — All gates passed, baseline created, owner acceptance obtained.
 
-**Next Sub-WP:** WP-38d — GCC Expansion (blocked until WP-38c G5 closure and baseline tagging)
+**Next Sub-WP:** WP-38d — GCC Expansion
 
 ---
 

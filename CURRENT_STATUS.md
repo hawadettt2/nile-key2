@@ -52,6 +52,7 @@
 | WP-37 | ? Complete | Knowledge Ingestion Pipeline — File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
 | WP-38a | ? Complete | External Source Integration — Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
 | WP-38c | ? Complete | Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 19 tests (13 unit + 6 integration); no regressions |
+| WP-38d | ? Complete | GCC Expansion — GCC-Stat Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 23 tests (16 unit + 7 integration); no regressions |
 
 ## WP-38a Implementation Summary
 
@@ -95,6 +96,20 @@
 - **Field Mapping:** description/port_name/traffic_type/quantity/weight/amount ? content (metrics), date ? effective_date, endpoint ? source_url, country ? SA
 - **Tests:** 19 new tests (13 unit + 6 integration); all passing
 - **Regression:** No regressions in TradeData (21/21) and Moaah (15/15) tests
+- **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+## WP-38d Implementation Summary
+
+### WP-38d: GCC Expansion — GCC-Stat Open Data APIs (Task 8 Completed)
+- **GccstatExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from GCC-Stat SDMX/REST APIs (`gccstat.org`)
+- **GccstatApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s?2s; network/5xx: 2 attempts exponential 2s?4s)
+- **Configuration:** `GCCSTAT_BASE_URL`, `GCCSTAT_API_KEY`, `GCCSTAT_TIMEOUT_SECONDS`, `GCCSTAT_SOURCE_ID`, `GCCSTAT_SOURCE_NAME`, `GCCSTAT_SOURCE_TYPE`, `GCCSTAT_SOURCE_VERSION` added to `config.py`
+- **Bootstrap:** Provider conditionally registered in `main.py` `lifespan()` wrapped in try/except when `GCCSTAT_BASE_URL` is configured
+- **Confidence Rules:** 0.85 if source_authority + effective_date + country present; 0.75 if source_authority or effective_date present; 0.65 if obs_value present; 0.50 otherwise
+- **Provenance Metadata:** source_id, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status assigned by adapter
+- **Field Mapping:** SDMX observation value ? content (metrics), TIME_PERIOD ? effective_date, ref_area ? country, dataflow reference ? source_url
+- **Tests:** 23 new tests (16 unit + 7 integration); all passing
+- **Regression:** No regressions in existing tests
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
 
 ## Current System State

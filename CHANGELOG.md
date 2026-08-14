@@ -195,6 +195,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Closure report: `.kilo/plans/wp38c-final-closure-report.md`
   - Owner Acceptance Certificate: `.kilo/plans/wp38c-owner-acceptance-certificate.md`
 
+- WP-38d: GCC Expansion — GCC-Stat Open Data APIs completed
+  - `GccstatExternalSourceAdapter` implemented in `backend/app/agent/knowledge/gccstat_provider.py`
+  - `GccstatApiClient` isolated HTTP client in `backend/app/agent/knowledge/gccstat_client.py` with retry/backoff
+  - Config fields added to `backend/app/core/config.py`: `GCCSTAT_BASE_URL`, `GCCSTAT_API_KEY`, `GCCSTAT_TIMEOUT_SECONDS`, `GCCSTAT_SOURCE_*`
+  - Conditional registration in `backend/main.py` lifespan when `GCCSTAT_BASE_URL` is configured
+  - Confidence/provenance metadata: source_id, source_authority, effective_date, country, source_url, legal_act_reference, updated_at, version, record_hash, retrieval_status
+  - Field mapping: SDMX observation value ? content (metrics), TIME_PERIOD ? effective_date, ref_area ? country, dataflow reference ? source_url
+  - 16 unit tests + 7 integration tests = 23 WP-38d tests passing
+  - No regressions in knowledge layer; all existing tests passing
+  - Plan updated: `.kilo/plans/1786559150139-wp38d-gcc-expansion-plan.md`
+  - Verification evidence: `.kilo/plans/wp38d-task7-verification-evidence-package.md`
+
 ### Fixed
 - `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 

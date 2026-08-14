@@ -143,6 +143,28 @@ async def lifespan(app: FastAPI):
             print("[WARNING] ZATCA API credentials are not configured. ZATCA adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] ZATCA External Source Adapter registration failed: {exc}")
+    # Register GCC-Stat External Source Adapter when configured
+    try:
+        if settings.GCCSTAT_BASE_URL:
+            from app.agent.knowledge.gccstat_provider import GccstatExternalSourceAdapter
+            gccstat_adapter = GccstatExternalSourceAdapter(
+                config={
+                    "source_id": settings.GCCSTAT_SOURCE_ID,
+                    "name": settings.GCCSTAT_SOURCE_NAME,
+                    "type": settings.GCCSTAT_SOURCE_TYPE,
+                    "version": settings.GCCSTAT_SOURCE_VERSION,
+                    "updated_at": "2026-08-14T00:00:00Z",
+                    "base_url": settings.GCCSTAT_BASE_URL,
+                    "api_key": settings.GCCSTAT_API_KEY,
+                    "timeout_seconds": settings.GCCSTAT_TIMEOUT_SECONDS,
+                }
+            )
+            await knowledge_provider_registry.register(gccstat_adapter)
+            print(f"[SUCCESS] GCC-Stat External Source Adapter registered: {settings.GCCSTAT_SOURCE_ID}")
+        else:
+            print("[WARNING] GCCSTAT_BASE_URL is not configured. GCC-Stat adapter not registered.")
+    except Exception as exc:
+        print(f"[WARNING] GCC-Stat External Source Adapter registration failed: {exc}")
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)
