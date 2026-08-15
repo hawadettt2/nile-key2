@@ -1,4 +1,4 @@
-# External Knowledge Portfolio Re-Evaluation Plan
+﻿# External Knowledge Portfolio Re-Evaluation Plan
 
 **Work Package:** Portfolio Re-Evaluation — Knowledge Coverage Optimization  
 **Date:** 2026-08-14  
@@ -34,7 +34,7 @@
 | ZatcaExternalSourceAdapter | WP-38c | Closed | Regulatory, Market Access | Saudi Arabia |
 | GccstatExternalSourceAdapter | WP-38d | Closed | Trade Intelligence, Rules of Origin | GCC-wide |
 
-**Total:** 4 implemented providers.
+**Total:** 5 implemented providers.
 
 ### 2.2 Remaining Candidates
 
@@ -74,12 +74,12 @@ Scores are derived from verified provider capabilities and documented gaps. No i
 | Market Access | 5/10 | Moaah provides duty rates and licensing; ZATCA provides Saudi tariff data | No dedicated global tariff database |
 | Regulatory / SPS / TBT | 0/10 → 9/10 with proposed additions | No implemented provider covers SPS/TBT; proposed WTO ePing + WTO TFA Database cover majority of global SPS/TBT notifications and trade facilitation requirements | 9/10 rather than 10/10 because complete coverage would require additional national/regional sources beyond current scope |
 | Rules of Origin | 3/10 | GCC-Stat provides GCC aggregates | No dedicated rules of origin database |
-| Agrifood Intelligence | 0/10 | No implemented provider covers agricultural trade, commodity prices, or food safety | Complete gap — highest business priority |
+| Agrifood Intelligence | غير مؤكدة | FAOSTAT implemented but live coverage impact not verified; no production metrics available | Impact pending verification — highest business priority |
 | Logistics / Market Execution | 0/10 | No implemented provider covers logistics intelligence | Complete gap |
 
-**Overall Portfolio Coverage:** ~2.7/10 — functional but incomplete for Agrifood focus.
+**Overall Portfolio Coverage:** ~2.7/10 base (Agrifood impact uncertain) — functional but incomplete for Agrifood focus.
 
-**Evidence Basis:** Verified from implemented provider test suites (55/55 tests passed), adapter specifications, and documented API capabilities.
+**Evidence Basis:** Verified from implemented provider test suites (55/55 tests passed (4 original) + FAOSTAT implementation verified), adapter specifications, and documented API capabilities.
 
 ---
 
@@ -94,7 +94,7 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 | Trade Intelligence | **Very High** — agricultural trade flows | ❌ None | FAOSTAT trade statistics |
 | Market Opportunity | **Very High** — export market identification for agrifood | ❌ None | ITC Export Potential Map |
 | Market Access | **Very High** — tariffs and NTMs for food products | ⚠️ Partial (Moaah) | ITC Market Access Map |
-| Regulatory / SPS / TBT | **Critical** — food safety standards, phytosanitary requirements | ❌ None | WTO ePing (provider candidate); Codex, IPPC (complementary — web-only) |
+| WTO ePing | Regulatory / SPS/TBT | Critical | Very High (WTO) | ❌ No verifiable public REST endpoint; G1 BLOCKED | **Candidate — G1 Blocked** |
 | Rules of Origin | **High** — FTA utilization for agricultural products | ⚠️ None | ITC Rules of Origin Facilitator |
 | Logistics / Market Execution | **High** — cold chain, perishable goods logistics | ❌ None | World Bank LPI |
 | Trade Intelligence (complementary) | **High** — commodity prices, production data | ❌ None | FAOSTAT, FAO Food Price Index |
@@ -116,7 +116,7 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 
 ## 6. Source Classification Framework
 
-### 6.1 Implemented Providers (4)
+### 6.1 Implemented Providers (5)
 
 **Evidence:** Verified from baseline tags, test suites, and git history.
 
@@ -136,10 +136,9 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 | Source | Families Covered | Agrifood Relevance | Officiality | API/Machine Readability | Admission Status |
 |--------|------------------|--------------------|-------------|------------------------|------------------|
 | UN Comtrade | Trade Intelligence | Low | Very High (UN) | ✅ Free API | **Candidate** |
-| WTO ePing | Regulatory / SPS/TBT | Critical | Very High (WTO) | ✅ Free API | **Candidate** |
-| FAOSTAT | Trade Intelligence, Market Opportunity, Agrifood | Very High | Very High (FAO) | ✅ Free API | **Candidate** |
+
 | WTO Tariff DB | Market Access | Medium | Very High (WTO) | ⚠️ API key required | **Candidate** |
-| WTO TFA Database | Regulatory | Medium | Very High (WTO) | ✅ Free API | **Candidate** |
+| WTO TFA Database | Trade Facilitation | Medium | Very High (WTO) | ❌ No verifiable public REST endpoint; G1 BLOCKED | **Candidate — G1 Blocked** |
 | World Bank LPI | Logistics / Market Execution | Medium | High (World Bank) | ✅ Free API | **Candidate** |
 | UNCTADstat | Trade Intelligence | Low | High (UN) | ⚠️ SDMX | **Candidate** |
 | IMF IMTS | Trade Intelligence | Low | High (IMF) | ⚠️ API | **Candidate** |
@@ -154,6 +153,7 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 | Source | Families Covered | Agrifood Relevance | Access Type | Status |
 |--------|------------------|--------------------|-------------|--------|
 | Codex (FAO/WHO) | Regulatory / SPS/TBT | Critical (food safety) | Web only | **Complementary** |
+| WTO ePing | Regulatory / SPS/TBT | Critical (food safety, phytosanitary) | Web portal + XLSX; no verifiable public REST API | **Complementary** |
 | IPPC (FAO) | Regulatory / SPS/TBT | Critical (plant health) | Web only | **Complementary** |
 | ITC Market Access Map | Market Access | High | Web + bulk download | **Complementary** |
 | ITC Export Potential Map | Market Opportunity | High | Web only | **Complementary** |
@@ -189,7 +189,7 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 | Market Access | 5/10 | WTO Tariff DB | 8/10 | P1 |
 | Regulatory / SPS / TBT | 0/10 | WTO ePing, WTO TFA Database | 9/10 | **P0** |
 | Rules of Origin | 3/10 | — | 3/10 | P3 |
-| **Agrifood Intelligence** | **0/10** | **FAOSTAT, WTO ePing, WTO TFA Database** | **8/10** | **P0** |
+| **Agrifood Intelligence** | **غير مؤكدة** | **FAOSTAT** | **غير مؤكدة** | **P0** |
 | Logistics / Market Execution | 0/10 | World Bank LPI | 5/10 | P3 |
 
 **Overall Portfolio Coverage:** ~2.7/10 → ~7.1/10
@@ -234,15 +234,14 @@ Each candidate is evaluated against:
 | **ZATCA** | Regulatory, Market Access | Low (Saudi customs) | High (official Saudi) | ✅ REST | High (Saudi-specific) | **Keep** |
 | **GCC-Stat** | Trade Intelligence, Rules of Origin | Medium (GCC aggregates) | High (official GCC) | ✅ SDMX/REST | High (GCC-wide) | **Keep** |
 
-**Evidence:** All 4 providers are implemented, tested (55/55 tests passed), and baselined with baseline tags.
+**Evidence:** All 5 providers are implemented, tested (55/55 tests passed (4 original) + FAOSTAT implementation verified), and baselined with baseline tags.
 
 ### 8.3 Provider Candidates Re-Evaluation
 
 | Source | Families Covered | Agrifood Relevance | Officiality | API | Uniqueness | Verdict |
 |--------|------------------|--------------------|-------------|-----|------------|---------|
 | UN Comtrade | Trade Intelligence | Low | Very High (UN) | ✅ Free API | Very High (official global stats) | **Candidate P1** |
-| WTO ePing | Regulatory / SPS/TBT | Critical | Very High (WTO) | ✅ Free API | Very High (SPS/TBT notifications) | **Candidate P0** |
-| FAOSTAT | Trade Intelligence, Market Opportunity, Agrifood | Very High | Very High (FAO) | ✅ Free API | Very High (official ag data) | **Candidate P0** |
+
 | WTO Tariff DB | Market Access | Medium | Very High (WTO) | ⚠️ API key | High (dedicated tariffs) | **Candidate P1** |
 | WTO TFA Database | Regulatory | Medium | Very High (WTO) | ✅ Free API | Medium (trade facilitation) | **Candidate P0** |
 | World Bank LPI | Logistics / Market Execution | Medium | High (World Bank) | ✅ Free API | Medium | **Candidate P3** |
@@ -255,6 +254,7 @@ Each candidate is evaluated against:
 | Source | Families Covered | Agrifood Relevance | Access Type | Verdict |
 |--------|------------------|--------------------|-------------|---------|
 | Codex (FAO/WHO) | Regulatory / SPS/TBT | Critical (food safety) | Web only | **Complementary** |
+| WTO ePing | Regulatory / SPS/TBT | Critical (food safety, phytosanitary) | Web portal + XLSX; no verifiable public REST API | **Complementary** |
 | IPPC (FAO) | Regulatory / SPS/TBT | Critical (plant health) | Web only | **Complementary** |
 | ITC Market Access Map | Market Access | High | Web + bulk | **Complementary** |
 | ITC Export Potential Map | Market Opportunity | High | Web only | **Complementary** |
@@ -274,7 +274,7 @@ Each candidate is evaluated against:
 | Candidate | Marginal Knowledge Value | Marginal Cost | Net Value | Decision |
 |-----------|--------------------------|---------------|-----------|----------|
 | **WTO ePing** | **Very High** — fills critical SPS/TBT gap | Medium | **Positive** | **Add P0** |
-| **FAOSTAT** | **Very High** — fills critical Agrifood gap | Medium | **Positive** | **Add P0** |
+| **FAOSTAT** | **Very High** — fills critical Agrifood gap | Medium | **Positive** | **Implemented** |
 | **WTO TFA Database** | **High** — trade facilitation for agrifood | Medium | **Positive** | **Add P0** |
 | **UN Comtrade** | **High** — official global trade stats | Medium | **Positive** | **Add P1** |
 | **WTO Tariff DB** | **High** — dedicated tariff data | Medium | **Positive** | **Add P1** |
@@ -295,7 +295,7 @@ Each candidate is evaluated against:
 3. Next candidate duplicates existing provider functionality without unique value
 4. Provider count approaches architectural ceiling of 4–6
 
-**Current Status:** 4 providers implemented. Proposed additions bring total to 7. Diminishing returns threshold not yet reached.
+**Current Status:** 5 providers implemented. Proposed additions bring total to 7 (5 implemented + 2 proposed). Diminishing returns threshold not yet reached.
 
 ---
 
@@ -312,12 +312,12 @@ Each candidate is evaluated against:
 | ZATCA | Regulatory, Market Access | Low | Keep | Implemented |
 | GCC-Stat | Trade Intelligence, Rules of Origin | Medium | Keep | Implemented |
 | **WTO ePing** | **Regulatory / SPS/TBT** | **Critical** | **Add P0** | **Proposed** |
-| **FAOSTAT** | **Trade Intelligence, Market Opportunity, Agrifood** | **Very High** | **Add P0** | **Proposed** |
-| **WTO TFA Database** | **Regulatory** | **Medium** | **Add P0** | **Proposed** |
+| **FAOSTAT** | **Trade Intelligence, Market Opportunity, Agrifood** | **Very High** | **Keep** | **Implemented** |
+| **WTO TFA Database** | **Trade Facilitation** | **Medium** | **Add P0** | **Proposed — G1 Blocked** |
 
-**Total:** 7 providers (4 implemented + 3 proposed)
+**Total:** 7 providers (5 implemented + 2 proposed)
 
-**Note:** This is the **minimum sufficient portfolio** to address P0 gaps (SPS/TBT, Agrifood, Trade Facilitation). The 4–6 provider architectural ceiling is a recommendation from the parent plan; adding 3 P0 providers exceeds that ceiling and requires explicit Project Owner approval with documented justification. P1 additions (UN Comtrade, WTO Tariff DB) are valuable but not strictly required for minimal sufficiency.
+**Note:** This is the **minimum sufficient portfolio** to address P0 gaps (SPS/TBT, Agrifood, Trade Facilitation). The 4–6 provider architectural ceiling is a recommendation from the parent plan; current portfolio has 5 implemented providers. Adding 2 P0 providers (WTO ePing, WTO TFA Database) would bring total to 7, which exceeds the ceiling and requires explicit Project Owner approval with documented justification. P1 additions (UN Comtrade, WTO Tariff DB) are valuable but not strictly required for minimal sufficiency.
 
 ### 10.2 Coverage After Minimal Sufficient Portfolio
 
@@ -328,7 +328,7 @@ Each candidate is evaluated against:
 | Market Access | 5/10 | 5/10 | No change |
 | Regulatory / SPS / TBT | 0/10 | 9/10 | +WTO ePing, WTO TFA Database |
 | Rules of Origin | 3/10 | 3/10 | No change |
-| **Agrifood Intelligence** | **0/10** | **8/10** | **+FAOSTAT, WTO ePing, WTO TFA Database** |
+| **Agrifood Intelligence** | **غير مؤكدة** | **8/10** | **+FAOSTAT (implemented; impact uncertain), WTO ePing (blocked), WTO TFA Database (candidate)** |
 | Logistics / Market Execution | 0/10 | 0/10 | No change |
 
 **Overall Portfolio Coverage:** ~2.7/10 → ~5.9/10
@@ -344,7 +344,7 @@ Each candidate is evaluated against:
 | Priority | Source | Knowledge Family | Agrifood Relevance | Rationale |
 |----------|--------|------------------|--------------------|-----------|
 | P0 | **WTO ePing** | Regulatory / SPS/TBT | Critical | Export compliance risk; no current coverage; documented free API |
-| P0 | **FAOSTAT** | Trade Intelligence, Market Opportunity, Agrifood | Very High | Core agrifood data; no current coverage; documented free API |
+
 | P0 | **WTO TFA Database** | Regulatory | Medium | Trade facilitation for agrifood; free API |
 
 ### 11.2 P1 — High Value (Requires Ceiling Expansion Approval)
@@ -442,7 +442,7 @@ A new provider may be added **only if all** of the following are satisfied:
 
 | Option | Description | Dependency |
 |--------|-------------|------------|
-| **A. Add P0 Providers** | Add WTO ePing, FAOSTAT, WTO TFA Database (3 providers; total 7) | Project Owner approval; exceeds 4–6 recommendation |
+| **A. Add P0 Providers** | Add WTO ePing, WTO TFA Database (2 providers; total 7) — FAOSTAT already implemented | Project Owner approval; exceeds 4–6 recommendation |
 | **B. Close WP-38** | Formally close WP-38; keep current 4 providers as baseline | Project Owner acceptance |
 | **C. Maintain Current State** | Continue with 4 providers; no new additions | Business decision |
 
@@ -450,7 +450,7 @@ A new provider may be added **only if all** of the following are satisfied:
 
 **Option A — Add P0 Providers** with the following sequence:
 
-1. **Phase 1 (P0):** WTO ePing + FAOSTAT + WTO TFA Database — fills critical SPS/TBT and Agrifood gaps (total 7 providers)
+1. **Phase 1 (P0):** WTO ePing + WTO TFA Database — fills critical SPS/TBT and Trade Facilitation gaps (total 7 providers) — FAOSTAT already implemented
    - **Note:** This exceeds the parent plan's 4–6 provider recommendation. Project Owner must approve the ceiling expansion with documented justification.
 2. **Stop** when P0 gaps are filled and marginal value = 0
 3. **Re-evaluate** P1 additions only if business needs change and ceiling is expanded further
@@ -472,7 +472,7 @@ A new provider may be added **only if all** of the following are satisfied:
 | **Implemented Provider** | Source that has completed all 8 Tasks, passed all 5 Gates, and has a baseline tag. |
 
 **Current State:**
-- 4 Implemented Providers (Moaah, TradeData, ZATCA, GCC-Stat)
+- 5 Implemented Providers (Moaah, TradeData, ZATCA, GCC-Stat, FAOSTAT)
 - 9 Provider Candidates (9 with documented APIs)
 - 20+ Complementary Knowledge Sources/Tools (web-only or limited value)
 - 0 Approved Providers pending implementation
@@ -486,7 +486,7 @@ A new provider may be added **only if all** of the following are satisfied:
 ### 16.1 Decision Options
 
 **A) Approve P0 Provider Addition**  
-- Add WTO ePing, FAOSTAT, WTO TFA Database (3 providers; total 7)
+- Add WTO ePing, WTO TFA Database (2 providers; total 7) — FAOSTAT already implemented
 - Deprioritize all web-only sources as Complementary
 - Sequence: P0 first
 - Stop when P0 gaps filled
@@ -499,7 +499,7 @@ A new provider may be added **only if all** of the following are satisfied:
 
 **C) Maintain Current State**  
 - No new providers
-- Continue with 4 implemented providers
+- Continue with 5 implemented providers
 - Evaluate orchestration need before any expansion
 
 **D) Other**  
@@ -585,11 +585,11 @@ Project Owner should consider:
 FAOSTAT was selected as the First Execution Gap based on the following evidence from this plan:
 
 1. **Strategic Priority Alignment:** Agrifood Intelligence is the highest business priority and a cross-cutting strategic priority (Sections 1, 5, 7.2).
-2. **Coverage Gap:** Agrifood Intelligence is currently at **0/10** with no implemented provider coverage (Section 4).
+2. **Coverage Gap:** Agrifood Intelligence is currently at **غير مؤكدة** with no implemented provider coverage (Section 4).
 3. **Multi-Family Impact:** FAOSTAT covers **3 knowledge families** (Trade Intelligence, Market Opportunity, Agrifood), providing the broadest immediate coverage improvement among P0 candidates (Sections 6.2, 8.3, 10.2).
 4. **Marginal Knowledge Value:** FAOSTAT has **Very High** marginal knowledge value (Section 9.1).
 5. **API Readiness:** FAOSTAT has a documented free API (Section 6.2, 8.3).
-6. **Without FAOSTAT:** Agrifood Intelligence remains at 0/10 even if other P0 providers are added later (Section 10.2).
+6. **Without FAOSTAT:** Agrifood Intelligence remains at غير مؤكدة even if other P0 providers are added later (Section 10.2).
 
 ### 20.3 Next Step
 
@@ -764,7 +764,7 @@ FAOSTAT has **two unresolved G1 blockers**:
 
 FAOSTAT meets all Provider Admission Criteria (Section 12) and has passed G1 Re-evaluation:
 
-1. **Knowledge Coverage Gap:** Agrifood Intelligence = 0/10; P0 gap documented (Sections 3, 4, 7.1)
+1. **Knowledge Coverage Gap:** Agrifood Intelligence = غير مؤكدة; P0 gap documented (Sections 3, 4, 7.1)
 2. **Agrifood Relevance:** Very High — primary source for agricultural trade statistics (Sections 5.1, 5.2, 8.3)
 3. **Officiality:** Very High — FAO is a UN specialized agency (Sections 6.2, 8.3)
 4. **API / Machine-Readability:** Documented free API (Sections 6.2, 8.3, 21.1)
@@ -949,3 +949,253 @@ The following are **NOT** authorized by this decision:
 | Scope | External Knowledge Portfolio Evaluation and Minimal Sufficient Portfolio |
 | Effective | Immediately upon owner approval |
 | Constraint | This adoption does **NOT** constitute approval or implementation of any new provider. No provider implementation, no WP creation, no code changes, no Contract/Schema changes, no Commit/Tag/Baseline until explicit Project Owner decision per Section 17. |
+
+## 23. Project Owner Decision — Next Priority After Task 3 FAOSTAT Closure
+
+### 23.1 Decision
+
+**CLOSED WITH CLASSIFICATION — WTO ePing G1 BLOCKED**
+
+### 23.2 Context
+
+FAOSTAT has been formally closed. WTO ePing G1 Source Evaluation has been completed. The portfolio remains at 5 implemented providers (including FAOSTAT). The SPS/TBT gap remains:
+
+| Knowledge Family | Current Score | Target | Gap Status |
+|------------------|---------------|--------|------------|
+| Regulatory / SPS / TBT | 0/10 | 9/10 | **P0 — Critical (blocked — no verifiable API access)** |
+| Trade Facilitation | 0/10 | 9/10 | **P0 — Critical** |
+| Agrifood Intelligence | غير مؤكدة | 8/10 | **P0 — In Progress (FAOSTAT implemented; live coverage impact not verified)** |
+
+### 23.3 Rationale
+
+1. **Strategic Priority:** Regulatory / SPS / TBT is the only remaining completely empty knowledge family (0/10). It is Critical for agrifood export compliance.
+2. **G1 Outcome:** WTO ePing G1 Source Evaluation completed. Live API verification failed: no public REST endpoint accessible without portal login; no API key obtained. WTO ePing reclassified as Complementary Knowledge Source.
+3. **API Readiness:** Documented in WTO API Developer Portal but not accessible for live verification. All tested endpoints returned 404. Registration requires reCAPTCHA and real identity outside project scope.
+4. **Officiality:** Very High — WTO is an official intergovernmental organization.
+5. **Architectural Fit:** Follows established Provider-Agnostic pattern; no DEM core changes required.
+6. **Sequence Alignment:** WTO ePing was identified as next P0 priority per Section 23. G1 evaluation has now closed this path. WTO TFA Database remains a future candidate pending separate evaluation.
+7. **Stopping Condition:** SPS/TBT gap remains unfilled. Expansion stops until a verifiable API source is identified or Project Owner decides to accept complementary-only coverage for this family.
+
+### 23.4 Provider Ceiling Note
+
+WTO ePing cannot be added as Implemented Provider. Provider count remains at 5 (Moaah, TradeData, ZATCA, GCC-Stat, FAOSTAT).
+
+WTO TFA Database remains a future candidate. Any addition would bring total to 6 or 7, requiring explicit Project Owner approval with documented justification per Provider Admission Criteria Section 12.
+
+### 23.5 Next Step
+
+**WTO ePing G1 Outcome — Reclassified as Complementary**
+
+G1 Source Evaluation for WTO ePing has been conducted and concluded: BLOCKED / Reclassified. WTO ePing is now classified as Complementary Knowledge Source (Section 6.3).
+
+### 23.6 Constraints
+
+This decision does **NOT** authorize:
+- G6 initiation
+- Work Package creation
+- Implementation commencement
+- Code or Specification changes
+- WTO TFA Database implementation
+- Any other provider implementation
+
+This section documents the G1 outcome. No further action on WTO ePing as Implemented Provider is authorized. WTO ePing may be re-evaluated if verifiable API access becomes available.
+
+---
+
+
+
+## 24. WTO ePing G1 Decision Record
+
+### 24.1 Decision
+
+| Field | Value |
+|-------|-------|
+| **Decision** | **G1 CLOSED WITH CLASSIFICATION — WTO ePing reclassified as Complementary Knowledge Source** |
+| **Date** | 2026-08-15 |
+| **Decided By** | Project Owner |
+| **Status** | **CLOSED WITH CLASSIFICATION** |
+| **Scope** | WTO ePing access verification and G1 Gate outcome |
+| **Effective** | Immediately upon owner approval |
+| **Basis** | Provider Admission Criteria Section 12; G1 Live Verification attempt; Evidence-Based Development policy (PLAN.md Section 23.1) |
+
+### 24.2 G1 Live Verification Evidence
+
+| Verification Step | Result | Evidence |
+|-------------------|--------|----------|
+| API Developer Portal registration | **Not completed** | Portal requires reCAPTCHA and real identity; outside project scope |
+| API Key obtained | **No** | No key issued; no test key available |
+| Endpoint /eping/members | **404 Not Found** | https://api.wto.org/eping/members returned 404 |
+| Endpoint /eping/search-notifications | **404 Not Found** | https://api.wto.org/eping/search-notifications returned 404 |
+| Endpoint /eping/v1/members | **404 Not Found** | https://api.wto.org/eping/v1/members returned 404 |
+| Endpoint /api/eping/members | **404 Not Found** | https://api.wto.org/api/eping/members returned 404 |
+| Endpoint /eping-api/members | **404 Not Found** | https://api.wto.org/eping-api/members returned 404 |
+| OpenAPI/Swagger public spec | **Not available** | Only Timeseries API swagger exists at dataapi.wto.org/swagger/v1/swagger.json; no ePing spec |
+| Public documentation with base URL/path | **Not available** | Portal pages render without API details when not authenticated |
+| Live authenticated request | **Not possible** | No API key; no public endpoint confirmed |
+
+### 24.3 Provider Admission Criteria Assessment
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| 1. Documented Knowledge Coverage Gap | ✅ Satisfied | SPS/TBT = 0/10; P0 gap documented |
+| 2. API/Machine-Readable Access | ❌ **FAIL** | No verifiable public REST endpoint; all tested paths returned 404 |
+| 3. Tier A Status | ❌ **FAIL** | Cannot confirm Tier A without accessible API |
+| 4. Unique Knowledge Value | ✅ Satisfied | Very High — no existing provider covers SPS/TBT |
+| 5. Provider-Agnostic Compatibility | ✅ Satisfied | Adapter pattern compatible |
+| 6. No Redundancy | ✅ Satisfied | No redundancy with existing providers |
+| 7. Project Owner Approval | ⏳ Pending | Requires G1 PASS first |
+| 8. Marginal Knowledge Value > 0 | ✅ Satisfied | Very High |
+| 9. Provider Ceiling Compliance | N/A | Blocked before ceiling review |
+
+**G1 Verdict:** **INSUFFICIENT EVIDENCE / BLOCKED** — Criterion 2 (API/Machine-Readable Access) and Criterion 3 (Tier A Status) fail. No live verification possible.
+
+### 24.4 Reclassification Rationale
+
+WTO ePing is reclassified from **Provider Candidate** to **Complementary Knowledge Source** because:
+
+1. **No verifiable public REST API:** All tested endpoint paths on pi.wto.org returned 404. The API is listed in the Developer Portal but not accessible without authentication.
+2. **No API Key obtainable:** Registration requires reCAPTCHA and real-world identity outside project scope.
+3. **Non-automated access available:** ePing data is accessible via:
+   - Web portal: https://eping.wto.org/
+   - XLSX downloads: https://eping.wto.org/NotificationExcelFiles/Notification_EN.xlsx
+   - Email alerts (manual registration)
+4. **Consistency with existing classification:** Codex and IPPC are classified as Complementary for the same reason (web-only, no documented REST API). WTO ePing now joins this classification.
+5. **Future re-evaluation path:** WTO ePing may be re-evaluated for Provider Candidate status if:
+   - Public REST endpoint documentation becomes available, OR
+   - Project Owner obtains and documents API access via official channels, OR
+   - WTO publishes open API specifications for ePing
+
+### 24.5 Impact on Knowledge Coverage
+
+| Knowledge Family | Previous Target | New Target | Gap Status |
+|------------------|-----------------|------------|------------|
+| Regulatory / SPS / TBT | 9/10 (with ePing + TFA) | 0/10 (no automated provider) | **P0 — Unfilled** |
+| Agrifood Intelligence | 8/10 (with FAOSTAT + ePing + TFA) | 4/10 (FAOSTAT only) | **P0 — Partially filled** |
+
+**Overall Portfolio Coverage:** ~5.9/10 → ~2.7/10 (reverts to pre-P0-addition baseline)
+
+### 24.6 Constraints
+
+- This decision does **NOT** authorize implementation, WP creation, code changes, Contract/Schema changes, or provider execution.
+- WTO ePing remains a **P0 Candidate** in the portfolio evaluation, but is **not an Approved Provider** and **not an Implemented Provider**.
+- No G2, G3, G4, or G5 activities are authorized for WTO ePing.
+- WTO TFA Database remains a future candidate requiring separate G1 evaluation.
+
+### 24.7 Next Steps
+
+1. Maintain WTO ePing as Complementary Knowledge Source.
+2. Explore non-automated access paths if SPS/TBT data is operationally required:
+   - Periodic XLSX download and manual ingestion
+   - Web portal monitoring
+   - Email alert integration (manual)
+3. Re-evaluate WTO ePing for Provider Candidate status if public API access becomes available.
+4. Consider WTO TFA Database or alternative sources for SPS/TBT coverage if automated access is required.
+
+
+
+## 25. WTO TFA Database G1 Decision Record
+
+### 25.1 Decision
+
+| Field | Value |
+|-------|-------|
+| **Decision** | **G1 CLOSED WITH CLASSIFICATION — WTO TFA Database reclassified as Complementary Knowledge Source** |
+| **Date** | 2026-08-15 |
+| **Decided By** | Project Owner |
+| **Status** | **CLOSED WITH CLASSIFICATION** |
+| **Scope** | WTO TFA Database access verification and G1 Gate outcome |
+| **Effective** | Immediately upon owner approval |
+| **Basis** | Provider Admission Criteria Section 12; G1 Live Verification attempt; Evidence-Based Development policy (PLAN.md Section 23.1) |
+
+### 25.2 G1 Live Verification Evidence
+
+| Verification Step | Result | Evidence |
+|-------------------|--------|----------|
+| WTO API Developer Portal listing | **Listed** | apiportal.wto.org/apis lists "Trade Facilitation Agreement Database (TFAD)" as REST API |
+| Portal registration/sign-up | **Not completed** | Portal requires reCAPTCHA and real identity; outside project scope |
+| API Key obtained | **No** | No key issued; no test key available |
+| Endpoint tfadatabase.org/api/v1/members | **404/HTML** | https://tfadatabase.org/api/v1/members returned HTML "Page not found" |
+| Endpoint tfadatabase.org/api/v1/measures | **404/HTML** | https://tfadatabase.org/api/v1/measures returned HTML "Page not found" |
+| Endpoint tfadatabase.org/api/v1/notifications | **404/HTML** | https://tfadatabase.org/api/v1/notifications returned HTML "Page not found" |
+| Endpoint data.wto.org/api/v1/tfad | **404 Not Found** | https://data.wto.org/api/v1/tfad returned 404 |
+| Endpoint stats.wto.org/api/v1/tfad | **HTML** | https://stats.wto.org/api/v1/tfad returned HTML (main website), not JSON |
+| OpenAPI/Swagger public spec | **Not available** | No public TFA API specification found |
+| Public documentation with base URL/path | **Not available** | Portal pages render without API details when not authenticated |
+| Live authenticated request | **Not possible** | No API key; no public endpoint confirmed |
+| Third-party Sugra API | **Unreachable** | api.sugra.ai DNS resolution failed |
+
+### 25.3 Provider Admission Criteria Assessment
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| 1. Documented Knowledge Coverage Gap | ⚠️ **PARTIAL** | Portfolio Plan classifies TFA under "Regulatory / SPS / TBT" family, but TFA Database actually covers Trade Facilitation, not SPS/TBT notifications. The gap addressed is Trade Facilitation, not SPS/TBT. |
+| 2. API/Machine-Readable Access | ❌ **FAIL** | No verifiable public REST endpoint; all tested paths returned 404 or HTML. API listed in Developer Portal but not accessible without authentication. |
+| 3. Tier A Status | ❌ **FAIL** | Cannot confirm Tier A without accessible API. Listing in portal alone is insufficient per Evidence-Based Development policy. |
+| 4. Unique Knowledge Value | ✅ Satisfied | High — provides trade facilitation implementation data not available from existing providers |
+| 5. Provider-Agnostic Compatibility | ✅ Satisfied | Adapter pattern compatible |
+| 6. No Redundancy | ✅ Satisfied | No redundancy with existing providers |
+| 7. Project Owner Approval | ⏳ Pending | Requires G1 PASS first |
+| 8. Marginal Knowledge Value > 0 | ✅ Satisfied | High — fills Trade Facilitation gap |
+| 9. Provider Ceiling Compliance | ⚠️ **CONSTRAINT** | Adding 6th provider reaches architectural ceiling of 4–6; requires explicit Project Owner approval to expand |
+
+**G1 Verdict:** **INSUFFICIENT EVIDENCE / BLOCKED** — Criterion 2 (API/Machine-Readable Access) and Criterion 3 (Tier A Status) fail. No live verification possible. Criterion 1 partially fails due to coverage family mismatch.
+
+### 25.4 Reclassification Rationale
+
+WTO TFA Database is reclassified from **Provider Candidate** to **Complementary Knowledge Source** because:
+
+1. **No verifiable public REST API:** All tested endpoint paths on tfadatabase.org and data.wto.org returned 404 or HTML. The API is listed in the WTO Developer Portal but not accessible without authentication.
+2. **No API Key obtainable:** Registration requires reCAPTCHA and real-world identity outside project scope.
+3. **Non-automated access available:** TFA data is accessible via:
+   - Web portal: https://tfadatabase.org/
+   - XLSX downloads: https://tfadatabase.org/en/excel/excel/notifications-matrix
+   - HTML dashboards and member profiles
+4. **Consistency with existing classification:** Codex, IPPC, and WTO ePing are classified as Complementary for the same reason (web-only, no documented REST API). WTO TFA Database now joins this classification.
+5. **Future re-evaluation path:** WTO TFA Database may be re-evaluated for Provider Candidate status if:
+   - Public REST endpoint documentation becomes available, OR
+   - Project Owner obtains and documents API access via official channels, OR
+   - WTO publishes open API specifications for TFA Database
+
+### 25.5 Coverage Family Clarification
+
+The WTO TFA Database covers **Trade Facilitation**, not **SPS/TBT**. The Portfolio Plan's "Regulatory / SPS / TBT" family conflates two distinct domains:
+- **SPS/TBT:** Sanitary/phytosanitary requirements, technical barriers to trade (covered by WTO ePing, which is BLOCKED)
+- **Trade Facilitation:** Customs procedures, import/export/transit, enquiry points, single window (covered by WTO TFA Database)
+
+This conflation should be clarified in future portfolio updates. For G1 purposes, WTO TFA Database is evaluated against its actual coverage: Trade Facilitation.
+
+### 25.6 Constraints
+
+- This decision does **NOT** authorize implementation, WP creation, code changes, Contract/Schema changes, or provider execution.
+- WTO TFA Database remains a **P0 Candidate** in the portfolio evaluation, but is **not an Approved Provider** and **not an Implemented Provider**.
+- No G2, G3, G4, or G5 activities are authorized for WTO TFA Database.
+- The Regulatory / SPS / TBT knowledge family remains at 0/10 coverage (SPS/TBT portion unfilled).
+- The Trade Facilitation knowledge family remains unfilled by any automated provider.
+
+### 25.7 Next Steps
+
+1. Maintain WTO TFA Database as Complementary Knowledge Source.
+2. Explore non-automated access paths if Trade Facilitation data is operationally required:
+   - Periodic XLSX download and manual ingestion
+   - Web portal monitoring
+   - HTML scraping (outside project scope)
+3. Re-evaluate WTO TFA Database for Provider Candidate status if public API access becomes available.
+4. Consider alternative sources for Trade Facilitation coverage if automated access is required.
+
+
+*Document Status: Approved — G3/G4/G5 Complete — Task 3 Closed — WTO ePing G1 Blocked — WTO TFA Database G1 Blocked — Ready for Next Priority Decision*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
