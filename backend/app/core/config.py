@@ -104,6 +104,13 @@ class Settings(BaseSettings):
     FAOSTAT_SOURCE_VERSION: str = "1.0.0"
     FAOSTAT_DEFAULT_DOMAIN: str = "QCL"
 
+    # ========== Knowledge Orchestration / Fusion Layer ==========
+    KNOWLEDGE_ORCHESTRATION_ENABLED: bool = True
+    KNOWLEDGE_ORCHESTRATION_DEDUP_ENABLED: bool = True
+    KNOWLEDGE_ORCHESTRATION_MIN_PRIMARY_RESULTS: int = 3  # Post-MVP: not wired in MVP implementation
+    KNOWLEDGE_ORCHESTRATION_MAX_RESULTS: int = 10
+    KNOWLEDGE_ORCHESTRATION_CONFLICT_STRATEGY: str = "latest_official_wins"
+
     # ========== Knowledge Ingestion (WP-37) ==========
     REGULATIONS_FILE_PATH: str = "backend/data/regulations.json"
 
@@ -132,4 +139,5 @@ class Settings(BaseSettings):
 
 # ظ†ط³ط®ط© ظˆط­ظٹط¯ط© ظ…ظ† ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ (Singleton)
 settings = Settings()
+
 

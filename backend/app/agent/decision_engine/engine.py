@@ -92,6 +92,11 @@ class ReasoningEngine:
             memories = await self._query_memory(session_id, intent)
             knowledge = await self._query_knowledge(intent, parameters)
 
+            # Preserve orchestration metadata in request_context
+            orchestration_meta = getattr(self, "_last_orchestration_meta", None)
+            if orchestration_meta:
+                request_context["knowledge_orchestration"] = orchestration_meta
+
             candidates = self._apply_memory_biases(candidates, memories)
             scored_candidates = self._evaluate_options(candidates, memories, knowledge, parameters)
 
@@ -333,8 +338,12 @@ class ReasoningEngine:
         except Exception:
             return []
 
-    async def _query_knowledge(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Query KnowledgeProviderRegistry or single KnowledgeProvider with graceful degradation."""
+    async def _query_knowledge_legacy(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Legacy knowledge query — iterates all providers, extends results blindly.
+
+        Byte-for-byte equivalent to the original _query_knowledge() at lines 336-379.
+        Used only as fallback when KnowledgeOrchestrator is not attached.
+        """
         results: List[Dict[str, Any]] = []
 
         if self.knowledge_provider_registry is not None:
@@ -377,3 +386,20 @@ class ReasoningEngine:
                 pass
 
         return results
+
+    async def _query_knowledge(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Query knowledge providers via KnowledgeOrchestrator if attached, else legacy fallback."""
+        orchestrator = getattr(self, "_knowledge_orchestrator", None)
+        if orchestrator is not None and self.knowledge_provider_registry is not None:
+            result = await orchestrator.orchestrate(
+                query=intent,
+                context=parameters,
+                limit=10,
+            )
+
+            # Cache orchestration metadata for Decision.context
+            self._last_orchestration_meta = result.get("orchestration")
+
+            return result.get("results", [])
+
+        return await self._query_knowledge_legacy(intent, parameters)

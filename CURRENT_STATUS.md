@@ -1,10 +1,10 @@
-# Current Status
+ï»¿# Current Status
 
-**Last Updated:** 2026-08-10
+**Last Updated:** 2026-08-15
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED)
-**Next Phase:** Frontend AI/DEM UX — Owner Acceptance Closure
+**Phase:** 3 ï¿½ Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED)
+**Next Phase:** Frontend AI/DEM UX ï¿½ Owner Acceptance Closure
 
 ---
 
@@ -43,20 +43,20 @@
 | WP-30F | ? Complete | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests |
 | WP-30G | ? Complete | MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests |
 | WP-30H | ? Complete | Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions |
-| WP-32 | ? Complete | Knowledge Graph — 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
-| WP-33 | ? Complete | Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
+| WP-32 | ? Complete | Knowledge Graph ï¿½ 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; CLOSED |
+| WP-33 | ? Complete | Trade Intelligence ï¿½ supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified; CLOSED |
 | WP-34 | ? Complete | External Research Capability; 103 tests; Research lifecycle, evidence/provenance, result structuring, verification/quality completed |
-| WP-40 | ? Complete | Docker Compose Final Verification — both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
-| WP-41 | ? Complete | Production Documentation — README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
-| WP-42 | ? Complete | Owner Acceptance — UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
-| WP-37 | ? Complete | Knowledge Ingestion Pipeline — File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
-| WP-38a | ? Complete | External Source Integration — Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
-| WP-38c | ? Complete | Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 19 tests (13 unit + 6 integration); no regressions |
-| WP-38d | ? Complete | GCC Expansion — GCC-Stat Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 23 tests (16 unit + 7 integration); no regressions |
+| WP-40 | ? Complete | Docker Compose Final Verification ï¿½ both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified via Docker volume; TypeScript build errors resolved |
+| WP-41 | ? Complete | Production Documentation ï¿½ README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent |
+| WP-42 | ? Complete | Owner Acceptance ï¿½ UAT Sessions 1-3 executed and closed; 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required; Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; Final baseline: `baseline-wp42-final` ? `d3eafce`; all exit criteria met per WP-42-spec Section 13 |
+| WP-37 | ? Complete | Knowledge Ingestion Pipeline ï¿½ File-based Regulations Knowledge Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests (8 unit + 4 integration); no regressions |
+| WP-38a | ? Complete | External Source Integration ï¿½ Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
+| WP-38c | ? Complete | Jordan + UAE + Saudi/GCC Sources ï¿½ ZATCA Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 19 tests (13 unit + 6 integration); no regressions |
+| WP-38d | ? Complete | GCC Expansion ï¿½ GCC-Stat Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 23 tests (16 unit + 7 integration); no regressions |
 
 ## WP-38a Implementation Summary
 
-### WP-38a: External Source Integration — Moaah First Provider (Closed)
+### WP-38a: External Source Integration ï¿½ Moaah First Provider (Closed)
 - **MoaahExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from Moaah `/regs-search` REST API
 - **MoaahApiClient:** Isolated HTTP client with 3-attempt retry and exponential backoff (1s?2s) for timeouts, network errors, and HTTP 429
 - **Configuration:** `MOAAH_BASE_URL`, `MOAAH_API_KEY`, `MOAAH_TIMEOUT_SECONDS`, `MOAAH_SOURCE_ID`, `MOAAH_SOURCE_NAME`, `MOAAH_SOURCE_TYPE`, `MOAAH_SOURCE_VERSION` added to `config.py`
@@ -70,7 +70,7 @@
 
 ## WP-38b Implementation Summary
 
-### WP-38b: Global Trade Intelligence — TradeData First Provider (Closed)
+### WP-38b: Global Trade Intelligence ï¿½ TradeData First Provider (Closed)
 - **TradeDataExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from TradeData `/api/v1/tradeDetail` REST API
 - **TradeDataApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s?2s; network/5xx: 2 attempts exponential 2s?4s)
 - **Configuration:** `TRADEDATA_BASE_URL`, `TRADEDATA_API_KEY`, `TRADEDATA_TIMEOUT_SECONDS`, `TRADEDATA_SOURCE_ID`, `TRADEDATA_SOURCE_NAME`, `TRADEDATA_SOURCE_TYPE`, `TRADEDATA_SOURCE_VERSION` added to `config.py`
@@ -81,12 +81,12 @@
 - **Tests:** 21 new tests (14 unit + 7 integration); all passing
 - **Regression:** No regressions in Moaah tests (15/15 passing)
 - **Baseline:** `baseline-wp38b-final` at commit `02bad55`
-- **Owner Acceptance:** Obtained — `.kilo/plans/wp38b-owner-acceptance-certificate.md`
+- **Owner Acceptance:** Obtained ï¿½ `.kilo/plans/wp38b-owner-acceptance-certificate.md`
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
 
 ## WP-38c Implementation Summary
 
-### WP-38c: Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs (Task 8 Completed)
+### WP-38c: Jordan + UAE + Saudi/GCC Sources ï¿½ ZATCA Open Data APIs (Task 8 Completed)
 - **ZatcaExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from ZATCA Open Data APIs (`zatca.gov.sa`)
 - **ZatcaApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s?2s; network/5xx: 2 attempts exponential 2s?4s)
 - **Configuration:** `ZATCA_BASE_URL`, `ZATCA_API_KEY`, `ZATCA_TIMEOUT_SECONDS`, `ZATCA_SOURCE_ID`, `ZATCA_SOURCE_NAME`, `ZATCA_SOURCE_TYPE`, `ZATCA_SOURCE_VERSION` added to `config.py`
@@ -100,7 +100,7 @@
 
 ## WP-38d Implementation Summary
 
-### WP-38d: GCC Expansion — GCC-Stat Open Data APIs (Task 8 Completed)
+### WP-38d: GCC Expansion ï¿½ GCC-Stat Open Data APIs (Task 8 Completed)
 - **GccstatExternalSourceAdapter:** New `KnowledgeProvider` implementation fetching from GCC-Stat SDMX/REST APIs (`gccstat.org`)
 - **GccstatApiClient:** Isolated HTTP client with retry/backoff (429: 3 attempts exponential 1s?2s; network/5xx: 2 attempts exponential 2s?4s)
 - **Configuration:** `GCCSTAT_BASE_URL`, `GCCSTAT_API_KEY`, `GCCSTAT_TIMEOUT_SECONDS`, `GCCSTAT_SOURCE_ID`, `GCCSTAT_SOURCE_NAME`, `GCCSTAT_SOURCE_TYPE`, `GCCSTAT_SOURCE_VERSION` added to `config.py`
@@ -111,6 +111,24 @@
 - **Tests:** 23 new tests (16 unit + 7 integration); all passing
 - **Regression:** No regressions in existing tests
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+## Knowledge Orchestration / Fusion Layer â€” Closed
+
+### Knowledge Orchestration / Fusion Layer (Closed)
+- **KnowledgeOrchestrator:** New orchestration layer wrapping `KnowledgeProviderRegistry` with deterministic classification, routing, parallel querying, composite ranking, deduplication, and conflict resolution
+- **Classification:** 6 query types (agrifood, customs, market_access, regulatory, trade_statistics, rules_of_origin) + general fallback; deterministic keyword matching
+- **Routing:** Primary/secondary provider routing per query type; sources filter bypass; graceful skip of missing providers
+- **Ranking:** Composite score = confidence * 0.4 + authority_weight * 0.3 + recency_weight * 0.2 + relevance_weight * 0.1; deterministic tie-breaking by effective_date DESC, source_id ASC
+- **Deduplication:** Cross-provider dedup key = sha1(content[:100] + "|" + effective_date); same-source â†’ highest composite_score; cross-source â†’ highest authority_weight then composite_score
+- **Conflict Resolution:** "latest_official_wins" strategy; authority diff > 1 â†’ authority wins; otherwise date wins; equal authority+date â†’ both kept with conflict flag
+- **engine.py Changes:** Extracted `_query_knowledge_legacy()` (byte-for-byte equivalent to original); `_query_knowledge()` uses orchestrator when attached, else legacy fallback; orchestration metadata cached in `_last_orchestration_meta` and preserved in `Decision.context["knowledge_orchestration"]`
+- **main.py Wiring:** `KnowledgeOrchestrator` initialized in `lifespan()` when `KNOWLEDGE_ORCHESTRATION_ENABLED=True`; attached to shared `ReasoningEngine` via `app.state.reasoning_engine`
+- **Router Adjustment:** `get_reasoning_engine()` in `digital_export_manager.py` returns shared `app.state.reasoning_engine` instead of creating new instance per request â€” necessary technical change to preserve orchestrator attachment
+- **Configuration:** 5 new `KNOWLEDGE_ORCHESTRATION_*` settings added to `config.py`
+- **Tests:** 85 new tests (66 unit + 18 integration); all passing
+- **Regression:** 46/47 existing tests pass; 1 pre-existing failure in `test_registry_provider_failure_does_not_crash_reasoning` confirmed present in baseline (score threshold behavior, not Fusion Layer related)
+- **Baseline:** `baseline-fusion-layer` at commit `4b5dafe`
+- **Constraints:** No new providers, no new knowledge families, no logistics, no LLM synthesis, no Knowledge Graph changes, no database migrations, no frontend/avatar changes, no modifications to `KnowledgeProvider`, `KnowledgeProviderRegistry`, `Decision` schema, or `PLAN.md`
 
 ## Current System State
 
@@ -123,7 +141,7 @@
 
 ## WP-37 Implementation Summary
 
-### WP-37: Knowledge Ingestion Pipeline — File-based Regulations Provider (Completed)
+### WP-37: Knowledge Ingestion Pipeline ï¿½ File-based Regulations Provider (Completed)
 - **RegulationsKnowledgeProvider:** New `KnowledgeProvider` implementation reading local JSON regulation files
 - **File Format:** JSON array of objects with id, title, description, regulation_type, category, country, effective_date, source_url, version
 - **Configuration:** `REGULATIONS_FILE_PATH` added to `config.py` with default `backend/data/regulations.json`
@@ -246,7 +264,7 @@
 - **API Endpoints:** POST /connect, POST /missions, GET /sessions/{id}, POST /sessions/{id}/close, GET /health, GET /tools
 - **Router Registration:** DEM router registered in main.py and routers/__init__.py
 - **Governance:** WP-30B Official Closure Review approved; ED-WP30-001 recorded
-- **Architecture:** Business façade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
+- **Architecture:** Business faï¿½ade under `/api/v1/digital-export-manager`; Session = Persistent Digital Export Session; Mission is internal domain object
 - **Backward Compatibility:** Existing agent router unchanged; all original endpoints intact
 - **Mission Execution Model:** Synchronous within HTTP request lifecycle: `POST /missions ? Reasoning ? TaskPlanner ? ExecutionPlanner ? ToolOrchestrator ? Status Update ? Save`. Mission does not remain `pending` after request completion; terminal states are `completed` or `failed` only.
 - **Mission Runner / Scheduler:** NOT REQUIRED in current phase. No queued missions, no background workers, no resume/retry-across-requests mechanism exists, and none is mandated by current architecture contracts. Treated as Future Work Package only if future requirements emerge for queued missions, execution outside HTTP request lifecycle, distributed workers, or cross-request retry/resume.
@@ -262,15 +280,15 @@
 - **KnowledgeGraphProvider:** Implemented as concrete `KnowledgeProvider`; queries existing Knowledge Graph service layer (`app.services.knowledge_graph.search_nodes()`); registered in `KnowledgeProviderRegistry`; returns graph nodes as knowledge results with confidence scoring
 - **CompanyKnowledgeProvider:** Implemented as interim `KnowledgeProvider`; queries existing resources service layer (`app.services.resource.search_resources()`/`list_resources()`); registered in `KnowledgeProviderRegistry`; returns company resources as knowledge results with confidence scoring
 - **Registry ? ReasoningEngine ? DEM wiring:** Operational; `ReasoningEngine` accepts `knowledge_provider_registry` and queries all registered providers; results merged into `decision.context["knowledge"]`
-- **Governance:** ED-WP30-002 recorded — scope limited to Tasks 6.1–6.4; Task 6.5 excluded
+- **Governance:** ED-WP30-002 recorded ï¿½ scope limited to Tasks 6.1ï¿½6.4; Task 6.5 excluded
 - **Tests:** 17 new tests for interface, registry, and schemas; 11 additional tests for `CompanyKnowledgeProvider`; 9 additional tests for `KnowledgeGraphProvider.query()` implementation; all passing
 - **Backward Compatibility:** Existing Decision Engine stubs unchanged; no breaking changes to existing code
 
 ### Company Knowledge Ingestion Status (Deferred)
-- **Ingestion Pipeline:** NOT IMPLEMENTED — deferred to future Work Package per `KNOWLEDGE_INGESTION_CONTRACT.md` Section 5 and `WP-30I-spec.md` Section 3
-- **Current Data Source:** `resources` table via seed data + CRUD API (`/api/v1/resources`) — manual/external entry only; no automated ingestion, bulk import, external system integration, or confidence scoring algorithm implemented
+- **Ingestion Pipeline:** NOT IMPLEMENTED ï¿½ deferred to future Work Package per `KNOWLEDGE_INGESTION_CONTRACT.md` Section 5 and `WP-30I-spec.md` Section 3
+- **Current Data Source:** `resources` table via seed data + CRUD API (`/api/v1/resources`) ï¿½ manual/external entry only; no automated ingestion, bulk import, external system integration, or confidence scoring algorithm implemented
 - **CompanyKnowledgeProvider Role:** Query adapter/interim provider for existing `resources` corpus; NOT an ingestion implementation
-- **Future Requirement:** When implemented, ingestion pipeline must read raw knowledge items from external systems, transform into `query()` return shape, assign confidence scores, and register via `KnowledgeProviderRegistry` — without modifying DEM core
+- **Future Requirement:** When implemented, ingestion pipeline must read raw knowledge items from external systems, transform into `query()` return shape, assign confidence scores, and register via `KnowledgeProviderRegistry` ï¿½ without modifying DEM core
 
 ## WP-30G Implementation Summary
 
@@ -303,7 +321,7 @@
 - **KnowledgeProvider:** `KnowledgeGraphProvider` registered in `KnowledgeProviderRegistry`
 - **API Endpoints:** 9 endpoints under `/api/v1/knowledge-graph`: nodes CRUD, edges CRUD, relationships, traverse, search, sync
 - **Database Tables:** `knowledge_nodes`, `knowledge_edges`
-- **Governance:** ED-WP32-001 recorded — Document Edge Handling clarification
+- **Governance:** ED-WP32-001 recorded ï¿½ Document Edge Handling clarification
 - **Tests:** 105 tests (59 service unit tests, 35 integration tests, 4 performance tests, 7 security tests); all passing
 - **Backward Compatibility:** No modifications to existing entity tables; no modifications to DEM core
 
@@ -327,26 +345,76 @@
 ## Project Continuity Status
 
 - All WP-01 through WP-18 closed successfully
-- WP-19 completed — ETA Engine fully implemented with production-ready infrastructure
-- WP-20 completed — Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
-- WP-21 M1-M3 completed — Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
-- WP-21 completed — All milestones closed
-- WP-30B completed — Session Management + Mission Lifecycle; 6 DEM endpoints; Closure Review approved; ED-WP30-001 recorded
-- WP-30C completed — Task Planner + Execution Engine; structured mission execution
-- WP-30D completed — Decision Engine; reasoning loop with knowledge/memory graceful degradation
-- WP-30E completed — 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
-- WP-30F completed — Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
-- WP-30G completed — MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
-- WP-31 completed — Long-Term Memory (AI Memory); SQLiteMemoryProvider implementation with recall/store/forget/summarize; 13 tests; MemoryProvider integration verified
-- WP-30H completed — Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions
-- WP-32 completed — Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
-- WP-33 completed — Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
-- WP-40 completed — Docker Compose Final Verification; both images build successfully; services start healthy; backend API reachable on port 8000; frontend served on port 3000; database persistence verified via Docker volume; frontend TypeScript build errors resolved (vite.config.ts, NotificationBell.test.tsx, Notifications.test.tsx, NotificationBell.tsx dead code removed)
-- WP-41 completed — Production Documentation; README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent
-- Frontend AI/DEM UX completed — DEM Connect/Disconnect, Mission Composer (8 types), Mission Dashboard, Execution Progress polling, Reasoning Viewer, Approval Inbox with RBAC + agent_audit_logs persistence, Knowledge Explorer, Trade Intelligence dashboard, i18n; 11 DEM backend tests + 35 frontend tests passing; UAT checklist updated
+- WP-19 completed ï¿½ ETA Engine fully implemented with production-ready infrastructure
+- WP-20 completed ï¿½ Shipping Engine fully implemented with provider abstraction, LetMeShip + SendCloud clients, scheduler, and 34+ tests
+- WP-21 M1-M3 completed ï¿½ Notification service, audit logging, unified search, live dashboard, notification triggers, and frontend integration
+- WP-21 completed ï¿½ All milestones closed
+- WP-30B completed ï¿½ Session Management + Mission Lifecycle; 6 DEM endpoints; Closure Review approved; ED-WP30-001 recorded
+- WP-30C completed ï¿½ Task Planner + Execution Engine; structured mission execution
+- WP-30D completed ï¿½ Decision Engine; reasoning loop with knowledge/memory graceful degradation
+- WP-30E completed ï¿½ 14 ERP tool wrappers with metadata; ToolRegistry populated; legacy planner drift fixed
+- WP-30F completed ï¿½ Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract; 17 tests; ED-WP30-002 recorded
+- WP-30G completed ï¿½ MemoryProvider interface with recall/store/forget/summarize; DEM core graceful degradation; 12 tests
+- WP-31 completed ï¿½ Long-Term Memory (AI Memory); SQLiteMemoryProvider implementation with recall/store/forget/summarize; 13 tests; MemoryProvider integration verified
+- WP-30H completed ï¿½ Avatar Contract; IntentContent and AvatarRenderer interfaces; structured intents confirmed; 15 tests; AVATAR_CONTRACT.md created; no regressions
+- WP-32 completed ï¿½ Knowledge Graph; 9 node types, 9 API endpoints, derived edges, graph traversal, entity sync, MemoryProvider integration, audit logging; 105 tests; ED-WP32-001 recorded
+- WP-33 completed ï¿½ Trade Intelligence; supplier/buyer analysis, trend detection, comparisons, report generation; 120 tests; Runtime Router Bug fixed and verified
+- WP-40 completed ï¿½ Docker Compose Final Verification; both images build successfully; services start healthy; backend API reachable on port 8000; frontend served on port 3000; database persistence verified via Docker volume; frontend TypeScript build errors resolved (vite.config.ts, NotificationBell.test.tsx, Notifications.test.tsx, NotificationBell.tsx dead code removed)
+- WP-41 completed ï¿½ Production Documentation; README, DEPLOYMENT, PROJECT_BASELINE, ENGINEERING_MEMORY, WORK_PACKAGE_PLAN, and REPOSITORY_INTELLIGENCE updated; all documentation verified accurate and consistent
+- Frontend AI/DEM UX completed ï¿½ DEM Connect/Disconnect, Mission Composer (8 types), Mission Dashboard, Execution Progress polling, Reasoning Viewer, Approval Inbox with RBAC + agent_audit_logs persistence, Knowledge Explorer, Trade Intelligence dashboard, i18n; 11 DEM backend tests + 35 frontend tests passing; UAT checklist updated
 - Single Source of Truth: `PLAN.md` (Master Roadmap v2.1)
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/archive/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
+
+## WTO ePing G1 Decision
+
+**Decision:** G1 CLOSED WITH CLASSIFICATION â€” WTO ePing reclassified as Complementary Knowledge Source.
+
+**Date:** 2026-08-15
+
+**Rationale:**
+- Live API verification attempted: all tested endpoints on pi.wto.org returned 404 Not Found
+- No API Key obtainable: WTO API Developer Portal registration requires reCAPTCHA and real identity outside project scope
+- No public OpenAPI/Swagger specification available for ePing
+- Data accessible via non-automated channels: ePing web portal (eping.wto.org) and XLSX downloads
+- Consistent with existing Complementary classification for Codex and IPPC (web-only, no REST API)
+
+**Impact:**
+- Implemented Providers count unchanged: 5 (Moaah, TradeData, ZATCA, GCC-Stat, FAOSTAT)
+- Regulatory / SPS / TBT knowledge family remains at 0/10 coverage
+- WTO ePing remains a P0 Candidate but is not an Approved or Implemented Provider
+- No G2/G3/G4/G5 activities authorized for WTO ePing
+
+**Reference:** .kilo/plans/1786559160142-external-knowledge-portfolio-re-evaluation.md Section 24
+
+## WTO TFA Database G1 Decision
+
+**Decision:** G1 CLOSED WITH CLASSIFICATION â€” WTO TFA Database reclassified as Complementary Knowledge Source.
+
+**Date:** 2026-08-15
+
+**Rationale:**
+- Live API verification attempted: no verifiable public REST endpoint found
+- tfadatabase.org has no public API (all /api/* paths return 404/HTML)
+- WTO Stats API (stats.wto.org) returns HTML, not JSON, for TFA paths
+- WTO Data Portal (data.wto.org) has no TFA API endpoint
+- No API Key obtainable: WTO API Developer Portal registration requires reCAPTCHA and real identity outside project scope
+- Data accessible via non-automated channels: TFA web portal (tfadatabase.org) and XLSX downloads
+- Consistent with existing Complementary classification for WTO ePing, Codex, and IPPC (web-only, no REST API)
+
+**Important Clarification:**
+- WTO TFA Database covers **Trade Facilitation**, not **SPS/TBT**
+- The Portfolio Plan's "Regulatory / SPS / TBT" family conflates two distinct domains
+- For G1 purposes, WTO TFA Database is evaluated against its actual coverage: Trade Facilitation
+
+**Impact:**
+- Implemented Providers count unchanged: 5
+- Regulatory / SPS / TBT knowledge family remains at 0/10 coverage (SPS/TBT portion unfilled)
+- Trade Facilitation knowledge family remains unfilled by any automated provider
+- WTO TFA Database remains a P0 Candidate but is not an Approved or Implemented Provider
+- No G2/G3/G4/G5 activities authorized for WTO TFA Database
+
+**Reference:** .kilo/plans/1786559160142-external-knowledge-portfolio-re-evaluation.md Section 25
 
 ## Session Recovery Point
 
@@ -355,5 +423,7 @@ If resuming after session interruption:
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`
 4. Proceed to WP-42 Owner Acceptance + Release validation
+
+
 
 

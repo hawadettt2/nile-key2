@@ -1,6 +1,6 @@
 ﻿# Engineering Memory
 
-**Last Updated:** 2026-07-21
+**Last Updated:** 2026-08-15
 **Project:** Nile Key Platform
 **Authority:** `PLAN.md` (Master Roadmap v2.1) — Single Source of Truth
 
@@ -85,6 +85,7 @@ Deferred / Future:
 | WP-38b | ✅ Complete | working tree | Global Trade Intelligence: TradeData API adapter with retry/backoff, provenance metadata, registry registration, 21 tests (14 unit + 7 integration); no regressions; baseline `baseline-wp38b-final` at `02bad55`; Owner Acceptance obtained |
 | WP-38c | ✅ Complete | working tree | Jordan + UAE + Saudi/GCC Sources: ZATCA Open Data APIs adapter with retry/backoff, provenance metadata, registry registration, 19 tests (13 unit + 6 integration); no regressions |
 | WP-38d | ✅ Complete | working tree | GCC Expansion: GCC-Stat Open Data APIs adapter with retry/backoff, provenance metadata, registry registration, 23 tests (16 unit + 7 integration); no regressions |
+| Knowledge Orchestration / Fusion Layer | ✅ Complete | working tree | KnowledgeOrchestrator: classification, routing, ranking, dedup, conflict resolution; 85 new tests (66 unit + 18 integration); 46/47 regression pass; 1 pre-existing failure confirmed; router adjustment for shared ReasoningEngine; 5 config settings added |
 | WP-40 | ✅ Complete | c30a935 / a0dfd20 / 195b204 | Docker Compose Final Verification: both images build, services healthy, API reachable, frontend served on port 3000, database persistence verified, frontend TypeScript build errors resolved |
 
 ---
@@ -280,6 +281,24 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 - **Tests:** 23 new tests (16 unit + 7 integration); all passing
 - **Regression:** No regressions in existing tests
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+## Knowledge Orchestration / Fusion Layer Implementation Summary
+
+### Knowledge Orchestration / Fusion Layer (Closed)
+- **KnowledgeOrchestrator:** New orchestration layer wrapping `KnowledgeProviderRegistry` with deterministic classification, routing, parallel querying, composite ranking, deduplication, and conflict resolution
+- **Classification:** 6 query types (agrifood, customs, market_access, regulatory, trade_statistics, rules_of_origin) + general fallback; deterministic keyword matching
+- **Routing:** Primary/secondary provider routing per query type; sources filter bypass; graceful skip of missing providers
+- **Ranking:** Composite score = confidence * 0.4 + authority_weight * 0.3 + recency_weight * 0.2 + relevance_weight * 0.1; deterministic tie-breaking by effective_date DESC, source_id ASC
+- **Deduplication:** Cross-provider dedup key = sha1(content[:100] + "|" + effective_date); same-source → highest composite_score; cross-source → highest authority_weight then composite_score
+- **Conflict Resolution:** "latest_official_wins" strategy; authority diff > 1 → authority wins; otherwise date wins; equal authority+date → both kept with conflict flag
+- **engine.py Changes:** Extracted `_query_knowledge_legacy()` (byte-for-byte equivalent to original); `_query_knowledge()` uses orchestrator when attached, else legacy fallback; orchestration metadata cached in `_last_orchestration_meta` and preserved in `Decision.context["knowledge_orchestration"]`
+- **main.py Wiring:** `KnowledgeOrchestrator` initialized in `lifespan()` when `KNOWLEDGE_ORCHESTRATION_ENABLED=True`; attached to shared `ReasoningEngine` via `app.state.reasoning_engine`
+- **Router Adjustment:** `get_reasoning_engine()` in `digital_export_manager.py` returns shared `app.state.reasoning_engine` instead of creating new instance per request — necessary technical change to preserve orchestrator attachment
+- **Configuration:** 5 new `KNOWLEDGE_ORCHESTRATION_*` settings added to `config.py`
+- **Tests:** 85 new tests (66 unit + 18 integration); all passing
+- **Regression:** 46/47 existing tests pass; 1 pre-existing failure in `test_registry_provider_failure_does_not_crash_reasoning` confirmed present in baseline (score threshold behavior, not Fusion Layer related)
+- **Baseline:** `baseline-fusion-layer` at commit `4b5dafe`
+- **Constraints:** No new providers, no new knowledge families, no logistics, no LLM synthesis, no Knowledge Graph changes, no database migrations, no frontend/avatar changes, no modifications to `KnowledgeProvider`, `KnowledgeProviderRegistry`, `Decision` schema, or `PLAN.md`
 
 ---
 

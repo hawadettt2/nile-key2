@@ -38,6 +38,12 @@ def _isolated_database():
     original_db_url = settings.DATABASE_URL
     settings.DATABASE_URL = f"sqlite:///{db_path}"
 
+    # Ensure owner seeding in init_db() works under test isolation.
+    # _seed_data() requires OWNER_PASSWORD; use the same test password
+    # already hardcoded in _register_and_approve() to avoid changing
+    # production behavior or weakening security.
+    os.environ.setdefault("OWNER_PASSWORD", "TestOwnerPass123!")
+
     from app.core.database import init_db
     init_db()
 

@@ -16,6 +16,8 @@ from app.core.csrf import CSRFMiddleware
 from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
+from app.agent.knowledge.orchestrator import KnowledgeOrchestrator
+from app.agent.decision_engine.engine import ReasoningEngine
 from app.agent.knowledge.graph_provider import KnowledgeGraphProvider
 from app.agent.knowledge.company_knowledge_provider import CompanyKnowledgeProvider
 from app.agent.knowledge.regulations_provider import RegulationsKnowledgeProvider
@@ -216,6 +218,31 @@ async def lifespan(app: FastAPI):
         print("[SUCCESS] Trade Intelligence providers wired")
     except Exception as exc:
         print(f"[WARNING] Trade Intelligence provider wiring failed: {exc}")
+
+    # ========== Knowledge Orchestration / Fusion Layer ==========
+    if getattr(settings, "KNOWLEDGE_ORCHESTRATION_ENABLED", True):
+        try:
+            orchestrator = KnowledgeOrchestrator(
+                registry=knowledge_provider_registry,
+                config=settings,
+            )
+            print("[SUCCESS] Knowledge Orchestrator initialized")
+        except Exception as exc:
+            print(f"[WARNING] Knowledge Orchestrator initialization failed: {exc}")
+            orchestrator = None
+    else:
+        orchestrator = None
+
+    reasoning_engine = ReasoningEngine(
+        knowledge_provider_registry=knowledge_provider_registry,
+        memory_provider=memory_provider,
+        llm_registry=llm_registry,
+    )
+    if orchestrator is not None:
+        reasoning_engine._knowledge_orchestrator = orchestrator
+        print("[SUCCESS] Knowledge Orchestrator attached to ReasoningEngine")
+
+    app.state.reasoning_engine = reasoning_engine
     
     # Initialize ETA background scheduler
     try:
@@ -251,7 +278,7 @@ async def lifespan(app: FastAPI):
 # ط¥ظ†ط´ط§ط، طھط·ط¨ظٹظ‚ FastAPI
 app = FastAPI(
     title="Digital Export Manager API",
-    description="Digital Export Manager â€” Intelligent Operating Platform for export operations",
+    description="Digital Export Manager — Intelligent Operating Platform for export operations",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -316,4 +343,5 @@ def health_check():
         "version": "1.0.0",
         "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
     }
+
 

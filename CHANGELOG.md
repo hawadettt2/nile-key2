@@ -204,8 +204,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Field mapping: SDMX observation value ? content (metrics), TIME_PERIOD ? effective_date, ref_area ? country, dataflow reference ? source_url
   - 16 unit tests + 7 integration tests = 23 WP-38d tests passing
   - No regressions in knowledge layer; all existing tests passing
-  - Plan updated: `.kilo/plans/1786559150139-wp38d-gcc-expansion-plan.md`
-  - Verification evidence: `.kilo/plans/wp38d-task7-verification-evidence-package.md`
+   - Plan updated: `.kilo/plans/1786559150139-wp38d-gcc-expansion-plan.md`
+   - Verification evidence: `.kilo/plans/wp38d-task7-verification-evidence-package.md`
+
+- Knowledge Orchestration / Fusion Layer completed
+  - `KnowledgeOrchestrator` implemented in `backend/app/agent/knowledge/orchestrator.py` with classification, routing, ranking, deduplication, conflict resolution, and output assembly
+  - `ReasoningEngine._query_knowledge()` updated to use orchestrator when attached; legacy fallback extracted to `_query_knowledge_legacy()`
+  - Orchestration metadata preserved in `Decision.context["knowledge_orchestration"]` when orchestrator active
+  - Shared `ReasoningEngine` instance wired in `main.py` lifespan via `app.state.reasoning_engine`
+  - Router adjustment in `digital_export_manager.py`: `get_reasoning_engine()` returns shared instance to preserve orchestrator attachment
+  - 5 new `KNOWLEDGE_ORCHESTRATION_*` config settings added to `config.py`
+  - 85 new tests (66 unit + 18 integration) all passing
+  - Regression: 46/47 existing tests pass; 1 pre-existing failure in `test_registry_provider_failure_does_not_crash_reasoning` confirmed in baseline
+  - Plans: `.kilo/plans/1786795387856-knowledge-orchestration-fusion-plan.md`, `.kilo/plans/1786795387856-knowledge-orchestration-fusion-detailed-implementation-plan.md`
 
 ### Fixed
 - `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing

@@ -14,8 +14,8 @@ from app.agent.schemas.api_request import MissionRequest
 from app.agent.schemas.api_response import MissionResponse
 from app.agent.tools.registry import tool_registry
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
-from app.agent.decision_engine.engine import ReasoningEngine
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
+from app.agent.decision_engine.engine import ReasoningEngine
 from app.agent.mission_planner.planner import TaskPlanner
 from app.agent.execution_planner.planner import ExecutionPlanner
 from app.agent.execution_engine.orchestrator import ToolOrchestrator
@@ -38,15 +38,9 @@ def get_memory_provider() -> SQLiteMemoryProvider:
     return SQLiteMemoryProvider(db_path="nile_key.db")
 
 
-def get_reasoning_engine(
-    memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
-    knowledge_provider_registry: KnowledgeProviderRegistry = Depends(get_knowledge_registry),
-) -> ReasoningEngine:
-    return ReasoningEngine(
-        knowledge_provider_registry=knowledge_provider_registry,
-        memory_provider=memory_provider,
-        llm_registry=llm_registry,
-    )
+def get_reasoning_engine() -> ReasoningEngine:
+    from main import app
+    return app.state.reasoning_engine
 
 
 class ConnectResponse(BaseModel):
