@@ -9,6 +9,8 @@ import httpx
 import logging
 from typing import Optional, Dict, Any, List
 
+from app.core.credentials.credential_store import CredentialStore
+from app.core.credentials.username_password_credential import UsernamePasswordCredential
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 logger = logging.getLogger("shipping.letmeship")
@@ -28,19 +30,43 @@ class LetMeShipClient:
     _RETRY_WAIT_MIN = 1
     _RETRY_WAIT_MAX = 10
 
-    def __init__(self, api_id: str, api_password: str, environment: str = "Pre-Production"):
-        self.api_id = api_id
-        self.api_password = api_password
+    def __init__(
+        self,
+        api_id: str = "",
+        api_password: str = "",
+        environment: str = "Pre-Production",
+        credential_store: Optional[CredentialStore] = None,
+    ) -> None:
+        self._credential_store = credential_store
         self.environment = environment
         self.base_url = (
             "https://api.test.letmeship.com/v1"
             if environment == "Pre-Production"
             else "https://api.letmeship.com/v1"
         )
+
+        if credential_store is not None:
+            credential = credential_store.get("letmeship_api_id")
+            if credential is not None:
+                import asyncio
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(credential.on_before_use())
+                finally:
+                    loop.close()
+                self.api_id = credential.get_username()
+                self.api_password = credential.get_password()
+            else:
+                self.api_id = api_id
+                self.api_password = api_password
+        else:
+            self.api_id = api_id
+            self.api_password = api_password
+
         self._client = httpx.Client(
             timeout=httpx.Timeout(30.0, connect=10.0),
             headers={"content-type": "application/json; charset=utf-8"},
-            auth=(api_id, api_password),
+            auth=(self.api_id, self.api_password),
         )
         self.enabled = True
 

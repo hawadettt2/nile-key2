@@ -3,6 +3,7 @@ import json
 import uuid
 from typing import Any, Dict, List, Optional
 
+from app.core.credentials.credential_store import CredentialStore
 from .provider import KnowledgeProvider
 from .zatca_client import ZatcaApiClient
 
@@ -30,7 +31,7 @@ class ZatcaExternalSourceAdapter(KnowledgeProvider):
     details are resolved during Task 3 sandbox integration.
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: Optional[Dict[str, Any]] = None, credential_store: Optional[CredentialStore] = None) -> None:
         self._config = config or {}
         self._source_id = self._config.get("source_id", "zatca")
         self._provider_name = self._config.get("name", "ZATCA Open Data APIs")
@@ -45,6 +46,7 @@ class ZatcaExternalSourceAdapter(KnowledgeProvider):
             base_url=base_url,
             api_key=api_key,
             timeout_seconds=timeout_seconds,
+            credential_store=credential_store,
         )
 
     async def query(

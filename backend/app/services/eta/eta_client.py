@@ -13,6 +13,8 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
+from app.core.credentials.client_id_secret_credential import ClientIdSecretCredential
+from app.core.credentials.credential_store import CredentialStore
 from app.schemas.eta import ETAAuthConfig, InvoiceSubmit, ReceiptSubmit, ReceiptsResponse
 
 logger = logging.getLogger("eta")
@@ -35,14 +37,44 @@ class ETAClient:
     _RETRY_WAIT_MIN = 1
     _RETRY_WAIT_MAX = 10
 
-    def __init__(self, auth_config: ETAAuthConfig):
-        self.auth_config = auth_config
+    def __init__(
+        self,
+        auth_config: ETAAuthConfig,
+        credential_store: Optional[CredentialStore] = None,
+    ) -> None:
+        self._credential_store = credential_store
         self._access_token: Optional[str] = None
         self._token_expires_at: Optional[datetime] = None
         self._client = httpx.Client(
             timeout=httpx.Timeout(30.0, connect=10.0),
             headers={"content-type": "application/json; charset=utf-8"},
         )
+
+        if credential_store is not None:
+            client_id_credential = credential_store.get("eta_client_id")
+            client_secret_credential = credential_store.get("eta_client_secret")
+
+            if client_id_credential is None or client_secret_credential is None:
+                logger.warning("ETA credentials missing from CredentialStore; client will not authenticate")
+                self._auth_config = auth_config
+            else:
+                import asyncio
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(client_id_credential.on_before_use())
+                    loop.run_until_complete(client_secret_credential.on_before_use())
+                finally:
+                    loop.close()
+
+                self._auth_config = ETAAuthConfig(
+                    client_id=client_id_credential.get_client_id(),
+                    client_secret=client_secret_credential.get_client_secret(),
+                    environment=auth_config.environment,
+                    pos_serial=auth_config.pos_serial,
+                    pos_os_version=auth_config.pos_os_version,
+                )
+        else:
+            self._auth_config = auth_config
 
     def _get_token(self) -> str:
         """Get or refresh OAuth2 access token using client credentials flow."""
@@ -55,12 +87,26 @@ class ETAClient:
 
     def _refresh_token(self) -> str:
         """Request new access token from ETA IDP."""
+        client_id_credential = self._credential_store.get("eta_client_id") if self._credential_store else None
+        client_secret_credential = self._credential_store.get("eta_client_secret") if self._credential_store else None
+
+        if client_id_credential is not None and client_secret_credential is not None:
+            client_id = client_id_credential.get_client_id()
+            client_secret = client_secret_credential.get_client_secret()
+            masked_client_id = client_id_credential.mask() if client_id_credential.is_empty() is False else "***"
+            masked_client_secret = client_secret_credential.mask()
+        else:
+            client_id = self._auth_config.client_id
+            client_secret = self._auth_config.client_secret
+            masked_client_id = client_id[:4] + "***" if len(client_id) > 4 else "***"
+            masked_client_secret = client_secret[:4] + "***" if len(client_secret) > 4 else "***"
+
         response = self._client.post(
-            self.auth_config.token_url,
+            self._auth_config.token_url,
             data={
                 "grant_type": "client_credentials",
-                "client_id": self.auth_config.client_id,
-                "client_secret": self.auth_config.client_secret,
+                "client_id": client_id,
+                "client_secret": client_secret,
                 "scope": "InvoicingAPI",
             },
             headers={"content-type": "application/x-www-form-urlencoded"},
@@ -76,7 +122,21 @@ class ETAClient:
         self._access_token = data.get("access_token")
         expires_in = data.get("expires_in", 3600)
         self._token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
-        logger.info("ETA access token refreshed, expires in %ds", expires_in)
+        logger.info(
+            "ETA access token refreshed for client_id=%s, expires in %ds",
+            masked_client_id,
+            expires_in,
+        )
+
+        if client_id_credential is not None and client_secret_credential is not None:
+            import asyncio
+            loop = asyncio.new_event_loop()
+            try:
+                loop.run_until_complete(client_id_credential.on_after_use())
+                loop.run_until_complete(client_secret_credential.on_after_use())
+            finally:
+                loop.close()
+
         return self._access_token
 
     def _headers(self) -> Dict[str, str]:
@@ -113,7 +173,7 @@ class ETAClient:
         
         payload = {"documents": [inv.model_dump(exclude_none=True) for inv in invoices]}
         response = self._post_with_retry(
-            f"{self.auth_config.base_url}/documentsubmissions",
+            f"{self._auth_config.base_url}/documentsubmissions",
             json=payload,
             headers=headers,
         )
@@ -140,7 +200,7 @@ class ETAClient:
         
         payload = {"receipts": [r.model_dump(exclude_none=True) for r in receipts]}
         response = self._post_with_retry(
-            f"{self.auth_config.base_url}/receiptsubmissions",
+            f"{self._auth_config.base_url}/receiptsubmissions",
             json=payload,
             headers=headers,
         )
@@ -162,7 +222,7 @@ class ETAClient:
     def cancel_document(self, uuid: str, reason: str) -> Dict[str, Any]:
         """Cancel a submitted document by UUID."""
         response = self._client.put(
-            f"{self.auth_config.base_url}/documents/state/{uuid}/state",
+            f"{self._auth_config.base_url}/documents/state/{uuid}/state",
             json={"status": "cancelled", "reason": reason},
             headers=self._headers(),
         )
@@ -179,7 +239,7 @@ class ETAClient:
     def get_document_status(self, uuid: str) -> Dict[str, Any]:
         """Get raw document status by UUID."""
         response = self._get_with_retry(
-            f"{self.auth_config.base_url}/documents/{uuid}/raw",
+            f"{self._auth_config.base_url}/documents/{uuid}/raw",
             headers=self._headers(),
         )
 
@@ -194,7 +254,7 @@ class ETAClient:
     def get_submission_details(self, submission_id: str) -> Dict[str, Any]:
         """Get submission details by submission ID."""
         response = self._get_with_retry(
-            f"{self.auth_config.base_url}/documentSubmissions/{submission_id}",
+            f"{self._auth_config.base_url}/documentSubmissions/{submission_id}",
             headers=self._headers(),
         )
 
@@ -209,7 +269,7 @@ class ETAClient:
     def get_receipt_submission_details(self, submission_id: str) -> Dict[str, Any]:
         """Get receipt submission details with pagination."""
         response = self._get_with_retry(
-            f"{self.auth_config.base_url}/receiptsubmissions/{submission_id}/details",
+            f"{self._auth_config.base_url}/receiptsubmissions/{submission_id}/details",
             params={"PageNo": 1, "PageSize": 100},
             headers=self._headers(),
         )
@@ -225,7 +285,7 @@ class ETAClient:
     def get_receipt_status(self, uuid: str) -> Dict[str, Any]:
         """Get individual receipt status by UUID."""
         response = self._get_with_retry(
-            f"{self.auth_config.base_url}/receipts/{uuid}/raw/",
+            f"{self._auth_config.base_url}/receipts/{uuid}/raw/",
             headers=self._headers(),
         )
 
@@ -240,7 +300,7 @@ class ETAClient:
     def download_pdf(self, uuid: str) -> bytes:
         """Download ETA document PDF."""
         response = self._get_with_retry(
-            f"{self.auth_config.base_url}/documents/{uuid}/pdf",
+            f"{self._auth_config.base_url}/documents/{uuid}/pdf",
             headers=self._headers(),
         )
 

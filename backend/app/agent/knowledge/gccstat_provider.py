@@ -3,6 +3,7 @@ import json
 import uuid
 from typing import Any, Dict, List, Optional
 
+from app.core.credentials.credential_store import CredentialStore
 from .provider import KnowledgeProvider
 from .gccstat_client import GccstatApiClient
 
@@ -25,7 +26,7 @@ class GccstatExternalSourceAdapter(KnowledgeProvider):
       - Perform external research on behalf of users
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: Optional[Dict[str, Any]] = None, credential_store: Optional[CredentialStore] = None) -> None:
         self._config = config or {}
         self._source_id = self._config.get("source_id", "gccstat")
         self._provider_name = self._config.get("name", "GCC-Stat Data Portal")
@@ -40,6 +41,7 @@ class GccstatExternalSourceAdapter(KnowledgeProvider):
             base_url=base_url,
             api_key=api_key,
             timeout_seconds=timeout_seconds,
+            credential_store=credential_store,
         )
 
     async def query(

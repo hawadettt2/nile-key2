@@ -39,30 +39,33 @@ class TestFaostatAdapterIntegration:
                 "type": "external_agrifood_intelligence",
                 "version": "1.0.0",
                 "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
             }
         )
         asyncio.run(registry.register(adapter))
 
-        with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value={
-            "data": [
-                {
-                    "area": "Egypt",
-                    "areaCode": "EGY",
-                    "item": "Wheat",
-                    "itemCode": "15",
-                    "element": "Production",
-                    "elementCode": "5510",
-                    "year": "2023",
-                    "unit": "Tonnes",
-                    "value": "1234567",
-                    "flag": "A",
-                }
-            ],
-            "message": {
-                "total": 1,
-            },
-        }):
-            result = asyncio.run(registry.query("faostat", "wheat production", context={"area": "Egypt", "item": "Wheat", "element": "Production", "year": "2023"}))
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value={
+                "data": [
+                    {
+                        "area": "Egypt",
+                        "areaCode": "EGY",
+                        "item": "Wheat",
+                        "itemCode": "15",
+                        "element": "Production",
+                        "elementCode": "5510",
+                        "year": "2023",
+                        "unit": "Tonnes",
+                        "value": "1234567",
+                        "flag": "A",
+                    }
+                ],
+                "message": {
+                    "total": 1,
+                },
+            }):
+                result = asyncio.run(registry.query("faostat", "wheat production", context={"area": "Egypt", "item": "Wheat", "element": "Production", "year": "2023"}))
 
         assert "results" in result
         assert result["sources"] == ["faostat"]
@@ -96,10 +99,12 @@ class TestFaostatAdapterIntegration:
                 "type": "external_agrifood_intelligence",
                 "version": "1.0.0",
                 "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
             }
         )
 
-        with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, side_effect=Exception("Upstream error")):
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock, side_effect=Exception("Upstream error")):
             result = asyncio.run(adapter.query("test", context={"area": "Egypt"}, scope="QC", limit=10))
 
         assert result["results"] == []
@@ -109,11 +114,14 @@ class TestFaostatAdapterIntegration:
     def test_adapter_provider_interface_compliance(self):
         adapter = FaostatExternalSourceAdapter(
             config={
+                "base_url": "https://faostatservices.fao.org/api/v1",
                 "source_id": "faostat",
                 "name": "FAOSTAT External Knowledge",
                 "type": "external_agrifood_intelligence",
                 "version": "1.0.0",
                 "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
             }
         )
 
@@ -136,6 +144,8 @@ class TestFaostatAdapterIntegration:
                 "type": "external_agrifood_intelligence",
                 "version": "1.0.0",
                 "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
             }
         )
         asyncio.run(registry.register(adapter))
@@ -160,8 +170,9 @@ class TestFaostatAdapterIntegration:
             },
         }
 
-        with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response):
-            result = asyncio.run(registry.query("faostat", "wheat production", context={"area": "Egypt", "item": "Wheat", "element": "Production", "year": "2023"}))
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response):
+                result = asyncio.run(registry.query("faostat", "wheat production", context={"area": "Egypt", "item": "Wheat", "element": "Production", "year": "2023"}))
 
         assert len(result["results"]) == 1
         item = result["results"][0]

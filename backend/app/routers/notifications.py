@@ -5,7 +5,7 @@ from app.routers.auth import get_current_user, require_role
 from app.core.database import get_db
 from app.schemas.notification import NotificationSend, NotificationResponse
 from app.schemas.common import MessageResponse
-from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError
+from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError, credential_store as notification_credential_store
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["Notifications"])
 
@@ -38,6 +38,7 @@ def send_notification(
             recipient=data.recipient,
             variables=data.variables,
             current_user=current_user,
+            credential_store=notification_credential_store,
         )
     except TemplateNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))

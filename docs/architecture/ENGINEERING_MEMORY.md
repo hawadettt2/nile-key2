@@ -300,6 +300,20 @@ All recovery changes: **KEEP** (syntactically valid, functionally safe)
 - **Baseline:** `baseline-fusion-layer` at commit `4b5dafe`
 - **Constraints:** No new providers, no new knowledge families, no logistics, no LLM synthesis, no Knowledge Graph changes, no database migrations, no frontend/avatar changes, no modifications to `KnowledgeProvider`, `KnowledgeProviderRegistry`, `Decision` schema, or `PLAN.md`
 
+## Credential Management Implementation Summary
+
+### Credential Management Implementation (Closed)
+- **Credential Abstraction Layer:** Introduced `Credential` interface with concrete types: `ApiKeyCredential`, `UsernamePasswordCredential`, `ClientIdSecretCredential`
+- **CredentialStore:** Registry with `register()`, `get()`, `get_or_raise()`, `list_sources()`, `list_all()` methods; populated at startup from environment settings
+- **Masking/Redaction:** All credential types implement `mask()` per approved design; first 4 chars visible if length > 4, else `***`
+- **Lifecycle Hooks:** `on_before_use()`, `on_after_use()`, `on_expiry()` implemented; FAOSTAT JWT lifecycle preserved exactly
+- **Migrated Services:** FAOSTAT, ETA, LetMeShip, SendCloud, Moaah, TradeData, ZATCA, GCC-Stat, SMTP/Notification, LLM (Gemini)
+- **Gates:** G1–G6 all PASS
+- **Tests:** 163 new tests across Phases 1–6; all passing
+- **Regression:** No regressions in migrated adapters; 5 pre-existing failures in unrelated auth/workflow tests confirmed
+- **Baseline:** Pending commit/baseline
+- **Constraints:** No DEM Core changes, no Secret Store dependency, no new providers, no RefreshToken mechanism, no live validation outside WP scope
+
 ---
 
 ## Engineering Decisions Log

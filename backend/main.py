@@ -15,6 +15,10 @@ from app.core.database import init_db
 from app.core.csrf import CSRFMiddleware
 from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
+from app.core.credentials.credential_store import CredentialStore
+from app.core.credentials.username_password_credential import UsernamePasswordCredential
+from app.core.credentials.client_id_secret_credential import ClientIdSecretCredential
+from app.core.credentials.api_key_credential import ApiKeyCredential
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.knowledge.orchestrator import KnowledgeOrchestrator
 from app.agent.decision_engine.engine import ReasoningEngine
@@ -66,10 +70,21 @@ async def lifespan(app: FastAPI):
 
     # Register LLM provider
     try:
+        llm_cred_store = CredentialStore()
+
         if settings.LLM_API_KEY:
+            llm_cred_store.register(
+                "llm_api_key",
+                ApiKeyCredential(
+                    key=settings.LLM_API_KEY,
+                    source="env",
+                ),
+            )
+
             llm_provider = GeminiProvider(
                 api_key=settings.LLM_API_KEY,
                 model=settings.LLM_MODEL,
+                credential_store=llm_cred_store,
             )
             await llm_registry.register(llm_provider)
             print(f"[SUCCESS] LLM provider registered: {settings.LLM_PROVIDER}")
@@ -77,12 +92,40 @@ async def lifespan(app: FastAPI):
             print("[WARNING] LLM_API_KEY is not configured. LLM provider not registered.")
     except Exception as exc:
         print(f"[WARNING] LLM provider registration failed: {exc}")
+    try:
+        from app.services.notification import credential_store as notification_credential_store
+
+        if settings.SMTP_HOST and (settings.SMTP_USER or settings.SMTP_PASSWORD):
+            notification_credential_store.register(
+                "smtp_credentials",
+                UsernamePasswordCredential(
+                    username=settings.SMTP_USER,
+                    password=settings.SMTP_PASSWORD,
+                    source="env",
+                ),
+            )
+            print("[SUCCESS] SMTP credentials registered in CredentialStore")
+        else:
+            print("[WARNING] SMTP credentials are not configured. SMTP credentials not registered.")
+    except Exception as exc:
+        print(f"[WARNING] SMTP credential registration failed: {exc}")
     
     # Register Knowledge providers
     # Register Moaah External Source Adapter when configured
     try:
+        knowledge_cred_store = CredentialStore()
+
         if settings.MOAAH_API_KEY and settings.MOAAH_BASE_URL:
             from app.agent.knowledge.mooadapter import MoaahExternalSourceAdapter
+
+            knowledge_cred_store.register(
+                "moaah_api_key",
+                ApiKeyCredential(
+                    key=settings.MOAAH_API_KEY,
+                    source="env",
+                ),
+            )
+
             moaah_adapter = MoaahExternalSourceAdapter(
                 config={
                     "source_id": settings.MOAAH_SOURCE_ID,
@@ -91,9 +134,9 @@ async def lifespan(app: FastAPI):
                     "version": settings.MOAAH_SOURCE_VERSION,
                     "updated_at": "2026-08-12T00:00:00Z",
                     "base_url": settings.MOAAH_BASE_URL,
-                    "api_key": settings.MOAAH_API_KEY,
                     "timeout_seconds": settings.MOAAH_TIMEOUT_SECONDS,
-                }
+                },
+                credential_store=knowledge_cred_store,
             )
             await knowledge_provider_registry.register(moaah_adapter)
             print(f"[SUCCESS] Moaah External Source Adapter registered: {settings.MOAAH_SOURCE_ID}")
@@ -105,6 +148,15 @@ async def lifespan(app: FastAPI):
     try:
         if settings.TRADEDATA_API_KEY and settings.TRADEDATA_BASE_URL:
             from app.agent.knowledge.tradedata_provider import TradeDataExternalSourceAdapter
+
+            knowledge_cred_store.register(
+                "tradedata_api_key",
+                ApiKeyCredential(
+                    key=settings.TRADEDATA_API_KEY,
+                    source="env",
+                ),
+            )
+
             tradedata_adapter = TradeDataExternalSourceAdapter(
                 config={
                     "source_id": settings.TRADEDATA_SOURCE_ID,
@@ -113,9 +165,9 @@ async def lifespan(app: FastAPI):
                     "version": settings.TRADEDATA_SOURCE_VERSION,
                     "updated_at": "2026-08-13T00:00:00Z",
                     "base_url": settings.TRADEDATA_BASE_URL,
-                    "api_key": settings.TRADEDATA_API_KEY,
                     "timeout_seconds": settings.TRADEDATA_TIMEOUT_SECONDS,
-                }
+                },
+                credential_store=knowledge_cred_store,
             )
             await knowledge_provider_registry.register(tradedata_adapter)
             print(f"[SUCCESS] TradeData External Source Adapter registered: {settings.TRADEDATA_SOURCE_ID}")
@@ -127,6 +179,15 @@ async def lifespan(app: FastAPI):
     try:
         if settings.ZATCA_API_KEY and settings.ZATCA_BASE_URL:
             from app.agent.knowledge.zatca_provider import ZatcaExternalSourceAdapter
+
+            knowledge_cred_store.register(
+                "zatca_api_key",
+                ApiKeyCredential(
+                    key=settings.ZATCA_API_KEY,
+                    source="env",
+                ),
+            )
+
             zatca_adapter = ZatcaExternalSourceAdapter(
                 config={
                     "source_id": settings.ZATCA_SOURCE_ID,
@@ -135,9 +196,9 @@ async def lifespan(app: FastAPI):
                     "version": settings.ZATCA_SOURCE_VERSION,
                     "updated_at": "2026-08-14T00:00:00Z",
                     "base_url": settings.ZATCA_BASE_URL,
-                    "api_key": settings.ZATCA_API_KEY,
                     "timeout_seconds": settings.ZATCA_TIMEOUT_SECONDS,
-                }
+                },
+                credential_store=knowledge_cred_store,
             )
             await knowledge_provider_registry.register(zatca_adapter)
             print(f"[SUCCESS] ZATCA External Source Adapter registered: {settings.ZATCA_SOURCE_ID}")
@@ -147,8 +208,17 @@ async def lifespan(app: FastAPI):
         print(f"[WARNING] ZATCA External Source Adapter registration failed: {exc}")
     # Register GCC-Stat External Source Adapter when configured
     try:
-        if settings.GCCSTAT_BASE_URL:
+        if settings.GCCSTAT_BASE_URL and settings.GCCSTAT_API_KEY:
             from app.agent.knowledge.gccstat_provider import GccstatExternalSourceAdapter
+
+            knowledge_cred_store.register(
+                "gccstat_api_key",
+                ApiKeyCredential(
+                    key=settings.GCCSTAT_API_KEY,
+                    source="env",
+                ),
+            )
+
             gccstat_adapter = GccstatExternalSourceAdapter(
                 config={
                     "source_id": settings.GCCSTAT_SOURCE_ID,
@@ -157,20 +227,40 @@ async def lifespan(app: FastAPI):
                     "version": settings.GCCSTAT_SOURCE_VERSION,
                     "updated_at": "2026-08-14T00:00:00Z",
                     "base_url": settings.GCCSTAT_BASE_URL,
-                    "api_key": settings.GCCSTAT_API_KEY,
                     "timeout_seconds": settings.GCCSTAT_TIMEOUT_SECONDS,
-                }
+                },
+                credential_store=knowledge_cred_store,
             )
             await knowledge_provider_registry.register(gccstat_adapter)
             print(f"[SUCCESS] GCC-Stat External Source Adapter registered: {settings.GCCSTAT_SOURCE_ID}")
         else:
-            print("[WARNING] GCCSTAT_BASE_URL is not configured. GCC-Stat adapter not registered.")
+            print("[WARNING] GCC-Stat API credentials are not configured. GCC-Stat adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] GCC-Stat External Source Adapter registration failed: {exc}")
     # Register FAOSTAT External Source Adapter when configured
     try:
-        if settings.FAOSTAT_BASE_URL:
+        cred_store = CredentialStore()
+
+        if settings.FAOSTAT_BASE_URL and settings.FAOSTAT_USER and settings.FAOSTAT_PASSWORD:
             from app.agent.knowledge.faostat_provider import FaostatExternalSourceAdapter
+
+            cred_store.register(
+                "faostat_username",
+                UsernamePasswordCredential(
+                    username=settings.FAOSTAT_USER,
+                    password="",
+                    source="env",
+                ),
+            )
+            cred_store.register(
+                "faostat_password",
+                UsernamePasswordCredential(
+                    username="",
+                    password=settings.FAOSTAT_PASSWORD,
+                    source="env",
+                ),
+            )
+
             faostat_adapter = FaostatExternalSourceAdapter(
                 config={
                     "source_id": settings.FAOSTAT_SOURCE_ID,
@@ -179,17 +269,76 @@ async def lifespan(app: FastAPI):
                     "version": settings.FAOSTAT_SOURCE_VERSION,
                     "updated_at": "2026-08-14T00:00:00Z",
                     "base_url": settings.FAOSTAT_BASE_URL,
-                    "api_key": settings.FAOSTAT_API_KEY,
                     "timeout_seconds": settings.FAOSTAT_TIMEOUT_SECONDS,
                     "default_domain": settings.FAOSTAT_DEFAULT_DOMAIN,
-                }
+                },
+                credential_store=cred_store,
             )
             await knowledge_provider_registry.register(faostat_adapter)
             print(f"[SUCCESS] FAOSTAT External Source Adapter registered: {settings.FAOSTAT_SOURCE_ID}")
         else:
-            print("[WARNING] FAOSTAT_BASE_URL is not configured. FAOSTAT adapter not registered.")
+            print("[WARNING] FAOSTAT credentials are not configured. FAOSTAT adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] FAOSTAT External Source Adapter registration failed: {exc}")
+    try:
+        if settings.ETA_CLIENT_ID and settings.ETA_CLIENT_SECRET:
+            from app.services.eta import credential_store as eta_credential_store
+
+            eta_credential_store.register(
+                "eta_client_id",
+                ClientIdSecretCredential(
+                    client_id=settings.ETA_CLIENT_ID,
+                    client_secret="",
+                    source="env",
+                ),
+            )
+            eta_credential_store.register(
+                "eta_client_secret",
+                ClientIdSecretCredential(
+                    client_id="",
+                    client_secret=settings.ETA_CLIENT_SECRET,
+                    source="env",
+                ),
+            )
+            print(f"[SUCCESS] ETA credentials registered in CredentialStore")
+        else:
+            print("[WARNING] ETA credentials are not configured. ETA credentials not registered.")
+    except Exception as exc:
+        print(f"[WARNING] ETA credential registration failed: {exc}")
+    try:
+        if settings.LETME_API_ID and settings.LETME_API_PASSWORD:
+            from app.services.shipping import credential_store as shipping_credential_store
+
+            shipping_credential_store.register(
+                "letmeship_api_id",
+                UsernamePasswordCredential(
+                    username=settings.LETME_API_ID,
+                    password=settings.LETME_API_PASSWORD,
+                    source="env",
+                ),
+            )
+            print(f"[SUCCESS] LetMeShip credentials registered in CredentialStore")
+        else:
+            print("[WARNING] LetMeShip credentials are not configured. LetMeShip credentials not registered.")
+    except Exception as exc:
+        print(f"[WARNING] LetMeShip credential registration failed: {exc}")
+    try:
+        if settings.SENDCLOUD_PUBLIC_KEY and settings.SENDCLOUD_SECRET_KEY:
+            from app.services.shipping import credential_store as shipping_credential_store
+
+            shipping_credential_store.register(
+                "sendcloud_public_key",
+                ClientIdSecretCredential(
+                    client_id=settings.SENDCLOUD_PUBLIC_KEY,
+                    client_secret=settings.SENDCLOUD_SECRET_KEY,
+                    source="env",
+                ),
+            )
+            print(f"[SUCCESS] SendCloud credentials registered in CredentialStore")
+        else:
+            print("[WARNING] SendCloud credentials are not configured. SendCloud credentials not registered.")
+    except Exception as exc:
+        print(f"[WARNING] SendCloud credential registration failed: {exc}")
     try:
         graph_provider = KnowledgeGraphProvider()
         await knowledge_provider_registry.register(graph_provider)

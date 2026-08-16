@@ -4,6 +4,10 @@ from typing import Any, Dict, Optional
 import httpx
 
 
+from app.core.credentials.api_key_credential import ApiKeyCredential
+from app.core.credentials.credential_store import CredentialStore
+
+
 class ZatcaApiClient:
     """Isolated HTTP client for ZATCA Open Data APIs.
 
@@ -17,10 +21,22 @@ class ZatcaApiClient:
     logic is owned by ``ZatcaExternalSourceAdapter``.
     """
 
-    def __init__(self, base_url: str, api_key: Optional[str] = None, timeout_seconds: float = 30.0) -> None:
+    def __init__(self, base_url: str, api_key: Optional[str] = None, timeout_seconds: float = 30.0, credential_store: Optional[CredentialStore] = None) -> None:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._timeout_seconds = timeout_seconds
+        self._credential_store = credential_store
+
+        if credential_store is not None:
+            credential = credential_store.get("zatca_api_key")
+            if credential is not None:
+                import asyncio
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(credential.on_before_use())
+                finally:
+                    loop.close()
+                self._api_key = credential.get_key()
 
     def _headers(self) -> Dict[str, str]:
         headers: Dict[str, str] = {

@@ -53,6 +53,7 @@
 | WP-38a | ? Complete | External Source Integration � Moaah API adapter; retry/backoff; provenance metadata; registry registration; 15 tests (9 unit + 6 integration); no regressions |
 | WP-38c | ? Complete | Jordan + UAE + Saudi/GCC Sources � ZATCA Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 19 tests (13 unit + 6 integration); no regressions |
 | WP-38d | ? Complete | GCC Expansion � GCC-Stat Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 23 tests (16 unit + 7 integration); no regressions |
+| Credential Management Implementation | ✅ Complete | Credential abstraction layer across FAOSTAT/ETA/LetMeShip/SendCloud/Moaah/TradeData/ZATCA/GCC-Stat/SMTP/LLM; CredentialStore + 3 credential types; 163 tests passing; G1–G6 PASS; AC-1–AC-9 PASS; baseline/commit pending |
 
 ## WP-38a Implementation Summary
 
@@ -111,6 +112,20 @@
 - **Tests:** 23 new tests (16 unit + 7 integration); all passing
 - **Regression:** No regressions in existing tests
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
+
+## Credential Management Implementation Summary
+
+### Credential Management Implementation (Closed)
+- **Credential Abstraction Layer:** Introduced `Credential` interface with concrete types: `ApiKeyCredential`, `UsernamePasswordCredential`, `ClientIdSecretCredential`
+- **CredentialStore:** Registry with `register()`, `get()`, `get_or_raise()`, `list_sources()`, `list_all()` methods; populated at startup from environment settings
+- **Masking/Redaction:** All credential types implement `mask()` per approved design; first 4 chars visible if length > 4, else `***`
+- **Lifecycle Hooks:** `on_before_use()`, `on_after_use()`, `on_expiry()` implemented; FAOSTAT JWT lifecycle preserved exactly
+- **Migrated Services:** FAOSTAT, ETA, LetMeShip, SendCloud, Moaah, TradeData, ZATCA, GCC-Stat, SMTP/Notification, LLM (Gemini)
+- **Gates:** G1–G6 all PASS
+- **Tests:** 163 new tests across Phases 1–6; all passing
+- **Regression:** No regressions in migrated adapters; 5 pre-existing failures in unrelated auth/workflow tests confirmed
+- **Baseline:** Pending commit/baseline
+- **Constraints:** No DEM Core changes, no Secret Store dependency, no new providers, no RefreshToken mechanism, no live validation outside WP scope
 
 ## Knowledge Orchestration / Fusion Layer — Closed
 

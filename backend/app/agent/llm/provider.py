@@ -3,6 +3,9 @@ from pydantic import BaseModel
 import logging
 import google.generativeai as genai
 
+from app.core.credentials.api_key_credential import ApiKeyCredential
+from app.core.credentials.credential_store import CredentialStore
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,10 +46,25 @@ llm_registry = LLMProviderRegistry()
 class GeminiProvider(BaseLLMProvider):
     provider_name: str = "gemini"
 
-    def __init__(self, api_key: str, model: str = "gemini-2.0-flash"):
-        self._api_key = api_key
+    def __init__(self, api_key: str = "", model: str = "gemini-2.0-flash", credential_store: Optional[CredentialStore] = None):
         self._model_name = model
         self._model = None
+        self._credential_store = credential_store
+
+        if credential_store is not None:
+            credential = credential_store.get("llm_api_key")
+            if credential is not None:
+                import asyncio
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(credential.on_before_use())
+                finally:
+                    loop.close()
+                self._api_key = credential.get_key()
+            else:
+                self._api_key = api_key
+        else:
+            self._api_key = api_key
 
     def _get_client(self):
         if self._model is None:

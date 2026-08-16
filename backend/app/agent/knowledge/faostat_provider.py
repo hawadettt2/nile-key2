@@ -1,6 +1,7 @@
 import hashlib
 from typing import Any, Dict, List, Optional
 
+from app.core.credentials.credential_store import CredentialStore
 from .provider import KnowledgeProvider
 from .faostat_client import FaostatApiClient
 
@@ -23,7 +24,7 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
       - Perform external research on behalf of users
     """
 
-    def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, config: Optional[Dict[str, Any]] = None, credential_store: Optional[CredentialStore] = None) -> None:
         self._config = config or {}
         self._source_id = self._config.get("source_id", "faostat")
         self._provider_name = self._config.get("name", "FAOSTAT External Knowledge")
@@ -34,11 +35,12 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
 
         base_url = self._config.get("base_url", "")
         self._base_url = base_url.rstrip("/")
-        api_key = self._config.get("api_key")
         timeout_seconds = float(self._config.get("timeout_seconds", 30.0))
         self._client = FaostatApiClient(
             base_url=base_url,
-            api_key=api_key,
+            credential_store=credential_store,
+            username=self._config.get("username"),
+            password=self._config.get("password"),
             timeout_seconds=timeout_seconds,
         )
 

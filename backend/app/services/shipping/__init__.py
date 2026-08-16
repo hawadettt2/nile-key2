@@ -17,6 +17,9 @@ from typing import Optional, List, Dict, Any
 
 from app.core.database import get_db_connection
 from app.core.config import settings
+from app.core.credentials.credential_store import CredentialStore
+from app.core.credentials.username_password_credential import UsernamePasswordCredential
+from app.core.credentials.client_id_secret_credential import ClientIdSecretCredential
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 from app.schemas.shipping import (
@@ -35,6 +38,8 @@ from app.services.shipping.base import (
 from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError, _is_notification_enabled
 
 logger = logging.getLogger("shipping")
+
+credential_store = CredentialStore()
 
 STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage", "labels")
 os.makedirs(STORAGE_DIR, exist_ok=True)
@@ -92,6 +97,7 @@ def _build_letmeship_client(provider_row: dict) -> "LetMeShipClient":
         api_id=settings.LETME_API_ID,
         api_password=settings.LETME_API_PASSWORD,
         environment=provider_row.get("environment", "Pre-Production"),
+        credential_store=credential_store,
     )
 
 
@@ -101,6 +107,7 @@ def _build_sendcloud_client(provider_row: dict) -> "SendCloudClient":
         public_key=settings.SENDCLOUD_PUBLIC_KEY,
         secret_key=settings.SENDCLOUD_SECRET_KEY,
         environment=provider_row.get("environment", "Pre-Production"),
+        credential_store=credential_store,
     )
 
 

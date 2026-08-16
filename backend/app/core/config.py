@@ -96,13 +96,23 @@ class Settings(BaseSettings):
 
     # ========== FAOSTAT External Source Adapter (Portfolio Re-Evaluation Task 3) ==========
     FAOSTAT_BASE_URL: str = "https://faostatservices.fao.org/api/v1"
-    FAOSTAT_API_KEY: str = ""
+    FAOSTAT_USER: str = ""
+    FAOSTAT_PASSWORD: str = ""
     FAOSTAT_TIMEOUT_SECONDS: float = 30.0
     FAOSTAT_SOURCE_ID: str = "faostat"
     FAOSTAT_SOURCE_NAME: str = "FAOSTAT External Knowledge"
     FAOSTAT_SOURCE_TYPE: str = "external_agrifood_intelligence"
     FAOSTAT_SOURCE_VERSION: str = "1.0.0"
     FAOSTAT_DEFAULT_DOMAIN: str = "QCL"
+
+    # ========== GCC-Stat External Source Adapter (WP-38d Task 2) ==========
+    GCCSTAT_BASE_URL: str = ""
+    GCCSTAT_API_KEY: str = ""
+    GCCSTAT_TIMEOUT_SECONDS: float = 30.0
+    GCCSTAT_SOURCE_ID: str = "gccstat"
+    GCCSTAT_SOURCE_NAME: str = "GCC-Stat Data Portal"
+    GCCSTAT_SOURCE_TYPE: str = "external_trade_intelligence"
+    GCCSTAT_SOURCE_VERSION: str = "1.0"
 
     # ========== Knowledge Orchestration / Fusion Layer ==========
     KNOWLEDGE_ORCHESTRATION_ENABLED: bool = True

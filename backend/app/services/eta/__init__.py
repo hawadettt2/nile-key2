@@ -9,6 +9,8 @@ from datetime import datetime
 from typing import Optional
 
 from app.core.database import get_db_connection
+from app.core.credentials.credential_store import CredentialStore
+from app.core.credentials.client_id_secret_credential import ClientIdSecretCredential
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 from app.schemas.eta import (
@@ -32,6 +34,8 @@ from app.services.eta.eta_client import ETAClient, ETAHttpError
 from app.services.notification import send_template_email, TemplateNotFoundError, TemplateInactiveError, EmailSendError, _is_notification_enabled
 
 logger = logging.getLogger("eta")
+
+credential_store = CredentialStore()
 
 
 def _get_user_email(user_id: int) -> Optional[str]:
@@ -417,7 +421,7 @@ def submit_invoice_to_eta(invoice_id: int, connector_id: int, current_user: dict
         # Build ETA client
         auth_config = _build_eta_auth_config(connector)
         idempotency_key = generate_idempotency_key(invoice_id, connector_id)
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         try:
             # Build invoice payload
@@ -514,7 +518,7 @@ def cancel_eta_invoice(invoice_id: int, reason: str, current_user: dict) -> dict
         # Find default connector
         connector = _get_default_connector()
         auth_config = _build_eta_auth_config(connector)
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         try:
             result = client.cancel_document(uuid, reason)
@@ -554,7 +558,7 @@ def get_eta_invoice_status(invoice_id: int) -> dict:
         # Find default connector
         connector = _get_default_connector()
         auth_config = _build_eta_auth_config(connector)
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         try:
             status_data = client.get_document_status(uuid)
@@ -597,7 +601,7 @@ def submit_receipt_to_eta(receipt_data: dict, connector_id: int, current_user: d
             pos_serial=connector.get("pos_serial"),
             pos_os_version=connector.get("pos_os_version"),
         )
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         try:
             receipt = ReceiptSubmit(**receipt_data)
@@ -653,7 +657,7 @@ def download_eta_pdf(invoice_id: int) -> bytes:
         
         connector = _get_default_connector()
         auth_config = _build_eta_auth_config(connector)
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         try:
             return client.download_pdf(uuid)
@@ -700,7 +704,7 @@ def submit_pending_batch(connector_id: int) -> dict:
             return {"message": "No pending invoices for today", "submitted": 0}
         
         auth_config = _build_eta_auth_config(connector)
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         try:
             submitted = 0
@@ -825,7 +829,7 @@ def poll_pending_invoice_statuses(connector_id: Optional[int] = None, limit: int
             return {"message": "No pending invoices to poll", "updated": 0}
         
         auth_config = _build_eta_auth_config(connector)
-        client = ETAClient(auth_config)
+        client = ETAClient(auth_config, credential_store=credential_store)
         
         updated = 0
         try:

@@ -9,6 +9,8 @@ import httpx
 import logging
 from typing import Optional, Dict, Any, List
 
+from app.core.credentials.client_id_secret_credential import ClientIdSecretCredential
+from app.core.credentials.credential_store import CredentialStore
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 logger = logging.getLogger("shipping.sendcloud")
@@ -28,19 +30,43 @@ class SendCloudClient:
     _RETRY_WAIT_MIN = 1
     _RETRY_WAIT_MAX = 10
 
-    def __init__(self, public_key: str, secret_key: str, environment: str = "Pre-Production"):
-        self.public_key = public_key
-        self.secret_key = secret_key
+    def __init__(
+        self,
+        public_key: str = "",
+        secret_key: str = "",
+        environment: str = "Pre-Production",
+        credential_store: Optional[CredentialStore] = None,
+    ) -> None:
+        self._credential_store = credential_store
         self.environment = environment
         self.base_url = (
             "https://panel.sendcloud.sc/api"
             if environment == "Production"
             else "https://panel.sendcloud.sc/api"
         )
+
+        if credential_store is not None:
+            credential = credential_store.get("sendcloud_public_key")
+            if credential is not None:
+                import asyncio
+                loop = asyncio.new_event_loop()
+                try:
+                    loop.run_until_complete(credential.on_before_use())
+                finally:
+                    loop.close()
+                self.public_key = credential.get_client_id()
+                self.secret_key = credential.get_client_secret()
+            else:
+                self.public_key = public_key
+                self.secret_key = secret_key
+        else:
+            self.public_key = public_key
+            self.secret_key = secret_key
+
         self._client = httpx.Client(
             timeout=httpx.Timeout(30.0, connect=10.0),
             headers={"content-type": "application/json; charset=utf-8"},
-            auth=(public_key, secret_key),
+            auth=(self.public_key, self.secret_key),
         )
         self.enabled = True
 
