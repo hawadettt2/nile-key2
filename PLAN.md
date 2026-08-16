@@ -1053,7 +1053,14 @@ without sacrificing simplicity.
 - **Deliverables:** MoaahExternalSourceAdapter, MoaahApiClient, 15 tests, closure report, owner acceptance certificate, baseline `baseline-wp38a-final`
 - **Completion Date:** 2026-08-13
 
-## 15.4 ??????? 3: ????? ????????
+### WP-UN-Comtrade: UN Comtrade External Source Adapter
+- **Status:** ? Closed — Completed
+- **Description:** UN Comtrade official global trade statistics adapter with Preview API support (no key required), registry registration, 20 tests (4 client + 16 provider), Live Validation 200 OK with 500 records, zero added regressions
+- **Dependencies:** WP-42 completed; G1/G2/G3 approved by Project Owner on 2026-08-15
+- **Deliverables:** UnComtradeExternalSourceAdapter, UnComtradeApiClient, UN_COMTRADE_* config settings, registry registration in main.py, 20 tests, closure report, owner acceptance certificate, baseline `baseline-uncomtrade-final`
+- **Completion Date:** 2026-08-17
+
+## 15.4 ??????? 3: ??????? ??????
 
 ### WP-40: ?????? ??????? ?? Docker Compose
 - ? ?????

@@ -237,6 +237,26 @@ async def lifespan(app: FastAPI):
             print("[WARNING] GCC-Stat API credentials are not configured. GCC-Stat adapter not registered.")
     except Exception as exc:
         print(f"[WARNING] GCC-Stat External Source Adapter registration failed: {exc}")
+    # Register UN Comtrade External Source Adapter (Preview API works without API key)
+    try:
+        from app.agent.knowledge.uncomtrade_provider import UnComtradeExternalSourceAdapter
+
+        uncomtrade_adapter = UnComtradeExternalSourceAdapter(
+            config={
+                "source_id": settings.UN_COMTRADE_SOURCE_ID,
+                "name": settings.UN_COMTRADE_SOURCE_NAME,
+                "type": settings.UN_COMTRADE_SOURCE_TYPE,
+                "version": settings.UN_COMTRADE_SOURCE_VERSION,
+                "updated_at": settings.UN_COMTRADE_UPDATED_AT,
+                "base_url": settings.UN_COMTRADE_BASE_URL,
+                "api_key": settings.UN_COMTRADE_API_KEY or None,
+                "timeout_seconds": settings.UN_COMTRADE_TIMEOUT_SECONDS,
+            },
+        )
+        await knowledge_provider_registry.register(uncomtrade_adapter)
+        print(f"[SUCCESS] UN Comtrade External Source Adapter registered: {settings.UN_COMTRADE_SOURCE_ID}")
+    except Exception as exc:
+        print(f"[WARNING] UN Comtrade External Source Adapter registration failed: {exc}")
     # Register FAOSTAT External Source Adapter when configured
     try:
         cred_store = CredentialStore()

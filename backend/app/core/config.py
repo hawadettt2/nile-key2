@@ -114,6 +114,16 @@ class Settings(BaseSettings):
     GCCSTAT_SOURCE_TYPE: str = "external_trade_intelligence"
     GCCSTAT_SOURCE_VERSION: str = "1.0"
 
+    # ========== UN Comtrade External Source Adapter (WP-UN-Comtrade) ==========
+    UN_COMTRADE_BASE_URL: str = "https://comtradeapi.un.org"
+    UN_COMTRADE_API_KEY: str = ""
+    UN_COMTRADE_TIMEOUT_SECONDS: float = 30.0
+    UN_COMTRADE_SOURCE_ID: str = "un-comtrade"
+    UN_COMTRADE_SOURCE_NAME: str = "UN Comtrade External Knowledge"
+    UN_COMTRADE_SOURCE_TYPE: str = "external_trade_intelligence"
+    UN_COMTRADE_SOURCE_VERSION: str = "1.0.0"
+    UN_COMTRADE_UPDATED_AT: str = "2026-08-15"
+
     # ========== Knowledge Orchestration / Fusion Layer ==========
     KNOWLEDGE_ORCHESTRATION_ENABLED: bool = True
     KNOWLEDGE_ORCHESTRATION_DEDUP_ENABLED: bool = True
