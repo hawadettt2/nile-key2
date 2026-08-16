@@ -140,52 +140,64 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         return items[:limit]
 
     def _transform_entry(self, entry: Dict[str, Any], scope: Optional[str] = None) -> Dict[str, Any]:
-        area = entry.get("area", "")
-        area_code = entry.get("areaCode", "")
-        item = entry.get("item", "")
-        item_code = entry.get("itemCode", "")
-        element = entry.get("element", "")
-        element_code = entry.get("elementCode", "")
-        year = entry.get("year", "")
-        unit = entry.get("unit", "")
-        value = entry.get("value", "")
-        flag = entry.get("flag", "")
+        area = entry.get("Area", "")
+        area_code = entry.get("Area Code", "")
+        item = entry.get("Item", "")
+        item_code = entry.get("Item Code", "")
+        element = entry.get("Element", "")
+        element_code = entry.get("Element Code", "")
+        year = entry.get("Year", "")
+        year_code = entry.get("Year Code", "")
+        unit = entry.get("Unit", "")
+        value = entry.get("Value", "")
+        flag = entry.get("Flag", "")
+        flag_description = entry.get("Flag Description", "")
+        domain = entry.get("Domain", "")
+        domain_code = entry.get("Domain Code", "")
+        note = entry.get("Note", "")
 
         record_id = f"{area_code}_{item_code}_{element_code}_{year}_{hash(str(entry))}"
         record_hash = str(hash(frozenset(entry.items()))) if entry else ""
 
         confidence = self._compute_confidence(flag=flag, value=value, area_code=area_code, item_code=item_code)
 
-        content = self._build_content(item=item, element=element, area=area, year=year, value=value, unit=unit, flag=flag)
+        content = self._build_content(item=item, element=element, area=area, year=year, value=value, unit=unit, flag=flag, flag_description=flag_description)
 
         effective_date = f"{year}-12-31" if isinstance(year, str) and year.isdigit() else (year or "")
+
+        metadata: Dict[str, Any] = {
+            "area": area,
+            "area_code": area_code,
+            "item": item,
+            "item_code": item_code,
+            "element": element,
+            "element_code": element_code,
+            "year": year,
+            "year_code": year_code,
+            "unit": unit,
+            "source_authority": "FAO",
+            "effective_date": effective_date,
+            "source_url": self._build_source_url(scope=scope),
+            "updated_at": self._updated_at,
+            "version": self._version,
+            "record_hash": record_hash,
+            "retrieval_status": "success",
+            "flag": flag,
+            "flag_description": flag_description,
+            "domain": domain,
+            "domain_code": domain_code,
+            "note": note,
+        }
 
         return {
             "id": record_id,
             "content": content,
             "source_id": self._source_id,
             "confidence": confidence,
-            "metadata": {
-                "area": area,
-                "area_code": area_code,
-                "item": item,
-                "item_code": item_code,
-                "element": element,
-                "element_code": element_code,
-                "year": year,
-                "unit": unit,
-                "source_authority": "FAO",
-                "effective_date": effective_date,
-                "source_url": self._build_source_url(scope=scope),
-                "updated_at": self._updated_at,
-                "version": self._version,
-                "record_hash": record_hash,
-                "retrieval_status": "success",
-                "flag": flag,
-            },
+            "metadata": metadata,
         }
 
-    def _build_content(self, item: str, element: str, area: str, year: str, value: str, unit: str, flag: str) -> str:
+    def _build_content(self, item: str, element: str, area: str, year: str, value: str, unit: str, flag: str, flag_description: str = "") -> str:
         parts = []
         if item:
             parts.append(item)
@@ -207,6 +219,9 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
                 content = f"{content} [{flag_upper}]"
             else:
                 content = f"{content} [flag: {flag}]"
+
+        if flag_description:
+            content = f"{content} ({flag_description})"
 
         return content or f"{item} {element} data"
 

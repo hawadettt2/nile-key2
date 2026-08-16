@@ -127,6 +127,26 @@
 - **Baseline:** Pending commit/baseline
 - **Constraints:** No DEM Core changes, no Secret Store dependency, no new providers, no RefreshToken mechanism, no live validation outside WP scope
 
+## FAOSTAT Schema Mapping Fix Implementation Summary
+
+### FAOSTAT External Source Integration — Schema Mapping Fix
+- **Problem:** Live FAOSTAT API response schema used capitalized field names (`Area`, `Area Code`, `Item`, `Item Code`, `Element`, `Element Code`, `Year`, `Year Code`, `Unit`, `Value`, `Flag`, `Flag Description`, `Domain`, `Domain Code`, `Note`), while `faostat_provider.py` expected lowercase keys (`area`, `areaCode`, `item`, `itemCode`, `element`, `elementCode`, `year`, `unit`, `value`, `flag`). This mismatch caused the transformation layer to return empty strings for all mapped fields despite successful authentication and API calls.
+- **Fix:** Updated `_transform_entry()` in `faostat_provider.py` to read actual Live API field names and map them to the internal DEM knowledge model, preserving the existing internal contract (`id`, `content`, `source_id`, `confidence`, `metadata`). Added new metadata fields: `year_code`, `flag_description`, `domain`, `domain_code`, `note`. Updated `_build_content()` to include `Flag Description` in the generated content string.
+- **Tests:** 27 tests passing (FAOSTAT provider + integration tests).
+- **End-to-End Live Validation:** `FaostatExternalSourceAdapter.query()` completed successfully against live FAOSTAT API with actual credentials from `backend/.env`. Confirmed: 3 live results returned, Area/Item/Element codes populated correctly, new metadata fields present.
+- **VI Closure:**
+  - VI-1 → PASS: API accessibility + authentication confirmed
+  - VI-2 → PASS: Response schema transformation confirmed end-to-end
+  - VI-3 → PASS: Available elements confirmed (3 live results)
+  - VI-4 → PASS: Codes/dimensions confirmed in transformed output
+  - VI-5 → PASS: Supported format `json` confirmed
+  - VI-6 → PASS: Required headers/auth behavior confirmed
+  - VI-9 → PASS: Other API requirements confirmed (new metadata fields populated)
+- **Evidence Gaps (non-blocking):**
+  - VI-7 → INCONCLUSIVE: Rate limits not determinable from sample; no 429 observed
+  - VI-8 → INCONCLUSIVE: No pagination fields observed in live response
+- **Governance:** No `PLAN.md` update required; no `TECH_DEBT.md` update required. Change is a targeted schema mapping fix within the existing FAOSTAT adapter boundary, with no architectural impact.
+
 ## Knowledge Orchestration / Fusion Layer — Closed
 
 ### Knowledge Orchestration / Fusion Layer (Closed)

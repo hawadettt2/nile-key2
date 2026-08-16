@@ -49,20 +49,28 @@ class TestFaostatAdapterIntegration:
             with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value={
                 "data": [
                     {
-                        "area": "Egypt",
-                        "areaCode": "EGY",
-                        "item": "Wheat",
-                        "itemCode": "15",
-                        "element": "Production",
-                        "elementCode": "5510",
-                        "year": "2023",
-                        "unit": "Tonnes",
-                        "value": "1234567",
-                        "flag": "A",
+                        "Area": "Egypt",
+                        "Area Code": "EGY",
+                        "Item": "Wheat",
+                        "Item Code": "15",
+                        "Element": "Production",
+                        "Element Code": "5510",
+                        "Year": "2023",
+                        "Year Code": "2023",
+                        "Unit": "Tonnes",
+                        "Value": "1234567",
+                        "Flag": "A",
+                        "Flag Description": "Official figure",
+                        "Domain": "QCL",
+                        "Domain Code": "QCL",
+                        "Note": "",
                     }
                 ],
-                "message": {
-                    "total": 1,
+                "metadata": {
+                    "datasource": "FAOSTAT",
+                    "dsd": {},
+                    "output_type": "objects",
+                    "processing_time": "0.5s",
                 },
             }):
                 result = asyncio.run(registry.query("faostat", "wheat production", context={"area": "Egypt", "item": "Wheat", "element": "Production", "year": "2023"}))
@@ -153,20 +161,28 @@ class TestFaostatAdapterIntegration:
         raw_response = {
             "data": [
                 {
-                    "area": "Egypt",
-                    "areaCode": "EGY",
-                    "item": "Wheat",
-                    "itemCode": "15",
-                    "element": "Production",
-                    "elementCode": "5510",
-                    "year": "2023",
-                    "unit": "Tonnes",
-                    "value": "1234567",
-                    "flag": "A",
+                    "Area": "Egypt",
+                    "Area Code": "EGY",
+                    "Item": "Wheat",
+                    "Item Code": "15",
+                    "Element": "Production",
+                    "Element Code": "5510",
+                    "Year": "2023",
+                    "Year Code": "2023",
+                    "Unit": "Tonnes",
+                    "Value": "1234567",
+                    "Flag": "A",
+                    "Flag Description": "Official figure",
+                    "Domain": "QCL",
+                    "Domain Code": "QCL",
+                    "Note": "",
                 }
             ],
-            "message": {
-                "total": 1,
+            "metadata": {
+                "datasource": "FAOSTAT",
+                "dsd": {},
+                "output_type": "objects",
+                "processing_time": "0.5s",
             },
         }
 
