@@ -555,3 +555,119 @@ class TestFaostatSourceUrl:
 
         item = result["results"][0]
         assert item["metadata"]["source_url"] == "https://faostatservices.fao.org/api/v1/en/data/QC?format=json"
+
+    def test_fpi_scope_uses_fpi_domain(self):
+        adapter = FaostatExternalSourceAdapter(
+            config={
+                "base_url": "https://faostatservices.fao.org/api/v1",
+                "source_id": "faostat",
+                "name": "FAOSTAT External Knowledge",
+                "type": "external_agrifood_intelligence",
+                "version": "1.0.0",
+                "updated_at": "2026-08-14T00:00:00Z",
+                "default_domain": "QCL",
+                "fpi_domain": "CP",
+                "username": "test@example.com",
+                "password": "test-password",
+            }
+        )
+
+        raw_response = {
+            "data": [
+                {
+                    "Area": "World",
+                    "Area Code": "0",
+                    "Item": "Food Price Index",
+                    "Item Code": "65",
+                    "Element": "Food Price Index",
+                    "Element Code": "5540",
+                    "Year": "2023",
+                    "Year Code": "2023",
+                    "Unit": "Index",
+                    "Value": "120.5",
+                    "Flag": "A",
+                    "Flag Description": "Official figure",
+                    "Domain": "CP",
+                    "Domain Code": "CP",
+                    "Note": "",
+                }
+            ],
+            "metadata": {
+                "datasource": "FAOSTAT",
+                "dsd": {},
+                "output_type": "objects",
+                "processing_time": "0.5s",
+            },
+        }
+
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response) as mock_request:
+                result = asyncio.run(
+                    adapter.query("food price index", context={"area": "World"}, scope="FPI", limit=10)
+                )
+
+        assert "results" in result
+        assert len(result["results"]) == 1
+        item = result["results"][0]
+        assert item["source_id"] == "faostat"
+        assert item["metadata"]["item"] == "Food Price Index"
+        assert item["metadata"]["element"] == "Food Price Index"
+        assert item["metadata"]["unit"] == "Index"
+        assert item["metadata"]["source_authority"] == "FAO"
+        assert item["metadata"]["source_url"] == "https://faostatservices.fao.org/api/v1/en/data/CP?format=json"
+        assert mock_request.call_args.kwargs.get("params", {}).get("format") == "json"
+
+    def test_fpi_scope_transforms_price_content(self):
+        adapter = FaostatExternalSourceAdapter(
+            config={
+                "base_url": "https://faostatservices.fao.org/api/v1",
+                "source_id": "faostat",
+                "name": "FAOSTAT External Knowledge",
+                "type": "external_agrifood_intelligence",
+                "version": "1.0.0",
+                "updated_at": "2026-08-14T00:00:00Z",
+                "default_domain": "QCL",
+                "fpi_domain": "CP",
+                "username": "test@example.com",
+                "password": "test-password",
+            }
+        )
+
+        raw_response = {
+            "data": [
+                {
+                    "Area": "Egypt",
+                    "Area Code": "EGY",
+                    "Item": "Cereals",
+                    "Item Code": "2911",
+                    "Element": "Food Price Index",
+                    "Element Code": "5540",
+                    "Year": "2023",
+                    "Year Code": "2023",
+                    "Unit": "Index",
+                    "Value": "135.2",
+                    "Flag": "A",
+                    "Flag Description": "Official figure",
+                    "Domain": "CP",
+                    "Domain Code": "CP",
+                    "Note": "",
+                }
+            ],
+            "metadata": {},
+        }
+
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response):
+                result = asyncio.run(
+                    adapter.query("cereals price index", context={"area": "Egypt"}, scope="FPI", limit=10)
+                )
+
+        assert len(result["results"]) == 1
+        item = result["results"][0]
+        assert item["confidence"] == 0.95
+        assert "Cereals" in item["content"]
+        assert "Food Price Index" in item["content"]
+        assert "in Egypt" in item["content"]
+        assert "(2023)" in item["content"]
+        assert "135.2" in item["content"]
+        assert "Index" in item["content"]

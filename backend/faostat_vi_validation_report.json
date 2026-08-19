@@ -1,0 +1,148 @@
+{
+  "timestamp": "2026-08-19T16:31:35.752179+00:00",
+  "base_url": "https://faostatservices.fao.org/api/v1",
+  "credentials_present": true,
+  "vi_results": {
+    "VI-1": "PASS",
+    "VI-2": "PASS",
+    "VI-3": "PASS",
+    "VI-4": "PASS",
+    "VI-5": "PASS",
+    "VI-6": "PASS",
+    "VI-7": "PASS",
+    "VI-8": "PASS",
+    "VI-9": "PASS"
+  },
+  "evidence": {
+    "VI-1": {
+      "login_url": "https://faostatservices.fao.org/api/v1/auth/login",
+      "status_code": 200,
+      "has_access_token": true
+    },
+    "VI-2": {
+      "result_count": 3,
+      "sample_result_keys": [
+        "id",
+        "content",
+        "source_id",
+        "confidence",
+        "metadata"
+      ],
+      "metadata_keys": [
+        "area",
+        "area_code",
+        "item",
+        "item_code",
+        "element",
+        "element_code",
+        "year",
+        "year_code",
+        "unit",
+        "source_authority",
+        "effective_date",
+        "source_url",
+        "updated_at",
+        "version",
+        "record_hash",
+        "retrieval_status",
+        "flag",
+        "flag_description",
+        "domain",
+        "domain_code",
+        "note",
+        "months",
+        "months_code"
+      ],
+      "all_required_fields_present": true,
+      "all_metadata_fields_present": true
+    },
+    "VI-3": {
+      "total_records": 426,
+      "unique_elements_count": 14,
+      "sample_elements": [
+        {
+          "element_code": "5312",
+          "element_description": "Area harvested"
+        },
+        {
+          "element_code": "5412",
+          "element_description": "Yield"
+        },
+        {
+          "element_code": "5510",
+          "element_description": "Production"
+        },
+        {
+          "element_code": "5111",
+          "element_description": "Stocks"
+        },
+        {
+          "element_code": "5114",
+          "element_description": "Stocks"
+        }
+      ]
+    },
+    "VI-4": {
+      "sample_entry": {
+        "Area Code": "100",
+        "Item Code": "221",
+        "Element Code": "5312",
+        "Year Code": "2020",
+        "Domain Code": "QCL",
+        "Area": "India",
+        "Item": "Almonds, in shell",
+        "Element": "Area harvested",
+        "Year": "2020",
+        "Domain": "Crops and livestock products"
+      },
+      "all_codes_present": true
+    },
+    "VI-5": {
+      "content_type": "application/json;charset=utf-8",
+      "format_param": "json",
+      "response_is_json": true
+    },
+    "VI-6": {
+      "unauthenticated_status": 401,
+      "authenticated_status": 200,
+      "requires_auth": true,
+      "bearer_token_used": true
+    },
+    "VI-7": {
+      "requests_made": 5,
+      "status_codes": [
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "rate_limit_observed": false,
+      "note": "No 429 observed in sample; no published hard limits found"
+    },
+    "VI-8": {
+      "total_records_in_sample": 426,
+      "metadata_fields": [
+        "processing_time",
+        "datasource",
+        "dsd",
+        "output_type"
+      ],
+      "has_pagination_fields": false,
+      "note": "No pagination fields observed in live response; API may return all matching records"
+    },
+    "VI-9": {
+      "extra_fields_found": [],
+      "all_expected_fields_present": true,
+      "metadata_fields_populated": true
+    }
+  },
+  "blockers": [],
+  "discrepancies": [],
+  "credentials_summary": {
+    "username_present": true,
+    "password_present": true,
+    "username_redacted": "hawa....com",
+    "password_redacted": "@Osa...3636"
+  }
+}

@@ -1,0 +1,1 @@
+{"title":"One or more validation errors occurred.","status":400,"errors":{"SQL":["The Indicator [TP_B_0090] does not have a time period dimension"]}}

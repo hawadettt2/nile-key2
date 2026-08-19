@@ -104,6 +104,7 @@ class Settings(BaseSettings):
     FAOSTAT_SOURCE_TYPE: str = "external_agrifood_intelligence"
     FAOSTAT_SOURCE_VERSION: str = "1.0.0"
     FAOSTAT_DEFAULT_DOMAIN: str = "QCL"
+    FAOSTAT_FPI_DOMAIN: str = "CP"
 
     # ========== GCC-Stat External Source Adapter (WP-38d Task 2) ==========
     GCCSTAT_BASE_URL: str = ""
@@ -123,6 +124,25 @@ class Settings(BaseSettings):
     UN_COMTRADE_SOURCE_TYPE: str = "external_trade_intelligence"
     UN_COMTRADE_SOURCE_VERSION: str = "1.0.0"
     UN_COMTRADE_UPDATED_AT: str = "2026-08-15"
+
+    # ========== WTO ePing External Source Adapter (Evidence Verification) ==========
+    WTO_EPING_BASE_URL: str = "https://api.wto.org/eping"
+    WTO_EPING_API_KEY: str = ""
+    WTO_EPING_TIMEOUT_SECONDS: float = 30.0
+    WTO_EPING_SOURCE_ID: str = "wto-eping"
+    WTO_EPING_SOURCE_NAME: str = "WTO ePing External Knowledge"
+    WTO_EPING_SOURCE_TYPE: str = "external_regulatory_intelligence"
+    WTO_EPING_SOURCE_VERSION: str = "1.0.0"
+    WTO_EPING_UPDATED_AT: str = ""
+
+    # ========== World Bank LPI External Source Adapter (Portfolio Re-Evaluation Phase 1) ==========
+    WORLDBANK_LPI_BASE_URL: str = "https://api.worldbank.org/v2"
+    WORLDBANK_LPI_TIMEOUT_SECONDS: float = 30.0
+    WORLDBANK_LPI_SOURCE_ID: str = "worldbank-lpi"
+    WORLDBANK_LPI_SOURCE_NAME: str = "World Bank Logistics Performance Index"
+    WORLDBANK_LPI_SOURCE_TYPE: str = "external_logistics_intelligence"
+    WORLDBANK_LPI_SOURCE_VERSION: str = "1.0.0"
+    WORLDBANK_LPI_UPDATED_AT: str = ""
 
     # ========== Knowledge Orchestration / Fusion Layer ==========
     KNOWLEDGE_ORCHESTRATION_ENABLED: bool = True

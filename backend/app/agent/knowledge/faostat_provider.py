@@ -32,6 +32,7 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         self._version = self._config.get("version", "1.0.0")
         self._updated_at = self._config.get("updated_at", "")
         self._default_domain = self._config.get("default_domain", "QCL")
+        self._fpi_domain = self._config.get("fpi_domain", "CP")
 
         base_url = self._config.get("base_url", "")
         self._base_url = base_url.rstrip("/")
@@ -102,6 +103,10 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         if not isinstance(domain, str) or not domain:
             domain = self._default_domain
 
+        normalized_scope = (scope or "").strip().lower()
+        if normalized_scope == "fpi":
+            domain = self._fpi_domain
+
         path = f"/en/data/{domain}"
 
         params: Dict[str, Any] = {}
@@ -155,13 +160,26 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         domain = entry.get("Domain", "")
         domain_code = entry.get("Domain Code", "")
         note = entry.get("Note", "")
+        months = entry.get("Months", "")
+        months_code = entry.get("Months Code", "")
 
         record_id = f"{area_code}_{item_code}_{element_code}_{year}_{hash(str(entry))}"
         record_hash = str(hash(frozenset(entry.items()))) if entry else ""
 
         confidence = self._compute_confidence(flag=flag, value=value, area_code=area_code, item_code=item_code)
 
-        content = self._build_content(item=item, element=element, area=area, year=year, value=value, unit=unit, flag=flag, flag_description=flag_description)
+        content = self._build_content(
+            item=item,
+            element=element,
+            area=area,
+            year=year,
+            value=value,
+            unit=unit,
+            flag=flag,
+            flag_description=flag_description,
+            months=months,
+            scope=scope,
+        )
 
         effective_date = f"{year}-12-31" if isinstance(year, str) and year.isdigit() else (year or "")
 
@@ -187,6 +205,8 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
             "domain": domain,
             "domain_code": domain_code,
             "note": note,
+            "months": months,
+            "months_code": months_code,
         }
 
         return {
@@ -197,16 +217,19 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
             "metadata": metadata,
         }
 
-    def _build_content(self, item: str, element: str, area: str, year: str, value: str, unit: str, flag: str, flag_description: str = "") -> str:
+    def _build_content(self, item: str, element: str, area: str, year: str, value: str, unit: str, flag: str, flag_description: str = "", months: str = "", scope: Optional[str] = None) -> str:
         parts = []
-        if item:
-            parts.append(item)
         if element:
             parts.append(element)
+        if item and item != element:
+            parts.append(item)
         if area:
             parts.append(f"in {area}")
         if year:
-            parts.append(f"({year})")
+            if months and (scope or "").strip().lower() == "fpi":
+                parts.append(f"({year} {months})")
+            else:
+                parts.append(f"({year})")
         if value:
             parts.append(f": {value}")
         if unit:
@@ -223,7 +246,7 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         if flag_description:
             content = f"{content} ({flag_description})"
 
-        return content or f"{item} {element} data"
+        return content or f"{element or item} data"
 
     def _compute_confidence(self, flag: str, value: str, area_code: str, item_code: str) -> float:
         if not area_code or not item_code:
@@ -248,6 +271,11 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         domain = scope or self._default_domain
         if not isinstance(domain, str) or not domain:
             domain = self._default_domain
+
+        normalized_scope = (scope or "").strip().lower()
+        if normalized_scope == "fpi":
+            domain = self._fpi_domain
+
         return f"{self._base_url}/en/data/{domain}?format=json"
 
     async def get_sources(self) -> List[Dict[str, Any]]:

@@ -257,6 +257,28 @@ async def lifespan(app: FastAPI):
         print(f"[SUCCESS] UN Comtrade External Source Adapter registered: {settings.UN_COMTRADE_SOURCE_ID}")
     except Exception as exc:
         print(f"[WARNING] UN Comtrade External Source Adapter registration failed: {exc}")
+    # Register World Bank LPI External Source Adapter (open API, no credentials required)
+    try:
+        if settings.WORLDBANK_LPI_BASE_URL:
+            from app.agent.knowledge.worldbank_lpi_provider import WorldBankLpiExternalSourceAdapter
+
+            worldbank_lpi_adapter = WorldBankLpiExternalSourceAdapter(
+                config={
+                    "source_id": settings.WORLDBANK_LPI_SOURCE_ID,
+                    "name": settings.WORLDBANK_LPI_SOURCE_NAME,
+                    "type": settings.WORLDBANK_LPI_SOURCE_TYPE,
+                    "version": settings.WORLDBANK_LPI_SOURCE_VERSION,
+                    "updated_at": settings.WORLDBANK_LPI_UPDATED_AT,
+                    "base_url": settings.WORLDBANK_LPI_BASE_URL,
+                    "timeout_seconds": settings.WORLDBANK_LPI_TIMEOUT_SECONDS,
+                },
+            )
+            await knowledge_provider_registry.register(worldbank_lpi_adapter)
+            print(f"[SUCCESS] World Bank LPI External Source Adapter registered: {settings.WORLDBANK_LPI_SOURCE_ID}")
+        else:
+            print("[WARNING] World Bank LPI base URL is not configured. World Bank LPI adapter not registered.")
+    except Exception as exc:
+        print(f"[WARNING] World Bank LPI External Source Adapter registration failed: {exc}")
     # Register FAOSTAT External Source Adapter when configured
     try:
         cred_store = CredentialStore()

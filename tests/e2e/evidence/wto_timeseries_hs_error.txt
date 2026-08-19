@@ -1,0 +1,1 @@
+{"title":"One or more validation errors occurred.","status":400,"errors":{"SQL":["The Indicator [TP_A_0010] does not have a product/sector dimension"]}}

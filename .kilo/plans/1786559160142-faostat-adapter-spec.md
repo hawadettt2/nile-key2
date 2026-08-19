@@ -215,7 +215,8 @@ The adapter does **not** modify:
 | Setting | Type | Default | Purpose | Evidence |
 |---------|------|---------|---------|----------|
 | `FAOSTAT_BASE_URL` | `str` | `"https://faostatservices.fao.org/api/v1"` | FAOSTAT API base URL | **Assumption/Unverified** — requires live API documentation confirmation |
-| `FAOSTAT_API_KEY` | `str` | `""` | API key if required (currently FAOSTAT is open) | **Evidence** — Section 21.1 documents open API access |
+| `FAOSTAT_USER` | `str` | `""` | Username for JWT authentication via POST /auth/login | **Evidence** — Live API validation confirmed JWT authentication flow |
+| `FAOSTAT_PASSWORD` | `str` | `""` | Password for JWT authentication via POST /auth/login | **Evidence** — Live API validation confirmed JWT authentication flow |
 | `FAOSTAT_TIMEOUT_SECONDS` | `float` | `30.0` | HTTP request timeout | **Evidence** — follows established adapter pattern |
 | `FAOSTAT_SOURCE_ID` | `str` | `"faostat"` | Registry source ID | **Evidence** — per KNOWLEDGE_INGESTION_CONTRACT.md |
 | `FAOSTAT_SOURCE_NAME` | `str` | `"FAOSTAT External Knowledge"` | Display name | **Evidence** — adapter config pattern |
@@ -236,7 +237,8 @@ if settings.FAOSTAT_BASE_URL:
             "version": settings.FAOSTAT_SOURCE_VERSION,
             "updated_at": "2026-08-14T00:00:00Z",
             "base_url": settings.FAOSTAT_BASE_URL,
-            "api_key": settings.FAOSTAT_API_KEY,
+            "username": settings.FAOSTAT_USER,
+            "password": settings.FAOSTAT_PASSWORD,
             "timeout_seconds": settings.FAOSTAT_TIMEOUT_SECONDS,
             "default_domain": settings.FAOSTAT_DEFAULT_DOMAIN,
         }
@@ -249,7 +251,9 @@ if settings.FAOSTAT_BASE_URL:
 - Registration failures are caught and logged as warnings; do not crash startup.
 - If credentials are missing, a warning is logged and registration is skipped.
 
-**Evidence:** Follows established pattern from `wp38-task2-moaah-adapter-spec.md` Section 7.2.
+**Evidence:** Follows JWT authentication pattern implemented in `faostat_client.py`; POST /auth/login -> JWT AccessToken -> Bearer token for subsequent requests.
+
+Authentication is performed via POST /auth/login with username/password; the resulting JWT AccessToken is then used as a Bearer token for all subsequent API requests. This flow is managed entirely by FaostatApiClient.
 
 ---
 
