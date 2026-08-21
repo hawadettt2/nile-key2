@@ -42,7 +42,7 @@ class TestRanking:
     async def test_high_confidence_official_recent_primary(self, orchestrator):
         result = {
             "confidence": 0.9,
-            "metadata": {"effective_date": "2025-08-15T00:00:00Z", "authority_level": "official"},
+            "metadata": {"effective_date": "2026-08-19T00:00:00Z", "authority_level": "official"},
             "source_id": "uncomtrade",
         }
         provider_meta = await orchestrator._build_provider_meta_map()

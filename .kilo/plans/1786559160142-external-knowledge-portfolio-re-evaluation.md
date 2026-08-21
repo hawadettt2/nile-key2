@@ -327,6 +327,7 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 | Codex (FAO/WHO) | Regulatory / SPS/TBT | Critical (food safety) | Web only | **Complementary** |
 | WTO ePing | Regulatory / SPS/TBT | Critical (food safety, phytosanitary) | Web portal + XLSX; no verifiable public REST API | **Blocked / Pending Evidence** |
 | IPPC (FAO) | Regulatory / SPS/TBT | Critical (plant health) | Web only | **Complementary** |
+| **EPPO Data Portal** | **Regulatory / SPS-TBT (Plant Health subset only)** | **Medium** (EU/Mediterranean) | **REST API — CLOSED** | **CLOSED — Strategic Drift / Complementary Source** |
 | ITC Export Potential Map | Market Opportunity | High | Web only | **Complementary** |
 | ITC Market Access Map | Market Access | High | Web + bulk download | **Complementary** |
 | ITC Trade Map | Trade Intelligence, Market Access | Medium | Web + download | **Complementary** |
@@ -1843,16 +1844,16 @@ Documented Knowledge Gap → Candidate Source Research → Pre-Candidate Evidenc
 | Attribute | Value |
 |-----------|-------|
 | **Phase Status** | Complementary-Only Accepted — Gap Unfilled (Current State; revisitable if feasible source emerges) |
-| **Sources** | WTO ePing (Blocked / Pending Evidence), WTO TFA Database (Blocked / Pending Evidence), Codex (Complementary), IPPC (Complementary), WTO I-TIP (Complementary — CLOSED for SPS/TBT) |
+| **Sources** | WTO ePing (Blocked / Pending Evidence), WTO TFA Database (Blocked / Pending Evidence), Codex (Complementary), IPPC (Complementary), **EPPO Data Portal (CLOSED — Strategic Drift / Complementary Source)**, **EU Agri-food Data Portal (CLOSED — Strategic Drift / Complementary Source)**, WTO I-TIP (Complementary — CLOSED for SPS/TBT) |
 | **Knowledge Family** | Regulatory / SPS / TBT |
 | **Current Coverage** | 0/10 (Automated Provider Coverage) |
 | **Target Coverage** | 9/10 |
 | **Gap** | Complete gap — no automated SPS/TBT provider. Trade Facilitation capability is classified under Market Access; WTO TFA Database (Blocked / Pending Evidence) could contribute to Market Access if it becomes accessible. |
 | **Primary Source** | None (automated) |
-| **Secondary/Fallback** | Manual/Complementary: WTO ePing web portal + XLSX downloads; Codex (FAO/WHO); IPPC (FAO) |
-| **Strategic Sources** | WTO ePing (Very High strategic value), Codex (Critical), IPPC (Critical) |
-| **Provider vs Complementary** | WTO ePing = Blocked / Pending Evidence; WTO TFA Database = Blocked / Pending Evidence; Codex, IPPC, WTO I-TIP = Complementary; no automated provider; no candidate currently qualifies for G1 |
-| **API / Machine Access** | None — all sources are web-only or require authentication. WTO ePing and WTO TFA Database have no verifiable public REST API; classified as Blocked / Pending Evidence. Codex, IPPC, WTO I-TIP are web-only (Complementary). |
+| **Secondary/Fallback** | Manual/Complementary: WTO ePing web portal + XLSX downloads; Codex (FAO/WHO); IPPC (FAO); EU Agri-food Data Portal (web portal) |
+| **Strategic Sources** | WTO ePing (Very High strategic value), Codex (Critical), IPPC (Critical), EU Agri-food Data Portal (High for EU market) |
+| **Provider vs Complementary** | WTO ePing = Blocked / Pending Evidence; WTO TFA Database = Blocked / Pending Evidence; Codex, IPPC, **EPPO Data Portal = CLOSED — Strategic Drift / Complementary Source**; WTO I-TIP = Complementary; no automated provider; no candidate currently qualifies for G1 |
+| **API / Machine Access** | None — all sources are web-only or require authentication. WTO ePing and WTO TFA Database have no verifiable public REST API; classified as Blocked / Pending Evidence. Codex, IPPC, **EPPO Data Portal = CLOSED — Strategic Drift (documented REST API exists but path closed; not eligible for validation)**; WTO I-TIP are web-only (Complementary). |
 | **Licensing/Usage Constraints** | WTO: CMA Annex 4 restrictions; Codex: Free; IPPC: Free |
 | **Operational Independence** | None — no automated source |
 | **Resilience** | None — no fallback |
@@ -1866,8 +1867,60 @@ Documented Knowledge Gap → Candidate Source Research → Pre-Candidate Evidenc
 - WTO ePing is Blocked / Pending Evidence for this gap. No re-evaluation unless new evidence of verifiable public REST API with server-side filtering emerges and Pre-Candidate Evidence Gate is passed.
 - WTO TFA Database is Blocked / Pending Evidence for this gap. No re-evaluation unless new evidence of verifiable public REST API emerges and Pre-Candidate Evidence Gate is passed.
 - Codex and IPPC remain Complementary (web-only). No provider feasibility.
+- EPPO Data Portal is CLOSED — Strategic Drift. No re-evaluation unless original Global SPS/TBT gap is resolved or DEM scope explicitly expands to include EU/Mediterranean plant health as a primary requirement.
+- **EU Agri-food Data Portal is CLOSED — Strategic Drift. No re-evaluation unless original Global SPS/TBT gap is resolved or DEM scope explicitly expands to require EU-specific MRL data as a primary capability.**
 - No WP creation for any SPS/TBT automation until a verifiable public REST API with filtering is confirmed.
 - **This is a P0 Critical Gap that remains unfilled under current operational conditions. It is accepted as Complementary-Only for now, not permanently.**
+
+### 27.5.1 EPPO Data Portal — CLOSED — Strategic Drift
+
+**Governance Decision Date:** 2026-08-20  
+**Decision:** CLOSE — Strategic Drift / Complementary Source  
+**Authority:** Governance Reassessment — EPPO Evidence Closure Assessment
+
+**Reason for Closure:**  
+EPPO Data Portal covers Plant Health / Phytosanitary Knowledge for the EU/Mediterranean region only. It does not address the original priority gap: **Global SPS/TBT Regulatory Knowledge**. The Regulatory / SPS-TBT family remains at 0/10 coverage because the global gap (WTO ePing) is blocked and no alternative global source exists. Adding EPPO would introduce a regional niche source without increasing Knowledge Sufficiency for the family's primary decision question. Continuing this path represents Strategic Drift away from DEM's core objective of global agrifood export intelligence.
+
+**Post-Closure Status:**
+- EPPO is recorded as a **Complementary Source** for plant health data, similar to IPPC and Codex.
+- EPPO is **not** a Provider Candidate.
+- EPPO is **not** eligible for Live Validation, Evidence Trigger completion, or Candidate Source Research reactivation.
+- No further resources shall be allocated to EPPO unless the original Global SPS/TBT gap is resolved or DEM scope explicitly expands to include EU/Mediterranean plant health as a primary requirement.
+
+**Impact on Portfolio:**
+- Coverage Scores: No change. Regulatory / SPS-TBT remains at 0/10.
+- Provider Ceiling: No change. Remains at 7.
+- Provider Status: No change. No providers added or removed.
+- Knowledge Model: No change. Seven-Family model unchanged.
+- WP / Baseline: No change. No WPs created or modified.
+- Previously Closed Paths: No change. WTO ePing, WTO TFA Database, and other closed paths remain closed.
+
+**Knowledge Sufficiency Principle:** This closure reflects the governing principle that **Knowledge Sufficiency > Provider Count**. EPPO does not advance Knowledge Sufficiency for the Regulatory/SPS-TBT family's primary decision question (Global SPS/TBT notifications), and therefore does not justify provider consideration regardless of its documented API.
+
+### 27.5.2 EU Agri-food Data Portal — CLOSED — Strategic Drift
+
+**Governance Decision Date:** 2026-08-20  
+**Decision:** CLOSE — Strategic Drift / Complementary Source  
+**Authority:** Governance Reassessment — Strategic External Knowledge Portfolio Review
+
+**Reason for Closure:**  
+EU Agri-food Data Portal covers EU-specific pesticide MRLs and food safety standards only. It does not address the original priority gap: **Global SPS/TBT Regulatory Knowledge**. The Regulatory / SPS-TBT family remains at 0/10 coverage because the global gap (WTO ePing) is blocked and no alternative global source exists. Adding EU Agri-food would introduce a regional niche source without increasing Knowledge Sufficiency for the family's primary decision question. Continuing this path represents Strategic Drift away from DEM's core objective of global agrifood export intelligence.
+
+**Post-Closure Status:**
+- EU Agri-food Data Portal is recorded as a **Complementary Source** for EU food safety data, similar to Codex.
+- EU Agri-food Data Portal is **not** a Provider Candidate.
+- EU Agri-food Data Portal is **not** eligible for Live Validation, Evidence Trigger completion, or Candidate Source Research reactivation.
+- No further resources shall be allocated to EU Agri-food unless the original Global SPS/TBT gap is resolved or DEM scope explicitly expands to require EU-specific MRL data as a primary capability.
+
+**Impact on Portfolio:**
+- Coverage Scores: No change. Regulatory / SPS-TBT remains at 0/10.
+- Provider Ceiling: No change. Remains at 7.
+- Provider Status: No change. No providers added or removed.
+- Knowledge Model: No change. Seven-Family model unchanged.
+- WP / Baseline: No change. No WPs created or modified.
+- Previously Closed Paths: No change. WTO ePing, WTO TFA Database, EPPO, and other closed paths remain closed.
+
+**Knowledge Sufficiency Principle:** This closure reflects the governing principle that **Knowledge Sufficiency > Provider Count**. EU Agri-food does not advance Knowledge Sufficiency for the Regulatory/SPS-TBT family's primary decision question (Global SPS/TBT notifications), and therefore does not justify provider consideration regardless of its documented API.
 
 ### 27.8 Phase 6 — Rules of Origin + Remaining Coverage
 
@@ -2056,6 +2109,10 @@ When the operational provider ceiling is reached, this triggers a **Governance R
 | 5 | **ITC API Availability** | **P3 — Monitor** | No documented public REST API; monitor for future availability |
 | 6 | **UNCTAD API Availability** | **P3 — Monitor** | No documented public REST API; monitor for future availability |
 | 7 | **SPS/TBT Re-evaluation Trigger** | **P0 — Monitor** | Re-open candidate evaluation only when a new source provides current SPS/TBT data with server-side filtering and meets Provider Admission Criteria |
+| 8 | **EPPO Data Portal** | **Closed — Strategic Drift** | Complementary Source only; no Live Validation, no Candidate reactivation, no Provider consideration |
+| 9 | **EU Agri-food Data Portal** | **Closed — Strategic Drift** | Complementary Source only; no Live Validation, no Candidate reactivation, no Provider consideration |
+| 10 | **Africa API** | **Closed — Strategic Drift** | Complementary Source only; no Live Validation, no Candidate reactivation, no Provider consideration |
+| 11 | **OEC API** | **Closed — Strategic Drift** | Complementary Source only; no Live Validation, no Candidate reactivation, no Provider consideration |
 
 ### 30.2 Governance Blockers
 
@@ -2099,6 +2156,59 @@ Candidate Source Research will be re-activated only when one or more of the foll
 
 **Governance Rule:** Re-activation requires documented Evidence Trigger, not speculative search. Ceiling expansion remains possible with documented Knowledge Coverage justification per Section 26.5.2 if a viable candidate emerges and the current ceiling becomes a constraint.
 
+**Note:** EPPO Data Portal is CLOSED — Strategic Drift. It is NOT subject to the re-triggers above. Re-evaluation of EPPO requires a new, independent Governance decision with documented justification that the original Global SPS/TBT gap has been resolved or DEM scope has explicitly expanded to include EU/Mediterranean plant health as a primary requirement.
+
+### 30.5 External Knowledge Expansion — FROZEN
+
+**Decision:** External Knowledge Expansion is **FROZEN** for all regional/specialized Research Paths.
+
+**Date:** 2026-08-20  
+**Authority:** Governance Reassessment — Strategic External Knowledge Portfolio Review  
+**Status:** FROZEN — No new Research Paths, Live Validations, Candidates, Providers, WPs, or Coverage Score changes
+
+**Rationale:**
+
+1. **Knowledge Sufficiency > Provider Count:** The current portfolio of 7 implemented providers achieves Knowledge Sufficiency for the minimum required scope (Trade Intelligence, Agrifood Intelligence, partial Market Access, partial Logistics) except for the Global Regulatory/SPS-TBT gap (0/10).
+
+2. **Single Critical Gap Remains:** The only unfilled Essential gap is **Global SPS/TBT Regulatory Knowledge** (0/10). All other gaps are either covered by existing providers or classified as Complementary/Specialized.
+
+3. **Strategic Drift Prevention:** Regional/specialized sources (EU Agri-food Data Portal, Africa API, OEC API) do not address the Global SPS/TBT gap. Pursuing them would represent Strategic Drift — expanding Provider count without advancing Knowledge Sufficiency for DEM's core objective.
+
+4. **Ceiling Constraint:** The portfolio has reached the operational ceiling of 7 providers. Further expansion requires documented Knowledge Coverage justification for an Essential gap, which these regional sources do not provide.
+
+5. **Cost-Benefit:** The governance/integration/validation cost for regional sources exceeds their practical value for a Global Agrifood Export Intelligence platform.
+
+**Frozen Items:**
+
+| Item | Status | Reason |
+|------|--------|--------|
+| EU Agri-food Data Portal | **CLOSED — Strategic Drift** | EU-specific MRLs; does not address Global SPS/TBT |
+| Africa API | **CLOSED — Strategic Drift** | African regional data; UN Comtrade provides global coverage |
+| OEC API | **CLOSED — Strategic Drift** | Market Opportunity is P2 Specialized; free tier limited |
+| WTO Analytical Database | **Complementary / Bulk-Only** | No REST API; maintained as bulk source only |
+| UNCTAD AfCFTA Database | **Complementary / Bulk-Only** | No REST API; maintained as bulk source only |
+| Any new regional/specialized Research Path | **Blocked** | No new Research Paths approved until freeze is lifted |
+
+**Allowed Exception:**
+
+| Item | Status | Condition |
+|------|--------|-----------|
+| **Global SPS/TBT source** | **Monitoring Only** | A new machine-readable global source emerges that can close the P0 Regulatory/SPS-TBT gap (0/10). Must meet all Provider Admission Criteria. Requires separate Governance Decision for Live Validation. No automatic reopening of closed paths. |
+
+**Constraints:**
+
+- No new Research Paths for regional/specialized sources.
+- No Live Validation for closed paths.
+- No Candidate Selection / Provider Selection / Implementation / WP Creation.
+- No Coverage Score changes.
+- No Provider Ceiling expansion.
+- No reopening of previously closed paths without independent Governance Decision.
+- This freeze does NOT affect the existing 7 implemented providers or previously closed paths (WTO ePing, WTO TFA, etc.).
+
+**Next Review:** This freeze remains in effect until:
+1. A viable global SPS/TBT source emerges, OR
+2. Project Owner explicitly lifts the freeze with documented justification.
+
 ---
 
 ## 31. Plan Status and Next Actions
@@ -2141,7 +2251,113 @@ All implementation activities require separate Project Owner decisions and gate 
 
 ---
 
-*Plan Status: Approved — G0 Approved — Owner Adopted as Official Reference — 7-Family Portfolio Implementation Master Plan / Governance Roadmap — Phase 1 Activated — World Bank LPI G5 Closure — Current State Maintained (7/7 Providers; Current Operational Ceiling = 7) — Candidate Source Research Paused — Knowledge Gaps Open*
+## 32. DEM Product Priority — Export Readiness Vertical Slice
+
+**Decision Date:** 2026-08-20  
+**Authority:** Governance Reassessment — Strategic External Knowledge Portfolio Review  
+**Status:** Approved Product Priority — Minimal Vertical Slice  
+**Scope:** Product experience only. No Portfolio Expansion. No Provider Addition. No WP Creation.
+
+### 32.1 Objective
+
+Transform DEM from an ERP-adjacent interface with background intelligence capabilities into a **Digital Export Manager** that answers the user's core question:
+
+> **"هل أستطيع تصدير هذا المنتج إلى هذا السوق، وماذا أحتاج للبدء؟"**
+
+This is a **Product Priority**, not a Portfolio Expansion. It reuses existing backend capabilities without adding new providers, research paths, or external knowledge sources.
+
+### 32.2 Export Decision Workflow
+
+**Workflow:** `Product / HS Code → Target Market → Export Readiness Analysis → Decision Report`
+
+**Steps:**
+1. User selects/enters a product or HS Code
+2. User selects a target export market
+3. System triggers Export Readiness Analysis
+4. System returns a Decision Report
+
+### 32.3 Minimal Vertical Slice
+
+**Single Screen:** `/export-readiness`
+
+**Inputs:**
+- Product selection (existing products list or manual HS Code entry)
+- Target Market selection (country dropdown)
+
+**Action:**
+- "Analyze Readiness" button
+
+**Output:**
+- Export Readiness Report containing:
+  - Product & Market summary
+  - Regulatory requirements (from existing providers: Moaah, ZATCA, GCC-Stat where applicable)
+  - Market access conditions (from existing providers)
+  - Logistics profile (from World Bank LPI)
+  - Historical trade context (from UN Comtrade / TradeData)
+  - Action checklist
+  - LLM-generated recommendation/note
+
+**Constraints:**
+- No new providers
+- No new research paths
+- No external knowledge expansion
+- No coverage score changes
+- No provider ceiling changes
+- No WP creation from this section
+
+### 32.4 Existing Backend Capabilities to Reuse
+
+| Capability | Current Status | Role in Workflow |
+|------------|----------------|------------------|
+| Knowledge Orchestrator | ✅ Implemented & Verified (77/77 tests) | Query routing, ranking, dedup, conflict resolution across existing providers |
+| Reasoning Engine | ✅ Implemented | Mission/query orchestration |
+| LLM (Gemini) | ✅ Implemented | Report synthesis and recommendation generation |
+| Moaah External Source Adapter | ✅ Implemented | Regulatory & Market Access data (Egypt/Saudi) |
+| ZATCA External Source Adapter | ✅ Implemented | Regulatory & Market Access data (Saudi) |
+| GCC-Stat External Source Adapter | ✅ Implemented | GCC trade intelligence |
+| UN Comtrade External Source Adapter | ✅ Implemented | Global trade history |
+| World Bank LPI External Source Adapter | ✅ Implemented | Logistics performance |
+| Knowledge Graph | ✅ Implemented | Entity relationships |
+| DEM Mission Infrastructure | ✅ Implemented | Mission creation, polling, detail, approvals |
+| Frontend Layout/Routing/Auth | ✅ Implemented | Reusable foundation |
+
+### 32.5 Confirmed Gaps (Implementation Required)
+
+| Gap | Description | Nature |
+|-----|-------------|--------|
+| Export Readiness Frontend Page | `/export-readiness` screen with product/market inputs and report display | Product/UI work |
+| Export Readiness Mission Type | New mission type or dedicated API flow in DEM backend | Product/Backend work |
+| Report Assembly Logic | Backend logic to compose the Export Readiness Report from multiple existing providers | Integration work |
+| LLM Report Prompting | Prompt engineering to generate coherent recommendation from assembled data | AI/Product work |
+
+**Important:** These gaps are **Product implementation gaps**, not **Knowledge Coverage gaps**. They do not require new providers, external knowledge expansion, or governance decisions beyond standard Project Owner authorization for implementation work.
+
+### 32.6 Relationship to External Knowledge Expansion Freeze
+
+**External Knowledge Expansion remains FROZEN per Section 30.5.**
+
+This Product Priority:
+- Does NOT add any provider
+- Does NOT add any research path
+- Does NOT change coverage scores
+- Does NOT change provider ceiling
+- Does NOT require live validation of new sources
+- Reuses ONLY the 7 implemented providers
+
+The Export Readiness workflow is a **Product-layer composition** of existing capabilities, not an expansion of the knowledge portfolio.
+
+### 32.7 Next Execution Step
+
+1. **Plan** — Create or update a Product Implementation Plan for Export Readiness Vertical Slice (separate from this Governance Plan)
+2. **Design** — Define exact API flow and LLM prompting strategy
+3. **Implement** — Build the single page + backend composition logic
+4. **Verify** — Test with real product/market combinations using existing provider data
+
+**No action from this plan.** This section documents the approved Product Priority only. Implementation requires separate planning and Project Owner authorization.
+
+---
+
+*Plan Status: Approved — G0 Approved — Owner Adopted as Official Reference — 7-Family Portfolio Implementation Master Plan / Governance Roadmap — Phase 1 Activated — World Bank LPI G5 Closure — Current State Maintained (7/7 Providers; Current Operational Ceiling = 7) — Candidate Source Research Paused — Knowledge Gaps Open — DEM Product Priority: Export Readiness Vertical Slice Approved*
 
 
 

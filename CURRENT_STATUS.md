@@ -3,7 +3,7 @@
 **Last Updated:** 2026-08-15
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 3 � Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED)
+**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED, Export Readiness Vertical Slice CLOSED)
 **Next Phase:** Frontend AI/DEM UX � Owner Acceptance Closure
 
 ---
@@ -54,6 +54,19 @@
 | WP-38c | ? Complete | Jordan + UAE + Saudi/GCC Sources � ZATCA Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 19 tests (13 unit + 6 integration); no regressions |
 | WP-38d | ? Complete | GCC Expansion � GCC-Stat Open Data APIs adapter; retry/backoff; provenance metadata; registry registration; 23 tests (16 unit + 7 integration); no regressions |
 | Credential Management Implementation | ✅ Complete | Credential abstraction layer across FAOSTAT/ETA/LetMeShip/SendCloud/Moaah/TradeData/ZATCA/GCC-Stat/SMTP/LLM; CredentialStore + 3 credential types; 163 tests passing; G1–G6 PASS; AC-1–AC-9 PASS; baseline/commit pending |
+| Export Readiness Vertical Slice | ✅ Complete | Export Readiness frontend + backend composition logic; 7 backend tests + 9 frontend tests; no regressions; CLOSED |
+
+## Export Readiness Vertical Slice Implementation Summary
+
+### Export Readiness Vertical Slice: Product Priority (Closed)
+- **Plan:** `.kilo/plans/1787046369933-export-readiness-vertical-slice.md`
+- **Governing Decision:** `.kilo/plans/1786559160142-external-knowledge-portfolio-re-evaluation.md` Section 32
+- **Status:** Implemented / Verified / Closed
+- **Scope:** Product-layer composition only. No new providers, no coverage score changes, no provider ceiling changes, no orchestrator/registry changes, no mission infrastructure changes.
+- **Backend:** `ExportReadinessService` + `POST /api/v1/export-readiness/analyze` router; explicit provider routing via `KnowledgeOrchestrator.orchestrate(sources=...)` with primary/fallback pairs; direct World Bank LPI query via `registry.query(source_id="worldbank-lpi", context={"country": ISO2}, scope="LP.LPI.OVRL.XQ")`; LLM recommendation with explicit `RuntimeError` handling → `recommendation = None`; graceful degradation for empty/missing provider data.
+- **Frontend:** `/export-readiness` page with product/market inputs, loading/error/success states, structured report display, availability badges (`available`/`partial`/`not_available`), action checklist, and graceful `recommendation = null` handling.
+- **Tests:** 7 new backend tests + 9 new frontend tests; all passing. No regressions in existing suites.
+- **Acceptance Criteria:** 11/11 met per plan Section 8.
 
 ## WP-38a Implementation Summary
 
