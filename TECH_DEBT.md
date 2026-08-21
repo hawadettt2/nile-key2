@@ -16,7 +16,6 @@
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
 | LOW | `__pycache__` directories | Throughout Python tree | Mostly gitignored, but scattered `__pycache__` dirs remain |
 | LOW | Email notifications | `backend/app/services/eta/__init__.py` | Notification preparation functions ready; SMTP integration deferred to WP-21 |
-| LOW | POS receipt building | `backend/app/schemas/eta.py` | Receipt schemas ready; full POS receipt builder deferred to WP-21 |
 | LOW | Production CORS origins | `backend/main.py` | `ALLOWED_ORIGINS` configurable via settings; production origins (`nile-key.com`) to be set before deployment |
 | LOW | Shipping backward-compat alias complexity | `app/services/shipping/__init__.py` | Shim pattern resolves circular imports; can be simplified after full migration to new package |
 
@@ -58,6 +57,7 @@ otification_logs integration added in M5-R2 |
 | ETA tax rounding | Implemented `eta_round` with 5 decimal places precision | WP-19 |
 | ETA batch delay logic | Implemented `delay_in_hours` logic in `submit_pending_batch` | WP-19 |
 | ETA APScheduler | Integrated APScheduler with hourly status polling and batch submission jobs | WP-19 |
+| POS receipt building | Receipt schemas (`ReceiptSubmit`, `ReceiptHeader`, `ReceiptSeller`, `ReceiptBuyer`, `SingleItemData`, `SingleTaxableItems`, `SingleTaxTotal`) implemented in `backend/app/schemas/eta.py`; POS receipt builder `submit_receipt_to_eta()` implemented in `backend/app/services/eta/__init__.py` | WP-19 |
 | Shipping engine missing | Full Shipping Engine implemented: schemas, provider abstraction, LetMeShip + SendCloud clients, service layer, router, scheduler, 34+ tests | WP-20 |
 | Shipping retry strategy | Added tenacity retry with exponential backoff (3 attempts) to provider clients | WP-20 |
 | Shipping audit logging | Implemented `shipping_logs` table for provider API call audit trail | WP-20 |
