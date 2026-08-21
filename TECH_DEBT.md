@@ -12,7 +12,7 @@
 |----------|------|----------|-------|
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
 | MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED — Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
-| MEDIUM | No rate limiting | Missing entirely | Listed in PLAN.md as required but not implemented |
+| MEDIUM | Rate limiting — auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Implemented on auth endpoints via `slowapi`; non-auth endpoint coverage is a separate design decision |
 | MEDIUM | PostgreSQL migration path | Not started | PLAN.md Section 9.9 notes SQLite is implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
 | LOW | `__pycache__` directories | Throughout Python tree | Mostly gitignored, but scattered `__pycache__` dirs remain |
