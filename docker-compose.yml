@@ -1,4 +1,23 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nilekey}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nilekey_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-nilekey}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nilekey} -d ${POSTGRES_DB:-nilekey}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
@@ -36,3 +55,4 @@ services:
 
 volumes:
   db-data:
+  postgres-data:

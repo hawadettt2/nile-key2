@@ -20,7 +20,7 @@ def upgrade() -> None:
     if bind.dialect.name == 'sqlite':
         _rebuild_invoices_without_uuid(bind)
     else:
-        op.drop_column('invoices', 'uuid')
+        op.execute('ALTER TABLE invoices DROP COLUMN IF EXISTS uuid')
 
 
 def downgrade() -> None:
@@ -28,7 +28,10 @@ def downgrade() -> None:
     if bind.dialect.name == 'sqlite':
         _rebuild_invoices_with_uuid(bind)
     else:
-        op.add_column('invoices', sa.Column('uuid', sa.Text, unique=True))
+        try:
+            op.add_column('invoices', sa.Column('uuid', sa.Text, unique=True))
+        except Exception:
+            pass
 
 
 def _rebuild_invoices_without_uuid(bind) -> None:

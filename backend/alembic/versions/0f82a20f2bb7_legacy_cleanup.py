@@ -32,63 +32,67 @@ def downgrade() -> None:
 
 
 def _drop_standard_columns() -> None:
-    op.drop_column('suppliers', 'farm_code')
-    op.drop_column('suppliers', 'governorate')
-    op.drop_column('suppliers', 'products')
-    op.drop_column('suppliers', 'rating')
-    op.drop_column('customers', 'website')
-    op.drop_column('customers', 'products_of_interest')
-    op.drop_column('customers', 'source')
-    op.drop_column('customers', 'trust_score')
-    op.drop_column('shipments', 'service_name')
-    op.drop_column('shipments', 'label_url')
-    op.drop_column('shipments', 'cost')
-    op.drop_column('shipments', 'provider')
-    op.drop_column('shipments', 'pickup_address')
-    op.drop_column('shipments', 'delivery_address')
-    op.drop_column('shipments', 'parcels')
-    op.drop_column('shipments', 'raw_response')
-    op.drop_column('invoices', 'uuid')
-    op.drop_column('invoices', 'issuer_tax_id')
-    op.drop_column('invoices', 'receiver_tax_id')
-    op.drop_column('invoices', 'receiver_name')
-    op.drop_column('invoices', 'tax_total')
-    op.drop_column('invoices', 'raw_response')
-    op.drop_column('invoices', 'signed_data')
-    op.drop_column('customs_declarations', 'duties_estimate')
-    op.drop_column('customs_declarations', 'raw_response')
-    op.drop_column('resources', 'tags')
-    op.drop_column('resources', 'is_verified')
+    tables = {
+        'suppliers': ['farm_code', 'governorate', 'products', 'rating'],
+        'customers': ['website', 'products_of_interest', 'source', 'trust_score'],
+        'shipments': ['service_name', 'label_url', 'cost', 'provider', 'pickup_address', 'delivery_address', 'parcels', 'raw_response'],
+        'invoices': ['uuid', 'issuer_tax_id', 'receiver_tax_id', 'receiver_name', 'tax_total', 'raw_response', 'signed_data'],
+        'customs_declarations': ['duties_estimate', 'raw_response'],
+        'resources': ['tags', 'is_verified'],
+    }
+    for table, columns in tables.items():
+        for column in columns:
+            op.execute(f'ALTER TABLE {table} DROP COLUMN IF EXISTS {column}')
 
 
 def _add_standard_columns() -> None:
-    op.add_column('suppliers', sa.Column('farm_code', sa.Text))
-    op.add_column('suppliers', sa.Column('governorate', sa.Text))
-    op.add_column('suppliers', sa.Column('products', sa.Text))
-    op.add_column('suppliers', sa.Column('rating', sa.Float))
-    op.add_column('customers', sa.Column('website', sa.Text))
-    op.add_column('customers', sa.Column('products_of_interest', sa.Text))
-    op.add_column('customers', sa.Column('source', sa.Text))
-    op.add_column('customers', sa.Column('trust_score', sa.Integer))
-    op.add_column('shipments', sa.Column('service_name', sa.Text))
-    op.add_column('shipments', sa.Column('label_url', sa.Text))
-    op.add_column('shipments', sa.Column('cost', sa.Float))
-    op.add_column('shipments', sa.Column('provider', sa.Text))
-    op.add_column('shipments', sa.Column('pickup_address', sa.Text))
-    op.add_column('shipments', sa.Column('delivery_address', sa.Text))
-    op.add_column('shipments', sa.Column('parcels', sa.Text))
-    op.add_column('shipments', sa.Column('raw_response', sa.Text))
-    op.add_column('invoices', sa.Column('uuid', sa.Text, unique=True))
-    op.add_column('invoices', sa.Column('issuer_tax_id', sa.Text))
-    op.add_column('invoices', sa.Column('receiver_tax_id', sa.Text))
-    op.add_column('invoices', sa.Column('receiver_name', sa.Text))
-    op.add_column('invoices', sa.Column('tax_total', sa.Float))
-    op.add_column('invoices', sa.Column('raw_response', sa.Text))
-    op.add_column('invoices', sa.Column('signed_data', sa.Text))
-    op.add_column('customs_declarations', sa.Column('duties_estimate', sa.Float))
-    op.add_column('customs_declarations', sa.Column('raw_response', sa.Text))
-    op.add_column('resources', sa.Column('tags', sa.Text))
-    op.add_column('resources', sa.Column('is_verified', sa.Integer))
+    tables = {
+        'suppliers': [
+            sa.Column('farm_code', sa.Text),
+            sa.Column('governorate', sa.Text),
+            sa.Column('products', sa.Text),
+            sa.Column('rating', sa.Float),
+        ],
+        'customers': [
+            sa.Column('website', sa.Text),
+            sa.Column('products_of_interest', sa.Text),
+            sa.Column('source', sa.Text),
+            sa.Column('trust_score', sa.Integer),
+        ],
+        'shipments': [
+            sa.Column('service_name', sa.Text),
+            sa.Column('label_url', sa.Text),
+            sa.Column('cost', sa.Float),
+            sa.Column('provider', sa.Text),
+            sa.Column('pickup_address', sa.Text),
+            sa.Column('delivery_address', sa.Text),
+            sa.Column('parcels', sa.Text),
+            sa.Column('raw_response', sa.Text),
+        ],
+        'invoices': [
+            sa.Column('uuid', sa.Text, unique=True),
+            sa.Column('issuer_tax_id', sa.Text),
+            sa.Column('receiver_tax_id', sa.Text),
+            sa.Column('receiver_name', sa.Text),
+            sa.Column('tax_total', sa.Float),
+            sa.Column('raw_response', sa.Text),
+            sa.Column('signed_data', sa.Text),
+        ],
+        'customs_declarations': [
+            sa.Column('duties_estimate', sa.Float),
+            sa.Column('raw_response', sa.Text),
+        ],
+        'resources': [
+            sa.Column('tags', sa.Text),
+            sa.Column('is_verified', sa.Integer),
+        ],
+    }
+    for table, columns in tables.items():
+        for column in columns:
+            try:
+                op.add_column(table, column)
+            except Exception:
+                pass
 
 
 def _drop_sqlite_columns(bind) -> None:
