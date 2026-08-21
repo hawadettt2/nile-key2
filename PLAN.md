@@ -1201,7 +1201,6 @@ without sacrificing simplicity.
 |----------|------|----------|-------|
 | HIGH | Documentation drift | Multiple docs | Resolved in WP-17A/WP-17B |
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED ? Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
 | MEDIUM | Rate limiting — auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Implemented on auth endpoints via `slowapi`; non-auth endpoint coverage is a separate design decision |
 | MEDIUM | PostgreSQL migration path | Not started | This document notes SQLite is an implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
@@ -1224,7 +1223,7 @@ without sacrificing simplicity.
 | Manual frontend types | Generated types via `openapi-typescript`; verified to match API | WP-12 |
 | Customs HS-code created_at mismatch | Added `created_at` to `_ensure_hs_codes_schema()` with backfill | WP-18 |
 | Document upload type omission | Fixed `upload_document()` INSERT to populate required `type` column | WP-18 |
-| Docker deployment validation | Docker artifacts reviewed and validated against project configuration | WP-18 |
+| Docker deployment validation | Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume | WP-18 |
 
 ---
 

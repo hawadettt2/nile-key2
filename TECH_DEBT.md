@@ -11,7 +11,6 @@
 | Priority | Debt | Location | Notes |
 |----------|------|----------|-------|
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Docker deployment unverified | Dockerfiles, `docker-compose.yml` | RESOLVED — Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume |
 | MEDIUM | Rate limiting — auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Implemented on auth endpoints via `slowapi`; non-auth endpoint coverage is a separate design decision |
 | MEDIUM | PostgreSQL migration path | Not started | PLAN.md Section 9.9 notes SQLite is implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
@@ -48,7 +47,7 @@ otification_logs integration added in M5-R2 |
 | Manual frontend types | Generated types via `openapi-typescript`; verified to match API | WP-12 |
 | Customs HS-code created_at mismatch | Added `created_at` to `_ensure_hs_codes_schema()` with backfill | WP-18 |
 | Document upload type omission | Fixed `upload_document()` INSERT to populate required `type` column | WP-18 |
-| Docker deployment validation | Docker artifacts reviewed and validated against project configuration | WP-18 |
+| Docker deployment validation | Both images build successfully; `docker compose up --build` verified with healthy services; database persistence confirmed via Docker volume | WP-18 |
 | ETA Engine missing | Full ETA Engine implemented: schemas, client, service layer, router, scheduler, 71 tests (70 passing, 1 skipped by design) | WP-19 |
 | ETA retry strategy | Added tenacity retry with exponential backoff (3 attempts) to ETAClient | WP-19 |
 | ETA idempotency | Implemented idempotency keys and duplicate submission checks | WP-19 |
