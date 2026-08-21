@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle, XCircle, Clock, AlertTriangle, FileText, Brain, Loader2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 const MISSING_MISSION_MESSAGE_KEY = 'dem.missionNotFoundContext';
 
@@ -18,6 +19,108 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
   running: { icon: <Clock size={16} />, color: 'text-blue-600' , label: 'Running' },
   pending_approval: { icon: <AlertTriangle size={16} />, color: 'text-orange-600', label: 'Pending Approval' },
 };
+
+function ExecutionTraceViewer({ mission }: { mission: Record<string, unknown> }) {
+  const result = mission.result as Record<string, unknown> | undefined;
+  const reasoning = mission.reasoning as string | undefined;
+  const error = mission.error as string | undefined;
+  const missionStatus = (mission.status as string) || 'pending';
+
+  const stepStatusConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
+    completed: { icon: <CheckCircle size={14} />, color: 'text-green-600', label: 'Completed' },
+    failed: { icon: <XCircle size={14} />, color: 'text-red-600', label: 'Failed' },
+    running: { icon: <Loader2 size={14} className="animate-spin" />, color: 'text-blue-600', label: 'Running' },
+    pending: { icon: <Clock size={14} />, color: 'text-amber-600', label: 'Pending' },
+  };
+
+  const renderStepStatus = (stepStatus: string) => {
+    const normalized = stepStatus.toLowerCase();
+    const config = stepStatusConfig[normalized] || stepStatusConfig.pending;
+    return (
+      <span className={`inline-flex items-center gap-1 text-xs font-medium ${config.color}`}>
+        {config.icon}
+        {config.label}
+      </span>
+    );
+  };
+
+  const steps = useMemo(() => {
+    if (!result) return [];
+    if (Array.isArray(result.results)) return result.results as Record<string, unknown>[];
+    if (Array.isArray(result.steps)) return result.steps as Record<string, unknown>[];
+    return [];
+  }, [result]);
+
+  const hasStructuredSteps = steps.length > 0;
+  const hasRawResult = result && !hasStructuredSteps;
+
+  return (
+    <div className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Error</p>
+          <p className="text-sm mt-1">{error}</p>
+        </div>
+      )}
+
+      {hasStructuredSteps && (
+        <div className="space-y-2">
+          <h3 className="font-medium text-slate-900">Execution Steps</h3>
+          <div className="space-y-2">
+            {steps.map((step: Record<string, unknown>, idx: number) => (
+              <Card key={idx} className="p-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-slate-900">Step {idx + 1}</span>
+                  {renderStepStatus((step.status as string) || 'pending')}
+                </div>
+                {step.tool && (
+                  <p className="text-xs text-slate-500 mt-1">Tool: {step.tool as string}</p>
+                )}
+                {step.output !== undefined && (
+                  <pre className="bg-slate-50 p-2 rounded text-xs overflow-auto mt-2 text-slate-700">
+                    {JSON.stringify(step.output, null, 2)}
+                  </pre>
+                )}
+                {step.error && (
+                  <p className="text-sm text-red-600 mt-2">{step.error as string}</p>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {hasRawResult && (
+        <div className="space-y-2">
+          <h3 className="font-medium text-slate-900">Execution Result</h3>
+          <pre className="bg-slate-50 p-4 rounded-lg text-xs overflow-auto max-h-96 text-slate-700">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </div>
+      )}
+
+      {!error && !hasStructuredSteps && !hasRawResult && (
+        <p className="text-slate-500">No execution results available yet.</p>
+      )}
+
+      {reasoning && (
+        <div className="space-y-2">
+          <h3 className="font-medium text-slate-900">Reasoning</h3>
+          <div className="bg-slate-50 p-4 rounded-lg text-sm text-slate-700 whitespace-pre-wrap">
+            {reasoning}
+          </div>
+        </div>
+      )}
+
+      {mission.requires_approval && (
+        <div className="mt-4 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Approval Required</p>
+          <p className="text-sm mt-1">Status: {mission.approval_status || 'pending'}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function DEMMissionDetail() {
   const { t } = useTranslation();
@@ -176,7 +279,7 @@ export function DEMMissionDetail() {
         </TabsList>
         <TabsContent value="results" className="mt-4">
           <Card className="p-6">
-            {mission.status === 'pending' || mission.status === 'running' ? (
+            {(mission.status === 'pending' || mission.status === 'running') ? (
               <div className="flex items-center gap-3">
                 <Loader2 className="animate-spin text-blue-600" size={24} />
                 <div>
@@ -184,20 +287,8 @@ export function DEMMissionDetail() {
                   <p className="text-sm text-slate-500">{t('dem.pollingUpdates')}</p>
                 </div>
               </div>
-            ) : mission.error ? (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                <p className="font-medium">{t('common.error')}</p>
-                <p className="text-sm mt-1">{mission.error}</p>
-              </div>
-            ) : mission.result ? (
-              <div>
-                <h3 className="font-medium text-slate-900 mb-3">{t('dem.executionResults')}</h3>
-                <pre className="bg-slate-50 p-4 rounded-lg text-xs overflow-auto max-h-96 text-slate-700">
-                  {JSON.stringify(mission.result, null, 2)}
-                </pre>
-              </div>
             ) : (
-              <p className="text-slate-500">{t('dem.noResultsYet')}</p>
+              <ExecutionTraceViewer mission={mission} />
             )}
           </Card>
         </TabsContent>
