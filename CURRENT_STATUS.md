@@ -436,6 +436,27 @@
 - No architectural defects or boundary violations requiring immediate action were identified.
 - This closure does not authorize Audit C or Audit D; those remain pending separate authorization.
 
+## Gate C Closure — Testing / Runtime / Operations Forensic Audit
+
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED
+**HEAD SHA:** `7ebd42b5bd48e32c5c6825753fb494fe129218f8`
+**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+
+### Conditions Verified
+
+| Condition | Classification | Decision | Status |
+|-----------|---------------|----------|--------|
+| C-RUNTIME-002 Health Endpoints | Controlled Technical Debt / Monitored | Accepted current state; no immediate action; deferred to Phase 4 / Audit C2 | CLOSED |
+
+### Governance Notes
+- C-RUNTIME-002: Health endpoints (`/api/v1/agent/health`, `/api/v1/digital-export-manager/health`) return hardcoded `healthy` without verifying DB/schedulers/external services.
+- Evidence: `agent.py` lines 46-52, `digital_export_manager.py` lines 71-86, `docker-compose.yml` line 39.
+- Decision: Accepted as Controlled Technical Debt. No production failure evidence found. Docker healthcheck remains functional for process liveness.
+- Future remediation: Deferred to Phase 4 or Audit C2. Not a Gate C Blocker.
+- Full test suite execution/1418 tests count is an operational metric recorded during verification; not a Gate C Condition and not fully executed within this audit.
+- No code changes were made. No test execution was performed beyond subset verification.
+
 
 ## WTO ePing G1 Decision
 

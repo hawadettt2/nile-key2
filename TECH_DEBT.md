@@ -31,6 +31,7 @@ equire_role() added in M5-R4 |
 otification_logs integration added in M5-R2 |
 | MEDIUM | Router ? main coupling | `backend/app/routers/digital_export_manager.py` ? `main.py` | `get_reasoning_engine()` deferred import; accepted as architectural coupling; monitored |
 | LOW | Module-level application state | `trade_intelligence.py`, `knowledge_graph.py`, `agent.py`, `research.py`, `eta_scheduler.py`, `shipping_scheduler.py` | Controlled initialization in `main.py` lifespan; accepted as controlled application state; no immediate action |
+| MEDIUM | Shallow health endpoints | `backend/app/routers/agent.py`, `backend/app/routers/digital_export_manager.py` | Health endpoints return hardcoded `healthy` without verifying DB/schedulers/external services; accepted as controlled technical debt; deferred to Phase 4/Audit C2 |
 ## Resolved Technical Debt
 
 | Debt | Resolution | Work Package |
