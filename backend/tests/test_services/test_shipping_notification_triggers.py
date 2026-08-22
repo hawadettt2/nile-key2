@@ -71,7 +71,7 @@ def test_create_shipment_sends_notification_on_success(mock_get_db, mock_send_te
     mock_result.shipment_id = 10
     mock_result.message = "Shipment created successfully"
 
-    with patch("app.services.shipping._new_create_shipment", return_value=mock_result):
+    with patch("app.services.shipping._legacy_create_shipment", return_value=mock_result):
         with patch("app.services.shipping._is_notification_enabled", return_value=True):
             with patch("app.services.shipping._get_user_email", return_value="user@example.com"):
                 mock_cursor = MagicMock()
@@ -113,7 +113,7 @@ def test_create_shipment_skips_notification_when_user_id_none(mock_get_db, mock_
     mock_result.shipment_id = 10
     mock_result.message = "Shipment created successfully"
 
-    with patch("app.services.shipping._new_create_shipment", return_value=mock_result):
+    with patch("app.services.shipping._legacy_create_shipment", return_value=mock_result):
         with patch("app.services.shipping._is_notification_enabled", return_value=True):
             with patch("app.services.shipping._get_user_email", return_value="user@example.com"):
                 mock_cursor = MagicMock()
@@ -150,7 +150,7 @@ def test_create_shipment_skips_notification_when_user_id_none(mock_get_db, mock_
 @patch("app.services.shipping.send_template_email")
 @patch("app.services.shipping.get_db_connection")
 def test_update_shipment_sends_notification_on_status_update(mock_get_db, mock_send_template):
-    with patch("app.services.shipping._new_update_shipment_status") as mock_update:
+    with patch("app.services.shipping.update_shipment_status") as mock_update:
         with patch("app.services.shipping._is_notification_enabled", return_value=True):
             with patch("app.services.shipping._get_user_email", return_value="user@example.com"):
                 mock_update.return_value = {"message": "Shipment updated successfully"}
@@ -171,7 +171,7 @@ def test_update_shipment_sends_notification_on_status_update(mock_get_db, mock_s
 @patch("app.services.shipping.send_template_email")
 @patch("app.services.shipping.get_db_connection")
 def test_update_shipment_skips_notification_when_user_id_none(mock_get_db, mock_send_template):
-    with patch("app.services.shipping._new_update_shipment_status") as mock_update:
+    with patch("app.services.shipping.update_shipment_status") as mock_update:
         with patch("app.services.shipping._is_notification_enabled", return_value=True):
             with patch("app.services.shipping._get_user_email", return_value="user@example.com"):
                 mock_update.return_value = {"message": "Shipment updated successfully"}
@@ -188,7 +188,7 @@ def test_update_shipment_skips_notification_when_user_id_none(mock_get_db, mock_
 @patch("app.services.shipping.send_template_email")
 @patch("app.services.shipping.get_db_connection")
 def test_update_shipment_skips_notification_when_no_status_change(mock_get_db, mock_send_template):
-    with patch("app.services.shipping._new_update_shipment_status") as mock_update:
+    with patch("app.services.shipping.update_shipment_status") as mock_update:
         mock_update.return_value = {"message": "Shipment updated successfully"}
 
         mock_data = MagicMock()

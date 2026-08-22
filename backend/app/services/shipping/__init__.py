@@ -498,7 +498,7 @@ def get_label(shipment_id: int) -> LabelResponse:
 
 # ========== Tracking ==========
 
-def track_shipment(tracking_id: str) -> TrackingResponse:
+def _legacy_track_shipment(tracking_id: str) -> TrackingResponse:
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM shipments WHERE tracking_number = ? OR id = ?", (tracking_id, tracking_id))
@@ -540,6 +540,16 @@ def track_shipment(tracking_id: str) -> TrackingResponse:
         carrier=carrier,
         provider=provider_name or None,
     )
+
+
+def track_shipment(tracking_id: str) -> dict:
+    resp = _legacy_track_shipment(tracking_id)
+    return {
+        "id": resp.shipment_id,
+        "tracking_number": resp.tracking_number,
+        "status": resp.status,
+        "tracking_events": [e.model_dump() for e in resp.tracking_events],
+    }
 
 
 def _map_tracking_events(provider_name: str, raw: dict) -> List[TrackingEvent]:
@@ -867,7 +877,7 @@ def list_shipments(
     return [dict(r) for r in rows]
 
 
-def get_shipment(shipment_id: int) -> Dict[str, Any]:
+def _legacy_get_shipment(shipment_id: int) -> Dict[str, Any]:
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM shipments WHERE id = ?", (shipment_id,))
@@ -880,6 +890,10 @@ def get_shipment(shipment_id: int) -> Dict[str, Any]:
     if result.get("destination") is None:
         result["destination"] = ""
     return result
+
+
+def get_shipment(shipment_id: int) -> dict:
+    return _legacy_get_shipment(shipment_id)
 
 
 def update_shipment_status(shipment_id: int, status: str) -> Dict[str, Any]:
@@ -905,30 +919,83 @@ def get_rates(request) -> list:
     return fetch_rates(request)
 
 
-_new_track_shipment = track_shipment
-_new_get_shipment = get_shipment
-_new_list_shipments = list_shipments
-_new_create_shipment = create_shipment
-_new_update_shipment_status = update_shipment_status
-_new_get_label = get_label
-
-
-def track_shipment(tracking_id: str) -> dict:
-    resp = _new_track_shipment(tracking_id)
-    return {
-        "id": resp.shipment_id,
-        "tracking_number": resp.tracking_number,
-        "status": resp.status,
-        "tracking_events": [e.model_dump() for e in resp.tracking_events],
-    }
-
-
-def get_shipment(shipment_id: int) -> dict:
-    return _new_get_shipment(shipment_id)
+def _legacy_list_shipments(
+    status: Optional[str] = None,
+    customer_id: Optional[int] = None,
+    supplier_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> List[Dict[str, Any]]:
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        query = "SELECT * FROM shipments WHERE 1=1"
+        params = []
+        if status:
+            query += " AND (status = ? OR tracking_status = ?)"
+            params.extend([status, status])
+        if customer_id:
+            query += " AND customer_id = ?"
+            params.append(customer_id)
+        if supplier_id:
+            query += " AND supplier_id = ?"
+            params.append(supplier_id)
+        query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+        params.extend([limit, skip])
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+    return [dict(r) for r in rows]
 
 
 def list_shipments(**kwargs) -> list:
-    return _new_list_shipments(**kwargs)
+    return _legacy_list_shipments(**kwargs)
+
+
+def _legacy_create_shipment(data: CreateShipmentRequest, user: dict) -> ShipmentResult:
+    _init_providers()
+    provider = None
+    raw = {}
+    try:
+        provider = get_provider(data.provider)
+    except ProviderNotFoundError:
+        logger.warning("Provider '%s' not found, creating local-only shipment", data.provider)
+
+    if provider:
+        try:
+            validate_parcels(data.parcels)
+            if data.pickup_contact:
+                validate_phone(data.pickup_contact.phone)
+            if data.delivery_contact:
+                validate_phone(data.delivery_contact.phone)
+            if data.pickup_address:
+                validate_address(data.pickup_address)
+            if data.delivery_address:
+                validate_address(data.delivery_address)
+        except ValidationError as exc:
+            raise ShipmentBookingError(str(exc))
+
+        ptype = provider.__class__.__name__.lower()
+        if "letmeship" in ptype:
+            payload = _build_letmeship_create_payload(data)
+        else:
+            payload = _build_sendcloud_create_payload(data)
+
+        try:
+            raw = provider.create_shipment(payload)
+        except Exception as exc:
+            _log_shipping(None, data.provider, "create", json.dumps(payload), None, str(exc), 500)
+            raise ShipmentBookingError(str(exc))
+
+    shipment_id = _insert_shipment(data, user, raw)
+    _log_shipping(shipment_id, data.provider, "create", json.dumps(raw), json.dumps(raw), None, 200 if raw else 0)
+
+    result = _parse_create_response(data.provider, raw, shipment_id)
+    if raw:
+        _insert_shipping_label(shipment_id, data.provider, result.provider_shipment_id, result.label_url)
+    log_audit(
+        current_user=user,
+        data=AuditLogCreate(action="create", entity_type="shipment", entity_id=shipment_id, details=data.reference or str(shipment_id)),
+    )
+    return result
 
 
 def create_shipment(data, current_user: dict) -> dict:
@@ -952,7 +1019,7 @@ def create_shipment(data, current_user: dict) -> dict:
         currency=data.currency or "USD",
         service_type=data.service_type,
     )
-    result = _new_create_shipment(req, current_user)
+    result = _legacy_create_shipment(req, current_user)
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT tracking_number FROM shipments WHERE id = ?", (result.shipment_id,))
@@ -978,7 +1045,7 @@ def update_shipment(shipment_id: int, data, current_user: dict) -> dict:
     else:
         update_data = data
     if update_data.status:
-        result = _new_update_shipment_status(shipment_id, update_data.status)
+        result = update_shipment_status(shipment_id, update_data.status)
         _send_shipping_notification(
             template_id=4,
             user_id=current_user.get("id") if current_user else None,
@@ -989,8 +1056,52 @@ def update_shipment(shipment_id: int, data, current_user: dict) -> dict:
     return {"message": "Shipment updated successfully"}
 
 
+def _legacy_get_label(shipment_id: int) -> LabelResponse:
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM shipments WHERE id = ?", (shipment_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise ShipmentBookingError("Shipment not found")
+        shipment = dict(row)
+
+    provider_name = shipment.get("service_provider") or ""
+    provider_shipment_id = shipment.get("provider_shipment_id")
+    label_url = shipment.get("label_url")
+
+    if provider_shipment_id and not label_url:
+        try:
+            _init_providers()
+            provider = get_provider(provider_name)
+            raw = provider.get_label(provider_shipment_id)
+            filename = f"label_{shipment_id}_{provider_shipment_id}.pdf"
+            path = os.path.join(STORAGE_DIR, filename)
+            with open(path, "wb") as f:
+                f.write(raw)
+            label_url = f"/storage/labels/{filename}"
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("UPDATE shipments SET label_url = ? WHERE id = ?", (label_url, shipment_id))
+                conn.commit()
+        except Exception as exc:
+            logger.error("Label retrieval failed for %s: %s", provider_shipment_id, exc)
+            _log_shipping(shipment_id, provider_name, "label", provider_shipment_id, None, str(exc), 500)
+            raise LabelGenerationError(str(exc))
+
+    if not label_url:
+        label_url = f"/api/v1/shipping/shipments/{shipment_id}/label"
+
+    _log_shipping(shipment_id, provider_name, "label", provider_shipment_id, label_url, None, 200)
+    return LabelResponse(
+        shipment_id=shipment_id,
+        label_url=label_url,
+        label_format="PDF",
+        message="Label retrieved successfully",
+    )
+
+
 def get_label(shipment_id: int) -> dict:
-    resp = _new_get_label(shipment_id)
+    resp = _legacy_get_label(shipment_id)
     return {
         "shipment_id": resp.shipment_id,
         "label_url": resp.label_url,
