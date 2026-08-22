@@ -29,6 +29,8 @@ equire_role() added in M5-R4 |
 | MEDIUM | .env.example missing variables | ackend/.env.example | OWNER_PASSWORD and SMTP vars added in M5-R5 |
 | LOW | Notification audit logging missing | ackend/app/services/notification.py | udit_logs + 
 otification_logs integration added in M5-R2 |
+| MEDIUM | Router ? main coupling | `backend/app/routers/digital_export_manager.py` ? `main.py` | `get_reasoning_engine()` deferred import; accepted as architectural coupling; monitored |
+| LOW | Module-level application state | `trade_intelligence.py`, `knowledge_graph.py`, `agent.py`, `research.py`, `eta_scheduler.py`, `shipping_scheduler.py` | Controlled initialization in `main.py` lifespan; accepted as controlled application state; no immediate action |
 ## Resolved Technical Debt
 
 | Debt | Resolution | Work Package |

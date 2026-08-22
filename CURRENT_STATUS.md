@@ -414,6 +414,29 @@
 - Reference docs: `CURRENT_STATUS.md`, `TECH_DEBT.md`, `.kilo/plans/archive/wp30-implementation-plan.md` (all subordinate to PLAN.md)
 - Engineering Decisions: `ED-WP30-001` (WP-30B phase sequencing adjustment), `ED-WP30-002` (WP-30F scope clarification)
 
+## Gate B Closure — Dependency, Boundary & Data Architecture Forensic Audit
+
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED
+**HEAD SHA:** `4439e6cd1995aa66a14682dd3ffdf2c781462349`
+**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+
+### Conditions Verified
+
+| Condition | Classification | Decision | Status |
+|-----------|---------------|----------|--------|
+| B-DEP-001 Raw SQLite | Controlled Technical Debt | Accepted Design per PLAN.md Section 9.9 | CLOSED |
+| B-DEP-006 Alembic Placeholder | Controlled Technical Debt | Accepted Design; migration system functional per WP-10 | CLOSED |
+| B-BND-006 Router → Main Coupling | Architectural Coupling / Monitored | Accepted current state; no immediate action; monitored future | CLOSED WITH MONITORING |
+| B-BND-008 Module-Level State | Controlled Application State | Accepted current state; no immediate action | CLOSED |
+
+### Governance Notes
+- Forensic verification completed for all 4 conditions.
+- B-BND-006 and B-BND-008 accepted as controlled coupling/state; any future remediation is outside this closure.
+- No architectural defects or boundary violations requiring immediate action were identified.
+- This closure does not authorize Audit C or Audit D; those remain pending separate authorization.
+
+
 ## WTO ePing G1 Decision
 
 **Decision:** G1 CLOSED WITH CLASSIFICATION — WTO ePing reclassified as Complementary Knowledge Source.
