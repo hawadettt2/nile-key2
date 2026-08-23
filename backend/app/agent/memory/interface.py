@@ -18,6 +18,7 @@ class MemoryProvider(ABC):
     @abstractmethod
     async def recall(
         self,
+        user_id: int,
         session_id: str,
         query: str,
         limit: int = 10,
@@ -25,6 +26,7 @@ class MemoryProvider(ABC):
         """Recall memories matching a query.
 
         Args:
+            user_id: The user identifier.
             session_id: The session identifier.
             query: The memory query string (e.g., "standing_orders",
                 "user_preferences", "historical_decisions").
@@ -44,6 +46,7 @@ class MemoryProvider(ABC):
     @abstractmethod
     async def store(
         self,
+        user_id: int,
         session_id: str,
         key: str,
         value: Any,
@@ -54,6 +57,7 @@ class MemoryProvider(ABC):
         """Store a memory item.
 
         Args:
+            user_id: The user identifier.
             session_id: The session identifier.
             key: Memory key/identifier.
             value: Memory value to store.
@@ -68,10 +72,11 @@ class MemoryProvider(ABC):
         raise NotImplementedError("MemoryProvider.store() is not implemented.")
 
     @abstractmethod
-    async def forget(self, session_id: str, key: str) -> bool:
+    async def forget(self, user_id: int, session_id: str, key: str) -> bool:
         """Remove a memory item.
 
         Args:
+            user_id: The user identifier.
             session_id: The session identifier.
             key: Memory key to remove.
 
@@ -81,10 +86,11 @@ class MemoryProvider(ABC):
         raise NotImplementedError("MemoryProvider.forget() is not implemented.")
 
     @abstractmethod
-    async def summarize(self, session_id: str) -> Dict[str, Any]:
+    async def summarize(self, user_id: int, session_id: str) -> Dict[str, Any]:
         """Produce a summary of memories for a session.
 
         Args:
+            user_id: The user identifier.
             session_id: The session identifier.
 
         Returns:
@@ -94,3 +100,16 @@ class MemoryProvider(ABC):
                 - key_themes: List[str] — extracted themes/topics.
         """
         raise NotImplementedError("MemoryProvider.summarize() is not implemented.")
+
+    @abstractmethod
+    async def cleanup_expired(self, user_id: Optional[int] = None) -> int:
+        """Remove expired memory items.
+
+        Args:
+            user_id: Optional user identifier. If provided, only clean up
+                memories for this user. If None, clean up all expired memories.
+
+        Returns:
+            int — number of deleted records.
+        """
+        raise NotImplementedError("MemoryProvider.cleanup_expired() is not implemented.")

@@ -749,6 +749,7 @@ def _create_tables(c: sqlite3.Cursor):
     c.execute("""
         CREATE TABLE IF NOT EXISTS agent_memory (
             id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
             session_id TEXT NOT NULL,
             key TEXT NOT NULL,
             value TEXT,
@@ -757,10 +758,15 @@ def _create_tables(c: sqlite3.Cursor):
             expires_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
         )
     """)
 
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_agent_memory_user_session
+        ON agent_memory(user_id, session_id)
+    """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS agent_audit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

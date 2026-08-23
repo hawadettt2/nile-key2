@@ -200,7 +200,7 @@ class SessionManager:
         except Exception:
             return False
 
-    async def enrich_context(self, session_id: str, memory_provider) -> Dict[str, Any]:
+    async def enrich_context(self, session_id: str, memory_provider, user_id: Optional[int] = None) -> Dict[str, Any]:
         """Enrich session context with recent memory items.
 
         This method proactively enriches the session context by recalling
@@ -215,6 +215,12 @@ class SessionManager:
 
         try:
             context = self.get_context(session_id) or {}
+            session = self.get_session(session_id)
+            if user_id is None and session:
+                user_id = session.user_id
+
+            if user_id is None:
+                return context
 
             standing_orders = []
             user_preferences = []
@@ -222,6 +228,7 @@ class SessionManager:
 
             try:
                 standing_orders = await memory_provider.recall(
+                    user_id=user_id,
                     session_id=session_id,
                     query="standing_order",
                     limit=10,
@@ -231,6 +238,7 @@ class SessionManager:
 
             try:
                 user_preferences = await memory_provider.recall(
+                    user_id=user_id,
                     session_id=session_id,
                     query="preference",
                     limit=10,
@@ -240,6 +248,7 @@ class SessionManager:
 
             try:
                 recent_decisions = await memory_provider.recall(
+                    user_id=user_id,
                     session_id=session_id,
                     query="decision",
                     limit=10,
@@ -287,7 +296,7 @@ class SessionManager:
         if not memory_provider:
             return False
         try:
-            memories = await memory_provider.recall(session_id=str(user_id), query="context", limit=10)
+            memories = await memory_provider.recall(user_id=user_id, session_id=session_id, query="context", limit=10)
             if not memories:
                 return False
 

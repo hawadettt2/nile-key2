@@ -124,7 +124,7 @@ async def create_mission(
     if session.status != "active":
         raise HTTPException(status_code=400, detail=f"Session is {session.status}. Only active sessions can accept missions.")
 
-    await session_manager.enrich_context(session_id, memory_provider)
+    await session_manager.enrich_context(session_id, memory_provider, user_id=current_user.get("id"))
 
     now = datetime.now(timezone.utc)
     correlation_id = str(__import__("uuid").uuid4())

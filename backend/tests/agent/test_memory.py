@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 from datetime import datetime, timezone
 
 from app.agent.memory.interface import MemoryProvider
+from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.agent.schemas.agent_schemas import (
     AgentMemoryRequest,
     AgentMemoryResponse,
@@ -14,7 +15,7 @@ from app.agent.schemas.agent_schemas import (
 class ConcreteMemoryProvider(MemoryProvider):
     """Concrete implementation for testing."""
 
-    async def recall(self, session_id, query, limit=10):
+    async def recall(self, user_id: int, session_id: str, query: str, limit: int = 10):
         return [
             {
                 "key": "test-memory",
@@ -26,18 +27,21 @@ class ConcreteMemoryProvider(MemoryProvider):
             }
         ]
 
-    async def store(self, session_id, key, value, memory_type="context", importance=5, expires_at=None):
+    async def store(self, user_id: int, session_id: str, key: str, value, memory_type="context", importance=5, expires_at=None):
         return "memory-123"
 
-    async def forget(self, session_id, key):
+    async def forget(self, user_id: int, session_id: str, key: str):
         return True
 
-    async def summarize(self, session_id):
+    async def summarize(self, user_id: int, session_id: str):
         return {
             "summary": "User prefers shipping via DHL",
             "memory_count": 1,
             "key_themes": ["shipping", "preferences"],
         }
+
+    async def cleanup_expired(self, user_id=None):
+        return 0
 
 
 class TestMemoryProviderInterface:
@@ -50,7 +54,7 @@ class TestMemoryProviderInterface:
     @pytest.mark.asyncio
     async def test_concrete_provider_implements_recall(self):
         provider = ConcreteMemoryProvider()
-        result = await provider.recall("session-123", "preferences", limit=5)
+        result = await provider.recall(1, "session-123", "preferences", limit=5)
         assert isinstance(result, list)
         assert len(result) == 1
         assert result[0]["key"] == "test-memory"
@@ -59,6 +63,7 @@ class TestMemoryProviderInterface:
     async def test_concrete_provider_implements_store(self):
         provider = ConcreteMemoryProvider()
         memory_id = await provider.store(
+            1,
             "session-123",
             "preference:shipping",
             {"provider": "DHL"},
@@ -70,17 +75,78 @@ class TestMemoryProviderInterface:
     @pytest.mark.asyncio
     async def test_concrete_provider_implements_forget(self):
         provider = ConcreteMemoryProvider()
-        result = await provider.forget("session-123", "test-memory")
+        result = await provider.forget(1, "session-123", "test-memory")
         assert result is True
 
     @pytest.mark.asyncio
     async def test_concrete_provider_implements_summarize(self):
         provider = ConcreteMemoryProvider()
-        result = await provider.summarize("session-123")
+        result = await provider.summarize(1, "session-123")
         assert "summary" in result
         assert "memory_count" in result
         assert "key_themes" in result
         assert result["memory_count"] == 1
+
+    @pytest.mark.asyncio
+    async def test_concrete_provider_implements_cleanup_expired(self):
+        provider = ConcreteMemoryProvider()
+        result = await provider.cleanup_expired(user_id=1)
+        assert result == 0
+
+
+class TestSQLiteMemoryProviderUserIsolation:
+    """Verify user-level memory isolation for SQLiteMemoryProvider."""
+
+    @pytest.mark.asyncio
+    async def test_recall_scoped_to_user(self, tmp_path):
+        db_path = str(tmp_path / "test_memory.db")
+        provider = SQLiteMemoryProvider(db_path=db_path)
+        
+        # Store memory for user 1
+        await provider.store(1, "session-1", "key1", "value1")
+        
+        # User 2 should not see user 1's memory
+        result = await provider.recall(2, "session-1", "key1")
+        assert len(result) == 0
+
+    @pytest.mark.asyncio
+    async def test_store_requires_user_id(self, tmp_path):
+        db_path = str(tmp_path / "test_memory2.db")
+        provider = SQLiteMemoryProvider(db_path=db_path)
+        
+        # Store with user_id
+        memory_id = await provider.store(1, "session-1", "key1", "value1")
+        assert memory_id != ""
+
+    @pytest.mark.asyncio
+    async def test_forget_scoped_to_user(self, tmp_path):
+        db_path = str(tmp_path / "test_memory3.db")
+        provider = SQLiteMemoryProvider(db_path=db_path)
+        
+        await provider.store(1, "session-1", "key1", "value1")
+        result = await provider.forget(2, "session-1", "key1")
+        assert result is False  # User 2 cannot delete user 1's memory
+
+    @pytest.mark.asyncio
+    async def test_summarize_scoped_to_user(self, tmp_path):
+        db_path = str(tmp_path / "test_memory4.db")
+        provider = SQLiteMemoryProvider(db_path=db_path)
+        
+        await provider.store(1, "session-1", "key1", "value1")
+        result = await provider.summarize(2, "session-1")
+        assert result["memory_count"] == 0
+
+    @pytest.mark.asyncio
+    async def test_cleanup_expired_scoped_to_user(self, tmp_path):
+        db_path = str(tmp_path / "test_memory5.db")
+        provider = SQLiteMemoryProvider(db_path=db_path)
+        
+        # Store memory for user 1
+        await provider.store(1, "session-1", "key1", "value1")
+        
+        # Cleanup for user 2 should not affect user 1
+        deleted = await provider.cleanup_expired(user_id=2)
+        assert deleted == 0
 
 
 class TestMemorySchemas:

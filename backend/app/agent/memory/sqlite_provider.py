@@ -27,9 +27,47 @@ def _ensure_memory_schema(conn: sqlite3.Connection) -> None:
             FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
         )
     """)
+    
+    # Add user_id column if it doesn't exist (migration for existing databases)
+    cursor.execute("PRAGMA table_info(agent_memory)")
+    columns = [row[1] for row in cursor.fetchall()]
+    if 'user_id' not in columns:
+        cursor.execute("ALTER TABLE agent_memory ADD COLUMN user_id INTEGER")
+        # Backfill user_id from agent_sessions where possible
+        cursor.execute("""
+            UPDATE agent_memory
+            SET user_id = (SELECT agent_sessions.user_id FROM agent_sessions WHERE agent_sessions.id = agent_memory.session_id)
+            WHERE session_id IN (SELECT id FROM agent_sessions WHERE user_id IS NOT NULL)
+        """)
+        # Rebuild table with NOT NULL constraint
+        cursor.execute("""
+            CREATE TABLE agent_memory_new (
+                id TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                session_id TEXT NOT NULL,
+                key TEXT NOT NULL,
+                value TEXT,
+                memory_type TEXT DEFAULT 'context',
+                importance INTEGER DEFAULT 5,
+                expires_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
+            )
+        """)
+        cursor.execute("""
+            INSERT INTO agent_memory_new
+            SELECT id, user_id, session_id, key, value, memory_type, importance, expires_at, created_at, updated_at
+            FROM agent_memory
+            WHERE user_id IS NOT NULL
+        """)
+        cursor.execute("DROP TABLE agent_memory")
+        cursor.execute("ALTER TABLE agent_memory_new RENAME TO agent_memory")
+    
     cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_agent_memory_session_id
-        ON agent_memory(session_id)
+        CREATE INDEX IF NOT EXISTS idx_agent_memory_user_session
+        ON agent_memory(user_id, session_id)
     """)
     cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_agent_memory_type
@@ -61,6 +99,7 @@ class SQLiteMemoryProvider(MemoryProvider):
 
     async def recall(
         self,
+        user_id: int,
         session_id: str,
         query: str,
         limit: int = 10,
@@ -72,10 +111,11 @@ class SQLiteMemoryProvider(MemoryProvider):
                 cursor = conn.cursor()
                 cursor.execute(
                     """
-                    SELECT id, session_id, key, value, memory_type, importance,
+                    SELECT id, user_id, session_id, key, value, memory_type, importance,
                            created_at, updated_at
                     FROM agent_memory
-                    WHERE session_id = ?
+                    WHERE user_id = ?
+                      AND session_id = ?
                       AND (
                             key LIKE ?
                             OR value LIKE ?
@@ -83,6 +123,7 @@ class SQLiteMemoryProvider(MemoryProvider):
                       AND (expires_at IS NULL OR expires_at > ?)
                     """,
                     (
+                        user_id,
                         session_id,
                         f"%{query}%",
                         f"%{query}%",
@@ -143,6 +184,7 @@ class SQLiteMemoryProvider(MemoryProvider):
 
     async def store(
         self,
+        user_id: int,
         session_id: str,
         key: str,
         value: Any,
@@ -161,13 +203,14 @@ class SQLiteMemoryProvider(MemoryProvider):
                 cursor.execute(
                     """
                     INSERT INTO agent_memory (
-                        id, session_id, key, value, memory_type, importance,
+                        id, user_id, session_id, key, value, memory_type, importance,
                         expires_at, created_at, updated_at
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         memory_id,
+                        user_id,
                         session_id,
                         key,
                         value_text,
@@ -187,14 +230,14 @@ class SQLiteMemoryProvider(MemoryProvider):
             logger.error("Memory store failed: %s", exc)
             return ""
 
-    async def forget(self, session_id: str, key: str) -> bool:
+    async def forget(self, user_id: int, session_id: str, key: str) -> bool:
         try:
             def _delete():
                 conn = sqlite3.connect(self._db_path)
                 cursor = conn.cursor()
                 cursor.execute(
-                    "DELETE FROM agent_memory WHERE session_id = ? AND key = ?",
-                    (session_id, key),
+                    "DELETE FROM agent_memory WHERE user_id = ? AND session_id = ? AND key = ?",
+                    (user_id, session_id, key),
                 )
                 deleted = cursor.rowcount > 0
                 conn.commit()
@@ -206,7 +249,7 @@ class SQLiteMemoryProvider(MemoryProvider):
             logger.error("Memory forget failed: %s", exc)
             return False
 
-    async def summarize(self, session_id: str) -> Dict[str, Any]:
+    async def summarize(self, user_id: int, session_id: str) -> Dict[str, Any]:
         try:
             def _summarize():
                 conn = sqlite3.connect(self._db_path)
@@ -216,23 +259,25 @@ class SQLiteMemoryProvider(MemoryProvider):
                     """
                     SELECT memory_type, COUNT(*) as count, AVG(importance) as avg_importance
                     FROM agent_memory
-                    WHERE session_id = ?
+                    WHERE user_id = ?
+                      AND session_id = ?
                       AND (expires_at IS NULL OR expires_at > ?)
                     GROUP BY memory_type
                     """,
-                    (session_id, datetime.utcnow().isoformat()),
+                    (user_id, session_id, datetime.utcnow().isoformat()),
                 )
                 rows = cursor.fetchall()
                 cursor.execute(
                     """
                     SELECT key, memory_type, importance
                     FROM agent_memory
-                    WHERE session_id = ?
+                    WHERE user_id = ?
+                      AND session_id = ?
                       AND (expires_at IS NULL OR expires_at > ?)
                     ORDER BY importance DESC
                     LIMIT 20
                     """,
-                    (session_id, datetime.utcnow().isoformat()),
+                    (user_id, session_id, datetime.utcnow().isoformat()),
                 )
                 top_rows = cursor.fetchall()
                 conn.close()
@@ -263,7 +308,7 @@ class SQLiteMemoryProvider(MemoryProvider):
             logger.error("Memory summarize failed: %s", exc)
             return {}
 
-    async def cleanup_expired(self, session_id: Optional[str] = None) -> int:
+    async def cleanup_expired(self, user_id: Optional[int] = None) -> int:
         """حذف السجلات منتهية الصلاحية من قاعدة البيانات.
 
         تلتزم الدالة بحذف السجلات التي تخطت الوقت الحالي فقط (expires_at <= now).
@@ -275,15 +320,15 @@ class SQLiteMemoryProvider(MemoryProvider):
                 cursor = conn.cursor()
 
                 now_str = datetime.utcnow().isoformat()
-                if session_id:
+                if user_id is not None:
                     cursor.execute(
                         """
                         DELETE FROM agent_memory
                         WHERE expires_at IS NOT NULL
                           AND expires_at <= ?
-                          AND session_id = ?
+                          AND user_id = ?
                         """,
-                        (now_str, session_id),
+                        (now_str, user_id),
                     )
                 else:
                     cursor.execute(
