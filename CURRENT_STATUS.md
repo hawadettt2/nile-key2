@@ -530,6 +530,54 @@
 
 **Reference:** Audit E report, Lead Architect Re-Verification, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
 
+
+
+## Gate F Closure — DEM / AI / Knowledge Architecture Audit
+
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED
+**HEAD SHA:** `abdded65f2cb57eb3733b1189298214719119365`
+**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+
+### Conditions Verified
+
+| Condition | Classification | Decision | Status |
+|-----------|---------------|----------|--------|
+| F-AUDIT-001 AuditRecorder swallows exceptions | Auditability | DEFER / Controlled Technical Debt | NON-BLOCKING |
+| F-MEMORY-001 No user-level memory isolation | Privacy / Architecture | DEFER / Controlled Technical Debt | NON-BLOCKING |
+| F-PROV-001 KnowledgeOrchestrator swallows provider exceptions | Knowledge Integrity | DEFER / Controlled Technical Debt | NON-BLOCKING |
+| F-LLM-001 No explicit LLM timeout boundary | Resilience | DEFER | NON-BLOCKING |
+| F-TRACE-001 No end-to-end request correlation ID | Observability | DEFER | NON-BLOCKING |
+| F-PROVENANCE-001 Decision provenance not exposed in response | Explainability | DEFER | NON-BLOCKING |
+
+### Governance Notes
+- F-AUDIT-001: AuditRecorder catches all exceptions with except Exception: pass, hiding audit failures from operators. Does not break execution. Deferred as controlled technical debt; logging improvement planned for M6.
+- F-MEMORY-001: Memory schema filters by session_id only; no user_id column. No confirmed cross-user data leakage. Deferred as architectural improvement; user isolation planned before production.
+- F-PROV-001: KnowledgeOrchestrator skips failed providers silently via if isinstance(result, Exception): continue. This is intentional graceful degradation but reduces observability. Deferred as controlled technical debt; error logging improvement planned.
+- F-LLM-001: LLM calls use default provider timeout; no explicit circuit breaker. LLM is advisory-only with deterministic fallback. Deferred.
+- F-TRACE-001: correlation_id is generated at router level but not propagated to all layers. session_id provides alternative correlation. Deferred.
+- F-PROVENANCE-001: Decision provenance is persisted to memory but not exposed in MissionResponse. Deferred until explainability is required.
+- Blocking findings: 0
+- All open findings are deferred as controlled technical debt; none prevent DEM/AI/knowledge expansion.
+- This closure does not authorize Audit G; Audit G requires separate Lead Architect governance authorization.
+
+**Decision:** G1 CLOSED — DEM / AI / Knowledge Architecture Audit completed with no blocking findings.
+
+**Date:** 2026-08-23
+
+**Rationale:**
+- All findings are deferred as controlled technical debt.
+- No confirmed security breach, data leakage, or architectural defect blocking DEM operation.
+- DEM ownership is clear and well-defined.
+- Provider isolation, LLM advisory boundary, and deterministic fallback are preserved.
+
+**Impact:**
+- DEM/AI/knowledge expansion may proceed with deferred technical debt tracked.
+- 6 deferred items require monitoring but do not block current phase.
+- Audit G requires separate governance authorization.
+
+**Reference:** Audit F report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+
 ## WTO ePing G1 Decision
 
 **Decision:** G1 CLOSED WITH CLASSIFICATION — WTO ePing reclassified as Complementary Knowledge Source.
