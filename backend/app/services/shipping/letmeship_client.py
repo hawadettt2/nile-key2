@@ -94,7 +94,11 @@ class LetMeShipClient:
             json=payload,
         )
         if response.status_code != 200:
-            raise LetMeShipError(response.status_code, f"LetMeShip rates failed: {response.text[:500]}")
+            logger.error(
+                "LetMeShip get_available_services failed: status=%s",
+                response.status_code,
+            )
+            raise LetMeShipError(response.status_code, "LetMeShip rates failed")
         data = response.json()
         return data.get("services", [])
 
@@ -104,7 +108,11 @@ class LetMeShipClient:
             json=payload,
         )
         if response.status_code not in (200, 201):
-            raise LetMeShipError(response.status_code, f"LetMeShip create shipment failed: {response.text[:500]}")
+            logger.error(
+                "LetMeShip create_shipment failed: status=%s",
+                response.status_code,
+            )
+            raise LetMeShipError(response.status_code, "LetMeShip create shipment failed")
         return response.json()
 
     def get_shipment(self, shipment_id: str) -> Dict[str, Any]:
@@ -112,7 +120,11 @@ class LetMeShipClient:
             f"{self.base_url}/shipments/{shipment_id}",
         )
         if response.status_code != 200:
-            raise LetMeShipError(response.status_code, f"LetMeShip get shipment failed: {response.text[:500]}")
+            logger.error(
+                "LetMeShip get_shipment failed: status=%s",
+                response.status_code,
+            )
+            raise LetMeShipError(response.status_code, "LetMeShip get shipment failed")
         return response.json()
 
     def get_label(self, shipment_id: str) -> bytes:
@@ -121,7 +133,11 @@ class LetMeShipClient:
             params={"types": "LABEL"},
         )
         if response.status_code != 200:
-            raise LetMeShipError(response.status_code, f"LetMeShip label failed: {response.text[:500]}")
+            logger.error(
+                "LetMeShip get_label failed: status=%s",
+                response.status_code,
+            )
+            raise LetMeShipError(response.status_code, "LetMeShip label failed")
         return response.content
 
     def get_tracking_data(self, shipment_id: str) -> Dict[str, Any]:
@@ -130,7 +146,11 @@ class LetMeShipClient:
             params={"shipmentid": shipment_id},
         )
         if response.status_code != 200:
-            raise LetMeShipError(response.status_code, f"LetMeShip tracking failed: {response.text[:500]}")
+            logger.error(
+                "LetMeShip get_tracking_data failed: status=%s",
+                response.status_code,
+            )
+            raise LetMeShipError(response.status_code, "LetMeShip tracking failed")
         return response.json()
 
     def close(self):

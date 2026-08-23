@@ -56,12 +56,28 @@ def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials
         raise HTTPException(status_code=401, detail="Invalid token payload")
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ? AND is_active = 1", (int(user_id),))
+    cursor.execute(
+        "SELECT id, email, username, full_name, phone, company, role, is_active, approval_status, created_at, updated_at "
+        "FROM users WHERE id = ? AND is_active = 1",
+        (int(user_id),),
+    )
     row = cursor.fetchone()
     conn.close()
     if not row:
         raise HTTPException(status_code=401, detail="User not found or inactive")
-    return dict(row)
+    return {
+        "id": row["id"],
+        "email": row["email"],
+        "username": row["username"],
+        "full_name": row["full_name"],
+        "phone": row["phone"],
+        "company": row["company"],
+        "role": row["role"],
+        "is_active": bool(row["is_active"]),
+        "approval_status": row["approval_status"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
 
 
 def require_role(allowed_roles: list):
@@ -100,7 +116,11 @@ def register(user_data: UserCreate, request: Request):
 def login(credentials: UserLogin, request: Request, response: Response):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (credentials.username, credentials.username))
+    cursor.execute(
+        "SELECT id, email, username, password_hash, full_name, phone, company, role, is_active, approval_status, created_at, updated_at "
+        "FROM users WHERE username = ? OR email = ?",
+        (credentials.username, credentials.username),
+    )
     row = cursor.fetchone()
     conn.close()
     if not row:

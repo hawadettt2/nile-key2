@@ -113,9 +113,13 @@ class ETAClient:
         )
 
         if response.status_code != 200:
+            logger.error(
+                "ETA token refresh failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(
                 response.status_code,
-                f"Token refresh failed: {response.text[:500]}",
+                "Token refresh failed",
             )
 
         data = response.json()
@@ -180,8 +184,12 @@ class ETAClient:
 
         if response.status_code not in (200, 202):
             error_data = response.json() if response.text else {}
-            message = error_data.get("message", response.text[:500])
+            message = error_data.get("message", "Invoice submission failed")
             details = error_data.get("details", [])
+            logger.error(
+                "ETA submit_invoices failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(response.status_code, message, details)
 
         result = response.json()
@@ -207,8 +215,12 @@ class ETAClient:
 
         if response.status_code not in (200, 202):
             error_data = response.json() if response.text else {}
-            message = error_data.get("message", response.text[:500])
+            message = error_data.get("message", "Receipt submission failed")
             details = error_data.get("details", [])
+            logger.error(
+                "ETA submit_receipts failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(response.status_code, message, details)
 
         result = response.json()
@@ -229,8 +241,12 @@ class ETAClient:
 
         if response.status_code != 200:
             error_data = response.json() if response.text else {}
-            message = error_data.get("message", response.text[:500])
+            message = error_data.get("message", "Document cancellation failed")
             details = error_data.get("details", [])
+            logger.error(
+                "ETA cancel_document failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(response.status_code, message, details)
 
         logger.info("Document %s cancelled", uuid)
@@ -244,9 +260,13 @@ class ETAClient:
         )
 
         if response.status_code != 200:
+            logger.error(
+                "ETA get_document_status failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(
                 response.status_code,
-                f"Failed to get document status: {response.text[:500]}",
+                "Failed to get document status",
             )
 
         return response.json()
@@ -259,9 +279,13 @@ class ETAClient:
         )
 
         if response.status_code != 200:
+            logger.error(
+                "ETA get_submission_details failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(
                 response.status_code,
-                f"Failed to get submission details: {response.text[:500]}",
+                "Failed to get submission details",
             )
 
         return response.json()
@@ -275,9 +299,13 @@ class ETAClient:
         )
 
         if response.status_code != 200:
+            logger.error(
+                "ETA get_receipt_submission_details failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(
                 response.status_code,
-                f"Failed to get receipt submission details: {response.text[:500]}",
+                "Failed to get receipt submission details",
             )
 
         return response.json()
@@ -290,9 +318,13 @@ class ETAClient:
         )
 
         if response.status_code != 200:
+            logger.error(
+                "ETA get_receipt_status failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(
                 response.status_code,
-                f"Failed to get receipt status: {response.text[:500]}",
+                "Failed to get receipt status",
             )
 
         return response.json()
@@ -305,9 +337,13 @@ class ETAClient:
         )
 
         if response.status_code != 200:
+            logger.error(
+                "ETA download_pdf failed: status=%s",
+                response.status_code,
+            )
             raise ETAHttpError(
                 response.status_code,
-                f"Failed to download PDF: {response.text[:500]}",
+                "Failed to download PDF",
             )
 
         logger.info("PDF downloaded for document %s", uuid)

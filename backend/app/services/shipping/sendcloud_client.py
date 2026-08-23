@@ -94,7 +94,11 @@ class SendCloudClient:
             json=payload,
         )
         if response.status_code != 200:
-            raise SendCloudError(response.status_code, f"SendCloud rates failed: {response.text[:500]}")
+            logger.error(
+                "SendCloud get_shipping_options failed: status=%s",
+                response.status_code,
+            )
+            raise SendCloudError(response.status_code, "SendCloud rates failed")
         data = response.json()
         return data.get("shipping_methods", [])
 
@@ -104,7 +108,11 @@ class SendCloudClient:
             json=payload,
         )
         if response.status_code not in (200, 201):
-            raise SendCloudError(response.status_code, f"SendCloud create shipment failed: {response.text[:500]}")
+            logger.error(
+                "SendCloud announce_shipment failed: status=%s",
+                response.status_code,
+            )
+            raise SendCloudError(response.status_code, "SendCloud create shipment failed")
         return response.json()
 
     def get_label(self, parcel_ids: List[int]) -> bytes:
@@ -113,7 +121,11 @@ class SendCloudClient:
             f"{self.base_url}/v2/labels/{ids_str}",
         )
         if response.status_code != 200:
-            raise SendCloudError(response.status_code, f"SendCloud label failed: {response.text[:500]}")
+            logger.error(
+                "SendCloud get_label failed: status=%s",
+                response.status_code,
+            )
+            raise SendCloudError(response.status_code, "SendCloud label failed")
         return response.content
 
     def get_parcel(self, parcel_id: int) -> Dict[str, Any]:
@@ -121,7 +133,11 @@ class SendCloudClient:
             f"{self.base_url}/v2/parcels/{parcel_id}",
         )
         if response.status_code != 200:
-            raise SendCloudError(response.status_code, f"SendCloud get parcel failed: {response.text[:500]}")
+            logger.error(
+                "SendCloud get_parcel failed: status=%s",
+                response.status_code,
+            )
+            raise SendCloudError(response.status_code, "SendCloud get parcel failed")
         return response.json()
 
     def cancel_shipment(self, shipment_id: int) -> Dict[str, Any]:
@@ -130,7 +146,11 @@ class SendCloudClient:
             json={},
         )
         if response.status_code != 200:
-            raise SendCloudError(response.status_code, f"SendCloud cancel failed: {response.text[:500]}")
+            logger.error(
+                "SendCloud cancel_shipment failed: status=%s",
+                response.status_code,
+            )
+            raise SendCloudError(response.status_code, "SendCloud cancel failed")
         return response.json()
 
     def close(self):
