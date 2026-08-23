@@ -12,6 +12,12 @@ def connection():
     conn = get_db()
     try:
         yield conn
+    except Exception:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        raise
     finally:
         conn.close()
 

@@ -482,8 +482,55 @@
 - Remediation commit: `b350458f85ea3311f710b9be9c2ac17cbd95ef82`
 - Verification: All blocking remediations verified fixed; regression tests passed (auth, ETA, shipping).
 - This closure does not authorize Audit E; Audit E requires separate Lead Architect governance authorization.
-- No application code changes were made during the audit phase itself; remediation was executed under explicit Lead Architect authorization as a separate incident remediation effort.
+ - No application code changes were made during the audit phase itself; remediation was executed under explicit Lead Architect authorization as a separate incident remediation effort.
 
+
+## Gate E Closure — Database & Persistence Architecture Audit
+
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED
+**HEAD SHA:** `5aee7e4a29956febaf01d537f1d6d6af52faaa4f`
+**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+
+### Conditions Verified
+
+| Condition | Classification | Decision | Status |
+|-----------|---------------|----------|--------|
+| E-DATA-001 missing indexes on FK/high-cardinality columns | Performance | REMEDIATE → Conditional | NON-BLOCKING |
+| E-DATA-002 inconsistent foreign-key enforcement | Data Integrity | INVALIDATED / FALSE POSITIVE | CLOSED |
+| E-DATA-003 inconsistent transaction handling / rollback | Reliability | REMEDIATE → VERIFIED FIXED | CLOSED |
+| E-DATA-004 missing cascading deletes | Data Integrity | ACCEPT | NON-BLOCKING |
+| E-DATA-005 Alembic placeholder migrations | Technical Debt | ACCEPT | NON-BLOCKING |
+| E-DATA-006 PostgreSQL path not end-to-end validated | Operational Readiness | REMEDIATE → Conditional | NON-BLOCKING |
+| E-DATA-007 SELECT * everywhere | Code Quality | DEFER | NON-BLOCKING |
+| E-DATA-008 runtime ensure_columns() schema evolution | Technical Debt | ACCEPT | NON-BLOCKING |
+| E-DATA-009 raw SQL / no ORM | Technical Debt | ACCEPT | NON-BLOCKING |
+| E-DATA-010 incomplete audit logging coverage | Compliance | DEFER | NON-BLOCKING |
+
+### Governance Notes
+- E-DATA-002: Original finding claimed `PRAGMA foreign_keys = ON` was missing from `get_db()`. Re-verification confirmed it is present in both `get_db_connection()` and `get_db()` in `backend/app/core/database.py`. Finding invalidated as false positive.
+- E-DATA-003: Added explicit `conn.rollback()` in `get_db_connection()` and `connection()` context managers in `backend/app/core/database.py` and `backend/app/services/base.py`. Rollback now occurs on exception before connection close. Verified by code inspection; regression tests passed.
+- E-DATA-001: Missing indexes remain a performance concern but do not block Gate E closure. Must be addressed before production migration.
+- E-DATA-006: PostgreSQL target architecture is explicit per ADR-0002 and PLAN.md. Full end-to-end validation must be completed during approved migration window.
+- No blocking conditions remain. Gate E is closed.
+
+**Decision:** G1 CLOSED — Database & Persistence Architecture Audit completed with no blocking findings.
+
+**Date:** 2026-08-23
+
+**Rationale:**
+- E-DATA-002 invalidated: `PRAGMA foreign_keys = ON` present in both `get_db_connection()` and `get_db()`.
+- E-DATA-003 remediated: explicit `conn.rollback()` added to both connection context managers.
+- No blocking conditions remain. Conditional findings do not prevent Gate E closure.
+
+**Impact:**
+- Target data architecture remains explicit: PostgreSQL per ADR-0002 and PLAN.md.
+- SQLite runtime unchanged; no migration executed.
+- E-DATA-001 and E-DATA-006 remain conditional for production migration readiness.
+
+**Reference:** Audit E report, Lead Architect Re-Verification, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+
+## WTO ePing G1 Decision
 
 **Decision:** G1 CLOSED WITH CLASSIFICATION — WTO ePing reclassified as Complementary Knowledge Source.
 
