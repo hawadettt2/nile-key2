@@ -7,9 +7,13 @@
 **Project Owner:** _______________  
 **Witness (if applicable):** _______________  
 
-> **STATUS: DEFERRED**
-> Manual UAT is postponed per Project Owner decision dated 2026-07-25.
-> This certificate cannot be executed until Phase 2 is re-activated and completed.
+> **STATUS: STALE / SUPERSEDED**
+> This document is a historical draft template from 2026-07-30.
+> It was superseded by the approved Owner Acceptance Certificate.
+> Authoritative current source: `.kilo/plans/wp42-owner-acceptance-certificate.md` (2026-08-10, Project Owner Approved)
+> Final baseline: `baseline-wp42-final` → `d3eafce`
+> WP-42 Status: COMPLETE
+
 
 ---
 

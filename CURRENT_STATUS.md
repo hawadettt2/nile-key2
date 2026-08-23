@@ -1,6 +1,6 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-08-15
+**Last Updated:** 2026-08-23
 **Branch:** main
 **Commit:** HEAD
 **Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED, Export Readiness Vertical Slice CLOSED)
@@ -626,7 +626,49 @@
 - WTO TFA Database remains a P0 Candidate but is not an Approved or Implemented Provider
 - No G2/G3/G4/G5 activities authorized for WTO TFA Database
 
-**Reference:** .kilo/plans/1786559160142-external-knowledge-portfolio-re-evaluation.md Section 25
+**Reference:** Audit G report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+
+## Gate G Closure — Governance & Documentation Reconciliation
+
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED
+**HEAD SHA:** `f1bf1412801dec1b9eb345040eb03cbcfef5ac11`
+**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+
+### Conditions Verified
+
+| Condition | Classification | Decision | Status |
+|-----------|---------------|----------|--------|
+| G-DRIFT-001 CURRENT_STATUS.md metadata drift | Governance | VERIFIED FIXED | CLOSED |
+| G-CONTRADICTION-001 WP-42 status contradiction | Governance | RESOLVED | CLOSED |
+| G-STALE-001 Stale test count reference | Documentation | DEFER | NON-BLOCKING |
+| G-STALE-002 TECH_DEBT.md missing Audit findings | Documentation | DEFER | NON-BLOCKING |
+
+### Governance Notes
+- G-DRIFT-001: `CURRENT_STATUS.md` header showed "Last Updated: 2026-08-15" but file contained 2026-08-23 entries. Remediated by updating header to 2026-08-23.
+- G-CONTRADICTION-001: `docs/appendices/wp42-owner-acceptance-certificate.md` showed DEFERRED while CURRENT_STATUS.md showed COMPLETE. Resolved by identifying the appendices file as a stale template superseded by the approved certificate at `.kilo/plans/wp42-owner-acceptance-certificate.md` (2026-08-10, Project Owner Approved, baseline `baseline-wp42-final` → `d3eafce`).
+- G-STALE-001: ENGINEERING_MEMORY.md test count of 876+ is accepted as historical record from WP-41 (2026-07-21).
+- G-STALE-002: TECH_DEBT.md not updated with Audit D/E/F findings; deferred as audit findings are tracked in audit reports and CURRENT_STATUS.md.
+- All material status claims now have identifiable authoritative sources and dates per Charter Gate G requirement.
+- No blocking conditions remain. Gate G is closed.
+
+**Decision:** G1 CLOSED — Governance & Documentation Reconciliation completed; Final Architectural Audit closed.
+
+**Date:** 2026-08-23
+
+**Rationale:**
+- All documentation drift items resolved or accepted as non-blocking.
+- WP-42 status fully documented with authoritative source.
+- Every material status claim has an identifiable authoritative source and date.
+- Final Architectural Baseline established.
+
+**Impact:**
+- Documentation is now consistent and traceable.
+- WP-42 is formally recorded as COMPLETE with approved certificate.
+- No architectural defects or security issues identified.
+- Deferred items are tracked and non-blocking.
+
+**Reference:** Audit G report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
 
 ## Session Recovery Point
 
