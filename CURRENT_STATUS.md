@@ -721,6 +721,64 @@
 
 **Reference:** E-DATA-006 execution report, Lead Architect Verification, `.kilo/plans/edata-006-postgresql-migration-validation-plan.md`
 
+## F-MEMORY-001 Closure — User-Level Memory Isolation
+
+**Finding:** F-MEMORY-001
+**Priority:** P1
+**Closure Date:** 2026-08-24
+**Closure Status:** CLOSED — VERIFIED
+**Plan:** `.kilo/plans/fmemory-001-user-level-memory-isolation-plan.md`
+**Implementation Status:** Completed
+
+### Execution Summary
+
+| Phase | Status | Evidence |
+|-------|--------|----------|
+| Schema Implementation | ✅ COMPLETED | `user_id INTEGER NOT NULL` added to `agent_memory` |
+| Legacy Data Migration | ✅ COMPLETED | 0 records migrated; table rebuild with NOT NULL |
+| Ownership / Isolation Enforcement | ✅ COMPLETED | All memory operations require `user_id` |
+| Tests | ✅ 11/11 PASSED | User isolation + interface tests pass |
+| Backup / Restore | ✅ VERIFIED | Backup → isolated restore → integrity_check = ok |
+
+### Acceptance Criteria
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| AC-MEM-1 | ✅ VERIFIED | `PRAGMA table_info(agent_memory)` → `user_id.notnull = 1` |
+| AC-MEM-2 | ✅ VERIFIED | All records have valid `user_id` |
+| AC-MEM-3 | ✅ VERIFIED | Ownership invariant enforced at application level |
+| AC-MEM-4 | ✅ VERIFIED | Cross-user isolation tests pass |
+| AC-MEM-5 | ✅ VERIFIED | 0 legacy records, 0 migrated, 0 quarantined |
+| AC-MEM-6 | ✅ VERIFIED | No orphaned records in production memory |
+| AC-MEM-7 | ✅ VERIFIED | All memory operations require `user_id` |
+| AC-MEM-8 | ✅ VERIFIED | Backup exists: `backend/data/nile_key.db.backup.pre-fmemory001` |
+| AC-MEM-9 | ✅ VERIFIED | Restore executed → integrity_check = ok → schema preserved |
+| AC-MEM-10 | ✅ VERIFIED | Privacy/security verification passed |
+| AC-MEM-11 | ✅ APPROVED | Lead Architect Governance Closure |
+
+### Authorization Boundary
+
+- **Production Deployment:** NOT PERFORMED
+- **Production Data Migration:** NOT PERFORMED
+- **E-DATA-010:** NOT AUTHORIZED — remains DEFERRED
+- **E-DATA-006:** CLOSED — NOT REOPENED
+- **Target Architecture:** NOT STARTED
+- **External Research:** NOT STARTED
+- **Memory work outside F-MEMORY-001:** NOT AUTHORIZED
+
+### Governance Notes
+
+- F-MEMORY-001 closure does not reopen any Finding.
+- F-MEMORY-001 closure does not authorize E-DATA-010 or any other deferred finding.
+- F-MEMORY-001 closure does not change Reference Architecture.
+- F-MEMORY-001 closure does not start Target Architecture or External Research.
+- User-level memory isolation is now enforced at schema and application level.
+- Backup and restore procedures verified.
+
+**Decision:** F-MEMORY-001 CLOSED — VERIFIED. All Acceptance Criteria met. No residual blocking conditions.
+
+**Reference:** F-MEMORY-001 execution report, Lead Architect Verification, `.kilo/plans/fmemory-001-user-level-memory-isolation-plan.md`
+
 ## Session Recovery Point
 
 If resuming after session interruption:
