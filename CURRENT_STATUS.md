@@ -670,6 +670,57 @@
 
 **Reference:** Audit G report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
 
+## E-DATA-006 Closure — PostgreSQL Migration Validation
+
+**Finding:** E-DATA-006
+**Priority:** P0
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED — PASSED WITH CONDITIONS
+**Execution Status:** Completed
+**Plan:** `.kilo/plans/edata-006-postgresql-migration-validation-plan.md`
+
+### Execution Summary
+
+| Phase | Status | Evidence |
+|-------|--------|----------|
+| Path A — Fresh Schema Validation | ✅ PASSED | `init_postgres_schema.sql` created 31 tables, indexes, constraints |
+| Migration Dry Run | ✅ PASSED | Correct counts and checksums, no writes to PostgreSQL |
+| Migration Verification | ✅ PASSED WITH CONDITIONS | Row counts match; checksums differ due to SQLite/PostgreSQL type normalization |
+| Backup / Restore / Rollback | ✅ PASSED | pg_dump 77.2K → pg_restore → Data intact |
+| Performance Baseline | ✅ PASSED | PK lookup 0.072ms, join 0.167ms, aggregate 0.181ms |
+| Production Safety | ✅ PASSED | SQLite runtime unchanged, localhost-only PostgreSQL, placeholder credentials |
+
+### E-DATA-006-B1 — Controlled Limitation
+
+| Attribute | Value |
+|-----------|-------|
+| Finding ID | E-DATA-006-B1 |
+| Status | ACCEPT AS CONTROLLED LIMITATION |
+| Scope | Alembic Fresh-DB Bootstrap Path only |
+| Description | `alembic upgrade head` fails on fresh PostgreSQL because initial migration `9f6e6d58ca0f` is empty and `legacy_cleanup` expects pre-existing tables |
+| Impact | Does not block approved PostgreSQL migration path per ADR-0002 |
+| Follow-up | Documented only — no WP, no Plan, no Implementation |
+
+### Authorization Boundary
+
+- **Production Migration:** NOT AUTHORIZED
+- **PostgreSQL Production Activation:** NOT AUTHORIZED
+- **Alembic Repair:** NOT AUTHORIZED
+- **E-DATA-001 Repair:** NOT AUTHORIZED
+- **F-MEMORY-001 Execution:** NOT AUTHORIZED
+
+### Governance Notes
+
+- E-DATA-006-B1 is a known limitation of the Alembic fresh-DB bootstrap path, not a defect in the approved migration path.
+- Per ADR-0002, the approved path for fresh PostgreSQL setup is `init_postgres_schema.sql`, not Alembic alone.
+- Alembic is intended for incremental schema evolution after baseline exists.
+- No production data was accessed or modified during validation.
+- SQLite runtime remains the default and unchanged.
+
+**Decision:** E-DATA-006 CLOSED — PASSED WITH CONDITIONS. E-DATA-006-B1 ACCEPTED AS CONTROLLED LIMITATION. Production migration remains subject to separate Governance Authorization.
+
+**Reference:** E-DATA-006 execution report, Lead Architect Verification, `.kilo/plans/edata-006-postgresql-migration-validation-plan.md`
+
 ## Session Recovery Point
 
 If resuming after session interruption:
