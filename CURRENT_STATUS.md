@@ -456,11 +456,34 @@
 - Evidence: `agent.py` lines 46-52, `digital_export_manager.py` lines 71-86, `docker-compose.yml` line 39.
 - Decision: Accepted as Controlled Technical Debt. No production failure evidence found. Docker healthcheck remains functional for process liveness.
 - Future remediation: Deferred to Phase 4 or Audit C2. Not a Gate C Blocker.
-- Full test suite execution/1418 tests count is an operational metric recorded during verification; not a Gate C Condition and not fully executed within this audit.
-- No code changes were made. No test execution was performed beyond subset verification.
+ - Full test suite execution/1418 tests count is an operational metric recorded during verification; not a Gate C Condition and not fully executed within this audit.
+ - No code changes were made. No test execution was performed beyond subset verification.
 
 
-## WTO ePing G1 Decision
+## Gate D Closure — Security & Reliability Audit
+
+**Closure Date:** 2026-08-23
+**Closure Status:** CLOSED
+**HEAD SHA:** `b350458f85ea3311f710b9be9c2ac17cbd95ef82`
+**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications; remediation executed under separate Incident Remediation mode after Lead Architect authorization
+
+### Conditions Verified
+
+| Condition | Classification | Decision | Status |
+|-----------|---------------|----------|--------|
+| D-EXPOSURE-001 password_hash exposure via SELECT * | Security | REMEDIATE → VERIFIED FIXED | CLOSED |
+| D-SECRET-002 external API response leakage to client | Security | REMEDIATE → VERIFIED FIXED | CLOSED |
+| D-LOG-001 internal logging of external response body | Security | REMEDIATE → VERIFIED FIXED | CLOSED |
+
+### Governance Notes
+- D-EXPOSURE-001: `get_current_user` in `backend/app/routers/auth.py` used `SELECT * FROM users`, exposing `password_hash` in API responses. Remediated by replacing with explicit column list excluding `password_hash`. Login path retains `password_hash` fetch for verification only; not returned to client.
+- D-SECRET-002: External API client error messages in ETA/LetMeShip/SendCloud clients leaked `response.text[:500]` to API consumers. Remediated by replacing with generic error messages; raw response body no longer exposed to callers.
+- D-LOG-001: `logger.error()` in ETA/LetMeShip/SendCloud clients logged `response.text[:500]` internally. Remediated by removing raw response body from internal logs; `status_code` retained for diagnostics.
+- Remediation commit: `b350458f85ea3311f710b9be9c2ac17cbd95ef82`
+- Verification: All blocking remediations verified fixed; regression tests passed (auth, ETA, shipping).
+- This closure does not authorize Audit E; Audit E requires separate Lead Architect governance authorization.
+- No application code changes were made during the audit phase itself; remediation was executed under explicit Lead Architect authorization as a separate incident remediation effort.
+
 
 **Decision:** G1 CLOSED WITH CLASSIFICATION — WTO ePing reclassified as Complementary Knowledge Source.
 
