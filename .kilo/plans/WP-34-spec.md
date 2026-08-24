@@ -1,12 +1,12 @@
-# WP-34 Specification: External Research Capability
+﻿# WP-34 Specification: External Research Capability
 
-**Work Package:** WP-34 — External Research Capability  
-**Phase:** 2 — Intelligence Expansion  
+**Work Package:** WP-34 â€” External Research Capability  
+**Phase:** 2 â€” Intelligence Expansion  
 **Baseline:** baseline-wp42 (`6f310f8`)  
-**Authority:** PLAN.md (Master Roadmap v2.1) — Single Source of Truth  
+**Authority:** PLAN.md (Master Roadmap v2.1) â€” Single Source of Truth  
 **Governing Documents:** `PLAN.md` Section 15.3, `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Date:** 2026-08-09  
-**Status:** Draft — Pending Approval
+**Status:** Draft â€” Pending Approval
 
 ---
 
@@ -20,7 +20,7 @@ This Work Package is **foundational** for the Executive Intelligence Layer:
 - It does not execute plans or ERP operations.
 - It does not replace or subsume Knowledge Ingestion.
 
-**Source:** PLAN.md Section 15.3 (Phase 2 — Intelligence Expansion), `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` Section 3.1/9.
+**Source:** PLAN.md Section 15.3 (Phase 2 â€” Intelligence Expansion), `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` Section 3.1/9.
 
 ---
 
@@ -31,7 +31,7 @@ This Work Package is **foundational** for the Executive Intelligence Layer:
 | Component | Description | Source |
 |-----------|-------------|--------|
 | **Research Request Model** | Structured request object capturing research goal, context, scope, and constraints | PLAN.md Section 15.3 |
-| **Research Lifecycle** | End-to-end flow: Request → Planning → Source Discovery → Retrieval → Processing → Evidence Capture → Structuring → Result | ARCH review 2026-08-09 |
+| **Research Lifecycle** | End-to-end flow: Request â†’ Planning â†’ Source Discovery â†’ Retrieval â†’ Processing â†’ Evidence Capture â†’ Structuring â†’ Result | ARCH review 2026-08-09 |
 | **Source Discovery & Retrieval** | Mechanism to discover and retrieve information from multiple external sources | PLAN.md Section 15.3 |
 | **Content Processing** | Transform raw retrieved content into structured research results | PLAN.md Section 15.3 |
 | **Evidence & Provenance Capture** | Record source identity, URL/reference, retrieval timestamp, and evidence association for each result | ARCH review 2026-08-09 |
@@ -79,14 +79,14 @@ All of the following must be true before WP-34 can begin:
 
 | Prerequisite | Status | Evidence |
 |-------------|--------|----------|
-| WP-30F: Company Knowledge Layer Interface | ✅ Complete | `.kilo/plans/wp30-implementation-plan.md`, `CURRENT_STATUS.md` |
-| WP-30G: Memory Interface Definition | ✅ Complete | `.kilo/plans/wp30-implementation-plan.md`, `CURRENT_STATUS.md` |
-| WP-LLM-001: LLM Provider Integration | ✅ Complete | `.kilo/plans/WP-LLM-001-implementation-plan.md`, `CURRENT_STATUS.md` |
-| WP-31: AI Memory | ✅ Complete | `CURRENT_STATUS.md` |
-| WP-32: Knowledge Graph | ✅ Complete | `CURRENT_STATUS.md` |
-| WP-33: Trade Intelligence | ✅ Complete | `CURRENT_STATUS.md` |
-| WP-42: Owner Acceptance | ✅ Complete | `baseline-wp42` tag, commit `6f310f8` |
-| Knowledge Ingestion Contract boundaries clarified | ✅ Complete | `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` Section 3.1/9 |
+| WP-30F: Company Knowledge Layer Interface | âœ… Complete | `.kilo/plans/wp30-implementation-plan.md`, `CURRENT_STATUS.md` |
+| WP-30G: Memory Interface Definition | âœ… Complete | `.kilo/plans/wp30-implementation-plan.md`, `CURRENT_STATUS.md` |
+| WP-LLM-001: LLM Provider Integration | âœ… Complete | `\.kilo/plans/archive/WP-LLM-001-implementation-plan\.md`, `CURRENT_STATUS.md` |
+| WP-31: AI Memory | âœ… Complete | `CURRENT_STATUS.md` |
+| WP-32: Knowledge Graph | âœ… Complete | `CURRENT_STATUS.md` |
+| WP-33: Trade Intelligence | âœ… Complete | `CURRENT_STATUS.md` |
+| WP-42: Owner Acceptance | âœ… Complete | `baseline-wp42` tag, commit `6f310f8` |
+| Knowledge Ingestion Contract boundaries clarified | âœ… Complete | `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` Section 3.1/9 |
 
 ---
 
@@ -96,19 +96,19 @@ The External Research Capability follows this lifecycle:
 
 ```
 Research Request
-    ↓
+    â†“
 Query/Research Planning
-    ↓
+    â†“
 Source Discovery
-    ↓
+    â†“
 Retrieval (per source)
-    ↓
+    â†“
 Content Processing
-    ↓
+    â†“
 Evidence/Source Capture
-    ↓
+    â†“
 Result Structuring
-    ↓
+    â†“
 Research Result
 ```
 
@@ -270,7 +270,7 @@ The following require design decisions during implementation planning:
 
 ## 10. Knowledge Layer Boundary
 
-### 10.1 External Research → Knowledge Layer
+### 10.1 External Research â†’ Knowledge Layer
 External Research produces **Research Results** with evidence and provenance.
 
 Research Results may be:
@@ -333,14 +333,14 @@ Reasoning consumes research results to:
 
 | Dependency | Type | Status |
 |------------|------|--------|
-| WP-30F: Company Knowledge Layer Interface | Internal | ✅ Complete |
-| WP-30G: Memory Interface Definition | Internal | ✅ Complete |
-| WP-LLM-001: LLM Provider Integration | Internal | ✅ Complete |
-| WP-31: AI Memory | Internal | ✅ Complete |
-| WP-32: Knowledge Graph | Internal | ✅ Complete |
-| WP-33: Trade Intelligence | Internal | ✅ Complete |
-| WP-42: Owner Acceptance | Internal | ✅ Complete |
-| Knowledge Ingestion Contract boundaries | Documentation | ✅ Clarified |
+| WP-30F: Company Knowledge Layer Interface | Internal | âœ… Complete |
+| WP-30G: Memory Interface Definition | Internal | âœ… Complete |
+| WP-LLM-001: LLM Provider Integration | Internal | âœ… Complete |
+| WP-31: AI Memory | Internal | âœ… Complete |
+| WP-32: Knowledge Graph | Internal | âœ… Complete |
+| WP-33: Trade Intelligence | Internal | âœ… Complete |
+| WP-42: Owner Acceptance | Internal | âœ… Complete |
+| Knowledge Ingestion Contract boundaries | Documentation | âœ… Clarified |
 
 ---
 
@@ -358,8 +358,9 @@ Reasoning consumes research results to:
 
 ## 15. References
 
-- `PLAN.md` Section 15.3 — Phase 2: Intelligence Expansion
-- `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` — Knowledge Ingestion boundaries
-- `.kilo/plans/wp30-implementation-plan.md` Phase 6 — Knowledge Layer tasks
-- `.kilo/plans/ED-WP30-002.md` — WP-30F scope clarification
-- `CURRENT_STATUS.md` — WP-30F through WP-42 completion status
+- `PLAN.md` Section 15.3 â€” Phase 2: Intelligence Expansion
+- `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` â€” Knowledge Ingestion boundaries
+- `.kilo/plans/wp30-implementation-plan.md` Phase 6 â€” Knowledge Layer tasks
+- `.kilo/plans/ED-WP30-002.md` â€” WP-30F scope clarification
+- `CURRENT_STATUS.md` â€” WP-30F through WP-42 completion status
+

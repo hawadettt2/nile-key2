@@ -1,4 +1,4 @@
-# Master Roadmap v2.1 ? ???? ????? ????? ???????
+ï»¿# Master Roadmap v2.1 ? ???? ????? ????? ???????
 # Nile Key Digital Platform ? Master Roadmap v2.1
 
 **???????:** 2026-07-26
@@ -287,7 +287,7 @@
 | WP-30F | ? ????? | Company Knowledge Layer interface; KnowledgeProvider, KnowledgeQuery, KnowledgeProviderRegistry, ingestion contract |
 | WP-30G | ? ????? | Memory Interface Definition; MemoryProvider ABC with recall/store/forget/summarize; graceful degradation in DEM core |
 | WP-30H | ? ????? | Avatar Contract; IntentContent and AvatarRenderer interfaces defined; structured intents confirmed; 15 tests |
-| WP-37 | ? ????? | Knowledge Ingestion Pipeline — File-based Regulations Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests |
+| WP-37 | ? ????? | Knowledge Ingestion Pipeline â€” File-based Regulations Provider; JSON ingestion; REGULATIONS_FILE_PATH configurable; 12 tests |
 
 ## 8.2 ?????? ???????? ???????
 
@@ -776,11 +776,11 @@ without sacrificing simplicity.
 |------|---------------|
 | ??? ????? | 2026-07-29 |
 | ??????? ??????? | 3 ? ????? ???????? |
-| Work Package ÇáÍÇáíÉ | WP-42 (Closed — Completed) |
+| Work Package Ø§Ù„Ø­Ø§Ù„ÙŠØ© | WP-42 (Closed â€” Completed) |
 | ??????? ??????? | ????? |
 | WP ??????? ??????? | Release Readiness Closure |
-| ÇáãåÇã ÇáãßÊãáÉ | WP-01 through WP-36 |
-| ÇáãåÇã ÇáãÊÈÞíÉ | WP-42 Owner Acceptance + Release validation |
+| Ø§Ù„Ù…Ù‡Ø§Ù… Ø§Ù„Ù…ÙƒØªÙ…Ù„Ø© | WP-01 through WP-36 |
+| Ø§Ù„Ù…Ù‡Ø§Ù… Ø§Ù„Ù…ØªØ¨Ù‚ÙŠØ© | WP-42 Owner Acceptance + Release validation |
 | ??????? ???????? | ??? ???? ????? ????? ?? ETA ? Shipping APIs |
 | ??????? ????????? | ????? Master Roadmap v2.1 + CURRENT_STATUS.md + TECH_DEBT.md |
 | Branch ?????? | main |
@@ -1034,7 +1034,7 @@ without sacrificing simplicity.
 
 ### WP-33: Trade Intelligence
 - **Status:** ? Completed
-- **Description:** Trade Intelligence — supplier/buyer analysis, trend detection, comparisons, report generation
+- **Description:** Trade Intelligence â€” supplier/buyer analysis, trend detection, comparisons, report generation
 - **Dependencies:** WP-30F, WP-30G, WP-31, WP-32 completed
 - **Deliverables:** Intelligence engine, 6 API endpoints, 120 tests (75 service + 26 integration + 14 security + 5 performance)
 - **Completion Date:** 2026-08-09
@@ -1046,15 +1046,15 @@ without sacrificing simplicity.
 - **Deliverables:** Research Request/Result models, orchestrator, source registry, retrieval abstraction, evidence/provenance capture, result structuring, verification/quality, 103+ tests
 - **Completion Date:** 2026-08-09
 
-### WP-38a: External Source Integration — Moaah First Provider
-- **Status:** ? Closed — Completed
-- **Description:** External Source Integration — Moaah API adapter with retry/backoff, provenance metadata, registry registration, 15 tests (9 unit + 6 integration); no regressions
+### WP-38a: External Source Integration â€” Moaah First Provider
+- **Status:** ? Closed â€” Completed
+- **Description:** External Source Integration â€” Moaah API adapter with retry/backoff, provenance metadata, registry registration, 15 tests (9 unit + 6 integration); no regressions
 - **Dependencies:** WP-37 completed
 - **Deliverables:** MoaahExternalSourceAdapter, MoaahApiClient, 15 tests, closure report, owner acceptance certificate, baseline `baseline-wp38a-final`
 - **Completion Date:** 2026-08-13
 
 ### WP-UN-Comtrade: UN Comtrade External Source Adapter
-- **Status:** ? Closed — Completed
+- **Status:** ? Closed â€” Completed
 - **Description:** UN Comtrade official global trade statistics adapter with Preview API support (no key required), registry registration, 20 tests (4 client + 16 provider), Live Validation 200 OK with 500 records, zero added regressions
 - **Dependencies:** WP-42 completed; G1/G2/G3 approved by Project Owner on 2026-08-15
 - **Deliverables:** UnComtradeExternalSourceAdapter, UnComtradeApiClient, UN_COMTRADE_* config settings, registry registration in main.py, 20 tests, closure report, owner acceptance certificate, baseline `baseline-uncomtrade-final`
@@ -1069,7 +1069,7 @@ without sacrificing simplicity.
 - ? ?????
 
 ### WP-42: ???? ??????
-- **Status:** ? Closed — Completed
+- **Status:** ? Closed â€” Completed
 - **Completion Date:** 2026-08-10
 - **Final Baseline:** `baseline-wp42-final` ? `d3eafce`
 
@@ -1110,7 +1110,7 @@ without sacrificing simplicity.
 ## 16.3 ??????? 2: ?????? ??????
 
 ? ?????? ???:
-- [x] ÅßãÇá WP-30 through WP-36 ãßÊãá
+- [x] Ø¥ÙƒÙ…Ø§Ù„ WP-30 through WP-36 Ù…ÙƒØªÙ…Ù„
 - [ ] Digital Export Manager ?????? ?????????? ???????
 - [ ] AI Memory ???? Across ???????
 - [ ] Knowledge Graph ???? ?????? ????????
@@ -1122,7 +1122,7 @@ without sacrificing simplicity.
 ? ?????? ???:
 - [x] WP-40: Docker Compose ???? ?? ???????
 - [x] WP-41: ????? ??????? ??????
-- [x] WP-42: ÞÈæá ÇáãÇáß (Closed — Completed)
+- [x] WP-42: Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ù…Ø§Ù„Ùƒ (Closed â€” Completed)
 - [ ] ?? ???? ??? ???? ???? ???? ???????
 - [ ] ???? ?????????? ????
 - [ ] ???????? ?????????? ?????
@@ -1201,7 +1201,7 @@ without sacrificing simplicity.
 |----------|------|----------|-------|
 | HIGH | Documentation drift | Multiple docs | Resolved in WP-17A/WP-17B |
 | MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
-| MEDIUM | Rate limiting — auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Implemented on auth endpoints via `slowapi`; non-auth endpoint coverage is a separate design decision |
+| MEDIUM | Rate limiting â€” auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Implemented on auth endpoints via `slowapi`; non-auth endpoint coverage is a separate design decision |
 | MEDIUM | PostgreSQL migration path | Not started | This document notes SQLite is an implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
 | LOW | `__pycache__` directories | Throughout Python tree | Mostly gitignored, but scattered `__pycache__` dirs remain |
@@ -1264,7 +1264,7 @@ PLAN.md (Master Roadmap v2.1) ? ?????? ??????
     ??? TECH_DEBT.md (??? ????? ??????)
     ??? CHANGELOG.md (??? ?????????)
     ??? docs/appendices/ (????? ???????)
-    ?   ??? .kilo/plans/archive/WORK_PACKAGE_PLAN.md — Historical detailed WP breakdowns
+    ?   ??? .kilo/plans/archive/WORK_PACKAGE_PLAN.md â€” Historical detailed WP breakdowns
     ?   ??? UAT_CHECKLIST.md ? Manual UAT checklist
     ?   ??? ...
     ??? .kilo/plans/earp-001/ (???? ????? EARP-001)
@@ -1319,7 +1319,7 @@ Architecture layers:
 
 ## 22.2 Current Implementation Status
 
-Current intelligence implementation includes Deterministic/Scaffolded Intelligence — rule-based, interfaces, and registry-driven — plus an active LLM Provider integration (WP-LLM-001).
+Current intelligence implementation includes Deterministic/Scaffolded Intelligence â€” rule-based, interfaces, and registry-driven â€” plus an active LLM Provider integration (WP-LLM-001).
 
 - **LLM Provider:** Google AI (Gemini) integrated via `backend/app/agent/llm/provider.py`
 - **LLM Registry:** `llm_registry` singleton manages provider registration
@@ -1330,14 +1330,14 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 
 ## 22.3 Deferred / Future
 
-- Knowledge Ingestion Pipeline — File-based Regulations Provider completed (WP-37)
+- Knowledge Ingestion Pipeline â€” File-based Regulations Provider completed (WP-37)
   - Baseline: `baseline-wp37-final`
-  - Contract: `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` — vertical slice executed
+  - Contract: `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md` â€” vertical slice executed
   - Next: Real external source integration (future WP, out of scope for WP-37)
-- Avatar Renderer — contract defined, implementation deferred
-- Goal and Plan reasoning layers — deferred to future work packages
-- Multi-agent coordination — future
-- Full export operations autonomy — future
+- Avatar Renderer â€” contract defined, implementation deferred
+- Goal and Plan reasoning layers â€” deferred to future work packages
+- Multi-agent coordination â€” future
+- Full export operations autonomy â€” future
 
 ---
 
@@ -1437,16 +1437,16 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 
 **Consolidation Date:** 2026-07-29
 **Closure Status:** CLOSED
-**Closure Record:** `.kilo/plans/1785338639982-documentation-consolidation-closure-record.md`
+**Closure Record:** `\.kilo/plans/archive/1785338639982-documentation-consolidation-closure-record\.md`
 
 ---
 
-## Gate B Closure — Dependency, Boundary & Data Architecture Forensic Audit
+## Gate B Closure â€” Dependency, Boundary & Data Architecture Forensic Audit
 
 **Closure Date:** 2026-08-23
 **Closure Status:** CLOSED
 **HEAD SHA:** `4439e6cd1995aa66a14682dd3ffdf2c781462349`
-**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+**Audit Mode:** Forensic Audit â€” Read-Only, Zero Modifications
 
 ### Conditions Verified
 
@@ -1465,12 +1465,12 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 
 ---
 
-## Gate C Closure — Testing / Runtime / Operations Forensic Audit
+## Gate C Closure â€” Testing / Runtime / Operations Forensic Audit
 
 **Closure Date:** 2026-08-23
 **Closure Status:** CLOSED
 **HEAD SHA:** `7ebd42b5bd48e32c5c6825753fb494fe129218f8`
-**Audit Mode:** Forensic Audit — Read-Only, Zero Modifications
+**Audit Mode:** Forensic Audit â€” Read-Only, Zero Modifications
 
 ### Conditions Verified
 
@@ -1490,19 +1490,19 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 | Debt | Location | Reference | Status |
 |------|----------|-----------|--------|
 | Raw SQL everywhere | `database.py`, routers | Section 9.9 | Accepted |
-| Rate limiting — auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Section 4 (??????) | Partially implemented — non-auth coverage is a separate decision |
+| Rate limiting â€” auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Section 4 (??????) | Partially implemented â€” non-auth coverage is a separate decision |
 | PostgreSQL migration path | Not started | Section 9.9 | Open |
 | Root `alembic.ini` exists | Project root | N/A | Low |
 | `__pycache__` directories | Throughout Python tree | N/A | Low |
 
 ---
 
-## Project Closure — Complete / Closure Ready
+## Project Closure â€” Complete / Closure Ready
 
 **Closure Date:** 2026-08-23
 **Closure Status:** CLOSED / COMPLETE
 **HEAD SHA:** `b4f819e2f3f7e2096341803f08c1d6358af53818`
-**Governance Decision:** Project Complete / Closure Ready — Approved
+**Governance Decision:** Project Complete / Closure Ready â€” Approved
 
 ### Completion Summary
 
@@ -1511,7 +1511,7 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 | WP-01 through WP-42 | ? CLOSED / COMPLETE | All work packages completed and closed |
 | Export Readiness Vertical Slice | ? CLOSED | Implemented / Verified / Closed |
 | Frontend AI/DEM UX | ? COMPLETE | DEM Connect/Disconnect, Mission Composer (8 types), Mission Dashboard, Execution Progress polling, Reasoning Viewer, Approval Inbox with RBAC + agent_audit_logs persistence, Knowledge Explorer, Trade Intelligence dashboard, i18n; 11 DEM backend tests + 35 frontend tests passing |
-| UAT Sessions 1–3 | ? COMPLETE | 151 PASS / 1 FAIL / 1 N/A; Defect #1 deferred as Accepted Known Defect; Defect #2 fixed and verified |
+| UAT Sessions 1â€“3 | ? COMPLETE | 151 PASS / 1 FAIL / 1 N/A; Defect #1 deferred as Accepted Known Defect; Defect #2 fixed and verified |
 | Owner Acceptance | ? COMPLETE | Project Owner acceptance obtained and recorded |
 | Gate B | ? CLOSED | Dependency, Boundary & Data Architecture Forensic Audit |
 | Gate C | ? CLOSED | Testing / Runtime / Operations Forensic Audit |
@@ -1519,7 +1519,7 @@ Absence of a current LLM is not an architectural failure; it is an architecture-
 ### Governance Notes
 - All implementation, testing, UAT, and owner acceptance activities are complete.
 - No open Work Packages or documented remaining phases exist.
-- The phrase "Next Phase: Frontend AI/DEM UX — Owner Acceptance Closure" in `CURRENT_STATUS.md` was a documentation leftover and has been superseded by this closure record.
+- The phrase "Next Phase: Frontend AI/DEM UX â€” Owner Acceptance Closure" in `CURRENT_STATUS.md` was a documentation leftover and has been superseded by this closure record.
 - Future work, if any, must begin as a new Work Package with separate authorization.
 - This closure does not imply Project Owner authorization for new implementation, Audit D, or Audit C2; those remain pending separate authorization if required.
 
@@ -1922,6 +1922,7 @@ All routers depend on `core/database` (get_db) and `core/security` (for auth). N
 
 **Audit Date:** 2026-07-30
 **Closure Status:** CLOSED
-**Closure Record:** `.kilo/plans/1785374443432-repository-hygiene-audit-closure-record.md`
+**Closure Record:** `\.kilo/plans/archive/1785374443432-repository-hygiene-audit-closure-record\.md`
+
 
 

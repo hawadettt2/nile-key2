@@ -1,10 +1,10 @@
-# WP-42 Implementation Plan: Owner Acceptance
+﻿# WP-42 Implementation Plan: Owner Acceptance
 
-**Work Package:** WP-42 — قبول المالك  
-**Phase:** 3 — النشر والإنتاج  
+**Work Package:** WP-42 â€” ظ‚ط¨ظˆظ„ ط§ظ„ظ…ط§ظ„ظƒ  
+**Phase:** 3 â€” ط§ظ„ظ†ط´ط± ظˆط§ظ„ط¥ظ†طھط§ط¬  
 **Baseline:** ebc2181 (HEAD)  
 **Date:** 2026-07-22  
-**Status:** Draft — Pending Approval  
+**Status:** Draft â€” Pending Approval  
 
 ---
 
@@ -12,11 +12,11 @@
 
 WP-42 implementation consists of 5 sequential phases:
 
-1. **Preparation** — Verify environment, gather tools, schedule UAT
-2. **~~Manual UAT Execution~~** — DEFERRED per Project Owner decision (2026-07-25)
-3. **Defect Management** — DEFERRED — pending Phase 2 completion
-4. **Acceptance & Baseline** — DEFERRED — pending Phase 2 completion
-5. **Closure** — DEFERRED — pending Phase 4 completion
+1. **Preparation** â€” Verify environment, gather tools, schedule UAT
+2. **~~Manual UAT Execution~~** â€” DEFERRED per Project Owner decision (2026-07-25)
+3. **Defect Management** â€” DEFERRED â€” pending Phase 2 completion
+4. **Acceptance & Baseline** â€” DEFERRED â€” pending Phase 2 completion
+5. **Closure** â€” DEFERRED â€” pending Phase 4 completion
 
 ---
 
@@ -67,7 +67,7 @@ WP-42 implementation consists of 5 sequential phases:
 
 ---
 
-## 3. Phase 2: Manual UAT Execution — DEFERRED
+## 3. Phase 2: Manual UAT Execution â€” DEFERRED
 
 > **STATUS: DEFERRED**
 > This phase is deferred per Project Owner decision dated 2026-07-25.
@@ -103,7 +103,7 @@ WP-42 implementation consists of 5 sequential phases:
 
 ---
 
-## 4. Phase 3: Defect Management — DEFERRED
+## 4. Phase 3: Defect Management â€” DEFERRED
 
 > **STATUS: DEFERRED**
 > This phase is deferred per Project Owner decision dated 2026-07-25.
@@ -131,7 +131,7 @@ WP-42 implementation consists of 5 sequential phases:
 
 ---
 
-## 5. Phase 4: Acceptance & Baseline — DEFERRED
+## 5. Phase 4: Acceptance & Baseline â€” DEFERRED
 
 > **STATUS: DEFERRED**
 > This phase is deferred per Project Owner decision dated 2026-07-25.
@@ -150,7 +150,7 @@ WP-42 implementation consists of 5 sequential phases:
 ### Deliverables
 - Git tag for final baseline
 - `docs/architecture/FINAL_BASELINE.md`
-- `.kilo/plans/wp42-owner-acceptance-certificate.md`
+- `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md`
 
 ### Dependencies
 - Phase 2 complete (all UAT passed)
@@ -163,7 +163,7 @@ WP-42 implementation consists of 5 sequential phases:
 
 ---
 
-## 6. Phase 5: Closure — DEFERRED
+## 6. Phase 5: Closure â€” DEFERRED
 
 > **STATUS: DEFERRED**
 > This phase is deferred per Project Owner decision dated 2026-07-25.
@@ -182,7 +182,7 @@ WP-42 implementation consists of 5 sequential phases:
 | 6.7 | Verify clean working tree | Implementation Engineer | 1 day |
 
 ### Deliverables
-- `.kilo/plans/wp42-final-closure-report.md`
+- `\.kilo/plans/archive/wp42-final-closure-report\.md`
 - Updated `CURRENT_STATUS.md`
 - Updated `PLAN.md`
 - Updated `CHANGELOG.md`
@@ -206,8 +206,8 @@ WP-42 implementation consists of 5 sequential phases:
 | `docs/UAT_CHECKLIST.md` | Modify | Mark all items as executed with pass/fail |
 | `.kilo/plans/wp42-uat-evidence/` | Create | UAT evidence files |
 | `docs/architecture/FINAL_BASELINE.md` | Create | Final approved baseline |
-| `.kilo/plans/wp42-owner-acceptance-certificate.md` | Create | Project Owner acceptance |
-| `.kilo/plans/wp42-final-closure-report.md` | Create | Closure report |
+| `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md` | Create | Project Owner acceptance |
+| `\.kilo/plans/archive/wp42-final-closure-report\.md` | Create | Closure report |
 | `CURRENT_STATUS.md` | Modify | Add WP-42 closure entry |
 | `PLAN.md` | Modify | Update Section 12.3 continuity table |
 | `CHANGELOG.md` | Modify | Add WP-42 closure entry |
@@ -271,6 +271,7 @@ After successful UAT and Project Owner acceptance:
 
 | Role | Name | Date | Status |
 |------|------|------|--------|
-| Implementation Engineer | — | — | Pending |
-| Project Manager | — | — | Pending |
-| Project Owner | — | 2026-07-25 | Approved — Phase 2+ Deferred |
+| Implementation Engineer | â€” | â€” | Pending |
+| Project Manager | â€” | â€” | Pending |
+| Project Owner | â€” | 2026-07-25 | Approved â€” Phase 2+ Deferred |
+

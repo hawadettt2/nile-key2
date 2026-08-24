@@ -1,10 +1,10 @@
-# WP-38a Moaah Adapter Specification
+﻿# WP-38a Moaah Adapter Specification
 
-**Work Package:** WP-38a — Regulatory Core + Egypt  
-**Task:** 2 — Define External Source Contract Adapter  
+**Work Package:** WP-38a â€” Regulatory Core + Egypt  
+**Task:** 2 â€” Define External Source Contract Adapter  
 **Date:** 2026-08-12  
-**Status:** Draft — Pending G2 Review  
-**Authority:** `.kilo/plans/1786359213310-real-external-source-integration.md`  
+**Status:** Draft â€” Pending G2 Review  
+**Authority:** `\.kilo/plans/archive/1786359213310-real-external-source-integration\.md`  
 **Governing Contract:** `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Provider:** Moaah API (`moaah.com`)  
 **Implementation Reference:**  
@@ -21,8 +21,8 @@
 
 The Moaah adapter consists of two files:
 
-- `mooadapter_client.py` — isolated HTTP client for Moaah API
-- `mooadapter.py` — `KnowledgeProvider` implementation that transforms Moaah responses into the DEM knowledge contract shape
+- `mooadapter_client.py` â€” isolated HTTP client for Moaah API
+- `mooadapter.py` â€” `KnowledgeProvider` implementation that transforms Moaah responses into the DEM knowledge contract shape
 
 The adapter does **not** modify:
 - `ReasoningEngine`
@@ -75,7 +75,7 @@ The adapter does **not** modify:
 | Missing `base_url` or `api_key` | Returns empty results with `confidence: None` |
 | Network error / timeout | Returns empty results with `confidence: None` |
 | HTTP 429 (rate limit) | Retries up to 3 times with exponential backoff (1s, 2s) |
-| HTTP error status | Raises after retries exhausted; caught by outer handler → empty results |
+| HTTP error status | Raises after retries exhausted; caught by outer handler â†’ empty results |
 | Malformed JSON / non-dict response | Returns empty results |
 | Unexpected exception | Returns empty results |
 
@@ -83,7 +83,7 @@ The adapter does **not** modify:
 
 ## 3. Field Mapping & Transformation
 
-### 3.1 Moaah API → DEM Knowledge Shape
+### 3.1 Moaah API â†’ DEM Knowledge Shape
 
 **Moaah `/regs-search` request parameters:**
 
@@ -113,16 +113,16 @@ The adapter does **not** modify:
 
 | DEM Field | Moaah Source Fields | Priority |
 |-----------|---------------------|----------|
-| `id` | `entry["uuid"]` → `entry["id"]` → `id(entry)` | First non-null |
+| `id` | `entry["uuid"]` â†’ `entry["id"]` â†’ `id(entry)` | First non-null |
 | `content` | `title - body` composite | See below |
 | `source_id` | Adapter config `source_id` | Config-driven |
 | `confidence` | Computed | See Section 4 |
 | `metadata.section` | Section key name | e.g., `"antidumping"` |
-| `metadata.effective_date` | `publication_date` → `initiation_dt` → `effective_date` | First non-null |
-| `metadata.source_url` | `id_link` → `source_url` → `url` | First non-null |
+| `metadata.effective_date` | `publication_date` â†’ `initiation_dt` â†’ `effective_date` | First non-null |
+| `metadata.source_url` | `id_link` â†’ `source_url` â†’ `url` | First non-null |
 | `metadata.country` | `country` | Direct |
-| `metadata.hs_code` | `hs_code` → `HSCode` → `code` | First non-null |
-| `metadata.regulation_type` | `regulation_type` → section label | Fallback to section |
+| `metadata.hs_code` | `hs_code` â†’ `HSCode` â†’ `code` | First non-null |
+| `metadata.regulation_type` | `regulation_type` â†’ section label | Fallback to section |
 | `metadata.category` | `category` | Direct |
 | `metadata.version` | Adapter config `version` | Config-driven |
 | `metadata.fetch_timestamp` | Adapter config `updated_at` | Config-driven |
@@ -275,10 +275,10 @@ if settings.MOAAH_API_KEY and settings.MOAAH_BASE_URL:
 
 | Item | Status |
 |------|--------|
-| Moaah written clarification on internal-use scope, retention, and commercial/partner licensing | **Unverified** — documentation follow-up only, not a blocker for G2 |
-| Actual API response sample for Egypt (country code 818) | **Unverified** — not required for G2; implementation uses documented endpoint structure |
-| Rate limit verification under load | **Unverified** — retry logic implemented but not load-tested |
-| `source_authority` and `legal_act_reference` fields from Moaah API | **Not available** — not present in documented regulatory response schemas; adapter uses computed provenance instead |
+| Moaah written clarification on internal-use scope, retention, and commercial/partner licensing | **Unverified** â€” documentation follow-up only, not a blocker for G2 |
+| Actual API response sample for Egypt (country code 818) | **Unverified** â€” not required for G2; implementation uses documented endpoint structure |
+| Rate limit verification under load | **Unverified** â€” retry logic implemented but not load-tested |
+| `source_authority` and `legal_act_reference` fields from Moaah API | **Not available** â€” not present in documented regulatory response schemas; adapter uses computed provenance instead |
 
 ---
 
@@ -286,10 +286,11 @@ if settings.MOAAH_API_KEY and settings.MOAAH_BASE_URL:
 
 | Gate | Status | Evidence |
 |------|--------|----------|
-| G0 — WP-38 Plan Approval | Approved | Project Owner approval recorded in current work session |
-| G1 — Moaah Source Selection | Approved | Project Owner approval recorded in current work session |
-| G2 — Adapter Specification Review | **Pending** | This document created for G2 review; approval pending |
+| G0 â€” WP-38 Plan Approval | Approved | Project Owner approval recorded in current work session |
+| G1 â€” Moaah Source Selection | Approved | Project Owner approval recorded in current work session |
+| G2 â€” Adapter Specification Review | **Pending** | This document created for G2 review; approval pending |
 
 ---
 
-*Document Status: Draft — Pending G2 Review*
+*Document Status: Draft â€” Pending G2 Review*
+

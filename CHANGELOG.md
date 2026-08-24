@@ -1,4 +1,4 @@
-# Changelog
+ï»¿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Verification/Quality/Failure Handling with deterministic quality checks and partial/failed result support
   - 103 WP-34 tests passing; no regressions in existing 30 related tests
 
-- Documentation Consolidation & SSOT — completed
+- Documentation Consolidation & SSOT â€” completed
   - `PLAN.md` restructured as Single Source of Truth (1,746 lines, 27 sections)
   - 6 new sections added: 22?27 (System State, Execution Governance, Deployment, Repository Architecture, Decision Index, Appendices)
   - 47 historical/superseded documents archived to `.kilo/plans/archive/`
@@ -135,17 +135,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - `PLAN.md`: Corrected WP-42 status from CLOSED to DEFERRED (OPEN) per forensic audit; Manual UAT postponed Project Owner decision 2026-07-25
 - `CURRENT_STATUS.md`: Added WP-42 closure entry
-- `.kilo/plans/wp42-uat-execution-report.md`: Updated defect disposition — Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; WP-42 administratively closed
+- `\.kilo/plans/archive/wp42-uat-execution-report\.md`: Updated defect disposition â€” Defect #1 deferred as Accepted Known Defect (requires architectural change); Defect #2 fixed and verified in Docker Runtime; WP-42 administratively closed
 
 
-- `.kilo/plans/wp42-owner-acceptance-certificate.md`: Project Owner formally accepted UAT results and defect disposition; WP-42 officially closed
+- `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md`: Project Owner formally accepted UAT results and defect disposition; WP-42 officially closed
 - `baseline-wp42-final` tag created pointing to `d3eafce` (Owner Acceptance Certificate commit)
 - UAT Results: 151 PASS / 1 FAIL / 1 N/A / 0 Human Verification Required
 - Defect #2: Fixed & Verified in Docker Runtime
 - Defect #1: Accepted Known Defect (deferred to future architectural change)
 - Final baseline: `baseline-wp42-final` ? `d3eafce`
 
-- WP-37: Knowledge Ingestion Pipeline — File-based Regulations Provider completed
+- WP-37: Knowledge Ingestion Pipeline â€” File-based Regulations Provider completed
   - `RegulationsKnowledgeProvider` implemented in `backend/app/agent/knowledge/regulations_provider.py`
   - JSON file ingestion with configurable `REGULATIONS_FILE_PATH` in `backend/app/core/config.py`
   - Bootstrap registration in `backend/main.py` lifespan
@@ -154,9 +154,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 8 unit tests + 4 integration tests = 12 WP-37 tests passing
   - Append-only semantics: file is single source of truth, re-read on startup only
   - No regressions in knowledge layer; 2 pre-existing Decision Engine test failures documented
-  - Closure: `.kilo/plans/wp37-final-closure-report.md`, `.kilo/plans/wp37-owner-acceptance-certificate.md`
+  - Closure: `\.kilo/plans/archive/wp37-final-closure-report\.md`, `\.kilo/plans/archive/wp37-owner-acceptance-certificate\.md`
 
-- WP-38a: External Source Integration — Moaah API completed
+- WP-38a: External Source Integration â€” Moaah API completed
   - `MoaahExternalSourceAdapter` implemented in `backend/app/agent/knowledge/mooadapter.py`
   - `MoaahApiClient` isolated HTTP client in `backend/app/agent/knowledge/mooadapter_client.py` with retry/backoff
   - Config fields added to `backend/app/core/config.py`: `MOAAH_BASE_URL`, `MOAAH_API_KEY`, `MOAAH_TIMEOUT_SECONDS`, `MOAAH_SOURCE_*`
@@ -164,10 +164,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Confidence/provenance metadata: source_id, fetch_timestamp, record_hash, retrieval_status
   - 9 unit tests + 6 integration tests = 15 WP-38a tests passing
   - No regressions in knowledge layer; 1 pre-existing ReasoningEngine test failure documented
-  - Plan updated: `.kilo/plans/1786359213310-real-external-source-integration.md`
-  - Closure report: `.kilo/plans/wp38-task1-source-evaluation-report.md`
+  - Plan updated: `\.kilo/plans/archive/1786359213310-real-external-source-integration\.md`
+  - Closure report: `\.kilo/plans/archive/wp38-task1-source-evaluation-report\.md`
 
-- WP-38b: Global Trade Intelligence — TradeData API completed
+- WP-38b: Global Trade Intelligence â€” TradeData API completed
   - `TradeDataExternalSourceAdapter` implemented in `backend/app/agent/knowledge/tradedata_provider.py`
   - `TradeDataApiClient` isolated HTTP client in `backend/app/agent/knowledge/tradedata_client.py` with retry/backoff
   - Config fields added to `backend/app/core/config.py`: `TRADEDATA_BASE_URL`, `TRADEDATA_API_KEY`, `TRADEDATA_TIMEOUT_SECONDS`, `TRADEDATA_SOURCE_*`
@@ -177,11 +177,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 14 unit tests + 7 integration tests = 21 WP-38b tests passing
   - No regressions in knowledge layer; Moaah tests (15/15) passing
   - Baseline: `baseline-wp38b-final` at `02bad55`
-  - Owner Acceptance: obtained — `.kilo/plans/wp38b-owner-acceptance-certificate.md`
-  - Plan updated: `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md`
-  - Verification evidence: `.kilo/plans/wp38b-task7-verification-evidence-package.md`
+  - Owner Acceptance: obtained â€” `\.kilo/plans/archive/wp38b-owner-acceptance-certificate\.md`
+  - Plan updated: `\.kilo/plans/archive/1786559139127-wp38b-global-trade-intelligence-plan\.md`
+  - Verification evidence: `\.kilo/plans/archive/wp38b-task7-verification-evidence-package\.md`
 
-- WP-38c: Jordan + UAE + Saudi/GCC Sources — ZATCA Open Data APIs completed
+- WP-38c: Jordan + UAE + Saudi/GCC Sources â€” ZATCA Open Data APIs completed
   - `ZatcaExternalSourceAdapter` implemented in `backend/app/agent/knowledge/zatca_provider.py`
   - `ZatcaApiClient` isolated HTTP client in `backend/app/agent/knowledge/zatca_client.py` with retry/backoff
   - Config fields added to `backend/app/core/config.py`: `ZATCA_BASE_URL`, `ZATCA_API_KEY`, `ZATCA_TIMEOUT_SECONDS`, `ZATCA_SOURCE_*`
@@ -190,12 +190,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Field mapping: description/port_name/traffic_type/quantity/weight/amount ? content (metrics), date ? effective_date, endpoint ? source_url, country ? SA
   - 13 unit tests + 6 integration tests = 19 WP-38c tests passing
   - No regressions in knowledge layer; TradeData tests (21/21) and Moaah tests (15/15) passing
-  - Plan updated: `.kilo/plans/1786559140128-wp38c-jordan-uae-saudi-gcc-sources-plan.md`
-  - Verification evidence: `.kilo/plans/wp38c-task7-verification-evidence-package.md`
-  - Closure report: `.kilo/plans/wp38c-final-closure-report.md`
-  - Owner Acceptance Certificate: `.kilo/plans/wp38c-owner-acceptance-certificate.md`
+  - Plan updated: `\.kilo/plans/archive/1786559140128-wp38c-jordan-uae-saudi-gcc-sources-plan\.md`
+  - Verification evidence: `\.kilo/plans/archive/wp38c-task7-verification-evidence-package\.md`
+  - Closure report: `\.kilo/plans/archive/wp38c-final-closure-report\.md`
+  - Owner Acceptance Certificate: `\.kilo/plans/archive/wp38c-owner-acceptance-certificate\.md`
 
-- WP-38d: GCC Expansion — GCC-Stat Open Data APIs completed
+- WP-38d: GCC Expansion â€” GCC-Stat Open Data APIs completed
   - `GccstatExternalSourceAdapter` implemented in `backend/app/agent/knowledge/gccstat_provider.py`
   - `GccstatApiClient` isolated HTTP client in `backend/app/agent/knowledge/gccstat_client.py` with retry/backoff
   - Config fields added to `backend/app/core/config.py`: `GCCSTAT_BASE_URL`, `GCCSTAT_API_KEY`, `GCCSTAT_TIMEOUT_SECONDS`, `GCCSTAT_SOURCE_*`
@@ -204,8 +204,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Field mapping: SDMX observation value ? content (metrics), TIME_PERIOD ? effective_date, ref_area ? country, dataflow reference ? source_url
   - 16 unit tests + 7 integration tests = 23 WP-38d tests passing
   - No regressions in knowledge layer; all existing tests passing
-   - Plan updated: `.kilo/plans/1786559150139-wp38d-gcc-expansion-plan.md`
-   - Verification evidence: `.kilo/plans/wp38d-task7-verification-evidence-package.md`
+   - Plan updated: `\.kilo/plans/archive/1786559150139-wp38d-gcc-expansion-plan\.md`
+   - Verification evidence: `\.kilo/plans/archive/wp38d-task7-verification-evidence-package\.md`
 
 - Knowledge Orchestration / Fusion Layer completed
   - `KnowledgeOrchestrator` implemented in `backend/app/agent/knowledge/orchestrator.py` with classification, routing, ranking, deduplication, conflict resolution, and output assembly
@@ -216,10 +216,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 5 new `KNOWLEDGE_ORCHESTRATION_*` config settings added to `config.py`
   - 85 new tests (66 unit + 18 integration) all passing
   - Regression: 46/47 existing tests pass; 1 pre-existing failure in `test_registry_provider_failure_does_not_crash_reasoning` confirmed in baseline
-  - Plans: `.kilo/plans/1786795387856-knowledge-orchestration-fusion-plan.md`, `.kilo/plans/1786795387856-knowledge-orchestration-fusion-detailed-implementation-plan.md`
+  - Plans: `\.kilo/plans/archive/1786795387856-knowledge-orchestration-fusion-plan\.md`, `\.kilo/plans/archive/1786795387856-knowledge-orchestration-fusion-detailed-implementation-plan\.md`
 
 ### Fixed
-- `backend/app/routers/auth.py`: Defect #2 fixed — `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
+- `backend/app/routers/auth.py`: Defect #2 fixed â€” `POST /api/v1/auth/refresh` now returns `401` instead of `500` when Authorization header is missing
 
 ## [1.0.0] - 2026-07-15
 
@@ -246,4 +246,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Legacy `Planner` refactored to delegate to `TaskPlanner`
 - `ToolResultSchema.audit_ref` made required
 - `AgentToolInfoResponse` expanded with version, idempotency_key, auth_requirements
+
 

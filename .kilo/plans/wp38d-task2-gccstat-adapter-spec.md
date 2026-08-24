@@ -1,13 +1,13 @@
-# WP-38d — Task 2: GCC-Stat Adapter Specification
+﻿# WP-38d â€” Task 2: GCC-Stat Adapter Specification
 
-**Work Package:** WP-38d — GCC Expansion (GCC-Stat First Provider)  
-**Task:** 2 — Define External Source Contract Adapter  
+**Work Package:** WP-38d â€” GCC Expansion (GCC-Stat First Provider)  
+**Task:** 2 â€” Define External Source Contract Adapter  
 **Date:** 2026-08-14  
-**Status:** Draft — Pending G2 Review  
-**Authority:** `.kilo/plans/1786559150139-wp38d-gcc-expansion-plan.md` Section 7  
+**Status:** Draft â€” Pending G2 Review  
+**Authority:** `\.kilo/plans/archive/1786559150139-wp38d-gcc-expansion-plan\.md` Section 7  
 **Governing Contract:** `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Provider:** GCC-Stat Data Portal (`gccstat.org`)  
-**Prerequisite:** Task 1 Source Evaluation completed; GCC-Stat approved as WP-38d First Provider; G1 Approved per `.kilo/plans/wp38d-owner-acceptance-certificate.md`
+**Prerequisite:** Task 1 Source Evaluation completed; GCC-Stat approved as WP-38d First Provider; G1 Approved per `\.kilo/plans/archive/wp38d-owner-acceptance-certificate\.md`
 
 ---
 
@@ -17,8 +17,8 @@
 
 The GCC-Stat adapter consists of two files:
 
-- `gccstat_client.py` — isolated HTTP client for GCC-Stat REST/SDMX APIs
-- `gccstat_provider.py` — `KnowledgeProvider` implementation that transforms GCC-Stat responses into the DEM knowledge contract shape
+- `gccstat_client.py` â€” isolated HTTP client for GCC-Stat REST/SDMX APIs
+- `gccstat_provider.py` â€” `KnowledgeProvider` implementation that transforms GCC-Stat responses into the DEM knowledge contract shape
 
 The adapter does **not** modify:
 - `ReasoningEngine`
@@ -70,7 +70,7 @@ The adapter does **not** modify:
 | Missing `base_url` or API key | Returns empty results with `confidence: None` |
 | Network error / timeout | Returns empty results with `confidence: None` |
 | HTTP 429 (rate limit) | Retries up to 3 times with exponential backoff (1s, 2s, 4s) |
-| HTTP error status | Raises after retries exhausted; caught by outer handler → empty results |
+| HTTP error status | Raises after retries exhausted; caught by outer handler â†’ empty results |
 | SDMX parse error / malformed response | Returns empty results |
 | Unexpected exception | Returns empty results |
 
@@ -78,7 +78,7 @@ The adapter does **not** modify:
 
 ## 3. Field Mapping & Transformation Rules
 
-### 3.1 GCC-Stat API → DEM Knowledge Shape
+### 3.1 GCC-Stat API â†’ DEM Knowledge Shape
 
 **Note:** Detailed request/response schemas are TBD pending live API access and SDMX structure review during Task 3. The following represents the intended mapping pattern based on documented GCC-Stat capabilities.
 
@@ -103,7 +103,7 @@ The adapter does **not** modify:
 | DKAN Dataset API | `https://dp.marsa.gccstat.org/api/dataset/node/{nid}` | Dataset metadata |
 | DKAN Datastore API | `https://dp.marsa.gccstat.org/api/datastore/{resource_id}` | Tabular dataset access |
 
-**Endpoint selection logic:** TBD — requires verification of available dataflows and dataset IDs during Task 3.
+**Endpoint selection logic:** TBD â€” requires verification of available dataflows and dataset IDs during Task 3.
 
 ### 3.2 GCC-Stat Response Sections Mapped (Intended)
 
@@ -271,7 +271,7 @@ All GCC-Stat-specific settings are defined in `config.py`:
 | Setting | Default | Notes |
 |---------|---------|-------|
 | `GCCSTAT_BASE_URL` | **TBD** | Requires verification of production endpoint; candidates: `https://sdmx.marsa.gccstat.org` or `https://dp.marsa.gccstat.org` |
-| `GCCSTAT_API_KEY` | No default | TBD — public SDMX API may not require key; confirm during Task 3 |
+| `GCCSTAT_API_KEY` | No default | TBD â€” public SDMX API may not require key; confirm during Task 3 |
 | `GCCSTAT_SOURCE_ID` | `gccstat` | Fixed identifier |
 | `GCCSTAT_SOURCE_NAME` | `GCC-Stat Data Portal` | Human-readable name |
 | `GCCSTAT_SOURCE_TYPE` | `external_trade_intelligence` | Classification per contract |
@@ -288,7 +288,7 @@ All GCC-Stat-specific settings are defined in `config.py`:
 GCC-Stat provider is registered in `KnowledgeProviderRegistry` during application startup via `main.py` `lifespan()`:
 
 ```python
-# Pseudocode — implementation detail for Task 4
+# Pseudocode â€” implementation detail for Task 4
 try:
     registry.register(GccstatExternalSourceAdapter(config=settings))
 except Exception as e:
@@ -318,7 +318,7 @@ These test requirements are derived from the WP-38d plan Section 7 and must be s
 | 2 | `query()` transforms GCC-Stat data correctly per this spec | Section 3.1, 3.2, 3.3 |
 | 3 | `query()` handles network failure gracefully (returns empty results, no exception) | Section 2.3 |
 | 4 | `query()` handles malformed GCC-Stat data gracefully | Section 2.3 |
-| 5 | Confidence scores within 0.0–1.0 per Section 4 rules | Section 4 |
+| 5 | Confidence scores within 0.0â€“1.0 per Section 4 rules | Section 4 |
 | 6 | Provenance metadata populated correctly | Section 5 |
 | 7 | Configuration settings loaded correctly | Section 7 |
 | 8 | Retry/backoff behavior verified | Section 6.1 |
@@ -371,7 +371,7 @@ This section enables later review of implementation against this specification:
 | `query()` signature | 2.1 | `gccstat_provider.py` | Matches `KnowledgeProvider` ABC |
 | `get_sources()` signature | 2.1 | `gccstat_provider.py` | Returns required metadata fields |
 | Field mapping | 3.1, 3.2, 3.3 | `gccstat_provider.py` | All mapped fields present in output |
-| Confidence rules | 4 | `gccstat_provider.py` | Scores within 0.0–1.0; rules applied |
+| Confidence rules | 4 | `gccstat_provider.py` | Scores within 0.0â€“1.0; rules applied |
 | Provenance metadata | 5 | `gccstat_provider.py` | All fields populated per rules |
 | Error handling | 6 | `gccstat_client.py`, `gccstat_provider.py` | No exceptions leak to DEM core |
 | Retry/backoff | 6.1 | `gccstat_client.py` | Exponential backoff on 429/5xx |
@@ -395,4 +395,5 @@ This section enables later review of implementation against this specification:
 
 ---
 
-*Specification Status: Draft — Pending G2 Review*
+*Specification Status: Draft â€” Pending G2 Review*
+

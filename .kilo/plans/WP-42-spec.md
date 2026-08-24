@@ -1,12 +1,12 @@
-# WP-42 Specification: Owner Acceptance
+﻿# WP-42 Specification: Owner Acceptance
 
-**Work Package:** WP-42 — قبول المالك  
-**Phase:** 3 — النشر والإنتاج  
-**Baseline:** ebc2181 (HEAD — docs(wp41): mark WP-41 complete in PLAN.md and update continuity references)  
-**Authority:** PLAN.md (Master Roadmap v2.1) — Single Source of Truth  
+**Work Package:** WP-42 â€” ظ‚ط¨ظˆظ„ ط§ظ„ظ…ط§ظ„ظƒ  
+**Phase:** 3 â€” ط§ظ„ظ†ط´ط± ظˆط§ظ„ط¥ظ†طھط§ط¬  
+**Baseline:** ebc2181 (HEAD â€” docs(wp41): mark WP-41 complete in PLAN.md and update continuity references)  
+**Authority:** PLAN.md (Master Roadmap v2.1) â€” Single Source of Truth  
 **Governing Documents:** `PLAN.md` Section 23, `docs/appendices/UAT_CHECKLIST.md`  
 **Date:** 2026-07-22  
-**Status:** Approved — Ready for Execution
+**Status:** Approved â€” Ready for Execution
 
 ---
 
@@ -77,16 +77,16 @@ All of the following must be true before WP-42 can begin:
 
 | Prerequisite | Status | Evidence |
 |-------------|--------|----------|
-| WP-01 through WP-41 closed | ✅ Complete | CURRENT_STATUS.md, PLAN.md |
-| Backend starts without errors | ✅ Complete | Verified in WP-40/WP-41 |
-| Frontend builds successfully | ✅ Complete | `npm run build` passes |
-| All automated tests pass (pre-existing failures acceptable) | ✅ Complete | 877 passed, 4 pre-existing failures, 8 skipped |
-| Docker deployment validated | ✅ Complete | WP-40 closure |
-| Documentation updated | ✅ Complete | WP-41 closure |
-| Git working tree clean | ✅ Complete | Verified |
-| UAT checklist exists | ✅ Complete | `docs/appendices/UAT_CHECKLIST.md` exists |
-| No Critical defects | ⚠️ Requires verification | Must be confirmed during UAT |
-| No High severity defects | ⚠️ Requires verification | Must be confirmed during UAT |
+| WP-01 through WP-41 closed | âœ… Complete | CURRENT_STATUS.md, PLAN.md |
+| Backend starts without errors | âœ… Complete | Verified in WP-40/WP-41 |
+| Frontend builds successfully | âœ… Complete | `npm run build` passes |
+| All automated tests pass (pre-existing failures acceptable) | âœ… Complete | 877 passed, 4 pre-existing failures, 8 skipped |
+| Docker deployment validated | âœ… Complete | WP-40 closure |
+| Documentation updated | âœ… Complete | WP-41 closure |
+| Git working tree clean | âœ… Complete | Verified |
+| UAT checklist exists | âœ… Complete | `docs/appendices/UAT_CHECKLIST.md` exists |
+| No Critical defects | âڑ ï¸ڈ Requires verification | Must be confirmed during UAT |
+| No High severity defects | âڑ ï¸ڈ Requires verification | Must be confirmed during UAT |
 
 **Note:** The 4 pre-existing test failures (`tests/agent/test_core.py` x2, `tests/test_knowledge_graph_performance.py`, `tests/test_services/test_shipping_service.py`) are not Critical/High blockers per PROJECT_EXECUTION_RULES.md unless they affect user-facing functionality. This must be verified during UAT.
 
@@ -161,9 +161,9 @@ Project closure documentation MUST include:
 
 ### FR-42.7: Governance Updates
 After closure, governance documents MUST be updated:
-- `CURRENT_STATUS.md` — add WP-42 closure entry
-- `PLAN.md` Section 12.3 — update continuity table
-- `CHANGELOG.md` — add WP-42 closure entry
+- `CURRENT_STATUS.md` â€” add WP-42 closure entry
+- `PLAN.md` Section 12.3 â€” update continuity table
+- `CHANGELOG.md` â€” add WP-42 closure entry
 
 **Source:** PLAN.md Section 12.3.
 
@@ -195,9 +195,9 @@ Automated test success does NOT replace Manual UAT.
 | **UAT Execution Report** | Completed checklist with pass/fail for each item | `docs/appendices/UAT_CHECKLIST.md` with checkboxes marked |
 | **UAT Evidence Package** | Screenshots, logs, notes for each UAT item | `.kilo/plans/wp42-uat-evidence/` directory |
 | **Defect Log** | List of any defects found during UAT | Markdown table in closure report |
-| **Project Owner Acceptance Certificate** | Formal written approval | `.kilo/plans/wp42-owner-acceptance-certificate.md` |
+| **Project Owner Acceptance Certificate** | Formal written approval | `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md` |
 | **Final Baseline** | Approved final baseline snapshot | Commit tag + `PLAN.md` Section 22 |
-| **WP-42 Closure Report** | Formal closure documentation | `.kilo/plans/wp42-final-closure-report.md` |
+| **WP-42 Closure Report** | Formal closure documentation | `\.kilo/plans/archive/wp42-final-closure-report\.md` |
 | **Updated Governance Docs** | CURRENT_STATUS.md, PLAN.md, CHANGELOG.md | Modified files |
 
 ---
@@ -259,7 +259,7 @@ WP-42 is NOT complete until:
 | AC-42.1 | All UAT checklist items executed and marked | Manual review of UAT_CHECKLIST.md |
 | AC-42.2 | All UAT items passed (or defects resolved) | UAT evidence package |
 | AC-42.3 | No Critical or High defects remain open | Defect log review |
-| AC-42.4 | Project Owner acceptance certificate signed | `.kilo/plans/wp42-owner-acceptance-certificate.md` |
+| AC-42.4 | Project Owner acceptance certificate signed | `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md` |
 | AC-42.5 | Final baseline created and documented | Baseline commit + tag |
 | AC-42.6 | All governance docs updated | Diff review |
 | AC-42.7 | Git working tree clean | `git status` |
@@ -302,11 +302,11 @@ All of the following must be true for WP-42 to be considered complete:
 
 | Dependency | Type | Status |
 |------------|------|--------|
-| WP-01 through WP-41 | Must be complete | ✅ Complete |
-| `docs/appendices/UAT_CHECKLIST.md` | Must exist | ✅ Exists |
-| `PLAN.md` Section 23 | Must exist | ✅ Exists |
-| Clean working tree | Must be clean | ✅ Verified |
-| Project Owner availability | Must be available | ⚠️ External dependency |
+| WP-01 through WP-41 | Must be complete | âœ… Complete |
+| `docs/appendices/UAT_CHECKLIST.md` | Must exist | âœ… Exists |
+| `PLAN.md` Section 23 | Must exist | âœ… Exists |
+| Clean working tree | Must be clean | âœ… Verified |
+| Project Owner availability | Must be available | âڑ ï¸ڈ External dependency |
 
 ---
 
@@ -326,16 +326,16 @@ All of the following must be true for WP-42 to be considered complete:
 
 | Check | Status |
 |-------|--------|
-| All FRs have corresponding ACs | ✅ AC-42.1 through AC-42.8 |
-| All NFRs addressed | ✅ NFR-42.1, NFR-42.2, NFR-42.3 |
-| Deliverables match FRs | ✅ Section 9 |
-| Verification strategy covers all ACs | ✅ Section 11 |
-| Exit criteria complete | ✅ Section 13 |
-| Traceability matrix complete | ✅ Section 14 |
-| Dependencies satisfied | ✅ All satisfied except Project Owner availability |
-| Risks have mitigations | ✅ All risks have mitigations |
-| Out-of-scope items explicit | ✅ Section 2.2 |
-| No unsupported requirements | ✅ All requirements trace to PLAN.md or PROJECT_EXECUTION_RULES.md |
+| All FRs have corresponding ACs | âœ… AC-42.1 through AC-42.8 |
+| All NFRs addressed | âœ… NFR-42.1, NFR-42.2, NFR-42.3 |
+| Deliverables match FRs | âœ… Section 9 |
+| Verification strategy covers all ACs | âœ… Section 11 |
+| Exit criteria complete | âœ… Section 13 |
+| Traceability matrix complete | âœ… Section 14 |
+| Dependencies satisfied | âœ… All satisfied except Project Owner availability |
+| Risks have mitigations | âœ… All risks have mitigations |
+| Out-of-scope items explicit | âœ… Section 2.2 |
+| No unsupported requirements | âœ… All requirements trace to PLAN.md or PROJECT_EXECUTION_RULES.md |
 
 ---
 
@@ -345,16 +345,17 @@ This document defines the specification for WP-42.
 
 All UAT activities, acceptance documentation, and closure procedures for WP-42 MUST derive from this document and the referenced authoritative sources.
 
-**Status:** Approved — Ready for Execution
+**Status:** Approved â€” Ready for Execution
 
 ---
 
 ## 19. References
 
-- `PLAN.md` Section 15.4 — WP-42: قبول المالك
-- `PLAN.md` Section 16.4 — Phase 3 Exit Criteria
-- `PLAN.md` Section 12.3 — Continuity Table
-- `PLAN.md` Section 23 — Project execution constitution
-- `docs/appendices/UAT_CHECKLIST.md` — Manual UAT checklist
-- `CURRENT_STATUS.md` — Project state
-- `CHANGELOG.md` — Version history
+- `PLAN.md` Section 15.4 â€” WP-42: ظ‚ط¨ظˆظ„ ط§ظ„ظ…ط§ظ„ظƒ
+- `PLAN.md` Section 16.4 â€” Phase 3 Exit Criteria
+- `PLAN.md` Section 12.3 â€” Continuity Table
+- `PLAN.md` Section 23 â€” Project execution constitution
+- `docs/appendices/UAT_CHECKLIST.md` â€” Manual UAT checklist
+- `CURRENT_STATUS.md` â€” Project state
+- `CHANGELOG.md` â€” Version history
+

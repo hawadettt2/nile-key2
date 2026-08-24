@@ -1,10 +1,10 @@
-# WP-38b — Task 2: TradeData Adapter Specification
+﻿# WP-38b â€” Task 2: TradeData Adapter Specification
 
-**Work Package:** WP-38b — Global Trade Intelligence (TradeData First Provider)  
-**Task:** 2 — Define External Source Contract Adapter  
+**Work Package:** WP-38b â€” Global Trade Intelligence (TradeData First Provider)  
+**Task:** 2 â€” Define External Source Contract Adapter  
 **Date:** 2026-08-13  
-**Status:** Draft — Pending G2 Review  
-**Authority:** `.kilo/plans/1786559139127-wp38b-global-trade-intelligence-plan.md` Section 7  
+**Status:** Draft â€” Pending G2 Review  
+**Authority:** `\.kilo/plans/archive/1786559139127-wp38b-global-trade-intelligence-plan\.md` Section 7  
 **Governing Contract:** `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Provider:** TradeData API (`tradedata.io`)  
 **Prerequisite:** Task 1 Source Evaluation completed; TradeData approved as WP-38b First Provider; G1 Approved
@@ -17,8 +17,8 @@
 
 The TradeData adapter consists of two files:
 
-- `tradedata_client.py` — isolated HTTP client for TradeData API
-- `tradedata_provider.py` — `KnowledgeProvider` implementation that transforms TradeData responses into the DEM knowledge contract shape
+- `tradedata_client.py` â€” isolated HTTP client for TradeData API
+- `tradedata_provider.py` â€” `KnowledgeProvider` implementation that transforms TradeData responses into the DEM knowledge contract shape
 
 The adapter does **not** modify:
 - `ReasoningEngine`
@@ -71,7 +71,7 @@ The adapter does **not** modify:
 | Missing `base_url` or `api_key` | Returns empty results with `confidence: None` |
 | Network error / timeout | Returns empty results with `confidence: None` |
 | HTTP 429 (rate limit) | Retries up to 3 times with exponential backoff (1s, 2s, 4s) |
-| HTTP error status | Raises after retries exhausted; caught by outer handler → empty results |
+| HTTP error status | Raises after retries exhausted; caught by outer handler â†’ empty results |
 | Malformed JSON / non-dict response | Returns empty results |
 | Unexpected exception | Returns empty results |
 
@@ -79,7 +79,7 @@ The adapter does **not** modify:
 
 ## 3. Field Mapping & Transformation Rules
 
-### 3.1 TradeData API → DEM Knowledge Shape
+### 3.1 TradeData API â†’ DEM Knowledge Shape
 
 **TradeData `/api/v1/tradeDetail` request parameters:**
 
@@ -282,7 +282,7 @@ All TradeData-specific settings are defined in `config.py`:
 TradeData provider is registered in `KnowledgeProviderRegistry` during application startup via `main.py` `lifespan()`:
 
 ```python
-# Pseudocode — implementation detail for Task 4
+# Pseudocode â€” implementation detail for Task 4
 try:
     registry.register(TradeDataExternalSourceAdapter(config=settings))
 except Exception as e:
@@ -312,7 +312,7 @@ These test requirements are derived from the WP-38b plan Section 7 Task 5 and mu
 | 2 | `query()` transforms TradeData data correctly per this spec | Section 3.1, 3.2 |
 | 3 | `query()` handles network failure gracefully (returns empty results, no exception) | Section 6.3 |
 | 4 | `query()` handles malformed TradeData data gracefully | Section 6.3 |
-| 5 | Confidence scores within 0.0–1.0 per Section 4 rules | Section 4 |
+| 5 | Confidence scores within 0.0â€“1.0 per Section 4 rules | Section 4 |
 | 6 | Provenance metadata populated correctly | Section 5 |
 | 7 | Configuration settings loaded correctly | Section 7 |
 | 8 | Retry/backoff behavior verified | Section 6.1 |
@@ -363,7 +363,7 @@ This section enables later review of implementation against this specification:
 | `query()` signature | 2.1 | `tradedata_provider.py` | Matches `KnowledgeProvider` ABC |
 | `get_sources()` signature | 2.1 | `tradedata_provider.py` | Returns required metadata fields |
 | Field mapping | 3.1, 3.2 | `tradedata_provider.py` | All mapped fields present in output |
-| Confidence rules | 4 | `tradedata_provider.py` | Scores within 0.0–1.0; rules applied |
+| Confidence rules | 4 | `tradedata_provider.py` | Scores within 0.0â€“1.0; rules applied |
 | Provenance metadata | 5 | `tradedata_provider.py` | All fields populated per rules |
 | Error handling | 6 | `tradedata_client.py`, `tradedata_provider.py` | No exceptions leak to DEM core |
 | Retry/backoff | 6.1 | `tradedata_client.py` | Exponential backoff on 429/5xx |
@@ -387,4 +387,5 @@ This section enables later review of implementation against this specification:
 
 ---
 
-*Specification Status: Draft — Pending G2 Review*
+*Specification Status: Draft â€” Pending G2 Review*
+

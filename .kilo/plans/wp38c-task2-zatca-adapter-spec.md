@@ -1,10 +1,10 @@
-# WP-38c — Task 2: ZATCA Adapter Specification
+﻿# WP-38c â€” Task 2: ZATCA Adapter Specification
 
-**Work Package:** WP-38c — Jordan + UAE + Saudi/GCC Sources  
-**Task:** 2 — Define External Source Contract Adapter  
+**Work Package:** WP-38c â€” Jordan + UAE + Saudi/GCC Sources  
+**Task:** 2 â€” Define External Source Contract Adapter  
 **Date:** 2026-08-14  
-**Status:** Draft — Pending G2 Review  
-**Authority:** `.kilo/plans/1786559140128-wp38c-jordan-uae-saudi-gcc-sources-plan.md` Section 6  
+**Status:** Draft â€” Pending G2 Review  
+**Authority:** `\.kilo/plans/archive/1786559140128-wp38c-jordan-uae-saudi-gcc-sources-plan\.md` Section 6  
 **Governing Contract:** `.kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md`  
 **Provider:** ZATCA Open Data APIs (`zatca.gov.sa`)  
 **Prerequisite:** Task 1 Source Evaluation completed; ZATCA approved as WP-38c First Provider; G1 Approved
@@ -17,8 +17,8 @@
 
 The ZATCA adapter consists of two files:
 
-- `zatca_client.py` — isolated HTTP client for ZATCA Open Data APIs
-- `zatca_provider.py` — `KnowledgeProvider` implementation that transforms ZATCA responses into the DEM knowledge contract shape
+- `zatca_client.py` â€” isolated HTTP client for ZATCA Open Data APIs
+- `zatca_provider.py` â€” `KnowledgeProvider` implementation that transforms ZATCA responses into the DEM knowledge contract shape
 
 The adapter does **not** modify:
 - `ReasoningEngine`
@@ -71,7 +71,7 @@ The adapter does **not** modify:
 | Missing `base_url` or `api_key` | Returns empty results with `confidence: None` |
 | Network error / timeout | Returns empty results with `confidence: None` |
 | HTTP 429 (rate limit) | Retries up to 3 times with exponential backoff (1s, 2s, 4s) |
-| HTTP error status | Raises after retries exhausted; caught by outer handler → empty results |
+| HTTP error status | Raises after retries exhausted; caught by outer handler â†’ empty results |
 | Malformed JSON / non-dict response | Returns empty results |
 | Unexpected exception | Returns empty results |
 
@@ -79,7 +79,7 @@ The adapter does **not** modify:
 
 ## 3. Field Mapping & Transformation Rules
 
-### 3.1 ZATCA API → DEM Knowledge Shape
+### 3.1 ZATCA API â†’ DEM Knowledge Shape
 
 **Note:** Detailed request/response schemas are TBD pending sandbox access and Swagger documentation review during Task 3. The following represents the intended mapping based on documented API names and standard customs data patterns.
 
@@ -292,7 +292,7 @@ All ZATCA-specific settings are defined in `config.py`:
 ZATCA provider is registered in `KnowledgeProviderRegistry` during application startup via `main.py` `lifespan()`:
 
 ```python
-# Pseudocode — implementation detail for Task 4
+# Pseudocode â€” implementation detail for Task 4
 try:
     registry.register(ZatcaExternalSourceAdapter(config=settings))
 except Exception as e:
@@ -322,7 +322,7 @@ These test requirements are derived from the WP-38c plan Section 6 and must be s
 | 2 | `query()` transforms ZATCA data correctly per this spec | Section 3.1, 3.2, 3.3 |
 | 3 | `query()` handles network failure gracefully (returns empty results, no exception) | Section 2.3 |
 | 4 | `query()` handles malformed ZATCA data gracefully | Section 2.3 |
-| 5 | Confidence scores within 0.0–1.0 per Section 4 rules | Section 4 |
+| 5 | Confidence scores within 0.0â€“1.0 per Section 4 rules | Section 4 |
 | 6 | Provenance metadata populated correctly | Section 5 |
 | 7 | Configuration settings loaded correctly | Section 7 |
 | 8 | Retry/backoff behavior verified | Section 6.1 |
@@ -375,7 +375,7 @@ This section enables later review of implementation against this specification:
 | `query()` signature | 2.1 | `zatca_provider.py` | Matches `KnowledgeProvider` ABC |
 | `get_sources()` signature | 2.1 | `zatca_provider.py` | Returns required metadata fields |
 | Field mapping | 3.1, 3.2, 3.3 | `zatca_provider.py` | All mapped fields present in output |
-| Confidence rules | 4 | `zatca_provider.py` | Scores within 0.0–1.0; rules applied |
+| Confidence rules | 4 | `zatca_provider.py` | Scores within 0.0â€“1.0; rules applied |
 | Provenance metadata | 5 | `zatca_provider.py` | All fields populated per rules |
 | Error handling | 6 | `zatca_client.py`, `zatca_provider.py` | No exceptions leak to DEM core |
 | Retry/backoff | 6.1 | `zatca_client.py` | Exponential backoff on 429/5xx |
@@ -399,4 +399,5 @@ This section enables later review of implementation against this specification:
 
 ---
 
-*Specification Status: Draft — Pending G2 Review*
+*Specification Status: Draft â€” Pending G2 Review*
+

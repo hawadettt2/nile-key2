@@ -61,7 +61,7 @@
 ## Export Readiness Vertical Slice Implementation Summary
 
 ### Export Readiness Vertical Slice: Product Priority (Closed)
-- **Plan:** `.kilo/plans/1787046369933-export-readiness-vertical-slice.md`
+- **Plan:** `\.kilo/plans/archive/1787046369933-export-readiness-vertical-slice\.md`
 - **Governing Decision:** `.kilo/plans/1786559160142-external-knowledge-portfolio-re-evaluation.md` Section 32
 - **Status:** Implemented / Verified / Closed
 - **Scope:** Product-layer composition only. No new providers, no coverage score changes, no provider ceiling changes, no orchestrator/registry changes, no mission infrastructure changes.
@@ -97,7 +97,7 @@
 - **Tests:** 21 new tests (14 unit + 7 integration); all passing
 - **Regression:** No regressions in Moaah tests (15/15 passing)
 - **Baseline:** `baseline-wp38b-final` at commit `02bad55`
-- **Owner Acceptance:** Obtained � `.kilo/plans/wp38b-owner-acceptance-certificate.md`
+- **Owner Acceptance:** Obtained � `\.kilo/plans/archive/wp38b-owner-acceptance-certificate\.md`
 - **Constraints:** No DEM core changes, no Knowledge Graph schema changes, no Memory/LLM/Research integration, no database migrations, no CSV support, Provider-Agnostic architecture preserved
 
 ## WP-38c Implementation Summary
@@ -528,7 +528,7 @@
 - SQLite runtime unchanged; no migration executed.
 - E-DATA-001 and E-DATA-006 remain conditional for production migration readiness.
 
-**Reference:** Audit E report, Lead Architect Re-Verification, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+**Reference:** Audit E report, Lead Architect Re-Verification, `\.kilo/plans/archive/ARCHITECTURAL_FORENSIC_AUDIT\.md` Section 4
 
 
 
@@ -576,7 +576,7 @@
 - 6 deferred items require monitoring but do not block current phase.
 - Audit G requires separate governance authorization.
 
-**Reference:** Audit F report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+**Reference:** Audit F report, Lead Architect Governance Review, `\.kilo/plans/archive/ARCHITECTURAL_FORENSIC_AUDIT\.md` Section 4
 
 ## WTO ePing G1 Decision
 
@@ -626,7 +626,7 @@
 - WTO TFA Database remains a P0 Candidate but is not an Approved or Implemented Provider
 - No G2/G3/G4/G5 activities authorized for WTO TFA Database
 
-**Reference:** Audit G report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+**Reference:** Audit G report, Lead Architect Governance Review, `\.kilo/plans/archive/ARCHITECTURAL_FORENSIC_AUDIT\.md` Section 4
 
 ## Gate G Closure — Governance & Documentation Reconciliation
 
@@ -646,7 +646,7 @@
 
 ### Governance Notes
 - G-DRIFT-001: `CURRENT_STATUS.md` header showed "Last Updated: 2026-08-15" but file contained 2026-08-23 entries. Remediated by updating header to 2026-08-23.
-- G-CONTRADICTION-001: `docs/appendices/wp42-owner-acceptance-certificate.md` showed DEFERRED while CURRENT_STATUS.md showed COMPLETE. Resolved by identifying the appendices file as a stale template superseded by the approved certificate at `.kilo/plans/wp42-owner-acceptance-certificate.md` (2026-08-10, Project Owner Approved, baseline `baseline-wp42-final` → `d3eafce`).
+- G-CONTRADICTION-001: `docs/appendices/wp42-owner-acceptance-certificate.md` showed DEFERRED while CURRENT_STATUS.md showed COMPLETE. Resolved by identifying the appendices file as a stale template superseded by the approved certificate at `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md` (2026-08-10, Project Owner Approved, baseline `baseline-wp42-final` → `d3eafce`).
 - G-STALE-001: ENGINEERING_MEMORY.md test count of 876+ is accepted as historical record from WP-41 (2026-07-21).
 - G-STALE-002: TECH_DEBT.md not updated with Audit D/E/F findings; deferred as audit findings are tracked in audit reports and CURRENT_STATUS.md.
 - All material status claims now have identifiable authoritative sources and dates per Charter Gate G requirement.
@@ -668,7 +668,7 @@
 - No architectural defects or security issues identified.
 - Deferred items are tracked and non-blocking.
 
-**Reference:** Audit G report, Lead Architect Governance Review, `.kilo/audits/ARCHITECTURAL_FORENSIC_AUDIT.md` Section 4
+**Reference:** Audit G report, Lead Architect Governance Review, `\.kilo/plans/archive/ARCHITECTURAL_FORENSIC_AUDIT\.md` Section 4
 
 ## E-DATA-006 Closure — PostgreSQL Migration Validation
 
@@ -677,7 +677,7 @@
 **Closure Date:** 2026-08-23
 **Closure Status:** CLOSED — PASSED WITH CONDITIONS
 **Execution Status:** Completed
-**Plan:** `.kilo/plans/edata-006-postgresql-migration-validation-plan.md`
+**Plan:** `\.kilo/plans/archive/edata-006-postgresql-migration-validation-plan\.md`
 
 ### Execution Summary
 
@@ -719,7 +719,7 @@
 
 **Decision:** E-DATA-006 CLOSED — PASSED WITH CONDITIONS. E-DATA-006-B1 ACCEPTED AS CONTROLLED LIMITATION. Production migration remains subject to separate Governance Authorization.
 
-**Reference:** E-DATA-006 execution report, Lead Architect Verification, `.kilo/plans/edata-006-postgresql-migration-validation-plan.md`
+**Reference:** E-DATA-006 execution report, Lead Architect Verification, `\.kilo/plans/archive/edata-006-postgresql-migration-validation-plan\.md`
 
 ## F-MEMORY-001 Closure — User-Level Memory Isolation
 
@@ -727,7 +727,7 @@
 **Priority:** P1
 **Closure Date:** 2026-08-24
 **Closure Status:** CLOSED — VERIFIED
-**Plan:** `.kilo/plans/fmemory-001-user-level-memory-isolation-plan.md`
+**Plan:** `\.kilo/plans/archive/fmemory-001-user-level-memory-isolation-plan\.md`
 **Implementation Status:** Completed
 
 ### Execution Summary
@@ -777,7 +777,7 @@
 
 **Decision:** F-MEMORY-001 CLOSED — VERIFIED. All Acceptance Criteria met. No residual blocking conditions.
 
-**Reference:** F-MEMORY-001 execution report, Lead Architect Verification, `.kilo/plans/fmemory-001-user-level-memory-isolation-plan.md`
+**Reference:** F-MEMORY-001 execution report, Lead Architect Verification, `\.kilo/plans/archive/fmemory-001-user-level-memory-isolation-plan\.md`
 
 ## Session Recovery Point
 
@@ -852,8 +852,8 @@ If resuming after session interruption:
 **Date:** 2026-08-24  
 **Phase:** Forensic Repository Cleanup — Batch A Execution  
 **Status:** CLOSED / VERIFIED  
-**Manifest:** `.kilo/plans/1787571573381-verified-deletion-manifest.md`  
-**Plan:** `.kilo/plans/1787571573381-forensic-cleanup-plan.md`
+**Manifest:** `\.kilo/plans/archive/1787571573381-verified-deletion-manifest\.md`  
+**Plan:** `\.kilo/plans/archive/1787571573381-forensic-cleanup-plan\.md`
 
 ### Cleanup Result
 
@@ -919,6 +919,7 @@ If resuming after session interruption:
 2. Read this file (`CURRENT_STATUS.md`)
 3. Read `TECH_DEBT.md`)
 4. Await explicit Lead Architect / Governance authorization before initiating any new stage.
+
 
 
 

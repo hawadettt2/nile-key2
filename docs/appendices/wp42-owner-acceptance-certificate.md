@@ -1,7 +1,7 @@
-# Owner Acceptance Certificate — WP-42
+﻿# Owner Acceptance Certificate â€” WP-42
 
 **Project:** Nile Key Platform  
-**Work Package:** WP-42 — قبول المالك  
+**Work Package:** WP-42 â€” ظ‚ط¨ظˆظ„ ط§ظ„ظ…ط§ظ„ظƒ  
 **Baseline:** ebc2181  
 **Date:** _______________  
 **Project Owner:** _______________  
@@ -10,8 +10,8 @@
 > **STATUS: STALE / SUPERSEDED**
 > This document is a historical draft template from 2026-07-30.
 > It was superseded by the approved Owner Acceptance Certificate.
-> Authoritative current source: `.kilo/plans/wp42-owner-acceptance-certificate.md` (2026-08-10, Project Owner Approved)
-> Final baseline: `baseline-wp42-final` → `d3eafce`
+> Authoritative current source: `\.kilo/plans/archive/wp42-owner-acceptance-certificate\.md` (2026-08-10, Project Owner Approved)
+> Final baseline: `baseline-wp42-final` â†’ `d3eafce`
 > WP-42 Status: COMPLETE
 
 
@@ -33,16 +33,16 @@
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Authentication | ⬜ Pass / ⬜ Fail | |
-| RBAC | ⬜ Pass / ⬜ Fail | |
-| Input Validation | ⬜ Pass / ⬜ Fail | |
-| Business Workflows | ⬜ Pass / ⬜ Fail | |
-| Data Integrity | ⬜ Pass / ⬜ Fail | |
-| Error Handling | ⬜ Pass / ⬜ Fail | |
-| Performance | ⬜ Pass / ⬜ Fail | |
-| Security | ⬜ Pass / ⬜ Fail | |
-| Mobile/Responsive | ⬜ Pass / ⬜ Fail | |
-| Final Acceptance | ⬜ Pass / ⬜ Fail | |
+| Authentication | â¬œ Pass / â¬œ Fail | |
+| RBAC | â¬œ Pass / â¬œ Fail | |
+| Input Validation | â¬œ Pass / â¬œ Fail | |
+| Business Workflows | â¬œ Pass / â¬œ Fail | |
+| Data Integrity | â¬œ Pass / â¬œ Fail | |
+| Error Handling | â¬œ Pass / â¬œ Fail | |
+| Performance | â¬œ Pass / â¬œ Fail | |
+| Security | â¬œ Pass / â¬œ Fail | |
+| Mobile/Responsive | â¬œ Pass / â¬œ Fail | |
+| Final Acceptance | â¬œ Pass / â¬œ Fail | |
 
 ---
 
@@ -92,3 +92,4 @@ UAT evidence package: `.kilo/plans/wp42-uat-evidence/`
 UAT checklist: `docs/UAT_CHECKLIST.md`  
 Implementation plan: `.kilo/plans/wp42-implementation-plan.md`  
 Specification: `.kilo/plans/WP-42-spec.md`
+
