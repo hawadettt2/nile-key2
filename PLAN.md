@@ -1899,7 +1899,7 @@ All routers depend on `core/database` (get_db) and `core/security` (for auth). N
 | WP-02 Completion Report | `docs/appendices/WP-02_COMPLETION_REPORT.md` | WP-02 completion report |
 | UAT Runbook | `docs/appendices/wp42-uat-runbook.md` | UAT execution runbook |
 | UAT Session Schedule | `docs/appendices/wp42-uat-session-schedule.md` | UAT session schedule |
-| Owner Acceptance Certificate | `docs/appendices/wp42-owner-acceptance-certificate.md` | UAT evidence and acceptance |
+| Owner Acceptance Certificate | `.kilo/plans/archive/wp42-owner-acceptance-certificate.md` | UAT evidence and acceptance |
 | WP-33 Roadmap Verification | `docs/appendices/wp33e-final-roadmap-verification.md` | WP-33 final verification |
 | WP-40 Closure Verification | `docs/appendices/wp40f-final-closure-and-baseline-verification.md` | WP-40 closure verification |
 | WP-41 Documentation Verification | `docs/appendices/wp41-documentation-verification-report.md` | WP-41 documentation verification |
