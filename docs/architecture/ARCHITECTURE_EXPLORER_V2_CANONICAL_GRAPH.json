@@ -1,0 +1,51 @@
+{
+  "artifact": "ARCHITECTURE_EXPLORER_V2_CANONICAL_GRAPH",
+  "version": "0.1-spine",
+  "purpose": "Canonical architectural spine for the DEM Architecture Explorer. This is the architectural source model; repository evidence is attached to nodes and edges rather than driving the top-level taxonomy.",
+  "governing_principle": "Intelligent Operating Platform first; Digital Export Manager is the first executive intelligence persona; repository evidence proves and refines the model.",
+  "levels": [
+    {"id":"L0","name":"DEM Universe","arabic_meaning":"منظومة المنصة بالكامل"},
+    {"id":"L1","name":"Operating Platform","arabic_meaning":"البنية التشغيلية العليا"},
+    {"id":"L2","name":"Subsystem Architecture","arabic_meaning":"البنى الفرعية الداخلية"},
+    {"id":"L3","name":"Code Architecture","arabic_meaning":"هوية التنفيذ البرمجية"}
+  ],
+  "spine": {
+    "root": "intelligent_operating_platform",
+    "layers": [
+      {"id":"executive_intelligence","name":"Digital Export Manager","arabic_meaning":"الذكاء التنفيذي الرقمي","role":"Executive intelligence persona through which human employees interact with the platform.","evidence":["backend/app/routers/digital_export_manager.py"]},
+      {"id":"cognitive","name":"Cognitive Layer","arabic_meaning":"الطبقة المعرفية والإدراكية","children":["reasoning","company_knowledge","long_term_memory","llm"],"evidence":["backend/app/agent/decision_engine","backend/app/agent/knowledge","backend/app/agent/memory","backend/app/agent/llm"]},
+      {"id":"planning","name":"Planning Layer","arabic_meaning":"طبقة التخطيط","children":["task_planner","execution_planner"],"evidence":["backend/app/agent/mission_planner","backend/app/agent/execution_planner"]},
+      {"id":"orchestration","name":"Orchestration Layer","arabic_meaning":"طبقة التنسيق والتحكم في التنفيذ","children":["tool_orchestrator","tool_registry","approval","audit","monitoring"],"evidence":["backend/app/agent/core","backend/app/agent/approval","backend/app/agent/audit","backend/app/agent/monitoring"]},
+      {"id":"business_systems","name":"Business Systems Layer","arabic_meaning":"طبقة الأنظمة والخدمات التشغيلية","children":["shipping","eta","search","workflow","dashboard","documents","notifications","customs","invoice","customers","suppliers","export_readiness","trade_intelligence","knowledge_graph","business_services","persistence"],"evidence":["backend/app/services","backend/app/routers","backend/app/core/database.py"]}
+    ]
+  },
+  "cross_cutting_boundaries": [
+    {"id":"api_boundary","name":"API Boundary","arabic_meaning":"حدود واجهة التطبيق","evidence":["backend/main.py","backend/app/routers"]},
+    {"id":"security","name":"Security","arabic_meaning":"الأمن والتحكم في الوصول","evidence":["backend/app/core/security.py","backend/app/core/csrf.py"]},
+    {"id":"credentials","name":"Credential Management","arabic_meaning":"إدارة بيانات الاعتماد","evidence":["backend/app/core/credentials"]},
+    {"id":"research","name":"External Research","arabic_meaning":"البحث الخارجي","boundary":"Must remain distinct from Company Knowledge ingestion.","evidence":["backend/app/routers/research.py"]},
+    {"id":"frontend","name":"Frontend","arabic_meaning":"واجهة المستخدم","evidence":["frontend"]},
+    {"id":"external_world","name":"External Systems and Sources","arabic_meaning":"الأنظمة والمصادر الخارجية","status":"to_be_reconciled"}
+  ],
+  "verified_agent_path": {
+    "status":"verified_at_integration_point",
+    "sequence":["digital_export_manager","reasoning","task_planner","execution_planner","tool_orchestrator","tools","business_services"],
+    "evidence":["backend/app/routers/digital_export_manager.py"]
+  },
+  "classification_rules": {
+    "runtime":"requires runtime wiring evidence; repository presence alone is insufficient",
+    "implemented_but_not_wired":"code exists but no active runtime path has been proven",
+    "conditional":"runtime path depends on configuration or credentials",
+    "planned":"documented future intent without current implementation",
+    "reserved":"repository structure exists without completed runtime semantics"
+  },
+  "graph_contract": {
+    "node_required_fields":["id","technical_name","arabic_meaning","type","level","status","paths","responsibilities","boundaries","evidence"],
+    "edge_required_fields":["source","target","relation_type","status","evidence"],
+    "evidence_rule":"Every architectural assertion must be traceable to repository code or governing project documentation.",
+    "identity_rule":"English technical names preserve code identity; Arabic provides functional meaning.",
+    "boundary_rule":"The graph must explain what each layer owns and what it must not do.",
+    "no_inference_rule":"Imports, directory presence, or naming alone do not prove runtime invocation."
+  },
+  "next_work": "Populate and validate this canonical spine from existing repository evidence, then extend it downward to L3 without creating separate reconciliation documents."
+}
