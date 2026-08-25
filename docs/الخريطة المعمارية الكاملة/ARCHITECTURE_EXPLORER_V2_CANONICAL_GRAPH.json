@@ -1,0 +1,40 @@
+{
+  "artifact": "ARCHITECTURE_EXPLORER_V2_CANONICAL_GRAPH",
+  "version": "1.0-spine",
+  "purpose": "Canonical architectural source model for the Complete Architectural Map and future Explorer UI.",
+  "governing_principle": "Intelligent Operating Platform first; Digital Export Manager is the first executive intelligence persona; repository evidence proves and refines the model.",
+  "source": {"repository":"hawadettt2/nile-key2","branch":"main","evidence_baseline":"Complete Architectural Map evidence inventory"},
+  "levels": [
+    {"id":"L0","name":"DEM Universe","arabic_meaning":"منظومة المنصة بالكامل"},
+    {"id":"L1","name":"Operating Platform","arabic_meaning":"البنية التشغيلية العليا"},
+    {"id":"L2","name":"Subsystem Architecture","arabic_meaning":"البنى الفرعية الداخلية"},
+    {"id":"L3","name":"Code Architecture","arabic_meaning":"هوية التنفيذ البرمجية"}
+  ],
+  "spine": {
+    "root":"intelligent_operating_platform",
+    "layers":[
+      {"id":"executive_intelligence","technical_name":"Digital Export Manager","arabic_meaning":"الذكاء التنفيذي الرقمي","type":"agent_subsystem","status":"implemented_runtime","children":["cognitive","planning","orchestration","business_systems"],"evidence":["backend/app/routers/digital_export_manager.py","backend/app/agent"]},
+      {"id":"cognitive","technical_name":"Cognitive Layer","arabic_meaning":"الطبقة المعرفية والإدراكية","type":"agent_subsystem","children":["reasoning","company_knowledge","long_term_memory","llm"],"evidence":["backend/app/agent/decision_engine","backend/app/agent/knowledge","backend/app/agent/memory","backend/app/agent/llm"]},
+      {"id":"planning","technical_name":"Planning Layer","arabic_meaning":"طبقة التخطيط","type":"agent_subsystem","children":["task_planner","execution_planner"],"evidence":["backend/app/agent/mission_planner","backend/app/agent/execution_planner"]},
+      {"id":"orchestration","technical_name":"Orchestration Layer","arabic_meaning":"طبقة التنسيق والتحكم في التنفيذ","type":"orchestration","children":["tool_orchestrator","tool_registry","approval","audit","monitoring"],"evidence":["backend/app/agent/core","backend/app/agent/tools","backend/app/agent/approval","backend/app/agent/audit","backend/app/agent/monitoring"]},
+      {"id":"business_systems","technical_name":"Business Systems Layer","arabic_meaning":"طبقة الأنظمة والخدمات التشغيلية","type":"business_boundary","children":["shipping","eta","search","workflow","dashboard","documents","notifications","customs","invoice","customers","suppliers","export_readiness","trade_intelligence","knowledge_graph","business_services","persistence"],"evidence":["backend/app/services","backend/app/routers","backend/app/core/database.py"]}
+    ]
+  },
+  "cross_cutting_boundaries":[
+    {"id":"human_employees","technical_name":"Human Employees","arabic_meaning":"موظفو الشركة","type":"business_boundary","levels":[0,1]},
+    {"id":"frontend","technical_name":"Frontend","arabic_meaning":"واجهة المستخدم","type":"frontend","status":"implemented_runtime","evidence":["frontend/src"]},
+    {"id":"api_boundary","technical_name":"API Boundary","arabic_meaning":"حدود واجهة التطبيق","type":"api_boundary","status":"implemented_runtime","evidence":["backend/main.py","backend/app/routers","backend/app/schemas"]},
+    {"id":"security","technical_name":"Security","arabic_meaning":"الأمن والتحكم في الوصول","type":"security","status":"implemented_runtime","evidence":["backend/app/core/security.py","backend/app/core/csrf.py"]},
+    {"id":"credentials","technical_name":"Credential Management","arabic_meaning":"إدارة بيانات الاعتماد","type":"credential_management","status":"implemented_runtime","evidence":["backend/app/core/credentials"]},
+    {"id":"research","technical_name":"External Research","arabic_meaning":"البحث الخارجي","type":"research","status":"implemented_runtime","boundary":"Distinct from Knowledge Ingestion.","evidence":["backend/app/research","backend/app/routers/research.py"]},
+    {"id":"knowledge_graph","technical_name":"Knowledge Graph","arabic_meaning":"الرسم البياني للمعرفة","type":"business_capability","status":"implemented_runtime","evidence":["backend/app/services/knowledge_graph.py","backend/app/routers/knowledge_graph.py"]},
+    {"id":"persistence","technical_name":"Persistence","arabic_meaning":"طبقة حفظ البيانات","type":"persistence","status":"implemented_runtime","evidence":["backend/app/core/database.py"]},
+    {"id":"external_world","technical_name":"External Systems and Sources","arabic_meaning":"الأنظمة والمصادر الخارجية","type":"external_system","status":"external"}
+  ],
+  "agent_path":{"status":"verified_at_integration_point","sequence":["digital_export_manager","reasoning","task_planner","execution_planner","tool_orchestrator","tool_registry","tools","business_services"],"evidence":["backend/app/routers/digital_export_manager.py"]},
+  "business_capabilities":["shipping","eta","search","workflow","dashboard","documents","notifications","customs","invoice","customers","suppliers","export_readiness","trade_intelligence","knowledge_graph"],
+  "classification_rules":{"implemented_runtime":"requires runtime wiring evidence","implemented_non_primary":"implemented but not established as primary runtime path","conditional":"depends on configuration or credentials","planned_future":"documented future intent","reserved_minimal":"repository structure exists without completed runtime semantics","external":"outside the repository","unverified":"insufficient evidence"},
+  "graph_contract":{"node_required_fields":["id","technical_name","arabic_meaning","type","levels","status","paths","responsibilities","non_responsibilities","evidence","parent_ids","tags","metadata"],"edge_required_fields":["id","source","target","relation_type","direction","status","evidence","data","metadata"],"evidence_rule":"Every architectural assertion must be traceable to repository code or governing documentation.","no_inference_rule":"Imports, directory presence, or naming alone do not prove runtime invocation."},
+  "validation":{"state":"pending_full_reconciliation","rule":"Do not claim exhaustive graph coverage until all required architecture domains and their relationships have been reconciled."},
+  "next_work":"Enrich this canonical graph directly from verified repository evidence, validate it, then build the Explorer engine and Level 0–3 UI. Do not create separate reconciliation documents for each subsystem."
+}
