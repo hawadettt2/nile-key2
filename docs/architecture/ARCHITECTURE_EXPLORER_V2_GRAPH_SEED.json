@@ -3,325 +3,49 @@
   "graph_id": "dem-architecture-explorer-v2",
   "title": "DEM Architecture Explorer v2 — Verified Seed",
   "description": "Evidence-driven seed graph for the DEM architecture. This dataset is intentionally not declared exhaustive.",
-  "source": {
-    "repository": "hawadettt2/nile-key2",
-    "branch": "main",
-    "evidence_baseline": "docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md",
-    "generated_at": "2026-08-25"
-  },
+  "source": {"repository":"hawadettt2/nile-key2","branch":"main","evidence_baseline":"docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md","generated_at":"2026-08-25"},
   "nodes": [
-    {
-      "id": "dem.universe",
-      "technical_name": "Nile Key / DEM Universe",
-      "arabic_meaning": "النموذج المعماري الشامل لمنصة مفتاح النيل وDEM",
-      "arabic_description": "الإطار الأعلى الذي يربط تجربة الأعمال بالتطبيق والأنظمة الخارجية والحدود الرئيسية.",
-      "type": "universe",
-      "levels": [0],
-      "status": "implemented_runtime",
-      "responsibilities": ["Provide the top-level mental model for the platform and DEM."],
-      "non_responsibilities": ["It is a documentation projection, not a runtime component."],
-      "paths": [],
-      "evidence": [
-        {"kind": "governance_document", "path": "docs/architecture/ARCHITECTURE_EXPLORER_V2_PLAN.md", "detail": "Defines Level 0 as the complete DEM Universe mental model.", "authority": "primary"}
-      ],
-      "parent_ids": [],
-      "tags": ["level-0", "dem", "universe"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.frontend",
-      "technical_name": "Frontend",
-      "arabic_meaning": "الواجهة الأمامية",
-      "arabic_description": "واجهة التطبيق التي تشمل الصفحات والمكونات والخدمات والحالة والأنواع والاختبارات.",
-      "type": "frontend",
-      "levels": [1, 2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Provide the user-facing application interface."],
-      "non_responsibilities": ["Does not own backend business execution."],
-      "paths": ["frontend/src/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "frontend/src/", "detail": "Verified frontend structure including components, hooks, lib, locales, pages, services, store, test, and types.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.universe"],
-      "tags": ["frontend", "runtime"],
-      "metadata": {"areas": ["components", "hooks", "lib", "locales", "pages", "services", "store", "test", "types"]}
-    },
-    {
-      "id": "dem.api",
-      "technical_name": "FastAPI Application / HTTP Boundary",
-      "arabic_meaning": "تطبيق FastAPI وحدود HTTP",
-      "arabic_description": "نقطة دخول تطبيق backend التي تهيئ البنية التحتية وتسجل المكونات والـrouters.",
-      "type": "api_boundary",
-      "levels": [1, 2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Expose HTTP application boundary.", "Wire routers and runtime infrastructure during application startup."],
-      "non_responsibilities": ["Does not itself represent the downstream business services."],
-      "paths": ["backend/main.py"],
-      "evidence": [
-        {"kind": "runtime_wiring", "path": "backend/main.py", "detail": "Creates the FastAPI application and imports routers, infrastructure, knowledge, memory, and LLM components.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.universe"],
-      "tags": ["backend", "api", "fastapi", "runtime"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.backend",
-      "technical_name": "Backend Application",
-      "arabic_meaning": "تطبيق الخلفية",
-      "arabic_description": "الجزء الخلفي الذي يضم الوكيل والبنية الأساسية والـrouters والخدمات والبحث والمعرفة.",
-      "type": "backend",
-      "levels": [1, 2],
-      "status": "implemented_runtime",
-      "responsibilities": ["Host the server-side application architecture."],
-      "non_responsibilities": ["Does not imply a microservices deployment model."],
-      "paths": ["backend/", "backend/app/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/", "detail": "Verified top-level backend areas agent, core, models, research, routers, schemas, and services.", "authority": "primary"},
-        {"kind": "governance_document", "path": "docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md", "detail": "Explicitly records modular-monolith-oriented architecture and warns against inventing microservices.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.universe"],
-      "tags": ["backend", "modular-monolith", "runtime"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.agent",
-      "technical_name": "Digital Export Manager Agent",
-      "arabic_meaning": "وكيل مدير التصدير الرقمي",
-      "arabic_description": "طبقة الذكاء التنفيذي التي تستقبل الطلبات وتنتج القرارات وتخطط التنفيذ وتنسقه عبر الأدوات والخدمات.",
-      "type": "agent_subsystem",
-      "levels": [1, 2],
-      "status": "implemented_runtime",
-      "responsibilities": ["Coordinate session, reasoning, planning, execution, tools, knowledge, memory, approval, audit, and monitoring."],
-      "non_responsibilities": ["The Agent is not equivalent to the LLM alone and its tools are not the business services themselves."],
-      "paths": ["backend/app/agent/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/agent/", "detail": "Verified Agent subsystem and its internal areas.", "authority": "primary"},
-        {"kind": "governance_document", "path": "docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md", "detail": "Requires Agent internals to remain explicitly discoverable.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.backend"],
-      "tags": ["agent", "dem", "runtime"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.agent.session",
-      "technical_name": "Session",
-      "arabic_meaning": "إدارة الجلسة",
-      "arabic_description": "طبقة سياق الجلسة التي يبدأ منها مسار تنفيذ طلب DEM.",
-      "type": "agent_subsystem",
-      "levels": [2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Establish and carry session context into the agent flow."],
-      "non_responsibilities": [],
-      "paths": ["backend/app/agent/session/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/agent/session/", "detail": "Verified Agent session area in repository inventory.", "authority": "primary"},
-        {"kind": "governance_document", "path": "docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md", "detail": "Session is explicitly part of the verified execution path.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.agent"],
-      "tags": ["agent", "session", "runtime"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.agent.reasoning",
-      "technical_name": "ReasoningEngine",
-      "arabic_meaning": "محرك الاستدلال واتخاذ القرار",
-      "arabic_description": "يحوّل نية المستخدم إلى بدائل وقرار مستفيدًا من الذاكرة والمعرفة، مع إمكانية تعزيز الاستدلال عبر مزود LLM.",
-      "type": "agent_subsystem",
-      "levels": [2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Map intent to candidate paths.", "Query memory and knowledge.", "Evaluate and select an execution path.", "Determine approval requirement.", "Produce and persist significant decisions."],
-      "non_responsibilities": ["Does not itself execute business operations."],
-      "paths": ["backend/app/agent/decision_engine/engine.py"],
-      "evidence": [
-        {"kind": "repository_file", "path": "backend/app/agent/decision_engine/engine.py", "detail": "ReasoningEngine.reason queries memory and knowledge, evaluates candidates, selects a path, checks approval, and creates a Decision.", "authority": "primary"},
-        {"kind": "runtime_wiring", "path": "backend/main.py", "detail": "ReasoningEngine is imported and instantiated as part of application wiring.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.agent"],
-      "tags": ["agent", "reasoning", "decision", "runtime"],
-      "metadata": {"class": "ReasoningEngine", "module": "app.agent.decision_engine.engine"}
-    },
-    {
-      "id": "dem.agent.knowledge",
-      "technical_name": "Knowledge Integration",
-      "arabic_meaning": "تكامل المعرفة",
-      "arabic_description": "طبقة الوكيل التي تتعامل مع سجل ومُنسّق مزودي المعرفة، مع بقاء حدود Knowledge Ingestion منفصلة عن Research.",
-      "type": "knowledge",
-      "levels": [1, 2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Provide knowledge access to agent reasoning through the knowledge registry/orchestration boundary."],
-      "non_responsibilities": ["Does not own external research, business analysis, plan generation, execution, or LLM orchestration."],
-      "paths": ["backend/app/agent/knowledge/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/agent/knowledge/", "detail": "Verified knowledge subsystem directory.", "authority": "primary"},
-        {"kind": "governance_document", "path": ".kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md", "detail": "Defines the bounded Knowledge Ingestion contract and explicitly excludes Research, Reasoning, Execution, and LLM orchestration.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.agent"],
-      "tags": ["knowledge", "ingestion", "agent"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.agent.memory",
-      "technical_name": "Memory",
-      "arabic_meaning": "ذاكرة الوكيل",
-      "arabic_description": "طبقة الذاكرة التي يقرأ منها محرك الاستدلال ويكتب فيها القرارات المهمة عبر مزود SQLite الحالي.",
-      "type": "agent_subsystem",
-      "levels": [2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Provide persistent/retrievable agent memory context."],
-      "non_responsibilities": [],
-      "paths": ["backend/app/agent/memory/", "backend/main.py"],
-      "evidence": [
-        {"kind": "runtime_wiring", "path": "backend/main.py", "detail": "Instantiates SQLiteMemoryProvider with nile_key.db.", "authority": "primary"},
-        {"kind": "repository_file", "path": "backend/app/agent/decision_engine/engine.py", "detail": "ReasoningEngine queries memory and persists significant decisions when a memory provider is configured.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.agent"],
-      "tags": ["memory", "agent", "sqlite"],
-      "metadata": {"provider": "SQLiteMemoryProvider", "database_file": "nile_key.db"}
-    },
-    {
-      "id": "dem.agent.llm",
-      "technical_name": "LLM Integration",
-      "arabic_meaning": "تكامل نموذج اللغة الكبير",
-      "arabic_description": "تكامل اختياري مع مزود LLM لتعزيز اختيار المسار وصياغة الاستدلال عندما يكون المزود متاحًا.",
-      "type": "agent_subsystem",
-      "levels": [2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Optionally enhance candidate selection and reasoning output through a configured LLM provider."],
-      "non_responsibilities": ["LLM is not the complete Agent architecture."],
-      "paths": ["backend/app/agent/llm/", "backend/main.py", "backend/app/agent/decision_engine/engine.py"],
-      "evidence": [
-        {"kind": "repository_file", "path": "backend/app/agent/decision_engine/engine.py", "detail": "ReasoningEngine retrieves a Gemini provider and uses it as an enhancement/fallback mechanism.", "authority": "primary"},
-        {"kind": "runtime_wiring", "path": "backend/main.py", "detail": "GeminiProvider and llm_registry are configured during application startup when LLM_API_KEY is available.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.agent"],
-      "tags": ["llm", "agent", "optional-enhancement"],
-      "metadata": {"provider": "GeminiProvider"}
-    },
-    {
-      "id": "dem.agent.approval",
-      "technical_name": "Approval",
-      "arabic_meaning": "بوابة الموافقة",
-      "arabic_description": "حد الحوكمة الذي يحدد ما إذا كان المسار المختار يحتاج إلى موافقة قبل التنفيذ.",
-      "type": "agent_subsystem",
-      "levels": [2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Determine and gate approval requirements for decisions/execution."],
-      "non_responsibilities": [],
-      "paths": ["backend/app/agent/approval/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/agent/approval/", "detail": "Verified approval subsystem directory.", "authority": "primary"},
-        {"kind": "repository_file", "path": "backend/app/agent/decision_engine/engine.py", "detail": "ReasoningEngine constructs ApprovalGate and checks approval status for the chosen path.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.agent"],
-      "tags": ["approval", "governance", "agent"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.research",
-      "technical_name": "Research",
-      "arabic_meaning": "البحث الخارجي",
-      "arabic_description": "منظومة بحث مستقلة تشمل الاسترجاع والمصادر والأدلة والجودة، وليست امتدادًا لحد Knowledge Ingestion.",
-      "type": "research",
-      "levels": [1, 2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Perform external research through retrieval, sources, evidence, orchestration, and quality components."],
-      "non_responsibilities": ["Does not collapse into Knowledge Ingestion."],
-      "paths": ["backend/app/research/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/research/", "detail": "Verified research/orchestrator, quality, result, retrieval, sources, and evidence areas.", "authority": "primary"},
-        {"kind": "governance_document", "path": ".kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md", "detail": "Explicitly excludes External Research from Knowledge Ingestion.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.backend"],
-      "tags": ["research", "retrieval", "evidence"],
-      "metadata": {}
-    },
-    {
-      "id": "dem.business_services",
-      "technical_name": "Business Services",
-      "arabic_meaning": "خدمات وقدرات الأعمال",
-      "arabic_description": "طبقة الخدمات التي تنفذ القدرات التشغيلية مثل الشحن والجمارك والفواتير والعملاء والمستندات وغيرها.",
-      "type": "business_service",
-      "levels": [1, 2],
-      "status": "implemented_runtime",
-      "responsibilities": ["Implement business operations behind API and agent tool boundaries."],
-      "non_responsibilities": ["Business Services are not Agent Tools and are not equivalent to routers."],
-      "paths": ["backend/app/services/"],
-      "evidence": [
-        {"kind": "repository_directory", "path": "backend/app/services/", "detail": "Verified service modules including shipping, customs, invoice, customer, supplier, document, workflow, notification, resources, trade intelligence, export readiness, knowledge graph, audit, dashboard, and search.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.backend"],
-      "tags": ["services", "business", "runtime"],
-      "metadata": {"modular_monolith": true}
-    },
-    {
-      "id": "dem.persistence.sqlite",
-      "technical_name": "SQLite Runtime Persistence",
-      "arabic_meaning": "التخزين الحالي عبر SQLite",
-      "arabic_description": "قاعدة البيانات الحالية المستخدمة أثناء التشغيل، مع وصول مباشر عبر core/database.py.",
-      "type": "database",
-      "levels": [1, 2, 3],
-      "status": "implemented_runtime",
-      "responsibilities": ["Persist current runtime application data."],
-      "non_responsibilities": ["Not a PostgreSQL production migration target yet."],
-      "paths": ["backend/app/core/database.py", "nile_key.db"],
-      "evidence": [
-        {"kind": "repository_file", "path": "backend/app/core/database.py", "detail": "Evidence inventory identifies SQLite/sqlite3 as the current runtime database implementation.", "authority": "primary"},
-        {"kind": "runtime_wiring", "path": "backend/main.py", "detail": "Application initializes the database and constructs SQLiteMemoryProvider against nile_key.db.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.backend"],
-      "tags": ["persistence", "sqlite", "runtime"],
-      "metadata": {"engine": "sqlite3"}
-    },
-    {
-      "id": "dem.persistence.postgresql",
-      "technical_name": "PostgreSQL Migration Path",
-      "arabic_meaning": "مسار الترحيل المستقبلي إلى PostgreSQL",
-      "arabic_description": "مسار مستقبلي موثق للترحيل، وليس قاعدة بيانات التشغيل الحالية.",
-      "type": "planned_architecture",
-      "levels": [1, 2],
-      "status": "planned_future",
-      "responsibilities": ["Provide a bounded future migration target for production persistence."],
-      "non_responsibilities": ["Not current runtime persistence."],
-      "paths": ["docs/architecture/ADR-0002-postgresql-migration-path.md"],
-      "evidence": [
-        {"kind": "adr", "path": "docs/architecture/ADR-0002-postgresql-migration-path.md", "detail": "Documents the bounded PostgreSQL migration path while SQLite remains current runtime.", "authority": "primary"}
-      ],
-      "parent_ids": ["dem.backend"],
-      "tags": ["postgresql", "future", "migration"],
-      "metadata": {}
-    }
+    {"id":"dem.universe","technical_name":"Nile Key / DEM Universe","arabic_meaning":"النموذج المعماري الشامل لمنصة مفتاح النيل وDEM","arabic_description":"الإطار الأعلى الذي يربط تجربة الأعمال بالتطبيق والأنظمة الخارجية والحدود الرئيسية.","type":"universe","levels":[0],"status":"governance_documented","responsibilities":["Provide the top-level mental model for the platform and DEM."],"non_responsibilities":["It is a documentation projection, not a runtime component."],"paths":[],"evidence":[{"kind":"governance_document","path":"docs/architecture/ARCHITECTURE_EXPLORER_V2_PLAN.md","detail":"Defines Level 0 as the complete DEM Universe mental model.","authority":"primary"}],"parent_ids":[],"tags":["level-0","dem","universe"],"metadata":{}},
+    {"id":"dem.frontend","technical_name":"Frontend","arabic_meaning":"الواجهة الأمامية","arabic_description":"واجهة التطبيق التي تشمل الصفحات والمكونات والخدمات والحالة والأنواع والاختبارات.","type":"frontend","levels":[1,2,3],"status":"implemented_runtime","responsibilities":["Provide the user-facing application interface."],"non_responsibilities":["Does not own backend business execution."],"paths":["frontend/src/"],"evidence":[{"kind":"repository_directory","path":"frontend/src/","detail":"Verified frontend structure including components, hooks, lib, locales, pages, services, store, test, and types.","authority":"primary"}],"parent_ids":["dem.universe"],"tags":["frontend","runtime"],"metadata":{"areas":["components","hooks","lib","locales","pages","services","store","test","types"]}},
+    {"id":"dem.api","technical_name":"FastAPI Application / HTTP Boundary","arabic_meaning":"تطبيق FastAPI وحدود HTTP","arabic_description":"نقطة دخول تطبيق backend التي تهيئ البنية الأساسية وتسجل المكونات والـrouters.","type":"api_boundary","levels":[1,2,3],"status":"implemented_runtime","responsibilities":["Expose HTTP application boundary.","Wire routers and runtime infrastructure during application startup."],"non_responsibilities":["Does not itself represent the downstream business services."],"paths":["backend/main.py"],"evidence":[{"kind":"runtime_wiring","path":"backend/main.py","detail":"Creates the FastAPI application and imports routers, infrastructure, knowledge, memory, and LLM components.","authority":"primary"}],"parent_ids":["dem.universe"],"tags":["backend","api","fastapi","runtime"],"metadata":{}},
+    {"id":"dem.backend","technical_name":"Backend Application","arabic_meaning":"تطبيق الخلفية","arabic_description":"الجزء الخلفي الذي يضم الوكيل والبنية الأساسية والـrouters والخدمات والبحث والمعرفة.","type":"backend","levels":[1,2],"status":"implemented_runtime","responsibilities":["Host the server-side application architecture."],"non_responsibilities":["Does not imply a microservices deployment model."],"paths":["backend/","backend/app/"],"evidence":[{"kind":"repository_directory","path":"backend/app/","detail":"Verified top-level backend areas agent, core, models, research, routers, schemas, and services.","authority":"primary"},{"kind":"governance_document","path":"docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md","detail":"Explicitly records modular-monolith-oriented architecture and warns against inventing microservices.","authority":"primary"}],"parent_ids":["dem.universe"],"tags":["backend","modular-monolith","runtime"],"metadata":{}},
+    {"id":"dem.agent","technical_name":"Digital Export Manager Agent","arabic_meaning":"وكيل مدير التصدير الرقمي","arabic_description":"طبقة الذكاء التنفيذي التي تستقبل الطلبات وتنتج القرارات وتخطط التنفيذ وتنسقه عبر الأدوات والخدمات.","type":"agent_subsystem","levels":[1,2],"status":"implemented_runtime","responsibilities":["Coordinate session, reasoning, planning, execution, tools, knowledge, memory, approval, audit, and monitoring."],"non_responsibilities":["The Agent is not equivalent to the LLM alone and its tools are not the business services themselves."],"paths":["backend/app/agent/"],"evidence":[{"kind":"repository_directory","path":"backend/app/agent/","detail":"Verified Agent subsystem and its internal areas.","authority":"primary"},{"kind":"governance_document","path":"docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md","detail":"Requires Agent internals to remain explicitly discoverable.","authority":"primary"}],"parent_ids":["dem.backend"],"tags":["agent","dem","runtime"],"metadata":{}},
+    {"id":"dem.agent.session","technical_name":"Session","arabic_meaning":"إدارة الجلسة","arabic_description":"طبقة سياق الجلسة التي يبدأ منها مسار تنفيذ طلب DEM.","type":"agent_subsystem","levels":[2,3],"status":"implemented_runtime","responsibilities":["Establish and carry session context into the agent flow."],"non_responsibilities":[],"paths":["backend/app/agent/session/"],"evidence":[{"kind":"repository_directory","path":"backend/app/agent/session/","detail":"Verified Agent session area in repository inventory.","authority":"primary"}],"parent_ids":["dem.agent"],"tags":["agent","session","runtime"],"metadata":{}},
+    {"id":"dem.agent.reasoning","technical_name":"ReasoningEngine","arabic_meaning":"محرك الاستدلال واتخاذ القرار","arabic_description":"يحوّل نية المستخدم إلى بدائل وقرار مستفيدًا من الذاكرة والمعرفة، مع إمكانية تعزيز الاستدلال عبر مزود LLM.","type":"agent_subsystem","levels":[2,3],"status":"implemented_runtime","responsibilities":["Map intent to candidate paths.","Query memory and knowledge.","Evaluate and select an execution path.","Determine approval requirement.","Produce and persist significant decisions."],"non_responsibilities":["Does not itself execute business operations."],"paths":["backend/app/agent/decision_engine/engine.py"],"evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine.reason queries memory and knowledge, evaluates candidates, selects a path, checks approval, and creates a Decision.","authority":"primary"},{"kind":"runtime_wiring","path":"backend/main.py","detail":"ReasoningEngine is imported and instantiated as part of application wiring.","authority":"primary"}],"parent_ids":["dem.agent"],"tags":["agent","reasoning","decision","runtime"],"metadata":{"class":"ReasoningEngine","module":"app.agent.decision_engine.engine"}},
+    {"id":"dem.agent.knowledge","technical_name":"Knowledge Integration","arabic_meaning":"تكامل المعرفة","arabic_description":"طبقة الوكيل التي تتعامل مع سجل ومنسق مزودي المعرفة، مع بقاء حدود Knowledge Ingestion منفصلة عن Research.","type":"knowledge","levels":[1,2,3],"status":"implemented_runtime","responsibilities":["Provide knowledge access to agent reasoning through the knowledge registry/orchestration boundary."],"non_responsibilities":["Does not own external research, business analysis, plan generation, execution, or LLM orchestration."],"paths":["backend/app/agent/knowledge/"],"evidence":[{"kind":"repository_directory","path":"backend/app/agent/knowledge/","detail":"Verified knowledge subsystem directory.","authority":"primary"},{"kind":"governance_document","path":".kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md","detail":"Defines the bounded Knowledge Ingestion contract and explicitly excludes Research, Reasoning, Execution, and LLM orchestration.","authority":"primary"}],"parent_ids":["dem.agent"],"tags":["knowledge","ingestion","agent"],"metadata":{}},
+    {"id":"dem.agent.memory","technical_name":"Memory","arabic_meaning":"ذاكرة الوكيل","arabic_description":"طبقة الذاكرة التي يقرأ منها محرك الاستدلال ويكتب فيها القرارات المهمة عبر مزود SQLite الحالي.","type":"agent_subsystem","levels":[2,3],"status":"implemented_runtime","responsibilities":["Provide persistent/retrievable agent memory context."],"non_responsibilities":[],"paths":["backend/app/agent/memory/","backend/main.py"],"evidence":[{"kind":"runtime_wiring","path":"backend/main.py","detail":"Instantiates SQLiteMemoryProvider with db_path=nile_key.db.","authority":"primary"},{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine queries memory and persists significant decisions when a memory provider is configured.","authority":"primary"}],"parent_ids":["dem.agent"],"tags":["memory","agent","sqlite"],"metadata":{"provider":"SQLiteMemoryProvider","database_file":"nile_key.db"}},
+    {"id":"dem.agent.llm","technical_name":"LLM Integration","arabic_meaning":"تكامل نموذج اللغة الكبير","arabic_description":"تكامل اختياري مع مزود LLM لتعزيز اختيار المسار وصياغة الاستدلال عندما يكون المزود متاحًا.","type":"agent_subsystem","levels":[2,3],"status":"implemented_runtime","responsibilities":["Optionally enhance candidate selection and reasoning output through a configured LLM provider."],"non_responsibilities":["LLM is not the complete Agent architecture."],"paths":["backend/app/agent/llm/","backend/main.py","backend/app/agent/decision_engine/engine.py"],"evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine retrieves a Gemini provider and uses it as an enhancement/fallback mechanism.","authority":"primary"},{"kind":"runtime_wiring","path":"backend/main.py","detail":"GeminiProvider and llm_registry are configured during application startup when LLM_API_KEY is available.","authority":"primary"}],"parent_ids":["dem.agent"],"tags":["llm","agent","optional-enhancement"],"metadata":{"provider":"GeminiProvider"}},
+    {"id":"dem.agent.approval","technical_name":"Approval","arabic_meaning":"بوابة الموافقة","arabic_description":"حد الحوكمة الذي يحدد ما إذا كان المسار المختار يحتاج إلى موافقة قبل التنفيذ.","type":"agent_subsystem","levels":[2,3],"status":"implemented_runtime","responsibilities":["Determine and gate approval requirements for decisions/execution."],"non_responsibilities":[],"paths":["backend/app/agent/approval/"],"evidence":[{"kind":"repository_directory","path":"backend/app/agent/approval/","detail":"Verified approval subsystem directory.","authority":"primary"},{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine constructs ApprovalGate and checks approval status for the chosen path.","authority":"primary"}],"parent_ids":["dem.agent"],"tags":["approval","governance","agent"],"metadata":{}},
+    {"id":"dem.research","technical_name":"Research","arabic_meaning":"البحث الخارجي","arabic_description":"منظومة بحث مستقلة تشمل الاسترجاع والمصادر والأدلة والجودة، وليست امتدادًا لحد Knowledge Ingestion.","type":"research","levels":[1,2,3],"status":"implemented_runtime","responsibilities":["Perform external research through retrieval, sources, evidence, orchestration, and quality components."],"non_responsibilities":["Does not collapse into Knowledge Ingestion."],"paths":["backend/app/research/"],"evidence":[{"kind":"repository_directory","path":"backend/app/research/","detail":"Verified research/orchestrator, quality, result, retrieval, sources, and evidence areas.","authority":"primary"},{"kind":"governance_document","path":".kilo/plans/KNOWLEDGE_INGESTION_CONTRACT.md","detail":"Explicitly excludes External Research from Knowledge Ingestion.","authority":"primary"}],"parent_ids":["dem.backend"],"tags":["research","retrieval","evidence"] ,"metadata":{}},
+    {"id":"dem.business_services","technical_name":"Business Services","arabic_meaning":"خدمات وقدرات الأعمال","arabic_description":"طبقة الخدمات التي تنفذ القدرات التشغيلية مثل الشحن والجمارك والفواتير والعملاء والمستندات وغيرها.","type":"business_service","levels":[1,2],"status":"implemented_runtime","responsibilities":["Implement business operations behind API and agent tool boundaries."],"non_responsibilities":["Business Services are not Agent Tools and are not equivalent to routers."],"paths":["backend/app/services/"],"evidence":[{"kind":"repository_directory","path":"backend/app/services/","detail":"Verified service modules including shipping, customs, invoice, customer, supplier, document, workflow, notification, resources, trade intelligence, export readiness, knowledge graph, audit, dashboard, and search.","authority":"primary"}],"parent_ids":["dem.backend"],"tags":["services","business","runtime"],"metadata":{"modular_monolith":true}},
+    {"id":"dem.persistence.sqlite","technical_name":"SQLite Runtime Persistence","arabic_meaning":"التخزين الحالي عبر SQLite","arabic_description":"قاعدة البيانات الحالية المستخدمة أثناء التشغيل، مع وصول مباشر عبر core/database.py.","type":"database","levels":[1,2,3],"status":"implemented_runtime","responsibilities":["Persist current runtime application data."],"non_responsibilities":["Not a PostgreSQL production migration target yet."],"paths":["backend/app/core/database.py"],"evidence":[{"kind":"repository_file","path":"backend/app/core/database.py","detail":"Evidence inventory identifies SQLite/sqlite3 as the current runtime database implementation.","authority":"primary"},{"kind":"runtime_wiring","path":"backend/main.py","detail":"Application initializes the database and constructs SQLiteMemoryProvider against nile_key.db.","authority":"primary"}],"parent_ids":["dem.backend"],"tags":["persistence","sqlite","runtime"],"metadata":{"engine":"sqlite3","runtime_database_file":"nile_key.db"}},
+    {"id":"dem.persistence.postgresql","technical_name":"PostgreSQL Migration Path","arabic_meaning":"مسار الترحيل المستقبلي إلى PostgreSQL","arabic_description":"مسار مستقبلي موثق للترحيل، وليس قاعدة بيانات التشغيل الحالية.","type":"planned_architecture","levels":[1,2],"status":"planned_future","responsibilities":["Provide a bounded future migration target for production persistence."],"non_responsibilities":["Not current runtime persistence."],"paths":["docs/architecture/ADR-0002-postgresql-migration-path.md"],"evidence":[{"kind":"adr","path":"docs/architecture/ADR-0002-postgresql-migration-path.md","detail":"Documents the bounded PostgreSQL migration path while SQLite remains current runtime.","authority":"primary"}],"parent_ids":["dem.backend"],"tags":["postgresql","future","migration"],"metadata":{}}
   ],
   "edges": [
-    {"id":"e.dem.backend","source":"dem.universe","target":"dem.backend","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/","detail":"Backend is a confirmed application boundary in the repository.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.frontend","source":"dem.universe","target":"dem.frontend","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"frontend/src/","detail":"Frontend is a confirmed application area.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.api.backend","source":"dem.api","target":"dem.backend","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/main.py","detail":"FastAPI entry point wires backend routers and application components.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.agent.backend","source":"dem.backend","target":"dem.agent","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/","detail":"Agent is a backend subsystem.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.research.backend","source":"dem.backend","target":"dem.research","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/research/","detail":"Research is a backend subsystem.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.services.backend","source":"dem.backend","target":"dem.business_services","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/services/","detail":"Business services are a backend implementation area.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.sqlite.backend","source":"dem.backend","target":"dem.persistence.sqlite","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/core/database.py","detail":"Current persistence implementation is SQLite.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.dem.postgresql.backend","source":"dem.backend","target":"dem.persistence.postgresql","relation_type":"contains","direction":"directed","status":"planned_future","evidence":[{"kind":"adr","path":"docs/architecture/ADR-0002-postgresql-migration-path.md","detail":"Future PostgreSQL path is documented.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.universe.backend","source":"dem.universe","target":"dem.backend","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/","detail":"Backend is a confirmed application boundary in the repository.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.universe.frontend","source":"dem.universe","target":"dem.frontend","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"frontend/src/","detail":"Frontend is a confirmed application area.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.api.backend","source":"dem.api","target":"dem.backend","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/main.py","detail":"FastAPI entry point wires backend routers and application components.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.backend.agent","source":"dem.backend","target":"dem.agent","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/","detail":"Agent is a backend subsystem.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.backend.research","source":"dem.backend","target":"dem.research","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/research/","detail":"Research is a backend subsystem.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.backend.services","source":"dem.backend","target":"dem.business_services","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/services/","detail":"Business services are a backend implementation area.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.backend.sqlite","source":"dem.backend","target":"dem.persistence.sqlite","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/core/database.py","detail":"Current persistence implementation is SQLite.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.backend.postgresql","source":"dem.backend","target":"dem.persistence.postgresql","relation_type":"contains","direction":"directed","status":"planned_future","evidence":[{"kind":"adr","path":"docs/architecture/ADR-0002-postgresql-migration-path.md","detail":"Future PostgreSQL path is documented.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.agent.session","source":"dem.agent","target":"dem.agent.session","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/session/","detail":"Session subsystem exists.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.agent.reasoning","source":"dem.agent","target":"dem.agent.reasoning","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine implementation exists.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.agent.knowledge","source":"dem.agent","target":"dem.agent.knowledge","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/knowledge/","detail":"Knowledge subsystem exists.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.agent.memory","source":"dem.agent","target":"dem.agent.memory","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/memory/","detail":"Memory subsystem exists.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.agent.llm","source":"dem.agent","target":"dem.agent.llm","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/llm/","detail":"LLM subsystem exists.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.agent.approval","source":"dem.agent","target":"dem.agent.approval","relation_type":"contains","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_directory","path":"backend/app/agent/approval/","detail":"Approval subsystem exists.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.agent.reasoning.knowledge","source":"dem.agent.reasoning","target":"dem.agent.knowledge","relation_type":"knowledge_flow","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"reason() queries knowledge before evaluating options.","authority":"primary"}],"data":{"purpose":"reasoning input"},"metadata":{}},
-    {"id":"e.agent.reasoning.memory","source":"dem.agent.reasoning","target":"dem.agent.memory","relation_type":"memory_flow","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"reason() queries memory and persists significant decisions.","authority":"primary"}],"data":{"purpose":"read_context_and_persist_decisions"},"metadata":{}},
-    {"id":"e.agent.reasoning.llm","source":"dem.agent.reasoning","target":"dem.agent.llm","relation_type":"depends_on","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine optionally retrieves and uses a Gemini provider for enhancement.","authority":"primary"}],"data":{"optional":true},"metadata":{}},
-    {"id":"e.agent.reasoning.approval","source":"dem.agent.reasoning","target":"dem.agent.approval","relation_type":"invokes","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine constructs ApprovalGate and checks approval for the selected path.","authority":"primary"}],"data":{},"metadata":{}},
-    {"id":"e.agent.reasoning.services","source":"dem.agent.reasoning","target":"dem.business_services","relation_type":"control_flow","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"governance_document","path":"docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md","detail":"Verified execution path continues from reasoning through planning/orchestration/tools to business services; detailed planner/tool nodes remain to be seeded.","authority":"primary"}],"data":{"qualification":"high-level path; intermediate components intentionally not collapsed into a false direct implementation call"},"metadata":{}},
-    {"id":"e.agent.memory.sqlite","source":"dem.agent.memory","target":"dem.persistence.sqlite","relation_type":"persists_to","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"runtime_wiring","path":"backend/main.py","detail":"SQLiteMemoryProvider is configured with nile_key.db.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.reasoning.knowledge","source":"dem.agent.reasoning","target":"dem.agent.knowledge","relation_type":"knowledge_flow","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"reason() queries knowledge before evaluating options.","authority":"primary"}],"data":{"purpose":"reasoning_input"},"metadata":{}},
+    {"id":"e.reasoning.memory","source":"dem.agent.reasoning","target":"dem.agent.memory","relation_type":"memory_flow","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"reason() queries memory and persists significant decisions.","authority":"primary"}],"data":{"purpose":"read_context_and_persist_decisions"},"metadata":{}},
+    {"id":"e.reasoning.llm","source":"dem.agent.reasoning","target":"dem.agent.llm","relation_type":"depends_on","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine optionally retrieves and uses a Gemini provider for enhancement.","authority":"primary"}],"data":{"optional":true},"metadata":{}},
+    {"id":"e.reasoning.approval","source":"dem.agent.reasoning","target":"dem.agent.approval","relation_type":"invokes","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"repository_file","path":"backend/app/agent/decision_engine/engine.py","detail":"ReasoningEngine constructs ApprovalGate and checks approval for the selected path.","authority":"primary"}],"data":{},"metadata":{}},
+    {"id":"e.memory.sqlite","source":"dem.agent.memory","target":"dem.persistence.sqlite","relation_type":"persists_to","direction":"directed","status":"implemented_runtime","evidence":[{"kind":"runtime_wiring","path":"backend/main.py","detail":"SQLiteMemoryProvider is configured with db_path=nile_key.db.","authority":"primary"}],"data":{},"metadata":{}},
     {"id":"e.sqlite.postgresql","source":"dem.persistence.sqlite","target":"dem.persistence.postgresql","relation_type":"planned_migration_to","direction":"directed","status":"planned_future","evidence":[{"kind":"adr","path":"docs/architecture/ADR-0002-postgresql-migration-path.md","detail":"Documents bounded future migration while preserving SQLite as current runtime.","authority":"primary"}],"data":{},"metadata":{}}
   ],
   "validation": {
-    "required_fields": ["id", "technical_name", "arabic_meaning", "type", "levels", "status", "responsibilities", "non_responsibilities", "paths", "evidence", "parent_ids", "tags", "metadata"],
-    "controlled_vocabularies": ["node.type", "node.status", "edge.relation_type", "edge.direction", "evidence.kind", "evidence.authority"],
-    "notes": [
-      "This is a verified seed, not the final exhaustive graph.",
-      "Intermediate Task Planner, Execution Planner, Execution Engine, Tool Orchestrator, Tool Registry, concrete tools, routers, schemas, core infrastructure, cross-cutting concerns, and individual business capabilities still require explicit reconciliation before completeness can be claimed.",
-      "The high-level ReasoningEngine-to-Business Services relationship is deliberately qualified because the evidence inventory identifies intermediate execution stages that must be modeled rather than hidden.",
-      "No runtime application behavior is changed by this dataset."
-    ]
+    "required_fields":["id","technical_name","arabic_meaning","type","levels","status","responsibilities","non_responsibilities","paths","evidence","parent_ids","tags","metadata"],
+    "controlled_vocabularies":["node.type","node.status","edge.relation_type","edge.direction","evidence.kind","evidence.authority"],
+    "notes":["This is a verified seed, not the final exhaustive graph.","Intermediate Task Planner, Execution Planner, Execution Engine, Tool Orchestrator, Tool Registry, concrete tools, routers, schemas, core infrastructure, cross-cutting concerns, and individual business capabilities still require explicit reconciliation before completeness can be claimed.","No inferred ReasoningEngine-to-Business-Services edge is included; intermediate execution components must be modeled before asserting that runtime relationship at code level.","No runtime application behavior is changed by this dataset."]
   }
 }
