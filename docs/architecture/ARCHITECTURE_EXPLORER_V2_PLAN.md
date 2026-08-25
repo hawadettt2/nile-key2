@@ -413,3 +413,55 @@ The final Explorer should make these answers visible through one connected model
 This document is the approved plan for **documentation/architecture visualization only**. It does not authorize unrelated application changes.
 
 Implementation must be evidence-driven and must not alter runtime behavior merely to make the architecture diagram easier to draw.
+
+---
+
+# 13. Implementation Progress — 2026-08-25
+
+This section records implementation progress against the approved plan. It does not change the architectural requirements above or authorize runtime application changes.
+
+## Completed
+
+- Phase 0 evidence inventory completed.
+- Legacy static architecture artifact removed before V2 implementation.
+- Architecture Graph Schema created and validated as the data contract for the Explorer.
+- Verified Graph Seed created from repository evidence.
+- Agent execution-path reconciliation completed for Session, ReasoningEngine, TaskPlanner, ExecutionPlanner, ToolOrchestrator, ToolRegistry, concrete Agent Tools, and Business Service boundaries.
+- Concrete Agent Tool reconciliation completed for Shipping, ETA, Customs, Documents, and Global Search.
+- Runtime status discipline established: repository presence is not treated as primary runtime wiring without bootstrap evidence.
+- `produces` relation type added to represent planner-produced execution artifacts without inventing direct invocation relationships.
+
+## Evidence artifacts
+
+- `docs/architecture/ARCHITECTURE_EXPLORER_V2_EVIDENCE_INVENTORY.md`
+- `docs/architecture/ARCHITECTURE_EXPLORER_V2_GRAPH_SCHEMA.md`
+- `docs/architecture/ARCHITECTURE_EXPLORER_V2_GRAPH_SEED.json`
+- `docs/architecture/ARCHITECTURE_EXPLORER_V2_AGENT_PATH_RECONCILIATION.md`
+- `docs/architecture/ARCHITECTURE_EXPLORER_V2_AGENT_GRAPH_EXPANSION.json`
+- `docs/architecture/ARCHITECTURE_EXPLORER_V2_AGENT_TOOLS_RECONCILIATION.md`
+
+## Important accuracy finding
+
+`TaskPlanner`, `ExecutionPlanner`, `ToolOrchestrator`, `ToolRegistry`, and the concrete Agent Tools are implemented in the repository, but the inspected `backend/main.py` bootstrap does not establish all of them as the primary active runtime path. The graph therefore records them conservatively as **Implemented but not primary runtime path** until explicit runtime wiring evidence is established.
+
+The Explorer must not replace this distinction with a visually simpler but false end-to-end runtime arrow.
+
+## Remaining implementation work
+
+1. Complete Agent cross-cutting reconciliation: Audit, Monitoring, Avatar, Interfaces, and any remaining Agent packages.
+2. Reconcile Application/API: Routers, Schemas/API contracts, and application wiring.
+3. Reconcile Core Infrastructure: configuration, CredentialStore/credentials, security, CSRF, database, schedulers, and related modules.
+4. Reconcile Knowledge architecture and external provider boundaries.
+5. Reconcile Research architecture and preserve its separation from Knowledge Ingestion.
+6. Reconcile Knowledge Graph and its supported relationships with Knowledge, Memory, and Reasoning.
+7. Reconcile Business Capabilities individually rather than leaving a generic Services node.
+8. Reconcile External Systems and integrations.
+9. Merge the validated graph fragments into the canonical graph dataset.
+10. Run graph validation for identity, evidence, relationships, levels, status, orphan nodes, and contradictory runtime claims.
+11. Build the Explorer engine and interaction model only after the canonical graph passes validation.
+12. Implement the Level 0–3 Explorer UI and detail/search/perspective behavior.
+13. Perform final human-first acceptance review against Section 11.
+
+**Current phase:** Evidence-driven graph construction and reconciliation.
+
+**UI status:** Intentionally not started; the plan requires the architecture data model to be authoritative before the interface is built.
