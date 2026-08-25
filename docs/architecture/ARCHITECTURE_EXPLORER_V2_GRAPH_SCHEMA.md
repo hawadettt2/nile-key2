@@ -206,6 +206,7 @@ Controlled vocabulary for `relation_type`:
 - `invokes` — one implementation directly invokes another.
 - `delegates_to` — responsibility is delegated to another component/service.
 - `depends_on` — technical dependency without a more precise flow classification.
+- `produces` — creates a plan, task, decision, result, or other structured artifact consumed by a downstream architectural component.
 - `data_flow` — structured data crosses a boundary.
 - `knowledge_flow` — knowledge/context is supplied or consumed.
 - `memory_flow` — memory/context is read or written.
@@ -240,6 +241,14 @@ A --control_flow/invokes/delegates_to--> B
 ```
 
 Means repository/runtime evidence supports the handoff.
+
+### Artifact production
+
+```text
+A --produces--> B
+```
+
+Means A creates or prepares a structured artifact that becomes the input to B. It does not by itself claim that A directly invokes B at runtime.
 
 ### Data / knowledge
 
