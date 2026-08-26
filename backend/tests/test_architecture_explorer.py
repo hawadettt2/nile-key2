@@ -30,6 +30,26 @@ from app.architecture_explorer.models import (
 REAL_GRAPH_PATH = Path(__file__).parent.parent.parent / "docs" / "الخريطة المعمارية الكاملة" / "ARCHITECTURE_EXPLORER_V2_CANONICAL_GRAPH.json"
 
 
+def _register_and_approve(client, credentials: dict, role: str = "customer") -> None:
+    client.post("/api/v1/auth/register", json=credentials)
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    import sqlite3
+    from app.core.config import settings
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = ?", (credentials["email"],))
+    row = cursor.fetchone()
+    user_id = row[0] if row else None
+    conn.close()
+    if user_id:
+        client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
+
+
 @pytest.fixture(scope="module")
 def engine() -> ArchitectureExplorerEngine:
     engine = ArchitectureExplorerEngine(graph_path=str(REAL_GRAPH_PATH))
@@ -409,3 +429,69 @@ class TestArchitectureExplorerEngine:
         engine = ArchitectureExplorerEngine(graph_path=str(REAL_GRAPH_PATH))
         with pytest.raises(GraphNotLoadedError):
             _ = engine.graph
+
+
+EXPLORER_ENDPOINTS = [
+    "/api/v1/architecture-explorer/metadata",
+    "/api/v1/architecture-explorer/nodes/digital_export_manager",
+    "/api/v1/architecture-explorer/nodes?level=2",
+    "/api/v1/architecture-explorer/search?q=tool",
+    "/api/v1/architecture-explorer/levels/2",
+    "/api/v1/architecture-explorer/nodes/digital_export_manager/children",
+    "/api/v1/architecture-explorer/nodes/digital_export_manager/parents",
+    "/api/v1/architecture-explorer/edges/query",
+    "/api/v1/architecture-explorer/traverse/digital_export_manager",
+    "/api/v1/architecture-explorer/nodes/digital_export_manager/evidence",
+]
+
+
+def test_architecture_explorer_requires_authentication(client):
+    get_urls = [url for url in EXPLORER_ENDPOINTS if not url.startswith("/api/v1/architecture-explorer/edges/query") and not url.startswith("/api/v1/architecture-explorer/traverse")]
+    post_urls = [url for url in EXPLORER_ENDPOINTS if url.startswith("/api/v1/architecture-explorer/edges/query") or url.startswith("/api/v1/architecture-explorer/traverse")]
+
+    for url in get_urls:
+        response = client.get(url)
+        assert response.status_code == 401, f"Expected 401 for {url}, got {response.status_code}"
+
+    for url in post_urls:
+        response = client.post(url)
+        assert response.status_code == 401, f"Expected 401 for {url}, got {response.status_code}"
+
+
+def test_architecture_explorer_forbidden_for_customer(client):
+    credentials = {"email": "explorer_customer@example.com", "username": "explorer_customer", "full_name": "Explorer Customer", "password": "TestPassword123!", "phone": "000", "company": "TestCo"}
+    _register_and_approve(client, credentials, role="customer")
+    login_resp = client.post("/api/v1/auth/login", json={"username": "explorer_customer", "password": "TestPassword123!"})
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    get_urls = [url for url in EXPLORER_ENDPOINTS if not url.startswith("/api/v1/architecture-explorer/edges/query") and not url.startswith("/api/v1/architecture-explorer/traverse")]
+    post_urls = [url for url in EXPLORER_ENDPOINTS if url.startswith("/api/v1/architecture-explorer/edges/query") or url.startswith("/api/v1/architecture-explorer/traverse")]
+
+    for url in get_urls:
+        response = client.get(url, headers=headers)
+        assert response.status_code == 403, f"Expected 403 for {url}, got {response.status_code}"
+
+    for url in post_urls:
+        response = client.post(url, headers=headers)
+        assert response.status_code == 403, f"Expected 403 for {url}, got {response.status_code}"
+
+
+def test_architecture_explorer_authorized_for_manager(client):
+    credentials = {"email": "explorer_manager@example.com", "username": "explorer_manager", "full_name": "Explorer Manager", "password": "TestPassword123!", "phone": "000", "company": "TestCo"}
+    _register_and_approve(client, credentials, role="manager")
+    login_resp = client.post("/api/v1/auth/login", json={"username": "explorer_manager", "password": "TestPassword123!"})
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.get("/api/v1/architecture-explorer/metadata", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["version"] == "1.2-canonical-graph-evidence"
+
+
+def test_architecture_explorer_does_not_expose_internal_details_on_error(client):
+    response = client.get("/api/v1/architecture-explorer/nodes/does_not_exist")
+    assert response.status_code == 401
+    assert "detail" in response.json()

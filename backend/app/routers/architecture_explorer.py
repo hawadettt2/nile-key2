@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.architecture_explorer.integration import ArchitectureExplorerIntegration
+from app.routers.auth import require_role
 from app.schemas.architecture_explorer import (
     ArtifactMetadataResponseSchema,
     EdgeQuerySchema,
@@ -18,6 +19,7 @@ from app.schemas.architecture_explorer import (
 router = APIRouter(prefix="/api/v1/architecture-explorer", tags=["architecture-explorer"])
 
 integration = ArchitectureExplorerIntegration()
+EXPLORER_ALLOWED_ROLES = ["owner", "manager", "admin_staff"]
 
 
 @router.get("/health")
@@ -26,21 +28,21 @@ def health():
 
 
 @router.get("/metadata", response_model=ArtifactMetadataResponseSchema)
-def get_metadata():
+def get_metadata(current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.get_artifact_metadata()
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        raise HTTPException(status_code=500, detail="Failed to load architecture explorer metadata") from exc
 
 
 @router.get("/nodes/{node_id}", response_model=NodeResponseSchema)
-def get_node(node_id: str):
+def get_node(node_id: str, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.get_node(node_id)
     except Exception as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        raise HTTPException(status_code=404, detail="Node not found") from exc
 
 
 @router.get("/nodes", response_model=list[NodeResponseSchema])
@@ -52,6 +54,7 @@ def list_nodes(
     tag: str | None = None,
     parent_id: str | None = None,
     search_text: str | None = None,
+    current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES)),
 ):
     try:
         integration.load()
@@ -67,76 +70,76 @@ def list_nodes(
             )
         )
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail="Invalid node query") from exc
 
 
 @router.post("/nodes/query", response_model=list[NodeResponseSchema])
-def query_nodes(payload: NodeQuerySchema):
+def query_nodes(payload: NodeQuerySchema, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.query_nodes(payload)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail="Invalid node query") from exc
 
 
 @router.get("/nodes/{node_id}/children", response_model=list[NodeResponseSchema])
-def get_children(node_id: str):
+def get_children(node_id: str, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.get_children(node_id)
     except Exception as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        raise HTTPException(status_code=404, detail="Node not found") from exc
 
 
 @router.get("/nodes/{node_id}/parents", response_model=list[NodeResponseSchema])
-def get_parents(node_id: str):
+def get_parents(node_id: str, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.get_parents(node_id)
     except Exception as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        raise HTTPException(status_code=404, detail="Node not found") from exc
 
 
 @router.post("/edges/query", response_model=list[EdgeResponseSchema])
-def query_edges(payload: EdgeQuerySchema):
+def query_edges(payload: EdgeQuerySchema, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.query_edges(payload)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail="Invalid edge query") from exc
 
 
 @router.post("/traverse/{start_node_id}", response_model=list[TraversalResponseSchema])
-def traverse(start_node_id: str, request: TraversalRequestSchema):
+def traverse(start_node_id: str, request: TraversalRequestSchema, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.traverse(start_node_id, request)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail="Invalid traversal request") from exc
 
 
 @router.get("/search", response_model=SearchResponseSchema)
-def search(q: str, limit: int | None = None):
+def search(q: str, limit: int | None = None, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.search(q, limit=limit)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail="Invalid search request") from exc
 
 
 @router.get("/levels/{level}", response_model=LevelProjectionResponseSchema)
-def project_level(level: int):
+def project_level(level: int, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.project_level(level)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail="Invalid level projection") from exc
 
 
 @router.get("/nodes/{node_id}/evidence", response_model=EvidenceResponseSchema)
-def get_evidence(node_id: str):
+def get_evidence(node_id: str, current_user: dict = Depends(require_role(EXPLORER_ALLOWED_ROLES))):
     try:
         integration.load()
         return integration.resolve_evidence(node_id)
     except Exception as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        raise HTTPException(status_code=404, detail="Node not found") from exc
