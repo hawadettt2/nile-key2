@@ -2,11 +2,13 @@
 أدوات الأمان:
 - تشفير كلمات المرور (bcrypt)
 - إنشاء وفك توكن JWT
+- حماية هوية Project Owner
 """
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Union
 
+from fastapi import HTTPException
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -27,6 +29,43 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     """إنشاء Hash لكلمة مرور جديدة"""
     return pwd_context.hash(password)
+
+
+# ========== حماية Project Owner ==========
+
+PROTECTED_OWNER_IDENTITY = {
+    "username": "owner",
+    "email": "owner@nile-key.com",
+    "role": "owner",
+}
+
+
+def is_protected_owner(user: Optional[dict]) -> bool:
+    """
+    تحديد ما إذا كان المستخدم هو Project Owner المحمي.
+    يعتمد على الهوية canonical (username + email + role) ولا يعتمد على user_id.
+    """
+    if not user:
+        return False
+    return (
+        user.get("username") == PROTECTED_OWNER_IDENTITY["username"]
+        and user.get("email") == PROTECTED_OWNER_IDENTITY["email"]
+        and user.get("role") == PROTECTED_OWNER_IDENTITY["role"]
+    )
+
+
+def ensure_not_protected_owner(target_user: dict, current_user: Optional[dict] = None) -> None:
+    """
+    يرفع استثناء إذا كان المستخدم المستهدف هو Project Owner المحمي.
+    - يُسمح للمالك نفسه بتعديل حسابه الشخصي.
+    - لا يُسمح لأي شخص آخر (بما في ذلك المالك) بحذف حساب المالك.
+    """
+    if is_protected_owner(target_user):
+        if current_user is None or not is_protected_owner(current_user):
+            raise HTTPException(
+                status_code=403,
+                detail="Project Owner account is protected from this action"
+            )
 
 
 # ========== دوال JWT ==========

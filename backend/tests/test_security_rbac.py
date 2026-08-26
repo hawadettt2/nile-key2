@@ -4,7 +4,18 @@ from main import app
 
 client = TestClient(app)
 
-OWNER_USER_ID = 1
+
+def get_owner_id() -> int:
+    import sqlite3
+    from app.core.config import settings
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = ?", ("owner@nile-key.com",))
+    row = cursor.fetchone()
+    conn.close()
+    assert row, "Owner user not found in database"
+    return row[0]
 
 
 def register_user(role: str):
@@ -64,9 +75,10 @@ def test_owner_can_create_supplier():
 
 def test_manager_cannot_update_owner():
     manager_token = register_user("manager")
+    owner_id = get_owner_id()
 
     response = client.put(
-        f"/api/v1/users/{OWNER_USER_ID}",
+        f"/api/v1/users/{owner_id}",
         headers={"Authorization": f"Bearer {manager_token}"},
         json={"full_name": "Hacked Owner"}
     )
@@ -77,9 +89,10 @@ def test_manager_cannot_update_owner():
 
 def test_manager_cannot_deactivate_owner():
     manager_token = register_user("manager")
+    owner_id = get_owner_id()
 
     response = client.put(
-        f"/api/v1/users/{OWNER_USER_ID}",
+        f"/api/v1/users/{owner_id}",
         headers={"Authorization": f"Bearer {manager_token}"},
         json={"is_active": False}
     )
@@ -90,9 +103,10 @@ def test_manager_cannot_deactivate_owner():
 
 def test_manager_cannot_demote_owner():
     manager_token = register_user("manager")
+    owner_id = get_owner_id()
 
     response = client.put(
-        f"/api/v1/users/{OWNER_USER_ID}",
+        f"/api/v1/users/{owner_id}",
         headers={"Authorization": f"Bearer {manager_token}"},
         json={"role": "customer"}
     )
@@ -103,9 +117,10 @@ def test_manager_cannot_demote_owner():
 
 def test_manager_cannot_approve_owner():
     manager_token = register_user("manager")
+    owner_id = get_owner_id()
 
     response = client.post(
-        f"/api/v1/users/{OWNER_USER_ID}/approve",
+        f"/api/v1/users/{owner_id}/approve",
         headers={"Authorization": f"Bearer {manager_token}"},
         json={}
     )
@@ -116,9 +131,10 @@ def test_manager_cannot_approve_owner():
 
 def test_manager_cannot_reject_owner():
     manager_token = register_user("manager")
+    owner_id = get_owner_id()
 
     response = client.post(
-        f"/api/v1/users/{OWNER_USER_ID}/reject",
+        f"/api/v1/users/{owner_id}/reject",
         headers={"Authorization": f"Bearer {manager_token}"},
         json={}
     )
@@ -129,9 +145,10 @@ def test_manager_cannot_reject_owner():
 
 def test_manager_cannot_delete_owner():
     manager_token = register_user("manager")
+    owner_id = get_owner_id()
 
     response = client.delete(
-        f"/api/v1/users/{OWNER_USER_ID}",
+        f"/api/v1/users/{owner_id}",
         headers={"Authorization": f"Bearer {manager_token}"}
     )
 
@@ -145,9 +162,10 @@ def test_owner_can_update_self():
     })
     assert owner_resp.status_code == 200
     owner_token = owner_resp.json()["access_token"]
+    owner_id = get_owner_id()
 
     response = client.put(
-        f"/api/v1/users/{OWNER_USER_ID}",
+        f"/api/v1/users/{owner_id}",
         headers={"Authorization": f"Bearer {owner_token}"},
         json={"full_name": "Updated Owner Name"}
     )
@@ -162,7 +180,8 @@ def test_refresh_token_checks_active_status():
     db_path = settings.DATABASE_URL.replace("sqlite:///", "")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("UPDATE users SET is_active = 0 WHERE id = ?", (OWNER_USER_ID,))
+    owner_id = get_owner_id()
+    cursor.execute("UPDATE users SET is_active = 0 WHERE id = ?", (owner_id,))
     conn.commit()
     conn.close()
 
@@ -175,6 +194,6 @@ def test_refresh_token_checks_active_status():
     finally:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET is_active = 1 WHERE id = ?", (OWNER_USER_ID,))
+        cursor.execute("UPDATE users SET is_active = 1 WHERE id = ?", (owner_id,))
         conn.commit()
         conn.close()
