@@ -11,6 +11,23 @@ from app.schemas.common import MessageResponse, IdResponse
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users Admin"])
 
+OWNER_USER_ID = 1
+
+
+def _get_user_or_404(conn, user_id: int) -> dict:
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+    row = cursor.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    return dict(row)
+
+
+def _ensure_not_protected_owner(user_id: int, current_user: Optional[dict] = None) -> None:
+    if user_id == OWNER_USER_ID:
+        if current_user is None or current_user.get("id") != OWNER_USER_ID:
+            raise HTTPException(status_code=403, detail="Project Owner account is protected from this action")
+
 
 @router.get("/", response_model=List[User])
 def list_users(
@@ -77,12 +94,13 @@ def create_user(data: UserCreate, current_user: dict = Depends(require_role(["ow
 
 @router.put("/{user_id}", response_model=MessageResponse)
 def update_user(user_id: int, data: UserUpdate, current_user: dict = Depends(require_role(["owner", "manager"]))):
+    _ensure_not_protected_owner(user_id, current_user)
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    if not cursor.fetchone():
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
+    _get_user_or_404(conn, user_id)
+    if user_id == OWNER_USER_ID:
+        if data.is_active is False or data.role is not None:
+            raise HTTPException(status_code=403, detail="Project Owner account is protected from this action")
     if not execute_update(conn=conn, table_name="users", record_id=user_id, data=data):
         conn.close()
         return {"message": "No changes"}
@@ -92,12 +110,10 @@ def update_user(user_id: int, data: UserUpdate, current_user: dict = Depends(req
 
 @router.delete("/{user_id}", response_model=MessageResponse)
 def delete_user(user_id: int, current_user: dict = Depends(require_role(["owner"]))):
+    _ensure_not_protected_owner(user_id)
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    if not cursor.fetchone():
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
+    _get_user_or_404(conn, user_id)
     cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
     conn.close()
@@ -116,12 +132,10 @@ def list_pending_users(current_user: dict = Depends(require_role(["owner", "mana
 
 @router.post("/{user_id}/approve", response_model=MessageResponse)
 def approve_user(user_id: int, role: Optional[str] = Query(None), current_user: dict = Depends(require_role(["owner", "manager"]))):
+    _ensure_not_protected_owner(user_id, current_user)
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    if not cursor.fetchone():
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
+    _get_user_or_404(conn, user_id)
     update_fields = {"approval_status": "approved", "is_active": 1}
     if role:
         update_fields["role"] = role
@@ -135,12 +149,10 @@ def approve_user(user_id: int, role: Optional[str] = Query(None), current_user: 
 
 @router.post("/{user_id}/reject", response_model=MessageResponse)
 def reject_user(user_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
+    _ensure_not_protected_owner(user_id, current_user)
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
-    if not cursor.fetchone():
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found")
+    _get_user_or_404(conn, user_id)
     cursor.execute(
         "UPDATE users SET approval_status = 'rejected', is_active = 0, updated_at = ? WHERE id = ?",
         (datetime.utcnow().isoformat(), user_id)

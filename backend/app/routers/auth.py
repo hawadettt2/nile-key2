@@ -165,8 +165,20 @@ def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security),
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     user_id = payload.get("sub")
-    access = create_access_token({"sub": user_id})
-    refresh = create_refresh_token({"sub": user_id})
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, is_active, approval_status FROM users WHERE id = ?",
+        (int(user_id),),
+    )
+    user_row = cursor.fetchone()
+    conn.close()
+    if not user_row or not user_row["is_active"] or user_row.get("approval_status") == "pending":
+        raise HTTPException(status_code=401, detail="User not found or inactive")
+    access = create_access_token({"sub": str(user_id), "role": user_row["role"]})
+    refresh = create_refresh_token({"sub": str(user_id)})
     response.set_cookie(
         key=settings.ACCESS_TOKEN_COOKIE_NAME,
         value=access,
