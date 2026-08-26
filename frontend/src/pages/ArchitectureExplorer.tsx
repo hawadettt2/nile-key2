@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { useArchitectureExplorerStore, type ArchitectureNode } from '@/store/architectureExplorerStore';
-import { getArchitectureMetadata, getArchitectureNode } from '@/services/api';
+import { getArchitectureMetadata, getArchitectureNode, projectArchitectureLevel } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,31 +20,21 @@ import {
   ChevronRight,
   ExternalLink,
   FileText,
-  Layers
+  Layers,
+  LayoutDashboard
 } from 'lucide-react';
 
-const LEVEL_0_NODE_IDS = [
-  'human_employees',
-  'intelligent_operating_platform',
-  'digital_export_manager',
-  'executive_intelligence',
-  'cognitive',
-  'planning',
-  'orchestration',
-  'business_systems',
-  'external_world',
-];
-
 const NODE_ICONS: Record<string, typeof Users> = {
-  human_employees: Users,
   intelligent_operating_platform: Cpu,
   digital_export_manager: Brain,
-  executive_intelligence: Network,
   cognitive: Brain,
   planning: GitBranch,
   orchestration: Settings,
   business_systems: Layers,
   external_world: Globe,
+  api_boundary: Network,
+  frontend: LayoutDashboard,
+  application_registration: Settings,
 };
 
 const NODE_COLORS: Record<string, string> = {
@@ -73,10 +63,9 @@ export function ArchitectureExplorer() {
       const metadataRes = await getArchitectureMetadata();
       setMetadata(metadataRes.data);
 
-      const nodePromises = LEVEL_0_NODE_IDS.map(id => getArchitectureNode(id));
-      const nodeResponses = await Promise.all(nodePromises);
-      const loadedNodes = nodeResponses.map(res => res.data as ArchitectureNode);
-      setNodes(loadedNodes);
+      const level0Res = await projectArchitectureLevel(0);
+      setNodes(level0Res.data.nodes || []);
+      setEdges(level0Res.data.edges || []);
     } catch {
       setError(t('architectureExplorer.error'));
       toast({ title: t('common.error'), description: t('architectureExplorer.error'), variant: 'destructive' });
@@ -94,8 +83,7 @@ export function ArchitectureExplorer() {
     return acc;
   }, {});
 
-  const level0Nodes = nodes.filter(node => node.levels.includes(0));
-  const spineNodes = LEVEL_0_NODE_IDS.map(id => nodeMap[id]).filter(Boolean);
+  const spineNodes = nodes;
 
   const getChildren = (nodeId: string): ArchitectureNode[] => {
     return edges
@@ -242,7 +230,7 @@ export function ArchitectureExplorer() {
             </div>
             <div>
               <p className="text-sm font-medium text-slate-500">Status</p>
-              <Badge variant="secondary">{selectedNode.status}</p>
+               <Badge variant="secondary">{selectedNode.status}</Badge>
             </div>
             <div>
               <p className="text-sm font-medium text-slate-500">Levels</p>

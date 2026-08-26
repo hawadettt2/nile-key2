@@ -18,6 +18,14 @@ from .models import (
 
 
 class ArchitectureExplorerEngine:
+    LEVEL_0_CANONICAL_ORDER = [
+        "intelligent_operating_platform",
+        "api_boundary",
+        "frontend",
+        "application_registration",
+        "external_world",
+    ]
+
     def __init__(self, graph_path: Optional[str] = None) -> None:
         if graph_path is None:
             graph_path = Path(__file__).resolve().parent.parent.parent.parent / "docs" / "الخريطة المعمارية الكاملة" / "ARCHITECTURE_EXPLORER_V2_CANONICAL_GRAPH.json"
@@ -169,6 +177,9 @@ class ArchitectureExplorerEngine:
 
     def project_level(self, level: int) -> LevelProjection:
         nodes = self.graph.get_level_nodes(level)
+        if level == 0:
+            order_index = {node_id: index for index, node_id in enumerate(self.LEVEL_0_CANONICAL_ORDER)}
+            nodes = sorted(nodes, key=lambda node: order_index.get(node.id, len(self.LEVEL_0_CANONICAL_ORDER)))
         node_ids = {node.id for node in nodes}
         edges = [
             edge for edge in self.graph.edges

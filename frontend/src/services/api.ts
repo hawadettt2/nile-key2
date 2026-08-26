@@ -208,3 +208,4 @@ export const getArchitectureEvidence = (nodeId: string) =>
   api.get(`/api/v1/architecture-explorer/nodes/${encodeURIComponent(nodeId)}/evidence`);
 
 export default api;
+export { api };
