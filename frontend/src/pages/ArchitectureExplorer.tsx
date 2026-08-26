@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '@/store/authStore';
 import { useArchitectureExplorerStore, type ArchitectureNode } from '@/store/architectureExplorerStore';
 import { getArchitectureMetadata, getArchitectureNode, projectArchitectureLevel } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
@@ -8,25 +7,36 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronDown, ChevronRight, FileText, Settings } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChevronDown, ChevronRight, FileText, Settings, Box, Cpu, Workflow, Cog, GitBranch, Network, Globe } from 'lucide-react';
+
+type LevelView = 0 | 1 | 2 | 3;
+
+const LEVEL_CONFIG: Record<LevelView, { key: string; icon: typeof Box; color: string }> = {
+  0: { key: 'level0', icon: Box, color: 'text-emerald-600' },
+  1: { key: 'level1', icon: Cpu, color: 'text-indigo-600' },
+  2: { key: 'level2', icon: Cog, color: 'text-amber-600' },
+  3: { key: 'level3', icon: Workflow, color: 'text-purple-600' },
+};
 
 export function ArchitectureExplorer() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { metadata, nodes, edges, isLoading, error, setMetadata, setNodes, setEdges, setLoading, setError } = useArchitectureExplorerStore();
+  const [activeLevel, setActiveLevel] = useState<LevelView>(0);
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<ArchitectureNode | null>(null);
 
-  const loadArchitecture = async () => {
+  const loadLevel = async (level: LevelView) => {
     setLoading(true);
     setError(null);
     try {
       const metadataRes = await getArchitectureMetadata();
       setMetadata(metadataRes.data);
 
-      const level0Res = await projectArchitectureLevel(0);
-      setNodes(level0Res.data.nodes || []);
-      setEdges(level0Res.data.edges || []);
+      const levelRes = await projectArchitectureLevel(level);
+      setNodes(levelRes.data.nodes || []);
+      setEdges(levelRes.data.edges || []);
     } catch {
       setError(t('architectureExplorer.error'));
       toast({ title: t('common.error'), description: t('architectureExplorer.error'), variant: 'destructive' });
@@ -36,15 +46,21 @@ export function ArchitectureExplorer() {
   };
 
   useEffect(() => {
-    loadArchitecture();
+    loadLevel(0);
   }, []);
+
+  const handleLevelChange = (value: string) => {
+    const level = Number(value) as LevelView;
+    setActiveLevel(level);
+    setExpandedNode(null);
+    setSelectedNode(null);
+    loadLevel(level);
+  };
 
   const nodeMap = nodes.reduce<Record<string, ArchitectureNode>>((acc, node) => {
     acc[node.id] = node;
     return acc;
   }, {});
-
-  const spineNodes = nodes;
 
   const getChildren = (nodeId: string): ArchitectureNode[] => {
     return edges
@@ -65,6 +81,9 @@ export function ArchitectureExplorer() {
     }
   };
 
+  const levelConfig = LEVEL_CONFIG[activeLevel];
+  const LevelIcon = levelConfig.icon;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -76,7 +95,7 @@ export function ArchitectureExplorer() {
           <Badge variant="secondary" className="text-xs">
             {metadata?.version || '...'}
           </Badge>
-          <Button variant="outline" size="sm" onClick={loadArchitecture} disabled={isLoading}>
+          <Button variant="outline" size="sm" onClick={() => loadLevel(activeLevel)} disabled={isLoading}>
             {t('architectureExplorer.retry')}
           </Button>
         </div>
@@ -88,92 +107,112 @@ export function ArchitectureExplorer() {
         </div>
       )}
 
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Layers className="text-emerald-600" size={20} />
-          <h2 className="text-lg font-semibold text-slate-900">{t('architectureExplorer.level0')}</h2>
-        </div>
-        <p className="text-slate-500 text-sm mb-6">{t('architectureExplorer.description')}</p>
+      <Tabs value={String(activeLevel)} onValueChange={handleLevelChange}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="0" className="flex items-center gap-2">
+            <Box size={16} />
+            {t('architectureExplorer.level0')}
+          </TabsTrigger>
+          <TabsTrigger value="1" className="flex items-center gap-2">
+            <Cpu size={16} />
+            {t('architectureExplorer.level1')}
+          </TabsTrigger>
+          <TabsTrigger value="2" className="flex items-center gap-2">
+            <Cog size={16} />
+            {t('architectureExplorer.level2')}
+          </TabsTrigger>
+          <TabsTrigger value="3" className="flex items-center gap-2">
+            <Workflow size={16} />
+            {t('architectureExplorer.level3')}
+          </TabsTrigger>
+        </TabsList>
 
-        {isLoading ? (
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-24 w-full" />
-            ))}
-          </div>
-        ) : spineNodes.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-slate-500">{t('common.noData')}</p>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {spineNodes.map((node, index) => {
-              if (!node) return null;
-              const Icon = NODE_ICONS[node.id] || Settings;
-              const isExpanded = expandedNode === node.id;
-              const children = getChildren(node.id);
+        {([0, 1, 2, 3] as LevelView[]).map((level) => (
+          <TabsContent key={level} value={String(level)} className="mt-4">
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <LevelIcon className={levelConfig.color} size={20} />
+                <h2 className="text-lg font-semibold text-slate-900">{t(`architectureExplorer.${LEVEL_CONFIG[level].key}`)}</h2>
+              </div>
 
-              return (
-                <div key={node.id} className="relative">
-                  <Card
-                    className="p-4 cursor-pointer transition-all hover:shadow-md border bg-white border-slate-200"
-                    onClick={() => handleNodeClick(node.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-white/80 flex items-center justify-center">
-                          <Settings size={24} />
-                        </div>
-                        <div>
-                          <p className="font-medium text-slate-900">{node.technical_name}</p>
-                          <p className="text-xs text-slate-500">{node.arabic_meaning}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {node.type}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {node.status}
-                        </Badge>
-                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      </div>
-                    </div>
-                  </Card>
-
-                  {isExpanded && (
-                    <div className="mr-12 mt-2 space-y-2">
-                      {children.length === 0 ? (
-                        <p className="text-xs text-slate-400 italic">{t('common.noData')}</p>
-                      ) : (
-                        children.map(child => {
-                          return (
-                            <Card key={child.id} className="p-3 bg-slate-50 border-slate-200">
-                              <div className="flex items-center gap-2">
-                                <Settings size={16} className="text-slate-400" />
-                                <div>
-                                  <p className="text-sm font-medium text-slate-700">{child.technical_name}</p>
-                                  <p className="text-xs text-slate-500">{child.arabic_meaning}</p>
-                                </div>
-                              </div>
-                            </Card>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
-
-                  {index < spineNodes.length - 1 && (
-                    <div className="flex justify-center my-1">
-                      <ChevronDown className="text-slate-300" size={20} />
-                    </div>
-                  )}
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-24 w-full" />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+              ) : nodes.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-500">{t('common.noData')}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {nodes.map((node) => {
+                    const isExpanded = expandedNode === node.id;
+                    const children = getChildren(node.id);
+
+                    return (
+                      <div key={node.id} className="relative">
+                        <Card
+                          className="p-4 cursor-pointer transition-all hover:shadow-md border bg-white border-slate-200"
+                          onClick={() => handleNodeClick(node.id)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg bg-white/80 flex items-center justify-center">
+                                <Settings size={24} />
+                              </div>
+                              <div>
+                                <p className="font-medium text-slate-900">{node.technical_name}</p>
+                                <p className="text-xs text-slate-500">{node.arabic_meaning}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {node.type}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {node.status}
+                              </Badge>
+                              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                            </div>
+                          </div>
+                        </Card>
+
+                        {isExpanded && (
+                          <div className="mr-12 mt-2 space-y-2">
+                            {children.length === 0 ? (
+                              <p className="text-xs text-slate-400 italic">{t('common.noData')}</p>
+                            ) : (
+                              children.map((child) => (
+                                <Card key={child.id} className="p-3 bg-slate-50 border-slate-200">
+                                  <div className="flex items-center gap-2">
+                                    <Settings size={16} className="text-slate-400" />
+                                    <div>
+                                      <p className="text-sm font-medium text-slate-700">{child.technical_name}</p>
+                                      <p className="text-xs text-slate-500">{child.arabic_meaning}</p>
+                                    </div>
+                                  </div>
+                                </Card>
+                              ))
+                            )}
+                          </div>
+                        )}
+
+                        {index < nodes.length - 1 && (
+                          <div className="flex justify-center my-1">
+                            <ChevronDown className="text-slate-300" size={20} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
 
       {selectedNode && (
         <Card className="p-6">
@@ -194,7 +233,7 @@ export function ArchitectureExplorer() {
             </div>
             <div>
               <p className="text-sm font-medium text-slate-500">Status</p>
-               <Badge variant="secondary">{selectedNode.status}</Badge>
+              <Badge variant="secondary">{selectedNode.status}</Badge>
             </div>
             <div>
               <p className="text-sm font-medium text-slate-500">Levels</p>
