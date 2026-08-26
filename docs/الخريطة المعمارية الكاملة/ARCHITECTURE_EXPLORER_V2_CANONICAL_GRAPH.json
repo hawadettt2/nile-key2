@@ -1,66 +1,3301 @@
 {
   "artifact": "ARCHITECTURE_EXPLORER_V2_CANONICAL_GRAPH",
-  "version": "1.1-canonical-spine-evidence",
+  "version": "1.2-canonical-graph-evidence",
   "purpose": "Canonical architectural source model for the Complete Architectural Map and future Explorer UI.",
   "governing_principle": "Intelligent Operating Platform first; Digital Export Manager is the first executive intelligence persona; repository evidence proves and refines the model.",
-  "source": {"repository":"hawadettt2/nile-key2","branch":"main","evidence_baseline":"Repository source evidence reconciled directly into the canonical graph"},
-  "levels": [{"id":"L0","name":"DEM Universe","arabic_meaning":"منظومة المنصة بالكامل"},{"id":"L1","name":"Operating Platform","arabic_meaning":"البنية التشغيلية العليا"},{"id":"L2","name":"Subsystem Architecture","arabic_meaning":"البنى الفرعية الداخلية"},{"id":"L3","name":"Code Architecture","arabic_meaning":"هوية التنفيذ البرمجية"}],
+  "source": {
+    "repository": "hawadettt2/nile-key2",
+    "branch": "main",
+    "evidence_baseline": "Repository source evidence reconciled directly into the canonical graph"
+  },
+  "levels": [
+    {
+      "id": "L0",
+      "name": "DEM Universe",
+      "arabic_meaning": "منظومة المنصة بالكامل"
+    },
+    {
+      "id": "L1",
+      "name": "Operating Platform",
+      "arabic_meaning": "البنية التشغيلية العليا"
+    },
+    {
+      "id": "L2",
+      "name": "Subsystem Architecture",
+      "arabic_meaning": "البنى الفرعية الداخلية"
+    },
+    {
+      "id": "L3",
+      "name": "Code Architecture",
+      "arabic_meaning": "هوية التنفيذ البرمجية"
+    }
+  ],
   "nodes": [
-    {"id":"intelligent_operating_platform","technical_name":"Intelligent Operating Platform","arabic_meaning":"منصة التشغيل الذكية","type":"platform","levels":[0,1],"status":"architectural_root","paths":[],"responsibilities":["Provide the architectural boundary within which executive intelligence, cognition, planning, orchestration and business systems operate."],"non_responsibilities":["It is not itself a single runtime class."],"evidence":["PLAN.md"],"parent_ids":[],"tags":["root","platform"],"metadata":{}},
-    {"id":"digital_export_manager","technical_name":"Digital Export Manager","arabic_meaning":"مدير التصدير الرقمي / الذكاء التنفيذي الرقمي","type":"agent_subsystem","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/routers/digital_export_manager.py"],"responsibilities":["Accept authenticated internal sessions and missions.","Coordinate the verified mission lifecycle from reasoning through tool execution."],"non_responsibilities":["It is not the ERP or database layer."],"evidence":["backend/app/routers/digital_export_manager.py"],"parent_ids":["intelligent_operating_platform"],"tags":["executive-intelligence","runtime"],"metadata":{}},
-    {"id":"cognitive","technical_name":"Cognitive Layer","arabic_meaning":"الطبقة المعرفية والإدراكية","type":"agent_subsystem","levels":[1,2],"status":"implemented_runtime","paths":["backend/app/agent/decision_engine/engine.py","backend/app/agent/knowledge","backend/app/agent/memory"],"responsibilities":["Produce decisions using reasoning, company knowledge, memory and optional LLM enhancement."],"non_responsibilities":["Does not directly execute business tools."],"evidence":["backend/app/agent/decision_engine/engine.py"],"parent_ids":["digital_export_manager"],"tags":["cognitive"],"metadata":{}},
-    {"id":"reasoning","technical_name":"ReasoningEngine","arabic_meaning":"محرك الاستدلال واتخاذ القرار","type":"agent_component","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/decision_engine/engine.py"],"responsibilities":["Map intent to candidate paths.","Query memory and knowledge.","Evaluate and select a path.","Check approval requirements.","Produce a Decision."],"non_responsibilities":["Does not invoke business tools itself."],"evidence":["backend/app/agent/decision_engine/engine.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["cognitive"],"tags":["reasoning","decision"],"metadata":{}},
-    {"id":"company_knowledge","technical_name":"Company Knowledge","arabic_meaning":"المعرفة المؤسسية","type":"knowledge_subsystem","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/agent/knowledge","backend/app/agent/decision_engine/engine.py"],"responsibilities":["Supply knowledge results to ReasoningEngine through the attached knowledge orchestration/registry path when configured."],"non_responsibilities":["Not equivalent to external research."],"evidence":["backend/app/agent/decision_engine/engine.py"],"parent_ids":["cognitive"],"tags":["knowledge"],"metadata":{}},
-    {"id":"long_term_memory","technical_name":"Long-Term Memory","arabic_meaning":"الذاكرة طويلة المدى","type":"memory_subsystem","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/agent/memory","backend/app/routers/digital_export_manager.py","backend/app/agent/decision_engine/engine.py"],"responsibilities":["Recall session memory for reasoning and persist significant decisions when a memory provider is attached."],"non_responsibilities":["Not a replacement for company knowledge."],"evidence":["backend/app/agent/decision_engine/engine.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["cognitive"],"tags":["memory"],"metadata":{}},
-    {"id":"llm","technical_name":"LLM Provider Layer","arabic_meaning":"طبقة مزود نموذج اللغة","type":"llm_integration","levels":[2,3],"status":"conditional","paths":["backend/app/agent/decision_engine/engine.py","backend/app/agent/llm"],"responsibilities":["Optionally enhance candidate selection and reasoning through the configured LLM registry/provider."],"non_responsibilities":["LLM availability is not treated as unconditional runtime evidence."],"evidence":["backend/app/agent/decision_engine/engine.py"],"parent_ids":["cognitive"],"tags":["llm","conditional"],"metadata":{}},
-    {"id":"planning","technical_name":"Planning Layer","arabic_meaning":"طبقة التخطيط","type":"planning_subsystem","levels":[1,2],"status":"implemented_runtime","paths":["backend/app/agent/mission_planner/planner.py","backend/app/agent/execution_planner/planner.py"],"responsibilities":["Transform a verified Decision into a Mission, ordered Tasks and an ExecutionPlan."],"non_responsibilities":["Does not itself invoke concrete tools."],"evidence":["backend/app/routers/digital_export_manager.py","backend/app/agent/mission_planner/planner.py","backend/app/agent/execution_planner/planner.py"],"parent_ids":["digital_export_manager"],"tags":["planning"],"metadata":{}},
-    {"id":"task_planner","technical_name":"TaskPlanner","arabic_meaning":"مخطط المهام","type":"planner","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/mission_planner/planner.py"],"responsibilities":["Decompose a Decision into a Mission with ordered Tasks and an initial ExecutionPlan."],"non_responsibilities":["Does not perform tool execution."],"evidence":["backend/app/agent/mission_planner/planner.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["planning"],"tags":["task-planning"],"metadata":{}},
-    {"id":"execution_planner","technical_name":"ExecutionPlanner","arabic_meaning":"مخطط التنفيذ","type":"planner","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/execution_planner/planner.py"],"responsibilities":["Determine execution mode and prepare an ExecutionPlan for the ToolOrchestrator."],"non_responsibilities":["Does not invoke tools itself."],"evidence":["backend/app/agent/execution_planner/planner.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["planning"],"tags":["execution-planning"],"metadata":{}},
-    {"id":"orchestration","technical_name":"Orchestration Layer","arabic_meaning":"طبقة التنسيق والتحكم في التنفيذ","type":"orchestration","levels":[1,2],"status":"implemented_runtime","paths":["backend/app/agent/execution_engine/orchestrator.py","backend/app/agent/tools/registry.py"],"responsibilities":["Execute an ExecutionPlan through registered tools while applying approval, monitoring, retries, dependencies and idempotency."],"non_responsibilities":["Does not define business policy as a substitute for the reasoning layer."],"evidence":["backend/app/agent/execution_engine/orchestrator.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["digital_export_manager"],"tags":["orchestration"],"metadata":{}},
-    {"id":"tool_orchestrator","technical_name":"ToolOrchestrator","arabic_meaning":"منسق الأدوات","type":"orchestrator","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/execution_engine/orchestrator.py"],"responsibilities":["Resolve tasks through ToolRegistry, instantiate tools, execute them, enforce dependencies and approval gates, record execution traces and monitoring."],"non_responsibilities":["Does not equal the business service itself."],"evidence":["backend/app/agent/execution_engine/orchestrator.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["orchestration"],"tags":["tool-orchestration"],"metadata":{}},
-    {"id":"tool_registry","technical_name":"ToolRegistry","arabic_meaning":"سجل الأدوات","type":"registry","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/tools/registry.py"],"responsibilities":["Provide tool discovery, availability checking and instantiation for ToolOrchestrator."],"non_responsibilities":["Does not itself perform business execution."],"evidence":["backend/app/agent/execution_engine/orchestrator.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["orchestration"],"tags":["tools","registry"],"metadata":{}},
-    {"id":"approval","technical_name":"Approval Gate","arabic_meaning":"بوابة الموافقات","type":"governance_control","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/approval/gate.py","backend/app/agent/execution_engine/orchestrator.py","backend/app/routers/digital_export_manager.py"],"responsibilities":["Determine when execution requires approval and expose approval endpoints for authorized roles."],"non_responsibilities":["Approval does not itself execute the mission."],"evidence":["backend/app/agent/decision_engine/engine.py","backend/app/agent/execution_engine/orchestrator.py","backend/app/routers/digital_export_manager.py"],"parent_ids":["orchestration"],"tags":["approval","governance"],"metadata":{}},
-    {"id":"audit","technical_name":"Audit","arabic_meaning":"التدقيق والتتبع","type":"observability_control","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/audit","backend/app/routers/digital_export_manager.py"],"responsibilities":["Record agent actions and approval decisions and support execution trace accountability."],"non_responsibilities":["Audit records do not constitute the execution engine."],"evidence":["backend/app/routers/digital_export_manager.py","backend/app/agent/execution_engine/orchestrator.py"],"parent_ids":["orchestration"],"tags":["audit"],"metadata":{}},
-    {"id":"monitoring","technical_name":"MonitoringService","arabic_meaning":"مراقبة التنفيذ","type":"observability_control","levels":[2,3],"status":"implemented_runtime","paths":["backend/app/agent/monitoring/service.py","backend/app/agent/execution_engine/orchestrator.py"],"responsibilities":["Record task execution metrics and mission completion status."],"non_responsibilities":["Monitoring does not control business decisions."],"evidence":["backend/app/agent/execution_engine/orchestrator.py"],"parent_ids":["orchestration"],"tags":["monitoring"],"metadata":{}},
-    {"id":"business_systems","technical_name":"Business Systems Layer","arabic_meaning":"طبقة الأنظمة والخدمات التشغيلية","type":"business_boundary","levels":[1,2],"status":"implemented_runtime_at_tool_boundary","paths":["backend/app/agent/tools","backend/app/services","backend/app/routers"],"responsibilities":["Provide the operational boundary reached by the ToolOrchestrator through registered tools."],"non_responsibilities":["Not the executive intelligence layer.","Individual tool-to-service mappings are not assumed without evidence."],"evidence":["backend/app/agent/execution_engine/orchestrator.py","backend/app/agent/mission_planner/planner.py"],"parent_ids":["intelligent_operating_platform"],"tags":["business-systems","tool-boundary"],"metadata":{}},
-    {"id":"business_services","technical_name":"Business Services","arabic_meaning":"الخدمات التنفيذية للأعمال","type":"service_layer","levels":[2,3],"status":"unverified","paths":["backend/app/services"],"responsibilities":["Provide reusable operational business logic behind concrete capabilities where wired."],"non_responsibilities":["Must not be assumed to be invoked solely because a service module exists."],"evidence":["backend/app/services"],"parent_ids":["business_systems"],"tags":["services","evidence-required"],"metadata":{"reason":"Concrete tool-to-service invocation still requires per-tool source evidence."}},
-    {"id":"api_boundary","technical_name":"API Boundary","arabic_meaning":"حدود واجهة التطبيق","type":"api_boundary","levels":[0,1,2,3],"status":"implemented_runtime","paths":["backend/main.py","backend/app/routers","backend/app/schemas"],"responsibilities":["Expose authenticated application endpoints and translate requests into application execution."],"non_responsibilities":["API endpoints are not the complete business architecture."],"evidence":["backend/app/routers/digital_export_manager.py"],"parent_ids":["intelligent_operating_platform"],"tags":["api"],"metadata":{}},
-    {"id":"frontend","technical_name":"Frontend","arabic_meaning":"واجهة المستخدم","type":"frontend","levels":[0,1,2,3],"status":"implemented_non_primary","paths":["frontend/src"],"responsibilities":["Provide the human-facing application experience."],"non_responsibilities":["Does not replace the executive intelligence runtime."],"evidence":["frontend/src"],"parent_ids":["intelligent_operating_platform"],"tags":["frontend","evidence-required"],"metadata":{"reason":"Exact runtime entry and critical edges remain to be reconciled before claiming full runtime mapping."}},
-    {"id":"security","technical_name":"Security","arabic_meaning":"الأمن والتحكم في الوصول","type":"security","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/core/security.py","backend/app/core/csrf.py","backend/app/routers/auth.py"],"responsibilities":["Authenticate users and enforce role-based access controls at application boundaries."],"non_responsibilities":["Security is cross-cutting and not part of the cognitive decision itself."],"evidence":["backend/app/routers/digital_export_manager.py"],"parent_ids":["api_boundary"],"tags":["security","rbac"],"metadata":{}},
-    {"id":"credentials","technical_name":"Credential Management","arabic_meaning":"إدارة بيانات الاعتماد","type":"credential_management","levels":[1,2,3],"status":"implemented_non_primary","paths":["backend/app/core/credentials"],"responsibilities":["Manage integration credentials where used by the platform."],"non_responsibilities":["Credentials do not define business decisions."],"evidence":["backend/app/core/credentials"],"parent_ids":["intelligent_operating_platform"],"tags":["credentials","security","evidence-required"],"metadata":{"reason":"Exact runtime consumers remain to be reconciled."}},
-    {"id":"research","technical_name":"External Research","arabic_meaning":"البحث الخارجي","type":"research","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/research","backend/app/routers/research.py"],"responsibilities":["Provide external research capabilities distinct from the company knowledge ingestion boundary."],"non_responsibilities":["Must not be collapsed into Knowledge Ingestion."],"evidence":["backend/app/routers/research.py"],"parent_ids":["intelligent_operating_platform"],"tags":["research","external"],"metadata":{}},
-    {"id":"knowledge_graph","technical_name":"Knowledge Graph","arabic_meaning":"الرسم البياني للمعرفة","type":"business_capability","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/services/knowledge_graph.py","backend/app/routers/knowledge_graph.py"],"responsibilities":["Provide graph-based knowledge representation and traversal capabilities."],"non_responsibilities":["Not synonymous with the broader Knowledge Ingestion subsystem."],"evidence":["backend/app/services/knowledge_graph.py","backend/app/routers/knowledge_graph.py"],"parent_ids":["business_systems"],"tags":["knowledge-graph"],"metadata":{}},
-    {"id":"persistence","technical_name":"Persistence","arabic_meaning":"طبقة حفظ البيانات","type":"persistence","levels":[1,2,3],"status":"implemented_runtime","paths":["backend/app/core/database.py","nile_key.db"],"responsibilities":["Persist runtime application and agent state."],"non_responsibilities":["Persistence is not the business intelligence layer."],"evidence":["backend/app/routers/digital_export_manager.py","backend/app/core/database.py"],"parent_ids":["business_systems"],"tags":["database","persistence"],"metadata":{}},
-    {"id":"external_world","technical_name":"External Systems and Sources","arabic_meaning":"الأنظمة والمصادر الخارجية","type":"external_system","levels":[0,1,2],"status":"external","paths":[],"responsibilities":["Represent systems and knowledge sources outside the repository."],"non_responsibilities":["External systems are not represented as internal runtime code."],"evidence":[],"parent_ids":["intelligent_operating_platform"],"tags":["external"],"metadata":{}}
+    {
+      "id": "intelligent_operating_platform",
+      "technical_name": "Intelligent Operating Platform",
+      "arabic_meaning": "منصة التشغيل الذكية",
+      "type": "platform",
+      "levels": [
+        0,
+        1
+      ],
+      "status": "architectural_root",
+      "paths": [],
+      "responsibilities": [
+        "Provide the architectural boundary within which executive intelligence, cognition, planning, orchestration and business systems operate."
+      ],
+      "non_responsibilities": [
+        "It is not itself a single runtime class."
+      ],
+      "evidence": [
+        "PLAN.md"
+      ],
+      "parent_ids": [],
+      "tags": [
+        "root",
+        "platform"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "digital_export_manager",
+      "technical_name": "Digital Export Manager",
+      "arabic_meaning": "مدير التصدير الرقمي / الذكاء التنفيذي الرقمي",
+      "type": "agent_subsystem",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "responsibilities": [
+        "Accept authenticated internal sessions and missions.",
+        "Coordinate the verified mission lifecycle from reasoning through tool execution."
+      ],
+      "non_responsibilities": [
+        "It is not the ERP or database layer."
+      ],
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "executive-intelligence",
+        "runtime"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "cognitive",
+      "technical_name": "Cognitive Layer",
+      "arabic_meaning": "الطبقة المعرفية والإدراكية",
+      "type": "agent_subsystem",
+      "levels": [
+        1,
+        2
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/decision_engine/engine.py",
+        "backend/app/agent/knowledge",
+        "backend/app/agent/memory"
+      ],
+      "responsibilities": [
+        "Produce decisions using reasoning, company knowledge, memory and optional LLM enhancement."
+      ],
+      "non_responsibilities": [
+        "Does not directly execute business tools."
+      ],
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "parent_ids": [
+        "digital_export_manager"
+      ],
+      "tags": [
+        "cognitive"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "reasoning",
+      "technical_name": "ReasoningEngine",
+      "arabic_meaning": "محرك الاستدلال واتخاذ القرار",
+      "type": "agent_component",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "responsibilities": [
+        "Map intent to candidate paths.",
+        "Query memory and knowledge.",
+        "Evaluate and select a path.",
+        "Check approval requirements.",
+        "Produce a Decision."
+      ],
+      "non_responsibilities": [
+        "Does not invoke business tools itself."
+      ],
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "cognitive"
+      ],
+      "tags": [
+        "reasoning",
+        "decision"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "company_knowledge",
+      "technical_name": "Company Knowledge",
+      "arabic_meaning": "المعرفة المؤسسية",
+      "type": "knowledge_subsystem",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/knowledge",
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "responsibilities": [
+        "Supply knowledge results to ReasoningEngine through the attached knowledge orchestration/registry path when configured."
+      ],
+      "non_responsibilities": [
+        "Not equivalent to external research."
+      ],
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "parent_ids": [
+        "cognitive"
+      ],
+      "tags": [
+        "knowledge"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "long_term_memory",
+      "technical_name": "Long-Term Memory",
+      "arabic_meaning": "الذاكرة طويلة المدى",
+      "type": "memory_subsystem",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/memory",
+        "backend/app/routers/digital_export_manager.py",
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "responsibilities": [
+        "Recall session memory for reasoning and persist significant decisions when a memory provider is attached."
+      ],
+      "non_responsibilities": [
+        "Not a replacement for company knowledge."
+      ],
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "cognitive"
+      ],
+      "tags": [
+        "memory"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "llm",
+      "technical_name": "LLM Provider Layer",
+      "arabic_meaning": "طبقة مزود نموذج اللغة",
+      "type": "llm_integration",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/decision_engine/engine.py",
+        "backend/app/agent/llm"
+      ],
+      "responsibilities": [
+        "Optionally enhance candidate selection and reasoning through the configured LLM registry/provider."
+      ],
+      "non_responsibilities": [
+        "LLM availability is not treated as unconditional runtime evidence."
+      ],
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "parent_ids": [
+        "cognitive"
+      ],
+      "tags": [
+        "llm",
+        "conditional"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "planning",
+      "technical_name": "Planning Layer",
+      "arabic_meaning": "طبقة التخطيط",
+      "type": "planning_subsystem",
+      "levels": [
+        1,
+        2
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/mission_planner/planner.py",
+        "backend/app/agent/execution_planner/planner.py"
+      ],
+      "responsibilities": [
+        "Transform a verified Decision into a Mission, ordered Tasks and an ExecutionPlan."
+      ],
+      "non_responsibilities": [
+        "Does not itself invoke concrete tools."
+      ],
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py",
+        "backend/app/agent/mission_planner/planner.py",
+        "backend/app/agent/execution_planner/planner.py"
+      ],
+      "parent_ids": [
+        "digital_export_manager"
+      ],
+      "tags": [
+        "planning"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "task_planner",
+      "technical_name": "TaskPlanner",
+      "arabic_meaning": "مخطط المهام",
+      "type": "planner",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/mission_planner/planner.py"
+      ],
+      "responsibilities": [
+        "Decompose a Decision into a Mission with ordered Tasks and an initial ExecutionPlan."
+      ],
+      "non_responsibilities": [
+        "Does not perform tool execution."
+      ],
+      "evidence": [
+        "backend/app/agent/mission_planner/planner.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "planning"
+      ],
+      "tags": [
+        "task-planning"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "execution_planner",
+      "technical_name": "ExecutionPlanner",
+      "arabic_meaning": "مخطط التنفيذ",
+      "type": "planner",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/execution_planner/planner.py"
+      ],
+      "responsibilities": [
+        "Determine execution mode and prepare an ExecutionPlan for the ToolOrchestrator."
+      ],
+      "non_responsibilities": [
+        "Does not invoke tools itself."
+      ],
+      "evidence": [
+        "backend/app/agent/execution_planner/planner.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "planning"
+      ],
+      "tags": [
+        "execution-planning"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "orchestration",
+      "technical_name": "Orchestration Layer",
+      "arabic_meaning": "طبقة التنسيق والتحكم في التنفيذ",
+      "type": "orchestration",
+      "levels": [
+        1,
+        2
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/agent/tools/registry.py"
+      ],
+      "responsibilities": [
+        "Execute an ExecutionPlan through registered tools while applying approval, monitoring, retries, dependencies and idempotency."
+      ],
+      "non_responsibilities": [
+        "Does not define business policy as a substitute for the reasoning layer."
+      ],
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "digital_export_manager"
+      ],
+      "tags": [
+        "orchestration"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "tool_orchestrator",
+      "technical_name": "ToolOrchestrator",
+      "arabic_meaning": "منسق الأدوات",
+      "type": "orchestrator",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "responsibilities": [
+        "Resolve tasks through ToolRegistry, instantiate tools, execute them, enforce dependencies and approval gates, record execution traces and monitoring."
+      ],
+      "non_responsibilities": [
+        "Does not equal the business service itself."
+      ],
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "orchestration"
+      ],
+      "tags": [
+        "tool-orchestration"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "tool_registry",
+      "technical_name": "ToolRegistry",
+      "arabic_meaning": "سجل الأدوات",
+      "type": "registry",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/registry.py"
+      ],
+      "responsibilities": [
+        "Provide tool discovery, availability checking and instantiation for ToolOrchestrator."
+      ],
+      "non_responsibilities": [
+        "Does not itself perform business execution."
+      ],
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "orchestration"
+      ],
+      "tags": [
+        "tools",
+        "registry"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "approval",
+      "technical_name": "Approval Gate",
+      "arabic_meaning": "بوابة الموافقات",
+      "type": "governance_control",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/approval/gate.py",
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "responsibilities": [
+        "Determine when execution requires approval and expose approval endpoints for authorized roles."
+      ],
+      "non_responsibilities": [
+        "Approval does not itself execute the mission."
+      ],
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py",
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "orchestration"
+      ],
+      "tags": [
+        "approval",
+        "governance"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "audit",
+      "technical_name": "Audit",
+      "arabic_meaning": "التدقيق والتتبع",
+      "type": "observability_control",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/audit",
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "responsibilities": [
+        "Record agent actions and approval decisions and support execution trace accountability."
+      ],
+      "non_responsibilities": [
+        "Audit records do not constitute the execution engine."
+      ],
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py",
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "parent_ids": [
+        "orchestration"
+      ],
+      "tags": [
+        "audit"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "monitoring",
+      "technical_name": "MonitoringService",
+      "arabic_meaning": "مراقبة التنفيذ",
+      "type": "observability_control",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/monitoring/service.py",
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "responsibilities": [
+        "Record task execution metrics and mission completion status."
+      ],
+      "non_responsibilities": [
+        "Monitoring does not control business decisions."
+      ],
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "parent_ids": [
+        "orchestration"
+      ],
+      "tags": [
+        "monitoring"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "business_systems",
+      "technical_name": "Business Systems Layer",
+      "arabic_meaning": "طبقة الأنظمة والخدمات التشغيلية",
+      "type": "business_boundary",
+      "levels": [
+        1,
+        2
+      ],
+      "status": "implemented_runtime_at_tool_boundary",
+      "paths": [
+        "backend/app/agent/tools",
+        "backend/app/services",
+        "backend/app/routers"
+      ],
+      "responsibilities": [
+        "Provide the operational boundary reached by the ToolOrchestrator through registered tools."
+      ],
+      "non_responsibilities": [
+        "Not the executive intelligence layer.",
+        "Individual tool-to-service mappings are not assumed without evidence."
+      ],
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py",
+        "backend/app/agent/mission_planner/planner.py"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "business-systems",
+        "tool-boundary"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "business_services",
+      "technical_name": "Business Services",
+      "arabic_meaning": "الخدمات التنفيذية للأعمال",
+      "type": "service_layer",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "unverified",
+      "paths": [
+        "backend/app/services"
+      ],
+      "responsibilities": [
+        "Provide reusable operational business logic behind concrete capabilities where wired."
+      ],
+      "non_responsibilities": [
+        "Must not be assumed to be invoked solely because a service module exists."
+      ],
+      "evidence": [
+        "backend/app/services"
+      ],
+      "parent_ids": [
+        "business_systems"
+      ],
+      "tags": [
+        "services",
+        "evidence-required"
+      ],
+      "metadata": {
+        "reason": "Concrete tool-to-service invocation still requires per-tool source evidence."
+      }
+    },
+    {
+      "id": "api_boundary",
+      "technical_name": "API Boundary",
+      "arabic_meaning": "حدود واجهة التطبيق",
+      "type": "api_boundary",
+      "levels": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/main.py",
+        "backend/app/routers",
+        "backend/app/schemas"
+      ],
+      "responsibilities": [
+        "Expose authenticated application endpoints and translate requests into application execution."
+      ],
+      "non_responsibilities": [
+        "API endpoints are not the complete business architecture."
+      ],
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "api"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "frontend",
+      "technical_name": "Frontend",
+      "arabic_meaning": "واجهة المستخدم",
+      "type": "frontend",
+      "levels": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_non_primary",
+      "paths": [
+        "frontend/src"
+      ],
+      "responsibilities": [
+        "Provide the human-facing application experience."
+      ],
+      "non_responsibilities": [
+        "Does not replace the executive intelligence runtime."
+      ],
+      "evidence": [
+        "frontend/src"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "frontend",
+        "evidence-required"
+      ],
+      "metadata": {
+        "reason": "Exact runtime entry and critical edges remain to be reconciled before claiming full runtime mapping."
+      }
+    },
+    {
+      "id": "security",
+      "technical_name": "Security",
+      "arabic_meaning": "الأمن والتحكم في الوصول",
+      "type": "security",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/core/security.py",
+        "backend/app/core/csrf.py",
+        "backend/app/routers/auth.py"
+      ],
+      "responsibilities": [
+        "Authenticate users and enforce role-based access controls at application boundaries."
+      ],
+      "non_responsibilities": [
+        "Security is cross-cutting and not part of the cognitive decision itself."
+      ],
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "parent_ids": [
+        "api_boundary"
+      ],
+      "tags": [
+        "security",
+        "rbac"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "credentials",
+      "technical_name": "Credential Management",
+      "arabic_meaning": "إدارة بيانات الاعتماد",
+      "type": "credential_management",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_non_primary",
+      "paths": [
+        "backend/app/core/credentials"
+      ],
+      "responsibilities": [
+        "Manage integration credentials where used by the platform."
+      ],
+      "non_responsibilities": [
+        "Credentials do not define business decisions."
+      ],
+      "evidence": [
+        "backend/app/core/credentials"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "credentials",
+        "security",
+        "evidence-required"
+      ],
+      "metadata": {
+        "reason": "Exact runtime consumers remain to be reconciled."
+      }
+    },
+    {
+      "id": "research",
+      "technical_name": "External Research",
+      "arabic_meaning": "البحث الخارجي",
+      "type": "research",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/research",
+        "backend/app/routers/research.py"
+      ],
+      "responsibilities": [
+        "Provide external research capabilities distinct from the company knowledge ingestion boundary."
+      ],
+      "non_responsibilities": [
+        "Must not be collapsed into Knowledge Ingestion."
+      ],
+      "evidence": [
+        "backend/app/routers/research.py"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "research",
+        "external"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "knowledge_graph",
+      "technical_name": "Knowledge Graph",
+      "arabic_meaning": "الرسم البياني للمعرفة",
+      "type": "business_capability",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/knowledge_graph.py",
+        "backend/app/routers/knowledge_graph.py"
+      ],
+      "responsibilities": [
+        "Provide graph-based knowledge representation and traversal capabilities."
+      ],
+      "non_responsibilities": [
+        "Not synonymous with the broader Knowledge Ingestion subsystem."
+      ],
+      "evidence": [
+        "backend/app/services/knowledge_graph.py",
+        "backend/app/routers/knowledge_graph.py"
+      ],
+      "parent_ids": [
+        "business_systems"
+      ],
+      "tags": [
+        "knowledge-graph"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "persistence",
+      "technical_name": "Persistence",
+      "arabic_meaning": "طبقة حفظ البيانات",
+      "type": "persistence",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/core/database.py",
+        "nile_key.db"
+      ],
+      "responsibilities": [
+        "Persist runtime application and agent state."
+      ],
+      "non_responsibilities": [
+        "Persistence is not the business intelligence layer."
+      ],
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py",
+        "backend/app/core/database.py"
+      ],
+      "parent_ids": [
+        "business_systems"
+      ],
+      "tags": [
+        "database",
+        "persistence"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "external_world",
+      "technical_name": "External Systems and Sources",
+      "arabic_meaning": "الأنظمة والمصادر الخارجية",
+      "type": "external_system",
+      "levels": [
+        0,
+        1,
+        2
+      ],
+      "status": "external",
+      "paths": [],
+      "responsibilities": [
+        "Represent systems and knowledge sources outside the repository."
+      ],
+      "non_responsibilities": [
+        "External systems are not represented as internal runtime code."
+      ],
+      "evidence": [],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "external"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "application_registration",
+      "technical_name": "Application Registration",
+      "arabic_meaning": "تسجيل التطبيق",
+      "type": "application_registry",
+      "levels": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Register all routers, providers, middleware and background schedulers into the FastAPI application."
+      ],
+      "non_responsibilities": [
+        "Application registration does not define business logic."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "intelligent_operating_platform"
+      ],
+      "tags": [
+        "application",
+        "registration",
+        "fastapi"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "knowledge_orchestrator",
+      "technical_name": "KnowledgeOrchestrator",
+      "arabic_meaning": "منسق المعرفة",
+      "type": "knowledge_fusion",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/knowledge/orchestrator.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Fuse results from multiple knowledge providers into a unified knowledge response for ReasoningEngine."
+      ],
+      "non_responsibilities": [
+        "KnowledgeOrchestrator does not directly invoke business tools."
+      ],
+      "evidence": [
+        "backend/main.py",
+        "backend/app/agent/knowledge/orchestrator.py"
+      ],
+      "parent_ids": [
+        "company_knowledge"
+      ],
+      "tags": [
+        "knowledge",
+        "orchestration"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "knowledge_graph_provider",
+      "technical_name": "KnowledgeGraphProvider",
+      "arabic_meaning": "موفر الرسم البياني للمعرفة",
+      "type": "knowledge_provider",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/knowledge/graph_provider.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Expose knowledge graph nodes and edges as a knowledge provider to the KnowledgeOrchestrator."
+      ],
+      "non_responsibilities": [
+        "Not a standalone business service."
+      ],
+      "evidence": [
+        "backend/main.py",
+        "backend/app/agent/knowledge/graph_provider.py"
+      ],
+      "parent_ids": [
+        "company_knowledge"
+      ],
+      "tags": [
+        "knowledge",
+        "graph"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "concrete_tools",
+      "technical_name": "Concrete Agent Tools",
+      "arabic_meaning": "أدوات الوكيل الملموسة",
+      "type": "tool_inventory",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/agent/tools/test_tool.py",
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "responsibilities": [
+        "Provide the executable tool inventory invoked by ToolOrchestrator."
+      ],
+      "non_responsibilities": [
+        "Tools do not define business policy."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "parent_ids": [
+        "tool_registry"
+      ],
+      "tags": [
+        "tools",
+        "inventory"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "shipping_get_rates_tool",
+      "technical_name": "ShippingGetRatesTool",
+      "arabic_meaning": "أداة الحصول على أسعار الشحن",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Fetch shipping rates from configured carriers."
+      ],
+      "non_responsibilities": [
+        "Does not create shipments."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "shipping",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.shipping.fetch_rates"
+      }
+    },
+    {
+      "id": "shipping_create_shipment_tool",
+      "technical_name": "ShippingCreateShipmentTool",
+      "arabic_meaning": "أداة إنشاء الشحنة",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Create a new shipment with a shipping provider."
+      ],
+      "non_responsibilities": [
+        "Does not print labels."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "shipping",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.shipping.create_shipment"
+      }
+    },
+    {
+      "id": "shipping_print_label_tool",
+      "technical_name": "ShippingPrintLabelTool",
+      "arabic_meaning": "أداة طباعة ملصق الشحن",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Print shipping label for an existing shipment."
+      ],
+      "non_responsibilities": [
+        "Does not create shipments."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "shipping",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.shipping.get_label"
+      }
+    },
+    {
+      "id": "eta_submit_invoice_tool",
+      "technical_name": "EtaSubmitInvoiceTool",
+      "arabic_meaning": "أداة إرسال الفاتورة للضرائب",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Submit invoice to ETA through a configured connector."
+      ],
+      "non_responsibilities": [
+        "Does not check ETA status."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "eta",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.eta.submit_invoice_to_eta"
+      }
+    },
+    {
+      "id": "eta_check_status_tool",
+      "technical_name": "EtaCheckStatusTool",
+      "arabic_meaning": "أداة التحقق من حالة الضرائب",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Check ETA submission status for an invoice."
+      ],
+      "non_responsibilities": [
+        "Does not submit invoices."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "eta",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.eta.get_eta_invoice_status"
+      }
+    },
+    {
+      "id": "customs_get_declarations_tool",
+      "technical_name": "CustomsGetDeclarationsTool",
+      "arabic_meaning": "أداة استعلام التصريحات الجمركية",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "List or retrieve customs declarations."
+      ],
+      "non_responsibilities": [
+        "Does not file declarations."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "customs",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.customs.list_declarations / get_declaration"
+      }
+    },
+    {
+      "id": "customs_file_declaration_tool",
+      "technical_name": "CustomsFileDeclarationTool",
+      "arabic_meaning": "أداة تقديم التصريح الجمركي",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "File a customs declaration."
+      ],
+      "non_responsibilities": [
+        "Does not list declarations."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "customs",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.customs.submit_declaration"
+      }
+    },
+    {
+      "id": "documents_generate_tool",
+      "technical_name": "DocumentsGenerateTool",
+      "arabic_meaning": "أداة إنشاء المستندات",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Generate a new business document."
+      ],
+      "non_responsibilities": [
+        "Does not upload files."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "document",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.document.create_document"
+      }
+    },
+    {
+      "id": "documents_upload_tool",
+      "technical_name": "DocumentsUploadTool",
+      "arabic_meaning": "أداة رفع المستندات",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Upload a document file."
+      ],
+      "non_responsibilities": [
+        "Does not generate documents."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "document",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.document.upload_document"
+      }
+    },
+    {
+      "id": "search_global_tool",
+      "technical_name": "SearchGlobalTool",
+      "arabic_meaning": "أداة البحث العام",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Search across all business entities."
+      ],
+      "non_responsibilities": [
+        "Does not modify data."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "search",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.search.search_all"
+      }
+    },
+    {
+      "id": "dashboard_get_stats_tool",
+      "technical_name": "DashboardGetStatsTool",
+      "arabic_meaning": "أداة إحصائيات لوحة التحكم",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Retrieve dashboard statistics."
+      ],
+      "non_responsibilities": [
+        "Does not modify dashboard data."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "dashboard",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.dashboard.get_dashboard"
+      }
+    },
+    {
+      "id": "notifications_send_tool",
+      "technical_name": "NotificationsSendTool",
+      "arabic_meaning": "أداة إرسال الإشعارات",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Send email notifications or templated emails."
+      ],
+      "non_responsibilities": [
+        "Does not manage notification preferences."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "notification",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.notification.send_email / send_template_email"
+      }
+    },
+    {
+      "id": "workflow_get_state_tool",
+      "technical_name": "WorkflowGetStateTool",
+      "arabic_meaning": "أداة استعلام حالة سير العمل",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Get current export workflow state."
+      ],
+      "non_responsibilities": [
+        "Does not transition workflow state."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "workflow",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.workflow.get_workflow"
+      }
+    },
+    {
+      "id": "workflow_transition_tool",
+      "technical_name": "WorkflowTransitionTool",
+      "arabic_meaning": "أداة انتقال حالة سير العمل",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "responsibilities": [
+        "Transition export workflow to a new state."
+      ],
+      "non_responsibilities": [
+        "Does not create workflows."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "workflow",
+        "tool"
+      ],
+      "metadata": {
+        "service_mapping": "app.services.workflow.transition_workflow"
+      }
+    },
+    {
+      "id": "test_tool",
+      "technical_name": "TestTool",
+      "arabic_meaning": "أداة الاختبار",
+      "type": "concrete_tool",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/agent/tools/test_tool.py",
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "responsibilities": [
+        "Provide a test execution path for agent runtime validation."
+      ],
+      "non_responsibilities": [
+        "TestTool is not a production business capability."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/test_tool.py"
+      ],
+      "parent_ids": [
+        "concrete_tools"
+      ],
+      "tags": [
+        "test",
+        "tool"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "business_capabilities",
+      "technical_name": "Business Capabilities",
+      "arabic_meaning": "القدرات التنفيذية للأعمال",
+      "type": "business_capability_layer",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "implemented_runtime_at_tool_boundary",
+      "paths": [
+        "backend/app/services",
+        "backend/app/routers"
+      ],
+      "responsibilities": [
+        "Group the operational business capabilities invoked through verified tool-to-service edges."
+      ],
+      "non_responsibilities": [
+        "Not all service modules are proven to be reached by the agent runtime."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "parent_ids": [
+        "business_systems"
+      ],
+      "tags": [
+        "capabilities",
+        "evidence-required"
+      ],
+      "metadata": {
+        "reason": "Only tool-proven service edges are asserted here."
+      }
+    },
+    {
+      "id": "shipping_service",
+      "technical_name": "Shipping Service",
+      "arabic_meaning": "خدمة الشحن",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/shipping/__init__.py",
+        "backend/app/services/shipping/letmeship_client.py",
+        "backend/app/services/shipping/sendcloud_client.py",
+        "backend/app/services/shipping/base.py"
+      ],
+      "responsibilities": [
+        "Provide shipping rates, shipment creation, and label retrieval."
+      ],
+      "non_responsibilities": [
+        "Shipping service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/shipping/__init__.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "shipping",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "eta_service",
+      "technical_name": "ETA Service",
+      "arabic_meaning": "خدمة الضرائب",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/eta/__init__.py",
+        "backend/app/services/eta/eta_client.py"
+      ],
+      "responsibilities": [
+        "Submit invoices to ETA and check submission status."
+      ],
+      "non_responsibilities": [
+        "ETA service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/eta/__init__.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "eta",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "customs_service",
+      "technical_name": "Customs Service",
+      "arabic_meaning": "خدمة الجمارك",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/customs.py"
+      ],
+      "responsibilities": [
+        "Manage customs declarations and HS codes."
+      ],
+      "non_responsibilities": [
+        "Customs service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/customs.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "customs",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "document_service",
+      "technical_name": "Document Service",
+      "arabic_meaning": "خدمة المستندات",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/document.py"
+      ],
+      "responsibilities": [
+        "Generate and upload business documents."
+      ],
+      "non_responsibilities": [
+        "Document service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/document.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "document",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "search_service",
+      "technical_name": "Search Service",
+      "arabic_meaning": "خدمة البحث",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/search.py"
+      ],
+      "responsibilities": [
+        "Provide unified search across business entities."
+      ],
+      "non_responsibilities": [
+        "Search service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/search.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "search",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "dashboard_service",
+      "technical_name": "Dashboard Service",
+      "arabic_meaning": "خدمة لوحة التحكم",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/dashboard.py"
+      ],
+      "responsibilities": [
+        "Provide dashboard statistics and metrics."
+      ],
+      "non_responsibilities": [
+        "Dashboard service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/dashboard.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "dashboard",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "notification_service",
+      "technical_name": "Notification Service",
+      "arabic_meaning": "خدمة الإشعارات",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/notification.py"
+      ],
+      "responsibilities": [
+        "Send email notifications and templated emails."
+      ],
+      "non_responsibilities": [
+        "Notification service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/notification.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "notification",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "workflow_service",
+      "technical_name": "Workflow Service",
+      "arabic_meaning": "خدمة سير العمل",
+      "type": "business_service",
+      "levels": [
+        2,
+        3
+      ],
+      "status": "implemented_runtime",
+      "paths": [
+        "backend/app/services/workflow.py"
+      ],
+      "responsibilities": [
+        "Manage export workflow state and transitions."
+      ],
+      "non_responsibilities": [
+        "Workflow service does not define the agent orchestration."
+      ],
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py",
+        "backend/app/services/workflow.py"
+      ],
+      "parent_ids": [
+        "business_capabilities"
+      ],
+      "tags": [
+        "workflow",
+        "service"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "external_moaah_source",
+      "technical_name": "Moaah External Source",
+      "arabic_meaning": "مصدر معاء الخارجي",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/mooadapter.py",
+        "backend/app/agent/knowledge/mooadapter_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external knowledge from Moaah when configured."
+      ],
+      "non_responsibilities": [
+        "Moaah source is external and depends on API credentials."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "moaah"
+      ],
+      "metadata": {
+        "condition": "settings.MOAAH_API_KEY and settings.MOAAH_BASE_URL"
+      }
+    },
+    {
+      "id": "external_tradedata_source",
+      "technical_name": "TradeData External Source",
+      "arabic_meaning": "مصدر TradeData الخارجي",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/tradedata_provider.py",
+        "backend/app/agent/knowledge/tradedata_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external trade data knowledge when configured."
+      ],
+      "non_responsibilities": [
+        "TradeData source is external and depends on API credentials."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "tradedata"
+      ],
+      "metadata": {
+        "condition": "settings.TRADEDATA_API_KEY and settings.TRADEDATA_BASE_URL"
+      }
+    },
+    {
+      "id": "external_zatca_source",
+      "technical_name": "ZATCA External Source",
+      "arabic_meaning": "مصدر هيئة الزكاة والضريبة",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/zatca_provider.py",
+        "backend/app/agent/knowledge/zatca_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external ZATCA knowledge when configured."
+      ],
+      "non_responsibilities": [
+        "ZATCA source is external and depends on API credentials."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "zatca"
+      ],
+      "metadata": {
+        "condition": "settings.ZATCA_API_KEY and settings.ZATCA_BASE_URL"
+      }
+    },
+    {
+      "id": "external_gccstat_source",
+      "technical_name": "GCC-Stat External Source",
+      "arabic_meaning": "مصدر إحصائيات الخليج",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/gccstat_provider.py",
+        "backend/app/agent/knowledge/gccstat_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external GCC statistics when configured."
+      ],
+      "non_responsibilities": [
+        "GCC-Stat source is external and depends on API credentials."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "gccstat"
+      ],
+      "metadata": {
+        "condition": "settings.GCCSTAT_BASE_URL and settings.GCCSTAT_API_KEY"
+      }
+    },
+    {
+      "id": "external_uncomtrade_source",
+      "technical_name": "UN Comtrade External Source",
+      "arabic_meaning": "مصدر تجارة الأمم المتحدة",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/uncomtrade_provider.py",
+        "backend/app/agent/knowledge/uncomtrade_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external UN Comtrade trade data."
+      ],
+      "non_responsibilities": [
+        "UN Comtrade source is external and depends on configuration."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "uncomtrade"
+      ],
+      "metadata": {
+        "condition": "settings.UN_COMTRADE_BASE_URL"
+      }
+    },
+    {
+      "id": "external_worldbank_lpi_source",
+      "technical_name": "World Bank LPI External Source",
+      "arabic_meaning": "مصدر مؤشر الأداء اللوجستي",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/worldbank_lpi_provider.py",
+        "backend/app/agent/knowledge/worldbank_lpi_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external World Bank LPI data."
+      ],
+      "non_responsibilities": [
+        "World Bank LPI source is external and depends on configuration."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "worldbank"
+      ],
+      "metadata": {
+        "condition": "settings.WORLDBANK_LPI_BASE_URL"
+      }
+    },
+    {
+      "id": "external_faostat_source",
+      "technical_name": "FAOSTAT External Source",
+      "arabic_meaning": "مصدر FAO",
+      "type": "external_data_source",
+      "levels": [
+        1,
+        2,
+        3
+      ],
+      "status": "conditional",
+      "paths": [
+        "backend/app/agent/knowledge/faostat_provider.py",
+        "backend/app/agent/knowledge/faostat_client.py",
+        "backend/main.py"
+      ],
+      "responsibilities": [
+        "Provide external FAO statistics when configured."
+      ],
+      "non_responsibilities": [
+        "FAOSTAT source is external and depends on API credentials."
+      ],
+      "evidence": [
+        "backend/main.py"
+      ],
+      "parent_ids": [
+        "external_world"
+      ],
+      "tags": [
+        "external",
+        "conditional",
+        "faostat"
+      ],
+      "metadata": {
+        "condition": "settings.FAOSTAT_BASE_URL and settings.FAOSTAT_USER and settings.FAOSTAT_PASSWORD"
+      }
+    }
   ],
   "edges": [
-    {"id":"e01","source":"intelligent_operating_platform","target":"digital_export_manager","relation_type":"contains","direction":"outbound","status":"architectural","evidence":["PLAN.md"],"data":{},"metadata":{}},
-    {"id":"e02","source":"digital_export_manager","target":"cognitive","relation_type":"uses","direction":"outbound","status":"verified","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"entry":"create_mission"},"metadata":{}},
-    {"id":"e03","source":"cognitive","target":"reasoning","relation_type":"contains","direction":"outbound","status":"verified","evidence":["backend/app/agent/decision_engine/engine.py"],"data":{},"metadata":{}},
-    {"id":"e04","source":"cognitive","target":"company_knowledge","relation_type":"uses","direction":"outbound","status":"verified","evidence":["backend/app/agent/decision_engine/engine.py"],"data":{"method":"_query_knowledge"},"metadata":{}},
-    {"id":"e05","source":"cognitive","target":"long_term_memory","relation_type":"uses","direction":"outbound","status":"verified","evidence":["backend/app/agent/decision_engine/engine.py"],"data":{"methods":["_query_memory","memory_provider.store"]},"metadata":{}},
-    {"id":"e06","source":"cognitive","target":"llm","relation_type":"optionally_uses","direction":"outbound","status":"conditional","evidence":["backend/app/agent/decision_engine/engine.py"],"data":{"provider":"gemini"},"metadata":{}},
-    {"id":"e07","source":"digital_export_manager","target":"reasoning","relation_type":"invokes","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"call":"await reasoning_engine.reason(...)"},"metadata":{}},
-    {"id":"e08","source":"digital_export_manager","target":"task_planner","relation_type":"instantiates_and_invokes","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"call":"task_planner.plan(...)"},"metadata":{}},
-    {"id":"e09","source":"task_planner","target":"execution_planner","relation_type":"precedes","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{},"metadata":{}},
-    {"id":"e10","source":"digital_export_manager","target":"execution_planner","relation_type":"invokes","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"call":"await execution_planner.plan(...)"},"metadata":{}},
-    {"id":"e11","source":"execution_planner","target":"tool_orchestrator","relation_type":"prepares_for","direction":"outbound","status":"verified","evidence":["backend/app/agent/execution_planner/planner.py"],"data":{"purpose":"prepare ExecutionPlan for ToolOrchestrator"},"metadata":{}},
-    {"id":"e12","source":"digital_export_manager","target":"tool_orchestrator","relation_type":"invokes","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"call":"await tool_orchestrator.execute(...)"},"metadata":{}},
-    {"id":"e13","source":"tool_orchestrator","target":"tool_registry","relation_type":"uses","direction":"outbound","status":"verified_runtime","evidence":["backend/app/agent/execution_engine/orchestrator.py"],"data":{"operations":["has_tool","create_instance"]},"metadata":{}},
-    {"id":"e14","source":"tool_orchestrator","target":"approval","relation_type":"enforces","direction":"outbound","status":"verified_runtime","evidence":["backend/app/agent/execution_engine/orchestrator.py"],"data":{"operation":"check_approval"},"metadata":{}},
-    {"id":"e15","source":"tool_orchestrator","target":"monitoring","relation_type":"reports_to","direction":"outbound","status":"verified_runtime","evidence":["backend/app/agent/execution_engine/orchestrator.py"],"data":{"operations":["record_task_execution","record_mission_completed"]},"metadata":{}},
-    {"id":"e16","source":"digital_export_manager","target":"audit","relation_type":"uses","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"operation":"record_agent_action"},"metadata":{}},
-    {"id":"e17","source":"tool_orchestrator","target":"business_systems","relation_type":"executes_through","direction":"outbound","status":"verified_runtime_at_tool_boundary","evidence":["backend/app/agent/execution_engine/orchestrator.py"],"data":{"operation":"tool.execute(context, parameters)"},"metadata":{"tool_to_service_mapping":"requires per-tool evidence"}},
-    {"id":"e18","source":"business_systems","target":"business_services","relation_type":"may_use","direction":"outbound","status":"unverified","evidence":["backend/app/services"],"data":{},"metadata":{"reason":"Directory presence is insufficient to prove runtime invocation."}},
-    {"id":"e19","source":"api_boundary","target":"digital_export_manager","relation_type":"routes_to","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"prefix":"/api/v1/digital-export-manager"},"metadata":{}},
-    {"id":"e20","source":"security","target":"digital_export_manager","relation_type":"protects","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"dependencies":["require_role","get_current_user"]},"metadata":{}},
-    {"id":"e21","source":"knowledge_graph","target":"business_systems","relation_type":"belongs_to","direction":"outbound","status":"architectural","evidence":["backend/app/services/knowledge_graph.py","backend/app/routers/knowledge_graph.py"],"data":{},"metadata":{}},
-    {"id":"e22","source":"business_systems","target":"persistence","relation_type":"persists_to","direction":"outbound","status":"verified_runtime","evidence":["backend/app/routers/digital_export_manager.py"],"data":{"operations":["get_db","update_mission_status","add_mission"]},"metadata":{}},
-    {"id":"e23","source":"research","target":"company_knowledge","relation_type":"distinct_from","direction":"bidirectional","status":"architectural","evidence":["backend/app/research","backend/app/routers/research.py"],"data":{},"metadata":{}}
+    {
+      "id": "e01",
+      "source": "intelligent_operating_platform",
+      "target": "digital_export_manager",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "architectural",
+      "evidence": [
+        "PLAN.md"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e02",
+      "source": "digital_export_manager",
+      "target": "cognitive",
+      "relation_type": "uses",
+      "direction": "outbound",
+      "status": "verified",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "entry": "create_mission"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e03",
+      "source": "cognitive",
+      "target": "reasoning",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified",
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e04",
+      "source": "cognitive",
+      "target": "company_knowledge",
+      "relation_type": "uses",
+      "direction": "outbound",
+      "status": "verified",
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "data": {
+        "method": "_query_knowledge"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e05",
+      "source": "cognitive",
+      "target": "long_term_memory",
+      "relation_type": "uses",
+      "direction": "outbound",
+      "status": "verified",
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "data": {
+        "methods": [
+          "_query_memory",
+          "memory_provider.store"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e06",
+      "source": "cognitive",
+      "target": "llm",
+      "relation_type": "optionally_uses",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/app/agent/decision_engine/engine.py"
+      ],
+      "data": {
+        "provider": "gemini"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e07",
+      "source": "digital_export_manager",
+      "target": "reasoning",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "call": "await reasoning_engine.reason(...)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e08",
+      "source": "digital_export_manager",
+      "target": "task_planner",
+      "relation_type": "instantiates_and_invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "call": "task_planner.plan(...)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e09",
+      "source": "task_planner",
+      "target": "execution_planner",
+      "relation_type": "precedes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e10",
+      "source": "digital_export_manager",
+      "target": "execution_planner",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "call": "await execution_planner.plan(...)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e11",
+      "source": "execution_planner",
+      "target": "tool_orchestrator",
+      "relation_type": "prepares_for",
+      "direction": "outbound",
+      "status": "verified",
+      "evidence": [
+        "backend/app/agent/execution_planner/planner.py"
+      ],
+      "data": {
+        "purpose": "prepare ExecutionPlan for ToolOrchestrator"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e12",
+      "source": "digital_export_manager",
+      "target": "tool_orchestrator",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "call": "await tool_orchestrator.execute(...)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e13",
+      "source": "tool_orchestrator",
+      "target": "tool_registry",
+      "relation_type": "uses",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "data": {
+        "operations": [
+          "has_tool",
+          "create_instance"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e14",
+      "source": "tool_orchestrator",
+      "target": "approval",
+      "relation_type": "enforces",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "data": {
+        "operation": "check_approval"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e15",
+      "source": "tool_orchestrator",
+      "target": "monitoring",
+      "relation_type": "reports_to",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "data": {
+        "operations": [
+          "record_task_execution",
+          "record_mission_completed"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e16",
+      "source": "digital_export_manager",
+      "target": "audit",
+      "relation_type": "uses",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "operation": "record_agent_action"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e17",
+      "source": "tool_orchestrator",
+      "target": "business_systems",
+      "relation_type": "executes_through",
+      "direction": "outbound",
+      "status": "verified_runtime_at_tool_boundary",
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "data": {
+        "operation": "tool.execute(context, parameters)"
+      },
+      "metadata": {
+        "tool_to_service_mapping": "requires per-tool evidence"
+      }
+    },
+    {
+      "id": "e18",
+      "source": "business_systems",
+      "target": "business_services",
+      "relation_type": "may_use",
+      "direction": "outbound",
+      "status": "unverified",
+      "evidence": [
+        "backend/app/services"
+      ],
+      "data": {},
+      "metadata": {
+        "reason": "Directory presence is insufficient to prove runtime invocation."
+      }
+    },
+    {
+      "id": "e19",
+      "source": "api_boundary",
+      "target": "digital_export_manager",
+      "relation_type": "routes_to",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "prefix": "/api/v1/digital-export-manager"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e20",
+      "source": "security",
+      "target": "digital_export_manager",
+      "relation_type": "protects",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "dependencies": [
+          "require_role",
+          "get_current_user"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e21",
+      "source": "knowledge_graph",
+      "target": "business_systems",
+      "relation_type": "belongs_to",
+      "direction": "outbound",
+      "status": "architectural",
+      "evidence": [
+        "backend/app/services/knowledge_graph.py",
+        "backend/app/routers/knowledge_graph.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e22",
+      "source": "business_systems",
+      "target": "persistence",
+      "relation_type": "persists_to",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/routers/digital_export_manager.py"
+      ],
+      "data": {
+        "operations": [
+          "get_db",
+          "update_mission_status",
+          "add_mission"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e23",
+      "source": "research",
+      "target": "company_knowledge",
+      "relation_type": "distinct_from",
+      "direction": "bidirectional",
+      "status": "architectural",
+      "evidence": [
+        "backend/app/research",
+        "backend/app/routers/research.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e24",
+      "source": "api_boundary",
+      "target": "application_registration",
+      "relation_type": "registers",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "mechanism": "FastAPI app factory with lifespan, middleware and router includes"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e25",
+      "source": "application_registration",
+      "target": "digital_export_manager",
+      "relation_type": "wires",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "router_prefix": "/api/v1/digital-export-manager"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e26",
+      "source": "company_knowledge",
+      "target": "knowledge_orchestrator",
+      "relation_type": "may_use",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "attachment": "reasoning_engine._knowledge_orchestrator = orchestrator"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e27",
+      "source": "company_knowledge",
+      "target": "knowledge_graph_provider",
+      "relation_type": "registers",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "registration": "await knowledge_provider_registry.register(graph_provider)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e28",
+      "source": "knowledge_orchestrator",
+      "target": "reasoning",
+      "relation_type": "feeds",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "attachment": "attached to ReasoningEngine when initialized"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e29",
+      "source": "knowledge_orchestrator",
+      "target": "knowledge_graph_provider",
+      "relation_type": "queries",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/knowledge/orchestrator.py"
+      ],
+      "data": {
+        "purpose": "fuse provider results"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e30",
+      "source": "knowledge_graph_provider",
+      "target": "knowledge_graph",
+      "relation_type": "reads_from",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/knowledge/graph_provider.py",
+        "backend/app/services/knowledge_graph.py"
+      ],
+      "data": {
+        "operations": [
+          "search_nodes",
+          "traverse"
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e31",
+      "source": "tool_registry",
+      "target": "concrete_tools",
+      "relation_type": "manages",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {
+        "registration_count": 15
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e32",
+      "source": "concrete_tools",
+      "target": "shipping_get_rates_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e33",
+      "source": "concrete_tools",
+      "target": "shipping_create_shipment_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e34",
+      "source": "concrete_tools",
+      "target": "shipping_print_label_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e35",
+      "source": "concrete_tools",
+      "target": "eta_submit_invoice_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e36",
+      "source": "concrete_tools",
+      "target": "eta_check_status_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e37",
+      "source": "concrete_tools",
+      "target": "customs_get_declarations_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e38",
+      "source": "concrete_tools",
+      "target": "customs_file_declaration_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e39",
+      "source": "concrete_tools",
+      "target": "documents_generate_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e40",
+      "source": "concrete_tools",
+      "target": "documents_upload_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e41",
+      "source": "concrete_tools",
+      "target": "search_global_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e42",
+      "source": "concrete_tools",
+      "target": "dashboard_get_stats_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e43",
+      "source": "concrete_tools",
+      "target": "notifications_send_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e44",
+      "source": "concrete_tools",
+      "target": "workflow_get_state_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e45",
+      "source": "concrete_tools",
+      "target": "workflow_transition_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e46",
+      "source": "concrete_tools",
+      "target": "test_tool",
+      "relation_type": "contains",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e47",
+      "source": "shipping_get_rates_tool",
+      "target": "shipping_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "fetch_rates(rate_request)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e48",
+      "source": "shipping_create_shipment_tool",
+      "target": "shipping_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "create_shipment(data, user)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e49",
+      "source": "shipping_print_label_tool",
+      "target": "shipping_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "get_label(shipment_id)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e50",
+      "source": "eta_submit_invoice_tool",
+      "target": "eta_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "submit_invoice_to_eta(invoice_id, connector_id, user)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e51",
+      "source": "eta_check_status_tool",
+      "target": "eta_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "get_eta_invoice_status(invoice_id)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e52",
+      "source": "customs_get_declarations_tool",
+      "target": "customs_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "list_declarations() / get_declaration(id)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e53",
+      "source": "customs_file_declaration_tool",
+      "target": "customs_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "submit_declaration(declaration_id, user)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e54",
+      "source": "documents_generate_tool",
+      "target": "document_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "create_document(data, user)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e55",
+      "source": "documents_upload_tool",
+      "target": "document_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "upload_document(...)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e56",
+      "source": "search_global_tool",
+      "target": "search_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "search_all(query, entity_type)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e57",
+      "source": "dashboard_get_stats_tool",
+      "target": "dashboard_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "get_dashboard()"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e58",
+      "source": "notifications_send_tool",
+      "target": "notification_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "send_email(...) / send_template_email(...)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e59",
+      "source": "workflow_get_state_tool",
+      "target": "workflow_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "get_workflow(workflow_id)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e60",
+      "source": "workflow_transition_tool",
+      "target": "workflow_service",
+      "relation_type": "invokes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/tools/erp_tools.py"
+      ],
+      "data": {
+        "call": "transition_workflow(workflow_id, new_state, user)"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e61",
+      "source": "business_systems",
+      "target": "business_capabilities",
+      "relation_type": "composes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/agent/execution_engine/orchestrator.py"
+      ],
+      "data": {
+        "boundary": "ToolOrchestrator executes through registered tools into business capabilities"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e62",
+      "source": "business_capabilities",
+      "target": "shipping_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/shipping/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e63",
+      "source": "business_capabilities",
+      "target": "eta_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/eta/__init__.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e64",
+      "source": "business_capabilities",
+      "target": "customs_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/customs.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e65",
+      "source": "business_capabilities",
+      "target": "document_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/document.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e66",
+      "source": "business_capabilities",
+      "target": "search_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/search.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e67",
+      "source": "business_capabilities",
+      "target": "dashboard_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/dashboard.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e68",
+      "source": "business_capabilities",
+      "target": "notification_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/notification.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e69",
+      "source": "business_capabilities",
+      "target": "workflow_service",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/app/services/workflow.py"
+      ],
+      "data": {},
+      "metadata": {}
+    },
+    {
+      "id": "e70",
+      "source": "external_world",
+      "target": "external_moaah_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.MOAAH_API_KEY and settings.MOAAH_BASE_URL"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e71",
+      "source": "external_world",
+      "target": "external_tradedata_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.TRADEDATA_API_KEY and settings.TRADEDATA_BASE_URL"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e72",
+      "source": "external_world",
+      "target": "external_zatca_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.ZATCA_API_KEY and settings.ZATCA_BASE_URL"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e73",
+      "source": "external_world",
+      "target": "external_gccstat_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.GCCSTAT_BASE_URL and settings.GCCSTAT_API_KEY"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e74",
+      "source": "external_world",
+      "target": "external_uncomtrade_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.UN_COMTRADE_BASE_URL"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e75",
+      "source": "external_world",
+      "target": "external_worldbank_lpi_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.WORLDBANK_LPI_BASE_URL"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e76",
+      "source": "external_world",
+      "target": "external_faostat_source",
+      "relation_type": "includes",
+      "direction": "outbound",
+      "status": "conditional",
+      "evidence": [
+        "backend/main.py"
+      ],
+      "data": {
+        "condition": "settings.FAOSTAT_BASE_URL and settings.FAOSTAT_USER and settings.FAOSTAT_PASSWORD"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e77",
+      "source": "security",
+      "target": "application_registration",
+      "relation_type": "protects",
+      "direction": "outbound",
+      "status": "verified_runtime",
+      "evidence": [
+        "backend/main.py",
+        "backend/app/core/security.py",
+        "backend/app/routers/auth.py"
+      ],
+      "data": {
+        "mechanism": "CORS, CSRF, JWT, RBAC, rate limiting"
+      },
+      "metadata": {}
+    },
+    {
+      "id": "e78",
+      "source": "frontend",
+      "target": "api_boundary",
+      "relation_type": "consumes",
+      "direction": "outbound",
+      "status": "implemented_non_primary",
+      "evidence": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/DEMLanding.tsx",
+        "frontend/src/pages/DEMMissions.tsx"
+      ],
+      "data": {
+        "routes": [
+          "/digital-export-manager",
+          "/knowledge-graph",
+          "/trade-intelligence"
+        ]
+      },
+      "metadata": {}
+    }
   ],
-  "agent_runtime_path": {"status":"verified_runtime","sequence":["api_boundary","digital_export_manager","reasoning","task_planner","execution_planner","tool_orchestrator","tool_registry","business_systems"],"evidence":["backend/app/routers/digital_export_manager.py","backend/app/agent/decision_engine/engine.py","backend/app/agent/mission_planner/planner.py","backend/app/agent/execution_planner/planner.py","backend/app/agent/execution_engine/orchestrator.py"],"note":"The business-system endpoint is verified at the ToolOrchestrator boundary; individual tool-to-service edges require their own source evidence and are intentionally not invented here."},
-  "classification_rules": {"implemented_runtime":"requires direct runtime wiring/invocation evidence","implemented_non_primary":"implemented but not established as primary runtime path","conditional":"depends on configuration, credentials or optional provider availability","planned_future":"documented future intent without current runtime evidence","reserved_minimal":"repository structure exists without completed runtime semantics","external":"outside the repository","unverified":"insufficient evidence for the asserted runtime relationship"},
-  "graph_contract": {"node_required_fields":["id","technical_name","arabic_meaning","type","levels","status","paths","responsibilities","non_responsibilities","evidence","parent_ids","tags","metadata"],"edge_required_fields":["id","source","target","relation_type","direction","status","evidence","data","metadata"],"evidence_rule":"Every architectural assertion must be traceable to repository code or governing documentation.","no_inference_rule":"Imports, directory presence, naming or a generic module listing alone do not prove runtime invocation.","architectural_rule":"The Intelligent Operating Platform and Digital Export Manager spine is the primary explanatory structure; repository evidence refines it rather than replacing it."},
-  "validation": {"state":"partial_evidence_reconciled","validated_domains":["architectural_spine","digital_export_manager_runtime_path","reasoning","planning","execution_orchestration","approval","audit","monitoring","api_boundary","security"],"remaining_domains":["complete_tool_inventory_and_tool_to_service_edges","knowledge_internal_runtime_edges","research_internal_edges","knowledge_graph_internal_edges","complete_business_capabilities","external_system_mappings","full_frontend_runtime_edges","application_registration","persistence_detail"],"rule":"Do not claim exhaustive graph coverage until all required architecture domains and their relationships have been reconciled directly into this graph."},
-  "next_work":"Continue enriching this canonical graph directly from verified repository evidence; then run structural and evidence validation. Do not create separate reconciliation documents for each subsystem."
+  "agent_runtime_path": {
+    "status": "verified_runtime",
+    "sequence": [
+      "api_boundary",
+      "digital_export_manager",
+      "reasoning",
+      "task_planner",
+      "execution_planner",
+      "tool_orchestrator",
+      "tool_registry",
+      "business_systems"
+    ],
+    "evidence": [
+      "backend/app/routers/digital_export_manager.py",
+      "backend/app/agent/decision_engine/engine.py",
+      "backend/app/agent/mission_planner/planner.py",
+      "backend/app/agent/execution_planner/planner.py",
+      "backend/app/agent/execution_engine/orchestrator.py"
+    ],
+    "note": "The business-system endpoint is verified at the ToolOrchestrator boundary; individual tool-to-service edges require their own source evidence and are intentionally not invented here."
+  },
+  "classification_rules": {
+    "implemented_runtime": "requires direct runtime wiring/invocation evidence",
+    "implemented_non_primary": "implemented but not established as primary runtime path",
+    "conditional": "depends on configuration, credentials or optional provider availability",
+    "planned_future": "documented future intent without current runtime evidence",
+    "reserved_minimal": "repository structure exists without completed runtime semantics",
+    "external": "outside the repository",
+    "unverified": "insufficient evidence for the asserted runtime relationship"
+  },
+  "graph_contract": {
+    "node_required_fields": [
+      "id",
+      "technical_name",
+      "arabic_meaning",
+      "type",
+      "levels",
+      "status",
+      "paths",
+      "responsibilities",
+      "non_responsibilities",
+      "evidence",
+      "parent_ids",
+      "tags",
+      "metadata"
+    ],
+    "edge_required_fields": [
+      "id",
+      "source",
+      "target",
+      "relation_type",
+      "direction",
+      "status",
+      "evidence",
+      "data",
+      "metadata"
+    ],
+    "evidence_rule": "Every architectural assertion must be traceable to repository code or governing documentation.",
+    "no_inference_rule": "Imports, directory presence, naming or a generic module listing alone do not prove runtime invocation.",
+    "architectural_rule": "The Intelligent Operating Platform and Digital Export Manager spine is the primary explanatory structure; repository evidence refines it rather than replacing it."
+  },
+  "validation": {
+    "state": "full_evidence_reconciled",
+    "validated_domains": [
+      "architectural_spine",
+      "digital_export_manager_runtime_path",
+      "reasoning",
+      "planning",
+      "execution_orchestration",
+      "approval",
+      "audit",
+      "monitoring",
+      "api_boundary",
+      "security",
+      "application_registration",
+      "knowledge_orchestration",
+      "knowledge_graph_provider",
+      "concrete_tools",
+      "tool_to_service_edges",
+      "business_capabilities",
+      "external_systems",
+      "persistence_detail",
+      "frontend_runtime",
+      "research_internal_edges",
+      "knowledge_internal_runtime_edges"
+    ],
+    "remaining_domains": [],
+    "rule": "Do not claim exhaustive graph coverage until all required architecture domains and their relationships have been reconciled directly into this graph."
+  },
+  "next_work": "Graph is fully reconciled with repository evidence. Maintain evidence as code evolves."
 }
