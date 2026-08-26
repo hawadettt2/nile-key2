@@ -184,4 +184,27 @@ export const analyzeSupplier = (data: { supplier_id: number; analysis_type?: str
 export const detectTrends = (data: { entity_type: string; trend_parameters?: Record<string, unknown> }) =>
   api.post('/api/v1/trade-intelligence/trends/detect', data);
 
+export const getArchitectureMetadata = () =>
+  api.get('/api/v1/architecture-explorer/metadata');
+export const getArchitectureNode = (nodeId: string) =>
+  api.get(`/api/v1/architecture-explorer/nodes/${encodeURIComponent(nodeId)}`);
+export const listArchitectureNodes = (params?: Record<string, unknown>) =>
+  api.get('/api/v1/architecture-explorer/nodes', { params });
+export const queryArchitectureNodes = (payload: Record<string, unknown>) =>
+  api.post('/api/v1/architecture-explorer/nodes/query', payload);
+export const getArchitectureChildren = (nodeId: string) =>
+  api.get(`/api/v1/architecture-explorer/nodes/${encodeURIComponent(nodeId)}/children`);
+export const getArchitectureParents = (nodeId: string) =>
+  api.get(`/api/v1/architecture-explorer/nodes/${encodeURIComponent(nodeId)}/parents`);
+export const queryArchitectureEdges = (payload: Record<string, unknown>) =>
+  api.post('/api/v1/architecture-explorer/edges/query', payload);
+export const traverseArchitecture = (startNodeId: string, payload: Record<string, unknown>) =>
+  api.post(`/api/v1/architecture-explorer/traverse/${encodeURIComponent(startNodeId)}`, payload);
+export const searchArchitecture = (q: string, limit?: number) =>
+  api.get('/api/v1/architecture-explorer/search', { params: { q, limit } });
+export const projectArchitectureLevel = (level: number) =>
+  api.get(`/api/v1/architecture-explorer/levels/${level}`);
+export const getArchitectureEvidence = (nodeId: string) =>
+  api.get(`/api/v1/architecture-explorer/nodes/${encodeURIComponent(nodeId)}/evidence`);
+
 export default api;

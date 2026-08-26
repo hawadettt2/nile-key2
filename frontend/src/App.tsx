@@ -24,6 +24,7 @@ import { DEMTools } from '@/pages/DEMTools';
 import { KnowledgeGraph } from '@/pages/KnowledgeGraph';
 import { TradeIntelligence } from '@/pages/TradeIntelligence';
 import { ExportReadiness } from '@/pages/ExportReadiness';
+import { ArchitectureExplorer } from '@/pages/ArchitectureExplorer';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -106,6 +107,7 @@ function App() {
           <Route path="knowledge-graph" element={<KnowledgeGraph />} />
           <Route path="trade-intelligence" element={<TradeIntelligence />} />
           <Route path="export-readiness" element={<ExportReadiness />} />
+          <Route path="architecture-explorer" element={<ArchitectureExplorer />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

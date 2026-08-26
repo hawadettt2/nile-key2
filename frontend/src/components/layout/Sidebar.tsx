@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, Settings, LogOut, Menu, X, User, Bell, Brain, Network, BarChart3, Target } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, FileText, Globe, FileArchive, BookOpen, Settings, LogOut, Menu, X, User, Bell, Brain, Network, BarChart3, Target, Layers } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 
@@ -15,6 +15,7 @@ const navItems = [
   { path: '/knowledge-graph', icon: Network, label: 'knowledgeGraph', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
   { path: '/trade-intelligence', icon: BarChart3, label: 'tradeIntelligence', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
   { path: '/export-readiness', icon: Target, label: 'exportReadiness', roles: ['owner', 'manager', 'sales', 'admin_staff', 'accountant', 'logistics'] },
+  { path: '/architecture-explorer', icon: Layers, label: 'architectureExplorer', roles: ['owner', 'manager', 'admin_staff'] },
   { path: '/suppliers', icon: Truck, label: 'suppliers', roles: ['owner', 'manager', 'admin_staff', 'logistics'] },
   { path: '/customers', icon: Users, label: 'customers', roles: ['owner', 'manager', 'sales', 'admin_staff'] },
   { path: '/shipments', icon: Globe, label: 'shipments', roles: ['owner', 'manager', 'sales', 'admin_staff', 'logistics', 'customer'] },
