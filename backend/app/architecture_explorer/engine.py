@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
+from .exceptions import ExplorerEngineError, GraphNotLoadedError, NodeNotFoundError
 from .loader import CanonicalGraphLoader, CanonicalGraphLoadError, CanonicalGraphValidationError
 from .models import (
     CanonicalGraph,
@@ -15,14 +15,6 @@ from .models import (
     SearchResult,
     TraversalResult,
 )
-
-
-class ExplorerEngineError(Exception):
-    """Base explorer engine error."""
-
-
-class NodeNotFoundError(ExplorerEngineError):
-    """Raised when a requested node does not exist."""
 
 
 class ArchitectureExplorerEngine:
@@ -41,7 +33,7 @@ class ArchitectureExplorerEngine:
     @property
     def graph(self) -> CanonicalGraph:
         if self._graph is None:
-            raise ExplorerEngineError("Graph not loaded. Call load() first.")
+            raise GraphNotLoadedError("Graph not loaded. Call load() first.")
         return self._graph
 
     def get_node(self, node_id: str) -> CanonicalNode:
@@ -82,6 +74,8 @@ class ArchitectureExplorerEngine:
                     " ".join(node.tags),
                     " ".join(node.responsibilities),
                     " ".join(node.non_responsibilities),
+                    " ".join(node.paths),
+                    " ".join(node.evidence),
                 ]).lower()
                 if query.search_text.lower() not in haystack:
                     continue

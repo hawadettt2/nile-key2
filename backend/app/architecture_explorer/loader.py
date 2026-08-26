@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .models import (
     CanonicalEdge,
@@ -30,7 +30,12 @@ class CanonicalGraphLoader:
             )
 
         with open(self.graph_path, "r", encoding="utf-8") as f:
-            raw: Dict[str, Any] = json.load(f)
+            try:
+                raw: Dict[str, Any] = json.load(f)
+            except json.JSONDecodeError as exc:
+                raise CanonicalGraphLoadError(
+                    f"Canonical graph contains invalid JSON: {exc}"
+                ) from exc
 
         self._validate_raw(raw)
         return self._build_graph(raw)
