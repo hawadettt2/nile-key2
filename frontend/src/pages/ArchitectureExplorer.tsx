@@ -8,46 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Users,
-  Cpu,
-  Brain,
-  Network,
-  GitBranch,
-  Settings,
-  Globe,
-  ChevronDown,
-  ChevronRight,
-  ExternalLink,
-  FileText,
-  Layers,
-  LayoutDashboard
-} from 'lucide-react';
-
-const NODE_ICONS: Record<string, typeof Users> = {
-  intelligent_operating_platform: Cpu,
-  digital_export_manager: Brain,
-  cognitive: Brain,
-  planning: GitBranch,
-  orchestration: Settings,
-  business_systems: Layers,
-  external_world: Globe,
-  api_boundary: Network,
-  frontend: LayoutDashboard,
-  application_registration: Settings,
-};
-
-const NODE_COLORS: Record<string, string> = {
-  human_employees: 'bg-slate-100 text-slate-700 border-slate-200',
-  intelligent_operating_platform: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-  digital_export_manager: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  executive_intelligence: 'bg-blue-100 text-blue-700 border-blue-200',
-  cognitive: 'bg-purple-100 text-purple-700 border-purple-200',
-  planning: 'bg-amber-100 text-amber-700 border-amber-200',
-  orchestration: 'bg-orange-100 text-orange-700 border-orange-200',
-  business_systems: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-  external_world: 'bg-teal-100 text-teal-700 border-teal-200',
-};
+import { ChevronDown, ChevronRight, FileText, Settings } from 'lucide-react';
 
 export function ArchitectureExplorer() {
   const { t } = useTranslation();
@@ -140,6 +101,10 @@ export function ArchitectureExplorer() {
               <Skeleton key={i} className="h-24 w-full" />
             ))}
           </div>
+        ) : spineNodes.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-slate-500">{t('common.noData')}</p>
+          </Card>
         ) : (
           <div className="space-y-3">
             {spineNodes.map((node, index) => {
@@ -151,13 +116,13 @@ export function ArchitectureExplorer() {
               return (
                 <div key={node.id} className="relative">
                   <Card
-                    className={`p-4 cursor-pointer transition-all hover:shadow-md border ${NODE_COLORS[node.id] || 'bg-white border-slate-200'}`}
+                    className="p-4 cursor-pointer transition-all hover:shadow-md border bg-white border-slate-200"
                     onClick={() => handleNodeClick(node.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-white/80 flex items-center justify-center">
-                          <Icon size={24} />
+                          <Settings size={24} />
                         </div>
                         <div>
                           <p className="font-medium text-slate-900">{node.technical_name}</p>
@@ -179,14 +144,13 @@ export function ArchitectureExplorer() {
                   {isExpanded && (
                     <div className="mr-12 mt-2 space-y-2">
                       {children.length === 0 ? (
-                        <p className="text-xs text-slate-400 italic">No children nodes</p>
+                        <p className="text-xs text-slate-400 italic">{t('common.noData')}</p>
                       ) : (
                         children.map(child => {
-                          const ChildIcon = NODE_ICONS[child.id] || Settings;
                           return (
                             <Card key={child.id} className="p-3 bg-slate-50 border-slate-200">
                               <div className="flex items-center gap-2">
-                                <ChildIcon size={16} className="text-slate-400" />
+                                <Settings size={16} className="text-slate-400" />
                                 <div>
                                   <p className="text-sm font-medium text-slate-700">{child.technical_name}</p>
                                   <p className="text-xs text-slate-500">{child.arabic_meaning}</p>
