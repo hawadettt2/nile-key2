@@ -9,7 +9,7 @@ from slowapi.util import get_remote_address
 
 from app.core.config import settings
 from app.core.database import get_db, execute_update
-from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token
+from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_token, is_protected_owner
 from app.schemas.user import UserCreate, UserLogin, UserUpdate, User, Token, RegisterResponse
 from app.schemas.common import MessageResponse
 from app.services.audit import log_audit
@@ -128,7 +128,7 @@ def login(credentials: UserLogin, request: Request, response: Response):
     user = dict(row)
     if not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
-    if user.get("approval_status") == "pending":
+    if user.get("approval_status") == "pending" and not is_protected_owner(user):
         raise HTTPException(status_code=403, detail="Your account is pending approval. Please wait for an administrator to approve your registration.")
     if not user.get("is_active"):
         raise HTTPException(status_code=403, detail="Your account is inactive. Please contact an administrator.")
@@ -170,12 +170,12 @@ def refresh_token(credentials: HTTPAuthorizationCredentials = Depends(security),
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT id, is_active, approval_status FROM users WHERE id = ?",
+        "SELECT id, username, email, role, is_active, approval_status FROM users WHERE id = ?",
         (int(user_id),),
     )
     user_row = cursor.fetchone()
     conn.close()
-    if not user_row or not user_row["is_active"] or user_row.get("approval_status") == "pending":
+    if not user_row or not user_row["is_active"] or (user_row.get("approval_status") == "pending" and not is_protected_owner(dict(user_row))):
         raise HTTPException(status_code=401, detail="User not found or inactive")
     access = create_access_token({"sub": str(user_id), "role": user_row["role"]})
     refresh = create_refresh_token({"sub": str(user_id)})

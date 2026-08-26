@@ -837,7 +837,7 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
     import os
     
     # ===== إنشاء المستخدم الافتراضي (Owner) =====
-    c.execute("SELECT id, username FROM users WHERE email = ?", ("owner@nile-key.com",))
+    c.execute("SELECT id, username, approval_status FROM users WHERE email = ?", ("owner@nile-key.com",))
     owner_row = c.fetchone()
     if not owner_row:
         owner_password = os.environ.get("OWNER_PASSWORD")
@@ -858,8 +858,17 @@ def _seed_data(c: sqlite3.Cursor, conn: sqlite3.Connection):
             1,
             "approved"
         ))
-    elif not owner_row[1]:
-        c.execute("UPDATE users SET username = ? WHERE email = ?", ("owner", "owner@nile-key.com"))
+    else:
+        updates = []
+        params = []
+        if not owner_row["username"]:
+            updates.append("username = ?")
+            params.append("owner")
+        if owner_row["approval_status"] != "approved":
+            updates.append("approval_status = 'approved'")
+            updates.append("is_active = 1")
+        if updates:
+            c.execute(f"UPDATE users SET {', '.join(updates)} WHERE email = ?", (*params, "owner@nile-key.com"))
     
     # ===== إنشاء الأدوار =====
     roles = [
