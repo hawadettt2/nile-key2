@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useArchitectureExplorerStore, type ArchitectureNode } from '@/store/architectureExplorerStore';
 import { getArchitectureMetadata, getArchitectureNode, projectArchitectureLevel } from '@/services/api';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronDown, ChevronRight, FileText, Settings, Box, Cpu, Workflow, Cog } from 'lucide-react';
+import { ArchitectureGraph } from '@/components/architecture-graph/ArchitectureGraph';
 
 type LevelView = 0 | 1 | 2 | 3;
 
@@ -22,10 +23,22 @@ const LEVEL_CONFIG: Record<LevelView, { key: string; icon: typeof Box; color: st
 export function ArchitectureExplorer() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { metadata, nodes, edges, isLoading, error, setMetadata, setNodes, setEdges, setLoading, setError } = useArchitectureExplorerStore();
+  const {
+    metadata,
+    nodes,
+    edges,
+    isLoading,
+    error,
+    setMetadata,
+    setNodes,
+    setEdges,
+    setLoading,
+    setError,
+  } = useArchitectureExplorerStore();
   const [activeLevel, setActiveLevel] = useState<LevelView>(0);
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<ArchitectureNode | null>(null);
+  const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
 
   const loadLevel = async (level: LevelView) => {
     setLoading(true);
@@ -57,15 +70,17 @@ export function ArchitectureExplorer() {
     loadLevel(level);
   };
 
-  const nodeMap = nodes.reduce<Record<string, ArchitectureNode>>((acc, node) => {
-    acc[node.id] = node;
-    return acc;
-  }, {});
+  const nodeMap = useMemo(() => {
+    return nodes.reduce<Record<string, ArchitectureNode>>((acc, node) => {
+      acc[node.id] = node;
+      return acc;
+    }, {});
+  }, [nodes]);
 
   const getChildren = (nodeId: string): ArchitectureNode[] => {
     return edges
-      .filter(edge => edge.source === nodeId && edge.direction === 'outbound')
-      .map(edge => nodeMap[edge.target])
+      .filter((edge) => edge.source === nodeId && edge.direction === 'outbound')
+      .map((edge) => nodeMap[edge.target])
       .filter((node): node is ArchitectureNode => Boolean(node));
   };
 
@@ -79,6 +94,10 @@ export function ArchitectureExplorer() {
         toast({ title: t('common.error'), description: 'Failed to load node details', variant: 'destructive' });
       }
     }
+  };
+
+  const handleRetry = () => {
+    loadLevel(activeLevel);
   };
 
   const levelConfig = LEVEL_CONFIG[activeLevel];
@@ -95,7 +114,7 @@ export function ArchitectureExplorer() {
           <Badge variant="secondary" className="text-xs">
             {metadata?.version || '...'}
           </Badge>
-          <Button variant="outline" size="sm" onClick={() => loadLevel(activeLevel)} disabled={isLoading}>
+          <Button variant="outline" size="sm" onClick={handleRetry} disabled={isLoading}>
             {t('architectureExplorer.retry')}
           </Button>
         </div>
@@ -130,9 +149,30 @@ export function ArchitectureExplorer() {
         {([0, 1, 2, 3] as LevelView[]).map((level) => (
           <TabsContent key={level} value={String(level)} className="mt-4">
             <Card className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <LevelIcon className={levelConfig.color} size={20} />
-                <h2 className="text-lg font-semibold text-slate-900">{t(`architectureExplorer.${LEVEL_CONFIG[level].key}`)}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <LevelIcon className={levelConfig.color} size={20} />
+                  <h2 className="text-lg font-semibold text-slate-900">{t(`architectureExplorer.${LEVEL_CONFIG[level].key}`)}</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === 'graph' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('graph')}
+                  >
+                    Graph
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                  >
+                    List
+                  </Button>
+                  <Badge variant="outline" className="text-xs">
+                    {nodes.length} nodes
+                  </Badge>
+                </div>
               </div>
 
               {isLoading ? (
@@ -145,6 +185,14 @@ export function ArchitectureExplorer() {
                 <div className="text-center py-8">
                   <p className="text-slate-500">{t('common.noData')}</p>
                 </div>
+              ) : viewMode === 'graph' ? (
+                <ArchitectureGraph
+                  nodes={nodes}
+                  edges={edges}
+                  onNodeClick={handleNodeClick}
+                  selectedNodeId={selectedNode?.id || null}
+                  expandedNodeId={expandedNode}
+                />
               ) : (
                 <div className="space-y-3">
                   {nodes.map((node, index) => {
