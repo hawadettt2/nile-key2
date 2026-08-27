@@ -49,7 +49,9 @@ describe('WP-42-C: Role-Based Workspace & Navigation', () => {
     useAuthStore.setState({
       ...originalAuth,
       isAuthenticated: true,
+      isLoading: false,
       user: { ...originalAuth.user, role: 'sales' },
+      loadUser: async () => {},
     });
     renderWithProviders(<Layout />);
     expect(screen.getByText('Digital Export Manager')).toBeDefined();

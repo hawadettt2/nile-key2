@@ -80,6 +80,15 @@ function RoleRedirect() {
 
 function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const loadUser = useAuthStore((s) => s.loadUser);
+
+  useEffect(() => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      loadUser();
+    }
+  }, [loadUser]);
+
   return (
     <BrowserRouter>
       <Routes>

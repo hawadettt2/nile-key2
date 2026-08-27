@@ -65,10 +65,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   loadUser: async () => {
+    set({ isLoading: true });
     try {
       const response = await getMe();
       set({ user: response.data, isAuthenticated: true, isLoading: false });
     } catch {
+      const storedRefreshToken = localStorage.getItem('refresh_token');
+      if (storedRefreshToken) {
+        try {
+          const refreshResponse = await apiRefreshToken({ refresh_token: storedRefreshToken });
+          const { refresh_token } = refreshResponse.data;
+          if (refresh_token) {
+            localStorage.setItem('refresh_token', refresh_token);
+          }
+          const meRes = await getMe();
+          set({ user: meRes.data, isAuthenticated: true, isLoading: false });
+          return;
+        } catch {
+          // fall through
+        }
+      }
       localStorage.removeItem('refresh_token');
       set({ user: null, isAuthenticated: false, isLoading: false });
     }

@@ -6,12 +6,10 @@ import { useTranslation } from 'react-i18next';
 import { NotificationBell } from '@/components/NotificationBell';
 
 export function Layout() {
-  const loadUser = useAuthStore((s) => s.loadUser);
   const isLoading = useAuthStore((s) => s.isLoading);
   const { i18n } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  useEffect(() => { loadUser(); }, []);
   useEffect(() => {
     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = i18n.language;
