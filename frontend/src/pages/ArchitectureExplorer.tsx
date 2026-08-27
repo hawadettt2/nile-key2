@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronDown, ChevronRight, FileText, Settings, Box, Cpu, Workflow, Cog, GitBranch, Network, Globe } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Settings, Box, Cpu, Workflow, Cog } from 'lucide-react';
 
 type LevelView = 0 | 1 | 2 | 3;
 
@@ -147,7 +147,7 @@ export function ArchitectureExplorer() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {nodes.map((node) => {
+                  {nodes.map((node, index) => {
                     const isExpanded = expandedNode === node.id;
                     const children = getChildren(node.id);
 
