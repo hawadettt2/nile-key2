@@ -8,9 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 
 const MISSING_MISSION_MESSAGE_KEY = 'dem.missionNotFoundContext';
+
+interface ExecutionStep {
+  status: string;
+  tool?: string;
+  output?: unknown;
+  error?: string;
+}
+
+interface MissionTraceProps {
+  mission: {
+    result?: Record<string, unknown>;
+    reasoning?: string;
+    error?: string;
+    requires_approval?: boolean;
+    approval_status?: string;
+  };
+}
 
 const statusConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   completed: { icon: <CheckCircle size={16} />, color: 'text-green-600', label: 'Completed' },
@@ -20,11 +36,10 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
   pending_approval: { icon: <AlertTriangle size={16} />, color: 'text-orange-600', label: 'Pending Approval' },
 };
 
-function ExecutionTraceViewer({ mission }: { mission: Record<string, unknown> }) {
+function ExecutionTraceViewer({ mission }: MissionTraceProps) {
   const result = mission.result as Record<string, unknown> | undefined;
   const reasoning = mission.reasoning as string | undefined;
   const error = mission.error as string | undefined;
-  const missionStatus = (mission.status as string) || 'pending';
 
   const stepStatusConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
     completed: { icon: <CheckCircle size={14} />, color: 'text-green-600', label: 'Completed' },
@@ -46,8 +61,8 @@ function ExecutionTraceViewer({ mission }: { mission: Record<string, unknown> })
 
   const steps = useMemo(() => {
     if (!result) return [];
-    if (Array.isArray(result.results)) return result.results as Record<string, unknown>[];
-    if (Array.isArray(result.steps)) return result.steps as Record<string, unknown>[];
+    if (Array.isArray(result.results)) return result.results as ExecutionStep[];
+    if (Array.isArray(result.steps)) return result.steps as ExecutionStep[];
     return [];
   }, [result]);
 
@@ -67,14 +82,14 @@ function ExecutionTraceViewer({ mission }: { mission: Record<string, unknown> })
         <div className="space-y-2">
           <h3 className="font-medium text-slate-900">Execution Steps</h3>
           <div className="space-y-2">
-            {steps.map((step: Record<string, unknown>, idx: number) => (
+            {steps.map((step: ExecutionStep, idx: number) => (
               <Card key={idx} className="p-3">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-slate-900">Step {idx + 1}</span>
-                  {renderStepStatus((step.status as string) || 'pending')}
+                  {renderStepStatus(step.status)}
                 </div>
                 {step.tool && (
-                  <p className="text-xs text-slate-500 mt-1">Tool: {step.tool as string}</p>
+                  <p className="text-xs text-slate-500 mt-1">Tool: {step.tool}</p>
                 )}
                 {step.output !== undefined && (
                   <pre className="bg-slate-50 p-2 rounded text-xs overflow-auto mt-2 text-slate-700">
@@ -82,7 +97,7 @@ function ExecutionTraceViewer({ mission }: { mission: Record<string, unknown> })
                   </pre>
                 )}
                 {step.error && (
-                  <p className="text-sm text-red-600 mt-2">{step.error as string}</p>
+                  <p className="text-sm text-red-600 mt-2">{step.error}</p>
                 )}
               </Card>
             ))}

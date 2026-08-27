@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { analyzeExportReadiness, type ExportReadinessReport } from '@/services/exportReadiness';
+import { analyzeExportReadiness, type ExportReadinessReport, type ExportReadinessSection } from '@/services/exportReadiness';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
