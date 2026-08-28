@@ -13,7 +13,7 @@ interface ArchitectureGraphProps {
 }
 
 const VIEWPORT_HEIGHT = 680;
-const MIN_ZOOM = 0.32;
+const MIN_ZOOM = 0.7;
 const MAX_ZOOM = 2.5;
 
 const LEVEL_BG: Record<number, { label: string; fill: string; border: string; accent: string }> = {
@@ -32,7 +32,7 @@ const LEGEND = [
   { label: 'UI / Data', color: '#0891b2' },
 ];
 
-const MARKER_COLORS = Array.from(new Set(Object.values(RELATION_COLORS).concat('#d97706')));
+const MARKER_COLORS = Array.from(new Set(Object.values(RELATION_COLORS).concat('#d97706', '#ea580c')));
 
 export function ArchitectureGraph({ nodes, edges, onNodeClick, selectedNodeId, expandedNodeId }: ArchitectureGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
