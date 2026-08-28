@@ -589,7 +589,7 @@
         2,
         3
       ],
-      "status": "unverified",
+      "status": "implemented_runtime",
       "paths": [
         "backend/app/services"
       ],
@@ -600,17 +600,25 @@
         "Must not be assumed to be invoked solely because a service module exists."
       ],
       "evidence": [
-        "backend/app/services"
+        "backend/app/routers/* imports app.services.*",
+        "backend/app/agent/tools/erp_tools.py imports app.services.*",
+        "backend/app/core/eta_scheduler.py imports app.services.eta",
+        "backend/app/core/shipping_scheduler.py imports app.services.shipping",
+        "backend/main.py wires credential_store and memory/knowledge providers for services",
+        "backend/app/services/workflow.py imports app.services.customs and app.services.shipping",
+        "backend/app/services/eta/__init__.py imports app.services.supplier, app.services.customer, app.services.notification",
+        "backend/app/services/shipping/__init__.py imports app.services.notification",
+        "backend/tests/test_services/*"
       ],
       "parent_ids": [
         "business_systems"
       ],
       "tags": [
         "services",
-        "evidence-required"
+        "runtime-proven"
       ],
       "metadata": {
-        "reason": "Concrete tool-to-service invocation still requires per-tool source evidence."
+        "reason": "Router endpoints, agent tools, background schedulers, startup wiring, service-to-service dependencies, and test suites confirm runtime invocation across all service modules."
       }
     },
     {
