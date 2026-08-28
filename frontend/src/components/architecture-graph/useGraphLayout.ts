@@ -8,9 +8,9 @@ export interface GraphNodePosition {
   level: number;
 }
 
-const LEVEL_HEIGHT = 140;
-const NODE_WIDTH = 240;
-const HORIZONTAL_SPACING = 280;
+const LEVEL_HEIGHT = 170;
+const NODE_WIDTH = 220;
+const HORIZONTAL_SPACING = 300;
 
 export function useGraphLayout(
   nodes: ArchitectureNode[],
@@ -44,11 +44,17 @@ export function useGraphLayout(
       const visibleChildren = children.filter((cid) => nodeMap.has(cid) && !placed.has(cid));
       if (visibleChildren.length === 0) return;
 
-      const totalChildWidth = (visibleChildren.length - 1) * HORIZONTAL_SPACING;
+      const sortedChildren = visibleChildren.slice().sort((a, b) => {
+        const aChildren = childrenMap.get(a)?.length || 0;
+        const bChildren = childrenMap.get(b)?.length || 0;
+        return bChildren - aChildren;
+      });
+
+      const totalChildWidth = (sortedChildren.length - 1) * HORIZONTAL_SPACING;
       let startX = x + NODE_WIDTH / 2 - totalChildWidth / 2;
       const childY = y + LEVEL_HEIGHT;
 
-      visibleChildren.forEach((childId, index) => {
+      sortedChildren.forEach((childId, index) => {
         placeNode(childId, startX + index * HORIZONTAL_SPACING, childY, level + 1);
       });
     };

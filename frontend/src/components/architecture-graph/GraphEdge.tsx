@@ -23,9 +23,9 @@ const RELATION_COLORS: Record<string, string> = {
 export function GraphEdge({ edge, sourcePos, targetPos }: GraphEdgeProps) {
   if (!sourcePos || !targetPos) return null;
 
-  const sourceX = sourcePos.x + 120;
-  const sourceY = sourcePos.y + 40;
-  const targetX = targetPos.x + 120;
+  const sourceX = sourcePos.x + 110;
+  const sourceY = sourcePos.y + 32;
+  const targetX = targetPos.x + 110;
   const targetY = targetPos.y;
 
   const isConditional = edge.status === 'conditional';
@@ -37,7 +37,7 @@ export function GraphEdge({ edge, sourcePos, targetPos }: GraphEdgeProps) {
     path = `M ${sourceX} ${sourceY} C ${sourceX} ${midY}, ${targetX} ${midY}, ${targetX} ${targetY}`;
   } else {
     const dx = targetX - sourceX;
-    const offset = Math.min(Math.abs(dx) * 0.4, 60);
+    const offset = Math.min(Math.abs(dx) * 0.45, 80);
     const cp1x = sourceX + offset;
     const cp1y = sourceY;
     const cp2x = targetX - offset;
@@ -53,13 +53,13 @@ export function GraphEdge({ edge, sourcePos, targetPos }: GraphEdgeProps) {
         d={path}
         fill="none"
         stroke={strokeColor}
-        strokeWidth={isConditional ? 2.2 : 2}
+        strokeWidth={isConditional ? 2.2 : 1.8}
         strokeDasharray={isConditional ? '8,5' : 'none'}
         opacity={isConditional ? 0.9 : 0.75}
         markerEnd="url(#architecture-arrow)"
       />
       {!isConditional && (
-        <circle cx={targetX} cy={targetY - 20} r={3} fill={strokeColor} opacity={0.8} />
+        <circle cx={targetX} cy={targetY - 16} r={3} fill={strokeColor} opacity={0.8} />
       )}
     </g>
   );

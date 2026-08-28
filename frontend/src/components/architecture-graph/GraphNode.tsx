@@ -48,8 +48,8 @@ export function GraphNode({ node, x, y, isSelected, isExpanded, onClick }: Graph
       style={{ cursor: 'pointer' }}
     >
       <rect
-        width={240}
-        height={72}
+        width={220}
+        height={64}
         rx={8}
         ry={8}
         fill="white"
@@ -61,22 +61,22 @@ export function GraphNode({ node, x, y, isSelected, isExpanded, onClick }: Graph
         x={0}
         y={0}
         width={6}
-        height={72}
+        height={64}
         rx={3}
         fill={borderColor}
       />
-      <text x={12} y={22} className="text-sm font-semibold" fill="#0f172a" fontSize={13}>
+      <text x={12} y={20} className="text-sm font-semibold" fill="#0f172a" fontSize={13}>
         {node.technical_name}
       </text>
-      <text x={12} y={38} className="text-xs" fill="#64748b" fontSize={11}>
+      <text x={12} y={35} className="text-xs" fill="#64748b" fontSize={11}>
         {node.arabic_meaning}
       </text>
-      <circle cx={220} cy={14} r={5} fill={statusColor} />
-      <text x={228} y={18} className="text-[10px]" fill="#64748b" fontSize={9}>
+      <circle cx={205} cy={13} r={5} fill={statusColor} />
+      <text x={213} y={17} className="text-[10px]" fill="#64748b" fontSize={9}>
         {node.status}
       </text>
       {isExpanded && (
-        <text x={12} y={58} className="text-[10px]" fill="#10b981" fontSize={10}>
+        <text x={12} y={53} className="text-[10px]" fill="#10b981" fontSize={10}>
           ● Expanded
         </text>
       )}
