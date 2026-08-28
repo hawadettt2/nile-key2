@@ -9,77 +9,39 @@ interface GraphNodeProps {
   onClick: (id: string) => void;
 }
 
+const NODE_WIDTH = 236;
+const NODE_HEIGHT = 76;
+
 const TYPE_COLORS: Record<string, string> = {
-  platform: '#6366f1',
-  agent_subsystem: '#8b5cf6',
-  agent_component: '#a855f7',
-  knowledge_subsystem: '#06b6d4',
-  memory_subsystem: '#0ea5e9',
-  reasoning: '#3b82f6',
-  planning: '#14b8a6',
-  orchestration: '#f59e0b',
-  business_service: '#10b981',
-  tool: '#f97316',
-  external_system: '#94a3b8',
-  ui_component: '#ec4899',
-  data_store: '#64748b',
-  infrastructure: '#78716c',
+  platform: '#4f46e5', agent_subsystem: '#7c3aed', agent_component: '#9333ea', knowledge_subsystem: '#0891b2',
+  memory_subsystem: '#0284c7', reasoning: '#2563eb', planning: '#0d9488', orchestration: '#d97706',
+  business_service: '#059669', tool: '#ea580c', external_system: '#64748b', ui_component: '#db2777',
+  data_store: '#475569', infrastructure: '#57534e',
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  implemented_runtime: '#10b981',
-  implemented_non_primary: '#6366f1',
-  conditional: '#f59e0b',
-  planned_future: '#94a3b8',
-  reserved_minimal: '#78716c',
-  external: '#06b6d4',
-  unverified: '#ef4444',
-  architectural_root: '#6366f1',
+  implemented_runtime: '#059669', implemented_non_primary: '#4f46e5', conditional: '#d97706',
+  planned_future: '#64748b', reserved_minimal: '#57534e', external: '#0891b2', unverified: '#dc2626', architectural_root: '#4f46e5',
 };
 
 export function GraphNode({ node, x, y, isSelected, isExpanded, onClick }: GraphNodeProps) {
-  const borderColor = TYPE_COLORS[node.type] || '#94a3b8';
-  const statusColor = STATUS_COLORS[node.status] || '#94a3b8';
+  const typeColor = TYPE_COLORS[node.type] || '#64748b';
+  const statusColor = STATUS_COLORS[node.status] || '#64748b';
+  const typeLabel = node.type.replaceAll('_', ' ');
+  const statusLabel = node.status.replaceAll('_', ' ');
+  const typeWidth = Math.min(122, Math.max(58, typeLabel.length * 5.4 + 18));
 
   return (
-    <g
-      transform={`translate(${x}, ${y})`}
-      onClick={() => onClick(node.id)}
-      style={{ cursor: 'pointer' }}
-    >
-      <rect
-        width={220}
-        height={64}
-        rx={8}
-        ry={8}
-        fill="white"
-        stroke={isSelected ? '#0f172a' : borderColor}
-        strokeWidth={isSelected ? 3 : 1.5}
-        filter={isSelected ? 'url(#shadow-selected)' : 'url(#shadow)'}
-      />
-      <rect
-        x={0}
-        y={0}
-        width={6}
-        height={64}
-        rx={3}
-        fill={borderColor}
-      />
-      <text x={12} y={20} className="text-sm font-semibold" fill="#0f172a" fontSize={13}>
-        {node.technical_name}
-      </text>
-      <text x={12} y={35} className="text-xs" fill="#64748b" fontSize={11}>
-        {node.arabic_meaning}
-      </text>
-      <circle cx={205} cy={13} r={5} fill={statusColor} />
-      <text x={213} y={17} className="text-[10px]" fill="#64748b" fontSize={9}>
-        {node.status}
-      </text>
-      {isExpanded && (
-        <text x={12} y={53} className="text-[10px]" fill="#10b981" fontSize={10}>
-          ● Expanded
-        </text>
-      )}
+    <g className="graph-node" transform={`translate(${x}, ${y})`} onClick={(event) => { event.stopPropagation(); onClick(node.id); }} style={{ cursor: 'pointer' }}>
+      <rect width={NODE_WIDTH} height={NODE_HEIGHT} rx={10} fill="#fff" stroke={isSelected ? '#0f172a' : '#cbd5e1'} strokeWidth={isSelected ? 2.5 : 1} filter={isSelected ? 'url(#architecture-shadow-selected)' : 'url(#architecture-shadow)'} />
+      <rect width={6} height={NODE_HEIGHT} rx={3} fill={typeColor} />
+      <text x={18} y={21} fill="#0f172a" fontSize={12.5} fontWeight={700}>{node.technical_name}</text>
+      <text x={18} y={38} fill="#64748b" fontSize={10.5}>{node.arabic_meaning}</text>
+      <rect x={18} y={48} width={typeWidth} height={18} rx={9} fill={typeColor} fillOpacity={0.10} />
+      <text x={27} y={60.5} fill={typeColor} fontSize={8.5} fontWeight={700}>{typeLabel}</text>
+      <circle cx={NODE_WIDTH - 18} cy={18} r={5} fill={statusColor} />
+      <text x={NODE_WIDTH - 28} y={33} textAnchor="end" fill="#64748b" fontSize={8} fontWeight={600}>{statusLabel}</text>
+      {isExpanded && <text x={NODE_WIDTH - 12} y={61} textAnchor="end" fill="#059669" fontSize={8.5} fontWeight={700}>EXPANDED</text>}
     </g>
   );
 }
