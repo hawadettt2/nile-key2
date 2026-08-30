@@ -59,7 +59,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
+      <div className="flex-1 py-4">
         <nav className="space-y-1 px-2">
           {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -100,7 +100,7 @@ export function Sidebar({ collapsed, onToggleCollapsed }: SidebarProps) {
       </button>
       {mobileOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setMobileOpen(false)} />}
       <aside className="hidden lg:block fixed h-screen z-30 pointer-events-none" style={{ direction: 'ltr' }}>
-        <div className="pointer-events-auto">{sidebarContent}</div>
+        <div className="pointer-events-auto flex flex-col h-full overflow-y-auto">{sidebarContent}</div>
       </aside>
       {mobileOpen && <aside className="lg:hidden fixed inset-y-0 left-0 z-50 pointer-events-none" style={{ direction: 'ltr' }}>
         <div className="pointer-events-auto">{sidebarContent}</div>
