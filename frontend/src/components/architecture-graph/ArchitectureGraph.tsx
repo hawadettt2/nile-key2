@@ -41,6 +41,7 @@ export function ArchitectureGraph({ nodes, edges, onNodeClick, selectedNodeId, e
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const isPanningRef = useRef(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -107,17 +108,19 @@ export function ArchitectureGraph({ nodes, edges, onNodeClick, selectedNodeId, e
     if (target?.closest('.graph-node, .graph-edge, button')) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     panStart.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
+    isPanningRef.current = true;
     setIsPanning(true);
   }, [pan.x, pan.y]);
 
   const handlePointerMove = useCallback((event: React.PointerEvent<SVGSVGElement>) => {
-    if (!isPanning) return;
+    if (!isPanningRef.current) return;
     const start = panStart.current;
     setPan({ x: start.panX + (event.clientX - start.x), y: start.panY + (event.clientY - start.y) });
-  }, [isPanning]);
+  }, []);
 
   const handlePointerEnd = useCallback((event: React.PointerEvent<SVGSVGElement>) => {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    isPanningRef.current = false;
     setIsPanning(false);
   }, []);
 

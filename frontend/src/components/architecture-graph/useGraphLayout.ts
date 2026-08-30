@@ -20,6 +20,7 @@ const VERTICAL_GAP = 92;
 const SIDE_PADDING = 64;
 const TOP_PADDING = 54;
 const MAX_REORDER_PASSES = 4;
+const MAX_NODES_PER_ROW = 6;
 
 const TYPE_PRIORITY: Record<string, number> = {
   platform: 0,
@@ -121,19 +122,29 @@ export function useGraphLayout(
       }
     }
 
-    const maxRank = Math.max(...rankBuckets.keys());
-    const maxNodesInRank = Math.max(...Array.from(rankBuckets.values()).map((ids) => ids.length));
-    const rowWidth = maxNodesInRank * NODE_WIDTH + Math.max(0, maxNodesInRank - 1) * HORIZONTAL_GAP;
+    const maxNodesInVisualRow = Math.min(
+      MAX_NODES_PER_ROW,
+      Math.max(...Array.from(rankBuckets.values()).map((ids) => ids.length))
+    );
+    const rowWidth = maxNodesInVisualRow * NODE_WIDTH + Math.max(0, maxNodesInVisualRow - 1) * HORIZONTAL_GAP;
     const width = Math.max(containerWidth, rowWidth + SIDE_PADDING * 2);
-    const height = TOP_PADDING * 2 + (maxRank + 1) * NODE_HEIGHT + maxRank * VERTICAL_GAP;
 
     const positions: GraphNodePosition[] = [];
+    let visualRow = 0;
     for (const [rank, ids] of Array.from(rankBuckets.entries()).sort(([a], [b]) => a - b)) {
-      const thisRowWidth = ids.length * NODE_WIDTH + Math.max(0, ids.length - 1) * HORIZONTAL_GAP;
-      const startX = Math.max(SIDE_PADDING, (width - thisRowWidth) / 2);
-      const y = TOP_PADDING + rank * (NODE_HEIGHT + VERTICAL_GAP);
-      ids.forEach((id, index) => positions.push({ id, x: startX + index * (NODE_WIDTH + HORIZONTAL_GAP), y, level: rank }));
+      const rowCount = Math.max(1, Math.ceil(ids.length / MAX_NODES_PER_ROW));
+      for (let row = 0; row < rowCount; row += 1) {
+        const rowIds = ids.slice(row * MAX_NODES_PER_ROW, (row + 1) * MAX_NODES_PER_ROW);
+        if (!rowIds.length) continue;
+        const thisRowWidth = rowIds.length * NODE_WIDTH + Math.max(0, rowIds.length - 1) * HORIZONTAL_GAP;
+        const startX = Math.max(SIDE_PADDING, (width - thisRowWidth) / 2);
+        const y = TOP_PADDING + visualRow * (NODE_HEIGHT + VERTICAL_GAP);
+        rowIds.forEach((id, index) => positions.push({ id, x: startX + index * (NODE_WIDTH + HORIZONTAL_GAP), y, level: rank }));
+        visualRow += 1;
+      }
     }
+
+    const height = TOP_PADDING * 2 + visualRow * NODE_HEIGHT + (visualRow - 1) * VERTICAL_GAP;
 
     return { positions, width, height };
   }, [nodes, edges, containerWidth]);
