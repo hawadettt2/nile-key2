@@ -9,11 +9,21 @@ export function Layout() {
   const isLoading = useAuthStore((s) => s.isLoading);
   const { i18n } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
 
   useEffect(() => {
     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
+    const onChange = () => setIsTablet(mql.matches);
+    mql.addEventListener('change', onChange);
+    setIsTablet(mql.matches);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
 
   if (isLoading) {
     return (
@@ -24,13 +34,13 @@ export function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-      <Sidebar collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed((v) => !v)} />
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-end px-6">
+    <div className="flex h-screen bg-slate-50" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+      <Sidebar collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed((v) => !v)} forceCollapsed={isTablet} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-14 bg-white border-b border-slate-200 shadow-sm flex items-center justify-end px-6 flex-shrink-0">
           <NotificationBell />
         </header>
-        <main className="flex-1 p-6">
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>

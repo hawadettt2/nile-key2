@@ -54,7 +54,7 @@ describe('WP-42-C: Role-Based Workspace & Navigation', () => {
       loadUser: async () => {},
     });
     renderWithProviders(<Layout />);
-    expect(screen.getByText('Digital Export Manager')).toBeDefined();
+    expect(screen.queryAllByText('Digital Export Manager').length).toBeGreaterThan(0);
   });
 
   test('navigation updates dynamically when user role changes', () => {
@@ -93,8 +93,8 @@ describe('WP-42-C: Role-Based Workspace & Navigation', () => {
       user: { ...originalAuth.user, role: 'owner' },
     });
     renderWithProviders(<Sidebar collapsed={false} onToggleCollapsed={() => {}} />);
-    expect(screen.getByText('Digital Export Manager')).toBeDefined();
-    expect(screen.getByText('Knowledge Graph')).toBeDefined();
-    expect(screen.getByText('Trade Intelligence')).toBeDefined();
+    expect(screen.queryAllByText('Digital Export Manager').length).toBeGreaterThan(0);
+    expect(screen.queryAllByText('Knowledge Graph').length).toBeGreaterThan(0);
+    expect(screen.queryAllByText('Trade Intelligence').length).toBeGreaterThan(0);
   });
 });
