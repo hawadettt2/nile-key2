@@ -36,6 +36,22 @@ services:
       retries: 3
       start_period: 40s
 
+  frontend-dev:
+    image: node:18-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    command: >
+      sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      backend:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./frontend
@@ -57,3 +73,4 @@ services:
 volumes:
   db-data:
   postgres-data:
+  frontend-node-modules:
