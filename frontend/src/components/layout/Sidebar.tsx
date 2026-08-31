@@ -88,7 +88,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
   const isCollapsed = forceCollapsed || collapsed;
 
   const sidebarContent = (
-    <div className={`h-full bg-slate-900 text-white flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <div className={`bg-slate-900 text-white flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
         {!collapsed && (
           <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
         </nav>
       </div>
 
-      <div className="border-t border-slate-700 p-4">
+      <div className="p-4">
         {!collapsed && user && (
           <div className="mb-3 px-3">
             <p className="text-sm font-medium text-white">{user.full_name}</p>
@@ -238,7 +238,10 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
             {sidebarContent}
           </div>
         </aside>
-        <aside className="hidden md:flex md:flex-col h-screen shadow-md" aria-label="Main navigation">
+        <aside
+          className={`hidden md:flex md:flex-col ${isCollapsed ? 'md:w-20' : 'md:w-64'} flex-shrink-0 h-full shadow-md`}
+          aria-label="Main navigation"
+        >
           <div className="pointer-events-auto flex flex-col h-full overflow-y-auto">
             {sidebarContent}
           </div>
