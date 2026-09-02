@@ -705,3 +705,79 @@ class TestReasoningEngineLLMIntegration:
         assert result["chosen_path"] == "shipping"
         assert isinstance(result["reasoning"], str)
         assert len(result["reasoning"]) > 0
+
+
+class TestReasoningEngineResearchOverride:
+    """Tests for research override of chosen_path."""
+
+    @pytest.mark.asyncio
+    async def test_research_intent_sets_chosen_path_to_research(self):
+        engine = ReasoningEngine()
+
+        class FakeOrchestrator:
+            async def execute(self, request, request_id):
+                return {
+                    "request_id": request_id,
+                    "status": "completed",
+                    "goal": request.goal,
+                    "findings": [{"topic": "market", "content": "finding"}],
+                    "sources_consulted": ["source_a"],
+                    "sources_failed": [],
+                    "errors": None,
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "completed_at": "2026-01-01T00:01:00Z",
+                    "metadata": {},
+                }
+
+        engine._research_orchestrator = FakeOrchestrator()
+        decision = await engine.reason("session-1", {"intent": "أريد دراسة جدوى تصدير الفواكه المصرية إلى الأردن"})
+        assert decision["chosen_path"] == "research"
+        assert "research" in decision["context"]
+        assert decision["context"]["research"]["status"] == "completed"
+
+    @pytest.mark.asyncio
+    async def test_research_failure_does_not_override_chosen_path(self):
+        engine = ReasoningEngine()
+
+        class FailingOrchestrator:
+            async def execute(self, request, request_id):
+                return {
+                    "request_id": request_id,
+                    "status": "failed",
+                    "goal": request.goal,
+                    "findings": [],
+                    "sources_consulted": [],
+                    "sources_failed": ["source_a"],
+                    "errors": ["connection timeout"],
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "completed_at": "2026-01-01T00:01:00Z",
+                    "metadata": {},
+                }
+
+        engine._research_orchestrator = FailingOrchestrator()
+        decision = await engine.reason("session-1", {"intent": "أريد دراسة جدوى تصدير الفواكه المصرية إلى الأردن"})
+        assert decision["chosen_path"] != "research"
+        assert decision["chosen_path"] in ("search", "shipping", "eta", "customs", "document", "dashboard", "notification", "workflow")
+
+    @pytest.mark.asyncio
+    async def test_non_research_intent_unaffected_by_research_override(self):
+        engine = ReasoningEngine()
+
+        class FakeOrchestrator:
+            async def execute(self, request, request_id):
+                return {
+                    "request_id": request_id,
+                    "status": "completed",
+                    "goal": request.goal,
+                    "findings": [{"topic": "market", "content": "finding"}],
+                    "sources_consulted": ["source_a"],
+                    "sources_failed": [],
+                    "errors": None,
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "completed_at": "2026-01-01T00:01:00Z",
+                    "metadata": {},
+                }
+
+        engine._research_orchestrator = FakeOrchestrator()
+        decision = await engine.reason("session-1", {"intent": "create shipment to Saudi Arabia"})
+        assert decision["chosen_path"] == "shipping"

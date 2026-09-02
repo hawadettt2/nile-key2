@@ -10,6 +10,7 @@ class MissionType(str, Enum):
     GET_DASHBOARD = "GET_DASHBOARD"
     SEND_NOTIFICATION = "SEND_NOTIFICATION"
     TRANSITION_WORKFLOW = "TRANSITION_WORKFLOW"
+    RESEARCH = "RESEARCH"
 
 
 class MissionStatus(str, Enum):

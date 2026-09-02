@@ -6,6 +6,7 @@ from ..schemas.decision import Decision
 from ..schemas.enums import MissionType
 from ..exceptions import DecisionEngineException
 from ..approval.gate import ApprovalGate
+from app.schemas.research import ResearchRequest
 
 
 class ReasoningEngine:
@@ -51,13 +52,14 @@ class ReasoningEngine:
         scored_candidates.sort(key=lambda c: c.get("score", c.get("confidence", 0)), reverse=True)
         return scored_candidates
 
-    async def _enhance_reasoning_with_llm(self, intent: str, chosen_path: str, base_reasoning: str) -> str:
+    async def _enhance_reasoning_with_llm(self, intent: str, chosen_path: str, base_reasoning: str, research: Optional[Dict[str, Any]] = None) -> str:
         provider = await self._get_llm_provider()
         if not provider:
             return base_reasoning
 
         try:
-            prompt = f"Improve this reasoning text to be more natural and helpful. Keep it brief. Original: {base_reasoning}"
+            research_summary = self._summarize_research_for_prompt(research or {})
+            prompt = f"Improve this reasoning text to be more natural and helpful. Keep it brief. Original: {base_reasoning}. Research evidence: {research_summary}. Keep the research findings and evidence references accurate; do not invent numbers or sources."
             response = await provider.generate(prompt=prompt, parameters={"max_output_tokens": 100})
             enhanced = response.content.strip()
             if enhanced and len(enhanced) > 10:
@@ -66,6 +68,50 @@ class ReasoningEngine:
             pass
 
         return base_reasoning
+
+    @staticmethod
+    def _summarize_research_for_prompt(research: Dict[str, Any]) -> str:
+        if not research:
+            return ""
+
+        parts = []
+
+        status = research.get("status")
+        if status:
+            parts.append(f"Research status: {status}")
+
+        sources_consulted = research.get("sources_consulted") or []
+        if sources_consulted:
+            parts.append(f"Sources consulted: {', '.join(sources_consulted)}")
+
+        findings = research.get("findings") or []
+        if findings:
+            parts.append(f"Findings count: {len(findings)}")
+            for finding in findings[:3]:
+                if isinstance(finding, dict):
+                    topic = finding.get("topic") or finding.get("title") or ""
+                    content = finding.get("content") or finding.get("summary") or ""
+                    if topic:
+                        parts.append(f"- {topic}")
+                    if content:
+                        parts.append(f"  {content}")
+                    evidence = finding.get("evidence") or []
+                    if evidence:
+                        evidence_items = []
+                        for ev in evidence[:3]:
+                            if isinstance(ev, dict):
+                                source_id = ev.get("source_id") or ""
+                                excerpt = ev.get("content_excerpt") or ev.get("summary") or ""
+                                if source_id:
+                                    evidence_items.append(f"{source_id}: {excerpt[:120]}")
+                        if evidence_items:
+                            parts.append(f"  Evidence: {' | '.join(evidence_items)}")
+
+        errors = research.get("errors")
+        if errors:
+            parts.append(f"Errors: {errors}")
+
+        return "; ".join(parts)
 
     async def reason(self, session_id: str, request: Dict[str, Any]) -> Dict[str, Any]:
         """Produce a Decision from a user request.
@@ -91,6 +137,7 @@ class ReasoningEngine:
 
             memories = await self._query_memory(session_id, intent)
             knowledge = await self._query_knowledge(intent, parameters)
+            research = await self._query_external_research(intent, parameters)
 
             # Preserve orchestration metadata in request_context
             orchestration_meta = getattr(self, "_last_orchestration_meta", None)
@@ -104,6 +151,14 @@ class ReasoningEngine:
 
             chosen_path, alternatives = self._select_best_option(scored_candidates)
 
+            if (
+                isinstance(research, dict)
+                and research.get("status") == "completed"
+                and self._should_trigger_external_research(intent)
+            ):
+                chosen_path = "research"
+                alternatives = [alt for alt in alternatives if alt != "research"]
+
             is_destructive, approval_status = self._check_approval(chosen_path, intent, parameters)
 
             reasoning = self._build_reasoning(
@@ -111,9 +166,10 @@ class ReasoningEngine:
                 scored_candidates=scored_candidates,
                 memories=memories,
                 knowledge=knowledge,
+                research=research,
             )
 
-            reasoning = await self._enhance_reasoning_with_llm(intent, chosen_path, reasoning)
+            reasoning = await self._enhance_reasoning_with_llm(intent, chosen_path, reasoning, research=research)
 
             decision = Decision(
                 decision_id=str(uuid.uuid4()),
@@ -127,6 +183,7 @@ class ReasoningEngine:
                     "request_context": request_context,
                     "memories": memories,
                     "knowledge": knowledge,
+                    "research": research,
                     "candidates": scored_candidates,
                     "requires_approval": is_destructive,
                 },
@@ -280,6 +337,7 @@ class ReasoningEngine:
         scored_candidates: List[Dict[str, Any]],
         memories: List[Dict[str, Any]],
         knowledge: List[Dict[str, Any]],
+        research: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build human-readable reasoning for the decision."""
         if not scored_candidates:
@@ -321,6 +379,11 @@ class ReasoningEngine:
                 reasoning_parts.append(f"Knowledge: {len(knowledge)} entries from {', '.join(unique_sources)}.")
             else:
                 reasoning_parts.append(f"Knowledge: {len(knowledge)} entries considered.")
+
+        if research and isinstance(research, dict):
+            research_parts = self._summarize_research_for_prompt(research)
+            if research_parts:
+                reasoning_parts.append(f"Research: {research_parts}")
 
         if len(scored_candidates) > 1:
             alternatives = [c["path"] for c in scored_candidates[1:]]
@@ -386,6 +449,105 @@ class ReasoningEngine:
                 pass
 
         return results
+
+    @staticmethod
+    def _extract_research_parameters(intent: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        intent_lower = intent.lower()
+        extracted: Dict[str, Any] = {}
+
+        country_map = {
+            "مصر": "818",
+            "Egypt": "818",
+            "الأردن": "400",
+            "Jordan": "400",
+        }
+
+        commodity_map = {
+            "خضر": "07",
+            "vegetables": "07",
+            "فواكه": "08",
+            "fruits": "08",
+        }
+
+        for name, code in country_map.items():
+            if name.lower() in intent_lower:
+                if name.lower() in ["مصر", "egypt"]:
+                    extracted["reporter"] = code
+                elif name.lower() in ["الأردن", "jordan"]:
+                    extracted["partner"] = code
+
+        for name, code in commodity_map.items():
+            if name.lower() in intent_lower:
+                extracted.setdefault("commodities", []).append(code)
+
+        if "commodities" in extracted:
+            unique = list(dict.fromkeys(extracted["commodities"]))
+            extracted["commodities"] = unique
+
+        return extracted
+
+    async def _query_external_research(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Query External Research Capability (WP-34) when request is suitable."""
+        orchestrator = getattr(self, "_research_orchestrator", None)
+        if orchestrator is None:
+            return []
+
+        if not self._should_trigger_external_research(intent):
+            return []
+
+        extracted = self._extract_research_parameters(intent, parameters)
+
+        context = {
+            "session_id": parameters.get("session_id"),
+            "user_id": parameters.get("user_id"),
+            "request_context": parameters.get("context", {}),
+        }
+        if extracted.get("reporter"):
+            context["reporter"] = extracted["reporter"]
+        if extracted.get("partner"):
+            context["partner"] = extracted["partner"]
+
+        scope = parameters.get("scope") or {
+            "domains": parameters.get("domains"),
+            "regions": parameters.get("regions"),
+            "time_ranges": parameters.get("time_ranges"),
+        }
+        if extracted.get("commodities"):
+            scope["commodities"] = extracted["commodities"]
+        if not scope.get("regions") and (extracted.get("reporter") or extracted.get("partner")):
+            scope["regions"] = [
+                code for code in [extracted.get("reporter"), extracted.get("partner")] if code
+            ]
+
+        request = ResearchRequest(
+            goal=intent,
+            context=context,
+            scope=scope,
+            constraints=parameters.get("constraints"),
+        )
+        request_id = f"req_{uuid.uuid4().hex[:12]}"
+
+        try:
+            result = await orchestrator.execute(request, request_id)
+        except Exception:
+            return []
+
+        if hasattr(result, "model_dump"):
+            return result.model_dump(mode="json")
+        if isinstance(result, dict):
+            return result
+        return []
+
+    @staticmethod
+    def _should_trigger_external_research(intent: str) -> bool:
+        """Return True only when the request likely needs external market/buyer/research data."""
+        intent_lower = intent.lower().strip()
+        keywords = [
+            "market", "buyer", "buyers", "opportunity", "opportunities",
+            "study", "research", "external", "potential", "demand", "export",
+            "سوق", "مشترين", "مشتر", "فرص", "فرصة", "دراسة", "بحث", "تصدير",
+        ]
+        return any(keyword in intent_lower for keyword in keywords)
 
     async def _query_knowledge(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Query knowledge providers via KnowledgeOrchestrator if attached, else legacy fallback."""

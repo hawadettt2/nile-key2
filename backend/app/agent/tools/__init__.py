@@ -16,6 +16,7 @@ from .erp_tools import (
     NotificationsSendTool,
     WorkflowGetStateTool,
     WorkflowTransitionTool,
+    ResearchPresentResultTool,
 )
 
 tool_registry.register(TestTool)
@@ -33,3 +34,4 @@ tool_registry.register(DashboardGetStatsTool)
 tool_registry.register(NotificationsSendTool)
 tool_registry.register(WorkflowGetStateTool)
 tool_registry.register(WorkflowTransitionTool)
+tool_registry.register(ResearchPresentResultTool)

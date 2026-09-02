@@ -433,6 +433,9 @@ async def lifespan(app: FastAPI):
         reasoning_engine._knowledge_orchestrator = orchestrator
         print("[SUCCESS] Knowledge Orchestrator attached to ReasoningEngine")
 
+    reasoning_engine._research_orchestrator = research._orchestrator
+    print("[SUCCESS] Research Orchestrator attached to ReasoningEngine")
+
     app.state.reasoning_engine = reasoning_engine
     
     # Initialize ETA background scheduler

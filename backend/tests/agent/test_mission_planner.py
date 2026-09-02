@@ -523,3 +523,98 @@ class TestTaskPlannerStandingOrders:
         assert "user_preferences" in mission.context
         assert mission.context["user_preferences"]["priority"] == 7
         assert mission.execution_policy["timeout_seconds"] == 600
+
+    def test_search_entities_passes_query_to_task_parameters(self):
+        """Regression test: SEARCH_ENTITIES should forward payload.query into search_global parameters."""
+        planner = TaskPlanner()
+        decision = {
+            "decision_id": "decision-123",
+            "session_id": "session-123",
+            "chosen_path": "search",
+            "context": {"query": "أريد قائمة شركات أردنية تستورد الخضر والفاكهة من مصر"},
+        }
+        session_context = {}
+
+        result = planner.plan(decision, session_context)
+        tasks = result["tasks"]
+
+        assert len(tasks) == 1
+        assert tasks[0].tool_name == "search_global"
+        assert tasks[0].parameters.get("query") == "أريد قائمة شركات أردنية تستورد الخضر والفاكهة من مصر"
+
+    def test_search_entities_handles_missing_query_gracefully(self):
+        """SEARCH_ENTITIES with no query should pass empty string, not crash."""
+        planner = TaskPlanner()
+        decision = {
+            "decision_id": "decision-123",
+            "session_id": "session-123",
+            "chosen_path": "search",
+            "context": {},
+        }
+        session_context = {}
+
+        result = planner.plan(decision, session_context)
+        tasks = result["tasks"]
+
+        assert len(tasks) == 1
+        assert tasks[0].tool_name == "search_global"
+        assert tasks[0].parameters.get("query") == ""
+
+
+class TestResearchMissionPlanning:
+    """Tests for research mission type planning."""
+
+    def setup_method(self):
+        self.planner = TaskPlanner()
+
+    def test_map_chosen_path_research_to_mission_type(self):
+        mission_type = self.planner._map_chosen_path_to_mission_type("research")
+        assert mission_type == MissionType.RESEARCH
+
+    def test_research_mission_produces_single_task(self):
+        decision = {
+            "decision_id": "decision-123",
+            "session_id": "session-123",
+            "chosen_path": "research",
+            "context": {
+                "research": {
+                    "goal": "market study",
+                    "status": "completed",
+                    "findings": [{"topic": "market", "content": "finding"}],
+                    "sources_consulted": ["source_a"],
+                    "sources_failed": [],
+                }
+            },
+        }
+        session_context = {}
+
+        result = self.planner.plan(decision, session_context)
+        tasks = result["tasks"]
+
+        assert len(tasks) == 1
+        assert tasks[0].tool_name == "research_present_result"
+        assert tasks[0].parameters.get("research_result") == decision["context"]["research"]
+
+    def test_research_mission_injects_research_result_into_parameters(self):
+        decision = {
+            "decision_id": "decision-123",
+            "session_id": "session-123",
+            "chosen_path": "research",
+            "context": {
+                "research": {
+                    "goal": "market study",
+                    "status": "completed",
+                    "findings": [],
+                    "sources_consulted": [],
+                    "sources_failed": [],
+                }
+            },
+        }
+        session_context = {}
+
+        result = self.planner.plan(decision, session_context)
+        tasks = result["tasks"]
+
+        assert len(tasks) == 1
+        assert "research_result" in tasks[0].parameters
+        assert tasks[0].parameters["research_result"]["goal"] == "market study"

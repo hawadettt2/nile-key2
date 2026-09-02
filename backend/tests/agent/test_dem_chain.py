@@ -154,3 +154,47 @@ class TestDEMExecutionChain:
             "shipping_create_shipment",
             "shipping_print_label",
         ]
+
+    @pytest.mark.asyncio
+    async def test_research_mission_full_chain_produces_business_answer(self):
+        """Full chain for research mission: TaskPlanner → ExecutionPlanner → ToolOrchestrator → business answer."""
+        task_planner = TaskPlanner()
+        execution_planner = ExecutionPlanner()
+        tool_orchestrator = ToolOrchestrator(tool_registry=tool_registry)
+
+        decision = {
+            "decision_id": "decision-123",
+            "session_id": "session-123",
+            "chosen_path": "research",
+            "context": {
+                "research": {
+                    "goal": "market study",
+                    "status": "completed",
+                    "findings": [
+                        {"topic": "market", "content": "Growing demand", "confidence": 0.9, "evidence": [{"source_id": "src1", "source_url": "http://example.com", "content_excerpt": "excerpt"}]}
+                    ],
+                    "sources_consulted": ["src1"],
+                    "sources_failed": [],
+                }
+            },
+            "reasoning": "Research completed",
+        }
+        session_context = {"user_id": 1, "status": "active"}
+
+        plan_result = task_planner.plan(decision, session_context)
+        mission = plan_result["mission"]
+        execution_result = await execution_planner.plan(mission.model_dump(mode="json"))
+        execution_plan = execution_result["execution_plan"]
+        output = await tool_orchestrator.execute(execution_plan, session_context=session_context)
+
+        assert output["mission_status"] == "completed"
+        assert len(output["results"]) == 1
+        assert output["results"][0]["status"] == "success"
+        data = output["results"][0]["data"]
+        assert data["goal"] == "market study"
+        assert data["status"] == "completed"
+        assert "summary" in data
+        assert "findings" in data
+        assert "sources_consulted" in data
+        assert data["findings"][0]["topic"] == "market"
+        assert data["sources_consulted"] == ["src1"]

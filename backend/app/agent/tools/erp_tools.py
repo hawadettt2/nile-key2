@@ -449,3 +449,71 @@ class WorkflowTransitionTool(BaseTool):
             return ToolResult(status="success", data=result, audit_ref=f"{self.tool_name}:{uuid.uuid4()}")
         except Exception as e:
             return ToolResult(status="error", error=str(e), audit_ref=f"{self.tool_name}:{uuid.uuid4()}")
+
+
+# ========== Research Tool ==========
+
+class ResearchPresentResultTool(BaseTool):
+    tool_name = "research_present_result"
+    description = "Present external research findings as a business answer"
+    input_schema = {"research_result": {"type": "object", "required": True}}
+    output_schema = {
+        "goal": {"type": "string"},
+        "status": {"type": "string"},
+        "summary": {"type": "string"},
+        "findings": {"type": "array"},
+        "sources_consulted": {"type": "array"},
+        "sources_failed": {"type": "array"},
+    }
+    side_effects = ToolSideEffect.READ
+    idempotent = True
+    auth_required = False
+    version = "1.0.0"
+    idempotency_key = "research_present_result"
+    auth_requirements = {"type": "authenticated"}
+
+    async def execute(self, context: Dict[str, Any], parameters: Dict[str, Any]) -> ToolResult:
+        try:
+            research_result = parameters.get("research_result", {})
+            if not isinstance(research_result, dict):
+                return ToolResult(
+                    status="error",
+                    error="Invalid research result: expected object",
+                    audit_ref=f"{self.tool_name}:{uuid.uuid4()}",
+                )
+
+            findings = research_result.get("findings", [])
+            summary_parts = []
+            for finding in findings[:5]:
+                topic = finding.get("topic") or finding.get("title") or ""
+                content = finding.get("content") or finding.get("summary") or ""
+                if topic and content:
+                    summary_parts.append(f"- {topic}: {content[:300]}")
+
+            business_answer = {
+                "goal": research_result.get("goal", ""),
+                "status": research_result.get("status", "unknown"),
+                "summary": "\n".join(summary_parts) if summary_parts else research_result.get("goal", "No findings available."),
+                "findings": [
+                    {
+                        "topic": f.get("topic") or f.get("title", ""),
+                        "content": f.get("content") or f.get("summary", ""),
+                        "confidence": f.get("confidence"),
+                        "sources": [
+                            {
+                                "source_id": e.get("source_id"),
+                                "source_url": e.get("source_url"),
+                                "excerpt": (e.get("content_excerpt") or e.get("summary") or "")[:200],
+                            }
+                            for e in (f.get("evidence") or [])[:3]
+                        ],
+                    }
+                    for f in findings
+                ],
+                "sources_consulted": research_result.get("sources_consulted", []),
+                "sources_failed": research_result.get("sources_failed", []),
+            }
+
+            return ToolResult(status="success", data=business_answer, audit_ref=f"{self.tool_name}:{uuid.uuid4()}")
+        except Exception as e:
+            return ToolResult(status="error", error=str(e), audit_ref=f"{self.tool_name}:{uuid.uuid4()}")

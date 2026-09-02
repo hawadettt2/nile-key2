@@ -52,6 +52,161 @@ class FakeConfig:
     KNOWLEDGE_ORCHESTRATION_CONFLICT_STRATEGY = "latest_official_wins"
 
 
+class FakeResearchOrchestrator:
+    def __init__(self, result):
+        self._result = result
+
+    async def execute(self, request, request_id):
+        return self._result
+
+
+class FakeResearchResult:
+    def __init__(self, data):
+        self._data = data
+
+    def model_dump(self, mode=None):
+        return self._data
+
+
+@pytest.mark.asyncio
+class TestReasoningEngineExternalResearch:
+    async def test_external_research_triggered_for_market_request(self):
+        engine = ReasoningEngine()
+        orchestrator = FakeResearchOrchestrator(
+            FakeResearchResult({
+                "request_id": "req_test123",
+                "status": "completed",
+                "goal": "market study",
+                "findings": [{"topic": "market", "content": "finding"}],
+                "sources_consulted": ["source_a"],
+                "sources_failed": [],
+                "errors": None,
+                "created_at": "2026-01-01T00:00:00Z",
+                "completed_at": "2026-01-01T00:01:00Z",
+                "metadata": {},
+            })
+        )
+        engine._research_orchestrator = orchestrator
+        results = await engine._query_external_research("أريد دراسة جدوى تصدير الفواكه المصرية إلى الأردن", {})
+        assert isinstance(results, dict)
+        assert results["status"] == "completed"
+        assert results["request_id"] == "req_test123"
+
+    async def test_egypt_jordan_scenario_triggers_external_research(self):
+        engine = ReasoningEngine()
+        orchestrator = FakeResearchOrchestrator(
+            FakeResearchResult({
+                "request_id": "req_egypt_jordan",
+                "status": "completed",
+                "goal": "أريد تصدير الفواكه والخضر المصرية إلى الأردن",
+                "findings": [{"topic": "market", "content": "Egypt fruits export to Jordan market study"}],
+                "sources_consulted": ["faostat", "uncomtrade"],
+                "sources_failed": [],
+                "errors": None,
+                "created_at": "2026-01-01T00:00:00Z",
+                "completed_at": "2026-01-01T00:01:00Z",
+                "metadata": {},
+            })
+        )
+        engine._research_orchestrator = orchestrator
+        results = await engine._query_external_research("أريد تصدير الفواكه والخضر المصرية إلى الأردن", {})
+        assert isinstance(results, dict)
+        assert results["status"] == "completed"
+        assert "faostat" in results["sources_consulted"]
+
+    async def test_decision_context_contains_research_on_success(self):
+        engine = ReasoningEngine()
+        orchestrator = FakeResearchOrchestrator(
+            FakeResearchResult({
+                "request_id": "req_ctx",
+                "status": "completed",
+                "goal": "market study",
+                "findings": [{"topic": "market", "content": "finding"}],
+                "sources_consulted": ["source_a"],
+                "sources_failed": [],
+                "errors": None,
+                "created_at": "2026-01-01T00:00:00Z",
+                "completed_at": "2026-01-01T00:01:00Z",
+                "metadata": {},
+            })
+        )
+        engine._research_orchestrator = orchestrator
+        decision = await engine.reason("session-1", {"intent": "أريد دراسة جدوى تصدير الفواكه المصرية إلى الأردن"})
+        assert "research" in decision["context"]
+        assert isinstance(decision["context"]["research"], dict)
+        assert decision["context"]["research"]["status"] == "completed"
+
+    async def test_graceful_degradation_when_orchestrator_missing(self):
+        engine = ReasoningEngine()
+        assert not hasattr(engine, "_research_orchestrator")
+        results = await engine._query_external_research("market study export", {})
+        assert results == []
+
+    async def test_graceful_degradation_when_execute_raises(self):
+        engine = ReasoningEngine()
+
+        class FailingOrchestrator:
+            async def execute(self, request, request_id):
+                raise RuntimeError("external research failed")
+
+        engine._research_orchestrator = FailingOrchestrator()
+        results = await engine._query_external_research("market study export", {})
+        assert results == []
+
+    async def test_non_research_request_does_not_trigger_external_research(self):
+        engine = ReasoningEngine()
+        calls = []
+
+        class TrackingOrchestrator:
+            async def execute(self, request, request_id):
+                calls.append(request_id)
+                return FakeResearchResult({
+                    "request_id": request_id,
+                    "status": "completed",
+                    "goal": request.goal,
+                    "findings": [],
+                    "sources_consulted": [],
+                    "sources_failed": [],
+                    "errors": None,
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "completed_at": "2026-01-01T00:01:00Z",
+                    "metadata": {},
+                })
+
+        engine._research_orchestrator = TrackingOrchestrator()
+        results = await engine._query_external_research("create shipment to Saudi Arabia", {})
+        assert results == []
+        assert calls == []
+
+    async def test_full_reason_flow_preserves_knowledge_and_research(self):
+        engine = ReasoningEngine()
+        knowledge_orchestrator = FakeOrchestrator([
+            {"source_id": "provider_a", "content": "knowledge result", "confidence": 0.9},
+        ])
+        research_orchestrator = FakeResearchOrchestrator(
+            FakeResearchResult({
+                "request_id": "req_full",
+                "status": "completed",
+                "goal": "أريد تصدير الفواكه والخضر المصرية إلى الأردن",
+                "findings": [{"topic": "market", "content": "research finding"}],
+                "sources_consulted": ["source_r"],
+                "sources_failed": [],
+                "errors": None,
+                "created_at": "2026-01-01T00:00:00Z",
+                "completed_at": "2026-01-01T00:01:00Z",
+                "metadata": {},
+            })
+        )
+        engine._knowledge_orchestrator = knowledge_orchestrator
+        engine._research_orchestrator = research_orchestrator
+        decision = await engine.reason("session-1", {"intent": "أريد تصدير الفواكه والخضر المصرية إلى الأردن"})
+        assert "knowledge" in decision["context"]
+        assert "research" in decision["context"]
+        assert isinstance(decision["context"]["knowledge"], list)
+        assert isinstance(decision["context"]["research"], dict)
+        assert decision["context"]["research"]["status"] == "completed"
+
+
 class FakeOrchestrator:
     def __init__(self, results):
         self._results = results

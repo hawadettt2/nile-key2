@@ -1,4 +1,5 @@
 import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -297,4 +298,48 @@ def test_tools_requires_authentication(client):
     response = client.get("/api/v1/digital-export-manager/tools")
     assert response.status_code == 401
 
+
+def test_create_search_entities_mission_returns_completed_result(client):
+    """Regression test: SEARCH_ENTITIES mission should not return 500 due to MissionResponse type mismatch."""
+    # Register and login as owner
+    _, token = _register_and_login(client, role="owner")
+    headers = _auth_headers(token)
+
+    # Create DEM session
+    connect_resp = client.post(
+        "/api/v1/digital-export-manager/connect",
+        json={"user_id": 1},
+        headers=headers,
+    )
+    assert connect_resp.status_code == 200
+    session_id = connect_resp.json()["session_id"]
+
+    # Mock reasoning engine to avoid LLM/knowledge dependencies
+    mock_decision = {
+        "chosen_path": "search",
+        "reasoning": "Search entities",
+        "context": {},
+        "requires_approval": False,
+        "approval_status": "pending",
+    }
+
+    with patch("app.routers.digital_export_manager.get_reasoning_engine") as mock_get_re:
+        mock_re = MagicMock()
+        mock_re.reason = AsyncMock(return_value=mock_decision)
+        mock_get_re.return_value = mock_re
+
+        response = client.post(
+            f"/api/v1/digital-export-manager/missions?session_id={session_id}",
+            json={"mission_type": "SEARCH_ENTITIES", "payload": {"query": "test"}},
+            headers=headers,
+        )
+
+        # The bug was: 500 Internal Server Error due to Pydantic validation
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+
+        data = response.json()
+        assert data["status"] == "completed"
+        # result must be a dict, not a list
+        assert isinstance(data["result"], dict), f"Expected result to be dict, got {type(data['result'])}"
+        assert "results" in data["result"]
 

@@ -96,6 +96,7 @@ class TaskPlanner:
             "send_notification": MissionType.SEND_NOTIFICATION,
             "workflow": MissionType.TRANSITION_WORKFLOW,
             "transition_workflow": MissionType.TRANSITION_WORKFLOW,
+            "research": MissionType.RESEARCH,
         }
 
         mission_type = mapping.get(path_lower)
@@ -105,7 +106,7 @@ class TaskPlanner:
             )
         return mission_type
 
-    def _get_task_sequence(self, mission_type: MissionType) -> List[Dict[str, Any]]:
+    def _get_task_sequence(self, mission_type: MissionType, payload: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """Get the deterministic task sequence for a given mission type.
 
         Each task definition contains:
@@ -114,6 +115,7 @@ class TaskPlanner:
             - depends_on: list of task indices
             - description: str
         """
+        payload = payload or {}
         task_sequences = {
             MissionType.CREATE_SHIPMENT: [
                 {
@@ -180,7 +182,7 @@ class TaskPlanner:
             MissionType.SEARCH_ENTITIES: [
                 {
                     "tool_name": "search_global",
-                    "parameters": {},
+                    "parameters": {"query": payload.get("query", "") or payload.get("parameters", {}).get("query", "")},
                     "depends_on": [],
                     "description": "Search across entities",
                 },
@@ -206,13 +208,21 @@ class TaskPlanner:
                     "tool_name": "workflow_get_state",
                     "parameters": {},
                     "depends_on": [],
-                    "description": "Get current workflow state",
+                    "description": "Get workflow state",
                 },
                 {
                     "tool_name": "workflow_transition",
                     "parameters": {},
                     "depends_on": [0],
                     "description": "Transition workflow",
+                },
+            ],
+            MissionType.RESEARCH: [
+                {
+                    "tool_name": "research_present_result",
+                    "parameters": {},
+                    "depends_on": [],
+                    "description": "Present external research findings",
                 },
             ],
         }
@@ -317,7 +327,7 @@ class TaskPlanner:
         """Create ordered Task objects for a Mission."""
         now = datetime.now(timezone.utc)
         mission_type = MissionType(mission.mission_type)
-        task_definitions = self._get_task_sequence(mission_type)
+        task_definitions = self._get_task_sequence(mission_type, payload=mission.payload)
         standing_orders = standing_orders or []
         user_preferences = user_preferences or {}
 
@@ -331,6 +341,10 @@ class TaskPlanner:
         tasks: List[Task] = []
         for index, task_def in enumerate(filtered_tasks):
             parameters = dict(task_def.get("parameters", {}))
+            if mission.mission_type == MissionType.RESEARCH.value:
+                research_result = mission.payload.get("research")
+                if research_result:
+                    parameters["research_result"] = research_result
             parameters = self._apply_user_preferences_to_parameters(parameters, user_preferences)
             task = Task(
                 task_id=str(uuid.uuid4()),

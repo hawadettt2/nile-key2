@@ -134,7 +134,7 @@ async def create_mission(
         decision = await reasoning_engine.reason(
             session_id=session_id,
             request={
-                "intent": "create_mission",
+                "intent": request.payload.get("query") or "create_mission",
                 "parameters": request.payload,
                 "context": {"mission_type": request.mission_type.value},
             },
@@ -191,7 +191,7 @@ async def create_mission(
         else:
             final_status = "failed"
         mission.status = final_status
-        mission.result = execution_output.get("results")
+        mission.result = execution_output
         mission.error = execution_output.get("failure_summary", {}).get("error")
         mission.updated_at = datetime.now(timezone.utc)
 
@@ -212,7 +212,7 @@ async def create_mission(
             status=final_status,
             created_at=now,
             completed_at=datetime.now(timezone.utc),
-            result=execution_output.get("results"),
+            result=execution_output,
             error=mission.error,
             reasoning=decision.get("reasoning"),
             requires_approval=requires_approval,
