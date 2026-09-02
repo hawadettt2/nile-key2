@@ -783,6 +783,72 @@ def _create_tables(c: sqlite3.Cursor):
         )
     """)
 
+    # ========== جداول Goal/Plan Foundation ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS agent_goals (
+            goal_id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            session_id TEXT NOT NULL,
+            objective TEXT NOT NULL,
+            scope TEXT,
+            constraints TEXT,
+            stakeholders TEXT,
+            autonomy_level TEXT DEFAULT 'supervised',
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP,
+            parent_goal_id TEXT,
+            metadata TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
+        )
+    """)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS agent_plans (
+            plan_id TEXT PRIMARY KEY,
+            goal_id TEXT NOT NULL,
+            user_id INTEGER NOT NULL,
+            session_id TEXT NOT NULL,
+            objective TEXT NOT NULL,
+            missions TEXT,
+            dependencies TEXT,
+            constraints TEXT,
+            approval_policy TEXT,
+            fallback_strategy TEXT,
+            status TEXT DEFAULT 'draft',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP,
+            metadata TEXT,
+            FOREIGN KEY (goal_id) REFERENCES agent_goals(goal_id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (session_id) REFERENCES agent_sessions(id)
+        )
+    """)
+
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_agent_goals_user_id
+        ON agent_goals(user_id)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_agent_goals_status
+        ON agent_goals(status)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_agent_plans_goal_id
+        ON agent_plans(goal_id)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_agent_plans_user_id
+        ON agent_plans(user_id)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_agent_plans_status
+        ON agent_plans(status)
+    """)
+
     # ========== جداول WP-32: Knowledge Graph ==========
     c.execute("""
         CREATE TABLE IF NOT EXISTS knowledge_nodes (

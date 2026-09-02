@@ -21,6 +21,11 @@ from app.agent.execution_planner.planner import ExecutionPlanner
 from app.agent.execution_engine.orchestrator import ToolOrchestrator
 from app.agent.audit.recorder import AuditRecorder
 from app.agent.llm.provider import llm_registry
+from app.agent.goal.repository import GoalRepository
+from app.agent.goal.manager import GoalManager
+from app.agent.plan.repository import PlanRepository
+from app.agent.plan.planner import PlanPlanner
+from app.agent.plan.manager import PlanManager
 from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
 from app.routers.auth import get_current_user, require_role
@@ -41,6 +46,68 @@ def get_memory_provider() -> SQLiteMemoryProvider:
 def get_reasoning_engine() -> ReasoningEngine:
     from main import app
     return app.state.reasoning_engine
+
+
+def _is_strategic_objective(payload: Dict[str, Any]) -> bool:
+    query = (payload.get("query") or "").lower()
+    keywords = ["استراتيجية", "strategic", "هدف", "goal", "خطة", "plan", "مشروع", "project", "حملة", "campaign"]
+    return any(keyword in query for keyword in keywords)
+
+
+async def _ensure_goal_plan_context(
+    payload: Dict[str, Any],
+    user_id: int,
+    session_id: str,
+    session_manager: SessionManager,
+) -> Dict[str, Any]:
+    goal_repo = GoalRepository(get_db)
+    plan_repo = PlanRepository(get_db)
+    goal_manager = GoalManager(goal_repo)
+    plan_planner = PlanPlanner()
+    plan_manager = PlanManager(plan_repo)
+
+    existing_context = session_manager.get_context(session_id) or {}
+    goal_id = existing_context.get("goal_id")
+    plan_id = existing_context.get("plan_id")
+
+    if goal_id and plan_id:
+        goal = goal_repo.get(goal_id)
+        if goal and goal.status == "active":
+            plan = plan_repo.get(plan_id)
+            if plan and plan.status == "active":
+                return {
+                    "goal_id": goal_id,
+                    "plan_id": plan_id,
+                    "plan_constraints": plan.constraints,
+                }
+
+    if not _is_strategic_objective(payload):
+        return {}
+
+    objective = payload.get("query") or "Strategic objective"
+    goal = goal_manager.create_goal(
+        user_id=user_id,
+        session_id=session_id,
+        objective=objective,
+        scope=payload.get("scope", {}),
+        constraints=payload.get("constraints", []),
+        stakeholders=payload.get("stakeholders", []),
+        autonomy_level=payload.get("autonomy_level", "supervised"),
+    )
+    plan = plan_planner.create_plan(
+        goal_id=goal.goal_id,
+        user_id=user_id,
+        session_id=session_id,
+        goal_repository=goal_repo,
+    )
+    plan_manager.create_plan(plan)
+    plan_manager.activate_plan(plan.plan_id, user_id)
+
+    return {
+        "goal_id": goal.goal_id,
+        "plan_id": plan.plan_id,
+        "plan_constraints": plan.constraints,
+    }
 
 
 class ConnectResponse(BaseModel):
@@ -126,6 +193,13 @@ async def create_mission(
 
     await session_manager.enrich_context(session_id, memory_provider, user_id=current_user.get("id"))
 
+    goal_plan_context = await _ensure_goal_plan_context(
+        payload=request.payload,
+        user_id=current_user.get("id"),
+        session_id=session_id,
+        session_manager=session_manager,
+    )
+
     now = datetime.now(timezone.utc)
     correlation_id = str(__import__("uuid").uuid4())
     idempotency_key = str(__import__("uuid").uuid4())
@@ -136,7 +210,7 @@ async def create_mission(
             request={
                 "intent": request.payload.get("query") or "create_mission",
                 "parameters": request.payload,
-                "context": {"mission_type": request.mission_type.value},
+                "context": {"mission_type": request.mission_type.value, **goal_plan_context},
             },
         )
     except Exception as e:
@@ -158,6 +232,10 @@ async def create_mission(
         "approval_status": approval_status,
     }
     session_context = session_manager.get_context(session_id) or {}
+    if goal_plan_context:
+        session_context["goal_id"] = goal_plan_context.get("goal_id")
+        session_context["plan_id"] = goal_plan_context.get("plan_id")
+        session_context["plan_constraints"] = goal_plan_context.get("plan_constraints", [])
 
     try:
         task_planner = TaskPlanner(tool_registry=tool_registry)
@@ -205,6 +283,13 @@ async def create_mission(
         saved = session_manager.add_mission(session_id, mission)
         if not saved:
             raise HTTPException(status_code=500, detail="Failed to save mission to session")
+
+        if goal_plan_context:
+            try:
+                plan_repo = PlanRepository(get_db)
+                plan_repo.append_mission(goal_plan_context["plan_id"], mission.mission_id)
+            except Exception:
+                pass
 
         return MissionResponse(
             mission_id=mission.mission_id,
