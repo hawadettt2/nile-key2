@@ -781,3 +781,118 @@ class TestReasoningEngineResearchOverride:
         engine._research_orchestrator = FakeOrchestrator()
         decision = await engine.reason("session-1", {"intent": "create shipment to Saudi Arabia"})
         assert decision["chosen_path"] == "shipping"
+
+
+class TestReasoningEngineGoalPlanAwareness:
+    """Tests for Goal/Plan context-aware qualification (WP-43)."""
+
+    @pytest.mark.asyncio
+    async def test_goal_plan_context_preserved_in_decision(self):
+        engine = ReasoningEngine()
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {
+                "goal_id": "goal-123",
+                "plan_id": "plan-123",
+            },
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert result["context"]["request_context"]["goal_id"] == "goal-123"
+        assert result["context"]["request_context"]["plan_id"] == "plan-123"
+
+    @pytest.mark.asyncio
+    async def test_no_goal_plan_context_behavior_unchanged(self):
+        engine = ReasoningEngine()
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {},
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+
+    @pytest.mark.asyncio
+    async def test_goal_plan_without_constraints_behavior_unchanged(self):
+        engine = ReasoningEngine()
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {
+                "goal_id": "goal-123",
+                "plan_id": "plan-123",
+            },
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+
+    @pytest.mark.asyncio
+    async def test_goal_plan_forbidden_paths_filter_candidates(self):
+        engine = ReasoningEngine()
+        request = {
+            "intent": "Ship my package to Germany and file customs",
+            "parameters": {"destination": "Germany"},
+            "context": {
+                "goal_id": "goal-123",
+                "plan_id": "plan-123",
+                "plan_constraints": [
+                    {"forbidden_paths": ["customs"]},
+                ],
+            },
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert "customs" not in result["context"]["request_context"]
+        assert result["chosen_path"] != "customs"
+
+    @pytest.mark.asyncio
+    async def test_goal_plan_no_forbidden_paths_does_not_filter(self):
+        engine = ReasoningEngine()
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {
+                "goal_id": "goal-123",
+                "plan_id": "plan-123",
+                "plan_constraints": [
+                    {"preferred_paths": ["shipping"]},
+                ],
+            },
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+
+    @pytest.mark.asyncio
+    async def test_goal_plan_empty_plan_constraints_does_not_filter(self):
+        engine = ReasoningEngine()
+        request = {
+            "intent": "Ship my package to Germany",
+            "parameters": {"destination": "Germany"},
+            "context": {
+                "goal_id": "goal-123",
+                "plan_id": "plan-123",
+                "plan_constraints": [],
+            },
+        }
+
+        result = await engine.reason("session-123", request)
+
+        assert result["chosen_path"] == "shipping"
+
+    @pytest.mark.asyncio
+    async def test_reasoning_engine_does_not_access_goal_plan_repositories(self):
+        engine = ReasoningEngine()
+
+        assert not hasattr(engine, "goal_manager")
+        assert not hasattr(engine, "plan_manager")
+        assert not hasattr(engine, "goal_repository")
+        assert not hasattr(engine, "plan_repository")

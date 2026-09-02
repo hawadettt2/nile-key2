@@ -147,6 +147,8 @@ class ReasoningEngine:
             candidates = self._apply_memory_biases(candidates, memories)
             scored_candidates = self._evaluate_options(candidates, memories, knowledge, parameters)
 
+            scored_candidates = self._apply_goal_plan_awareness(scored_candidates, request_context)
+
             scored_candidates = await self._enhance_candidates_with_llm(intent, scored_candidates)
 
             chosen_path, alternatives = self._select_best_option(scored_candidates)
@@ -307,6 +309,43 @@ class ReasoningEngine:
 
         evaluated.sort(key=lambda c: c["score"], reverse=True)
         return evaluated
+
+    def _apply_goal_plan_awareness(
+        self,
+        candidates: List[Dict[str, Any]],
+        request_context: Dict[str, Any],
+    ) -> List[Dict[str, Any]]:
+        """Goal/Plan-aware qualification pass.
+
+        - Reads goal_id/plan_id from request_context as opaque hints.
+        - Reads plan_constraints from request_context if present.
+        - Filters out candidates whose path is explicitly forbidden by Plan constraints.
+        - Does NOT change baseline scoring formula or weights.
+        - Returns candidates unchanged if no Goal/Plan context.
+        """
+        if not request_context:
+            return candidates
+
+        goal_id = request_context.get("goal_id")
+        plan_id = request_context.get("plan_id")
+        if not goal_id or not plan_id:
+            return candidates
+
+        plan_constraints = request_context.get("plan_constraints") or []
+        if not plan_constraints:
+            return candidates
+
+        forbidden_paths = set()
+        for constraint in plan_constraints:
+            if isinstance(constraint, dict):
+                for path in constraint.get("forbidden_paths", []):
+                    forbidden_paths.add(path)
+
+        if not forbidden_paths:
+            return candidates
+
+        filtered = [c for c in candidates if c.get("path") not in forbidden_paths]
+        return filtered if filtered else candidates
 
     def _select_best_option(self, scored_candidates: List[Dict[str, Any]]) -> tuple[str, List[str]]:
         """Select the best option and return alternatives."""
