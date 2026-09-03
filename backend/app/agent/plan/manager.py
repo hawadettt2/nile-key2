@@ -52,3 +52,26 @@ class PlanManager:
         plans = self.plan_repository.list(goal_id)
         active = [p for p in plans if p.status == "active" and p.user_id == user_id]
         return active[0] if active else None
+
+    def evaluate_replanning_triggers(self, plan_id: str, user_id: int) -> List[Dict[str, Any]]:
+        """Evaluate re-planning triggers for a plan.
+
+        Returns a list of trigger signals without executing re-planning.
+        """
+        plan = self.get_plan(plan_id, user_id)
+        if not plan:
+            return []
+
+        triggers: List[Dict[str, Any]] = []
+
+        if plan.status in {"completed", "abandoned"}:
+            return triggers
+
+        if not plan.missions:
+            triggers.append({"type": "empty_plan", "plan_id": plan_id, "message": "Plan has no missions"})
+            return triggers
+
+        if plan.fallback_strategy.get("activation_condition") == "primary_mission_failed" and not plan.fallback_strategy.get("fallback_mission_id"):
+            triggers.append({"type": "missing_fallback", "plan_id": plan_id, "message": "Fallback strategy defined but missing fallback mission"})
+
+        return triggers

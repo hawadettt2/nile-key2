@@ -55,11 +55,18 @@ class GoalManager:
     def abandon_goal(self, goal_id: str, user_id: int) -> Optional[Goal]:
         return self.update_goal(goal_id, user_id, {"status": "abandoned"})
 
-    def create_plan_for_goal(self, goal_id: str, user_id: int, session_id: str, plan_planner, plan_manager) -> Optional[Goal]:
+    def create_plan_for_goal(self, goal_id: str, user_id: int, session_id: str, plan_planner, plan_manager, session_manager=None) -> Optional[Goal]:
         goal = self.get_goal(goal_id, user_id)
         if not goal:
             return None
-        plan = plan_planner.create_plan(goal_id=goal_id, user_id=user_id, session_id=session_id, goal_repository=self.goal_repository)
+
+        plan, missions = plan_planner.decompose_goal_to_plan(goal, self.goal_repository)
         plan_manager.create_plan(plan)
         plan_manager.activate_plan(plan.plan_id, user_id)
+
+        if session_manager is not None:
+            for mission in missions:
+                session_manager.add_mission(session_id, mission)
+                plan_manager.append_mission(plan.plan_id, user_id, mission.mission_id)
+
         return goal
