@@ -26,6 +26,8 @@ from app.agent.goal.manager import GoalManager
 from app.agent.plan.repository import PlanRepository
 from app.agent.plan.planner import PlanPlanner
 from app.agent.plan.manager import PlanManager
+from app.agent.response.builder import ResponseBuilder
+from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
 from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
 from app.routers.auth import get_current_user, require_role
@@ -291,6 +293,31 @@ async def create_mission(
             except Exception:
                 pass
 
+        goal_obj = None
+        plan_obj = None
+        autonomy_policy = None
+        if goal_plan_context:
+            try:
+                goal_repo = GoalRepository(get_db)
+                plan_repo = PlanRepository(get_db)
+                goal_obj = goal_repo.get(goal_plan_context["goal_id"])
+                plan_obj = plan_repo.get(goal_plan_context["plan_id"])
+                if goal_obj:
+                    autonomy_policy = AutonomyPolicyInterpreter.build_policy(
+                        goal=goal_obj.model_dump(mode="json"),
+                        plan=plan_obj.model_dump(mode="json") if plan_obj else None,
+                    )
+            except Exception:
+                pass
+
+        intent_content = ResponseBuilder.build(
+            mission=mission,
+            decision=decision,
+            goal=goal_obj.model_dump(mode="json") if goal_obj else None,
+            plan=plan_obj.model_dump(mode="json") if plan_obj else None,
+            autonomy_policy=autonomy_policy,
+        )
+
         return MissionResponse(
             mission_id=mission.mission_id,
             session_id=session_id,
@@ -302,6 +329,7 @@ async def create_mission(
             reasoning=decision.get("reasoning"),
             requires_approval=requires_approval,
             approval_status=approval_status,
+            intent_content=intent_content.model_dump(mode="json") if intent_content else None,
         )
 
     except Exception as e:

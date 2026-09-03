@@ -14,3 +14,4 @@ class MissionResponse(BaseModel):
     reasoning: Optional[str] = None
     requires_approval: bool = False
     approval_status: str = "pending"
+    intent_content: Optional[Dict[str, Any]] = None
