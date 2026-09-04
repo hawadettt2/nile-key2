@@ -77,7 +77,21 @@ async def _ensure_goal_plan_context(
         if goal and goal.status == "active":
             plan = plan_repo.get(plan_id)
             if plan and plan.status == "active":
+                snapshot = {
+                    "goal_id": goal.goal_id,
+                    "goal_status": goal.status,
+                    "goal_objective": goal.objective,
+                    "goal_scope": goal.scope,
+                    "plan_id": plan.plan_id,
+                    "plan_status": plan.status,
+                    "plan_constraints": plan.constraints,
+                    "missions": plan.missions,
+                    "dependencies": plan.dependencies,
+                    "missions_count": len(plan.missions),
+                    "dependency_chain_length": len(plan.dependencies),
+                }
                 return {
+                    "strategic_context_snapshot": snapshot,
                     "goal_id": goal_id,
                     "plan_id": plan_id,
                     "plan_constraints": plan.constraints,
@@ -105,7 +119,22 @@ async def _ensure_goal_plan_context(
     plan_manager.create_plan(plan)
     plan_manager.activate_plan(plan.plan_id, user_id)
 
+    snapshot = {
+        "goal_id": goal.goal_id,
+        "goal_status": goal.status,
+        "goal_objective": goal.objective,
+        "goal_scope": goal.scope,
+        "plan_id": plan.plan_id,
+        "plan_status": plan.status,
+        "plan_constraints": plan.constraints,
+        "missions": plan.missions,
+        "dependencies": plan.dependencies,
+        "missions_count": len(plan.missions),
+        "dependency_chain_length": len(plan.dependencies),
+    }
+
     return {
+        "strategic_context_snapshot": snapshot,
         "goal_id": goal.goal_id,
         "plan_id": plan.plan_id,
         "plan_constraints": plan.constraints,
@@ -218,9 +247,12 @@ async def create_mission(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Reasoning engine failed: {e}")
 
+    decision_context = decision.get("context", {})
+    if decision_context.get("strategic_blocked") is True:
+        raise HTTPException(status_code=400, detail="Strategic execution blocked")
+
     mission_type_value = request.mission_type.value
     chosen_path = decision.get("chosen_path", mission_type_value)
-    decision_context = decision.get("context", {})
     requires_approval = decision.get("requires_approval", False)
     approval_status = decision.get("approval_status", "pending")
 

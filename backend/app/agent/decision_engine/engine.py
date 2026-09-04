@@ -151,7 +151,22 @@ class ReasoningEngine:
 
             scored_candidates = await self._enhance_candidates_with_llm(intent, scored_candidates)
 
-            chosen_path, alternatives = self._select_best_option(scored_candidates)
+            snapshot = request.get("context", {}).get("strategic_context_snapshot")
+            strategic_blocked = False
+            replanning_recommendation = None
+            strategic_context = None
+            alternatives = []
+
+            if snapshot:
+                scored_candidates, strategic_blocked, replanning_recommendation, strategic_context = (
+                    self._apply_strategic_reasoning(scored_candidates, snapshot)
+                )
+
+            if strategic_blocked:
+                chosen_path = scored_candidates[0]["path"] if scored_candidates else None
+                alternatives = [c["path"] for c in scored_candidates[1:]] if len(scored_candidates) > 1 else []
+            else:
+                chosen_path, alternatives = self._select_best_option(scored_candidates)
 
             if (
                 isinstance(research, dict)
@@ -173,22 +188,27 @@ class ReasoningEngine:
 
             reasoning = await self._enhance_reasoning_with_llm(intent, chosen_path, reasoning, research=research)
 
+            decision_context = {
+                "intent": intent,
+                "parameters": parameters,
+                "request_context": request_context,
+                "memories": memories,
+                "knowledge": knowledge,
+                "research": research,
+                "candidates": scored_candidates,
+                "requires_approval": is_destructive,
+                "strategic_blocked": strategic_blocked,
+                "replanning_recommendation": replanning_recommendation,
+                "strategic_context": strategic_context,
+            }
+
             decision = Decision(
                 decision_id=str(uuid.uuid4()),
                 session_id=session_id,
                 reasoning=reasoning,
                 chosen_path=chosen_path,
                 alternatives=alternatives,
-                context={
-                    "intent": intent,
-                    "parameters": parameters,
-                    "request_context": request_context,
-                    "memories": memories,
-                    "knowledge": knowledge,
-                    "research": research,
-                    "candidates": scored_candidates,
-                    "requires_approval": is_destructive,
-                },
+                context=decision_context,
                 created_at=datetime.now(timezone.utc),
                 requires_approval=is_destructive,
                 approval_status=approval_status,
@@ -604,3 +624,209 @@ class ReasoningEngine:
             return result.get("results", [])
 
         return await self._query_knowledge_legacy(intent, parameters)
+
+    def _apply_strategic_reasoning(
+        self,
+        scored_candidates: List[Dict[str, Any]],
+        snapshot: Dict[str, Any],
+    ) -> tuple[List[Dict[str, Any]], bool, Dict[str, Any], Dict[str, Any]]:
+        """Apply deterministic strategic reasoning on top of tactical candidates.
+
+        Returns:
+            tuple: (qualified_candidates, strategic_blocked, replanning_recommendation, strategic_context)
+        """
+        if not scored_candidates or not snapshot:
+            return scored_candidates, False, None, None
+
+        goal_status = snapshot.get("goal_status") or ""
+        plan_status = snapshot.get("plan_status") or ""
+        plan_constraints = snapshot.get("plan_constraints") or []
+        goal_scope = snapshot.get("goal_scope") or {}
+
+        trade_offs = self._evaluate_trade_offs(scored_candidates, snapshot)
+        qualified_candidates = self._qualify_and_reorder_candidates(scored_candidates, trade_offs)
+        strategic_blocked = self._is_strategic_blocked(qualified_candidates)
+
+        replanning_recommendation = self._evaluate_replanning_need(
+            snapshot, qualified_candidates, strategic_blocked
+        )
+
+        strategic_context = {
+            "goal_impact": self._evaluate_goal_impact(snapshot, scored_candidates),
+            "plan_implications": self._evaluate_plan_implications(snapshot, scored_candidates),
+            "trade_offs": trade_offs,
+            "adaptations": self._adapt_to_new_information(),
+            "strategic_blocked": strategic_blocked,
+        }
+
+        return qualified_candidates, strategic_blocked, replanning_recommendation, strategic_context
+
+    def _evaluate_goal_impact(
+        self,
+        snapshot: Dict[str, Any],
+        scored_candidates: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Evaluate goal impact using explicit structural/constraint fit only."""
+        goal_status = snapshot.get("goal_status") or ""
+        goal_scope = snapshot.get("goal_scope") or {}
+
+        penalty = 0.0
+        if goal_status != "active":
+            penalty += 0.5
+
+        for candidate in scored_candidates:
+            candidate_meta = candidate.get("metadata") or {}
+            domain = candidate_meta.get("domain") or ""
+            if goal_scope and domain:
+                allowed_domains = goal_scope.get("allowed_domains") or []
+                if allowed_domains and domain not in allowed_domains:
+                    penalty += 0.3
+                    break
+
+        return {
+            "status_support": goal_status == "active",
+            "scope_fit": penalty < 0.3,
+            "strategic_penalty_from_goal": min(penalty, 1.0),
+        }
+
+    def _evaluate_plan_implications(
+        self,
+        snapshot: Dict[str, Any],
+        scored_candidates: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Evaluate plan implications from snapshot structure only."""
+        plan_constraints = snapshot.get("plan_constraints") or []
+        dependencies = snapshot.get("dependencies") or []
+
+        constraint_violations = []
+        for candidate in scored_candidates:
+            path = candidate.get("path") or ""
+            for constraint in plan_constraints:
+                if isinstance(constraint, dict):
+                    if path in (constraint.get("forbidden_paths") or []):
+                        constraint_violations.append(
+                            {"candidate": path, "constraint": constraint.get("reason")}
+                        )
+
+        return {
+            "structural_fit": len(constraint_violations) == 0,
+            "constraint_violations": constraint_violations,
+            "dependency_impact": {
+                "dependency_count": len(dependencies),
+                "plan_status": snapshot.get("plan_status"),
+            },
+            "blockers": [c.get("constraint") for c in constraint_violations if c.get("constraint")],
+        }
+
+    def _evaluate_trade_offs(
+        self,
+        scored_candidates: List[Dict[str, Any]],
+        snapshot: Dict[str, Any],
+    ) -> List[Dict[str, Any]]:
+        """Evaluate deterministic trade-offs using only snapshot dimensions."""
+        goal_status = snapshot.get("goal_status") or ""
+        plan_status = snapshot.get("plan_status") or ""
+        missions_count = snapshot.get("missions_count") or 0
+        plan_constraints = snapshot.get("plan_constraints") or []
+        goal_scope = snapshot.get("goal_scope") or {}
+
+        trade_offs = []
+        for candidate in scored_candidates:
+            bonus = 0.0
+            penalty = 0.0
+
+            if goal_status == "completed":
+                penalty += 1.0
+            elif goal_status == "abandoned":
+                penalty += 1.0
+
+            if plan_status == "active" and missions_count == 0:
+                bonus += 0.2
+
+            for constraint in plan_constraints:
+                if isinstance(constraint, dict):
+                    if candidate.get("path") in (constraint.get("forbidden_paths") or []):
+                        penalty += 0.5
+
+            candidate_meta = candidate.get("metadata") or {}
+            domain = candidate_meta.get("domain") or ""
+            if goal_scope and domain:
+                allowed_domains = goal_scope.get("allowed_domains") or []
+                if allowed_domains and domain not in allowed_domains:
+                    penalty += 0.3
+
+            penalty = min(penalty, 1.0)
+            tactical_score = candidate.get("score", candidate.get("confidence", 0))
+            net_score = tactical_score + bonus - penalty
+
+            trade_offs.append({
+                "candidate_id": candidate.get("path"),
+                "strategic_bonus": bonus,
+                "strategic_penalty": penalty,
+                "net_strategic_score": net_score,
+                "qualifies": net_score >= 0.0,
+            })
+
+        return trade_offs
+
+    def _qualify_and_reorder_candidates(
+        self,
+        scored_candidates: List[Dict[str, Any]],
+        trade_offs: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Apply strategic overlay: qualify/reorder candidates."""
+        qualified = []
+        for candidate, trade in zip(scored_candidates, trade_offs):
+            if trade.get("qualifies"):
+                qualified.append({
+                    **candidate,
+                    "score": trade.get("net_strategic_score", candidate.get("score", 0)),
+                })
+        qualified.sort(key=lambda c: c.get("score", 0), reverse=True)
+        return qualified
+
+    def _is_strategic_blocked(self, qualified_candidates: List[Dict[str, Any]]) -> bool:
+        """Return True when no candidate survives strategic evaluation."""
+        return len(qualified_candidates) == 0
+
+    def _evaluate_replanning_need(
+        self,
+        snapshot: Dict[str, Any],
+        qualified_candidates: List[Dict[str, Any]],
+        strategic_blocked: bool,
+    ) -> Dict[str, Any]:
+        """Evaluate replanning recommendation using deterministic precedence."""
+        if not snapshot:
+            return {"should_replan": False, "reason": "no_snapshot", "trigger": "none", "scope": "none"}
+
+        goal_status = snapshot.get("goal_status") or ""
+        plan_status = snapshot.get("plan_status") or ""
+        missions_count = snapshot.get("missions_count") or 0
+        plan_constraints = snapshot.get("plan_constraints") or []
+
+        if goal_status in ("completed", "abandoned"):
+            return {"should_replan": False, "reason": "terminal_goal", "trigger": "none", "scope": "none"}
+
+        if strategic_blocked:
+            return {"should_replan": True, "reason": "no_viable_path", "trigger": "strategic_blocked", "scope": "partial"}
+
+        if missions_count == 0 and goal_status == "active":
+            return {"should_replan": True, "reason": "empty_plan", "trigger": "empty_plan", "scope": "partial"}
+
+        if qualified_candidates and plan_constraints:
+            chosen_path = qualified_candidates[0].get("path") or ""
+            for constraint in plan_constraints:
+                if isinstance(constraint, dict):
+                    if chosen_path in (constraint.get("forbidden_paths") or []):
+                        return {
+                            "should_replan": True,
+                            "reason": "constraint_conflict",
+                            "trigger": "constraint_conflict",
+                            "scope": "partial",
+                        }
+
+        return {"should_replan": False, "reason": "none", "trigger": "none", "scope": "none"}
+
+    def _adapt_to_new_information(self) -> List[Dict[str, Any]]:
+        """Record adaptations as evidence/observations only. No score changes."""
+        return []
