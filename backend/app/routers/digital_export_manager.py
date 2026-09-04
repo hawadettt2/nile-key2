@@ -27,6 +27,7 @@ from app.agent.plan.repository import PlanRepository
 from app.agent.plan.planner import PlanPlanner
 from app.agent.plan.manager import PlanManager
 from app.agent.plan.replanning import ReplanningHandler
+from app.agent.outcome import ExecutionOutcome, OutcomeEvaluator, OutcomeFeedbackLoop
 from app.agent.response.builder import ResponseBuilder
 from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
 from app.services.trade_intelligence import get_knowledge_registry
@@ -360,6 +361,28 @@ async def create_mission(
                 plan_repo.append_mission(goal_plan_context["plan_id"], mission.mission_id)
             except Exception:
                 pass
+
+        outcome = ExecutionOutcome(
+            execution_output=execution_output,
+            mission_id=mission.mission_id,
+            session_id=session_id,
+            goal_id=goal_plan_context.get("goal_id"),
+            plan_id=goal_plan_context.get("plan_id"),
+        )
+        evaluator = OutcomeEvaluator()
+        outcome = evaluator.evaluate(outcome)
+
+        feedback_loop = OutcomeFeedbackLoop(
+            goal_repository=GoalRepository(get_db) if goal_plan_context.get("goal_id") else None,
+            plan_repository=PlanRepository(get_db) if goal_plan_context.get("plan_id") else None,
+            session_manager=session_manager,
+            audit_recorder=AuditRecorder(get_db),
+        )
+        feedback_result = feedback_loop.process(
+            outcome=outcome,
+            goal_plan_context=goal_plan_context,
+            session_context=session_context,
+        )
 
         goal_obj = None
         plan_obj = None
