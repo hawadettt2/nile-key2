@@ -97,6 +97,7 @@ async def _ensure_goal_plan_context(
                     "goal_id": goal_id,
                     "plan_id": plan_id,
                     "plan_constraints": plan.constraints,
+                    "user_id": user_id,
                 }
 
     if not _is_strategic_objective(payload):
@@ -140,6 +141,7 @@ async def _ensure_goal_plan_context(
         "goal_id": goal.goal_id,
         "plan_id": plan.plan_id,
         "plan_constraints": plan.constraints,
+        "user_id": user_id,
     }
 
 
@@ -237,13 +239,29 @@ async def create_mission(
     correlation_id = str(__import__("uuid").uuid4())
     idempotency_key = str(__import__("uuid").uuid4())
 
+    execution_memories = []
+    if memory_provider and goal_plan_context.get("user_id"):
+        try:
+            execution_memories = await memory_provider.recall(
+                user_id=goal_plan_context["user_id"],
+                session_id=session_id,
+                query="execution_outcome",
+                limit=10,
+            )
+        except Exception:
+            execution_memories = []
+
+    request_context = {"mission_type": request.mission_type.value, **goal_plan_context}
+    if execution_memories:
+        request_context["execution_memories"] = execution_memories
+
     try:
         decision = await reasoning_engine.reason(
             session_id=session_id,
             request={
                 "intent": request.payload.get("query") or "create_mission",
                 "parameters": request.payload,
-                "context": {"mission_type": request.mission_type.value, **goal_plan_context},
+                "context": request_context,
             },
         )
     except Exception as e:
@@ -377,8 +395,9 @@ async def create_mission(
             plan_repository=PlanRepository(get_db) if goal_plan_context.get("plan_id") else None,
             session_manager=session_manager,
             audit_recorder=AuditRecorder(get_db),
+            memory_provider=memory_provider,
         )
-        feedback_result = feedback_loop.process(
+        feedback_result = await feedback_loop.process(
             outcome=outcome,
             goal_plan_context=goal_plan_context,
             session_context=session_context,

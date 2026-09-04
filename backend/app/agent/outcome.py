@@ -143,13 +143,15 @@ class OutcomeFeedbackLoop:
         plan_repository,
         session_manager,
         audit_recorder,
+        memory_provider=None,
     ):
         self.goal_repository = goal_repository
         self.plan_repository = plan_repository
         self.session_manager = session_manager
         self.audit_recorder = audit_recorder
+        self.memory_provider = memory_provider
 
-    def process(
+    async def process(
         self,
         outcome: ExecutionOutcome,
         goal_plan_context: Optional[Dict[str, Any]] = None,
@@ -164,6 +166,7 @@ class OutcomeFeedbackLoop:
         self._update_goal_metadata(outcome, goal_plan_context)
         self._update_plan_metadata(outcome, goal_plan_context)
         self._record_audit(outcome)
+        await self._store_memories(outcome, goal_plan_context)
 
         return {
             "outcome": outcome.to_dict(),
@@ -282,6 +285,47 @@ class OutcomeFeedbackLoop:
                     "feedback": outcome.feedback,
                     "outcome_timestamp": outcome.outcome_timestamp.isoformat(),
                 },
+            )
+        except Exception:
+            pass
+
+    async def _store_memories(self, outcome: ExecutionOutcome, goal_plan_context: Dict[str, Any]) -> None:
+        if not self.memory_provider:
+            return
+
+        user_id = goal_plan_context.get("user_id")
+        session_id = outcome.session_id
+        if not user_id or not session_id:
+            return
+
+        importance = 6 if outcome.status == "success" else 8 if outcome.status == "failure" else 7
+        outcome_value = outcome.to_dict()
+        feedback_value = {
+            "status": outcome.status,
+            "failure_category": outcome.evaluation.get("failure_category"),
+            "suggested_actions": outcome.feedback.get("suggested_actions", []),
+            "blocked_paths": outcome.feedback.get("blocked_paths", []),
+            "mission_id": outcome.mission_id,
+            "goal_id": outcome.goal_id,
+            "plan_id": outcome.plan_id,
+        }
+
+        try:
+            await self.memory_provider.store(
+                user_id=user_id,
+                session_id=session_id,
+                key=f"execution_outcome:{outcome.mission_id}",
+                value=outcome_value,
+                memory_type="execution_outcome",
+                importance=importance,
+            )
+            await self.memory_provider.store(
+                user_id=user_id,
+                session_id=session_id,
+                key=f"execution_feedback:{outcome.mission_id}",
+                value=feedback_value,
+                memory_type="execution_feedback",
+                importance=importance,
             )
         except Exception:
             pass

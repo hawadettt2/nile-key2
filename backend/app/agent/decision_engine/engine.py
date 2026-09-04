@@ -273,6 +273,9 @@ class ReasoningEngine:
         if not memories:
             return candidates
 
+        execution_blocked_paths = set()
+        execution_failed_paths = set()
+
         for memory in memories:
             mem_type = memory.get("memory_type")
             value = memory.get("value", {})
@@ -286,6 +289,16 @@ class ReasoningEngine:
             if not isinstance(value, dict):
                 continue
 
+            if mem_type == "execution_feedback":
+                blocked_paths = value.get("blocked_paths") or []
+                for path in blocked_paths:
+                    if path:
+                        execution_blocked_paths.add(path)
+                if value.get("status") == "failure":
+                    mission_id = value.get("mission_id")
+                    if mission_id:
+                        execution_failed_paths.add(mission_id)
+
             for candidate in candidates:
                 path = candidate.get("path")
                 candidate.setdefault("score", candidate["confidence"])
@@ -298,6 +311,17 @@ class ReasoningEngine:
 
                 elif mem_type == "decision" and value.get("chosen_path") == path:
                     candidate["score"] += 0.3
+
+                elif mem_type == "execution_outcome":
+                    if path and value.get("feedback", {}).get("blocked_paths"):
+                        blocked = value.get("feedback", {}).get("blocked_paths", [])
+                        if path in blocked:
+                            candidate["score"] -= 0.8
+
+        for candidate in candidates:
+            path = candidate.get("path")
+            if path in execution_blocked_paths:
+                candidate["score"] = min(candidate.get("score", candidate["confidence"]), -0.5)
 
         return candidates
 
