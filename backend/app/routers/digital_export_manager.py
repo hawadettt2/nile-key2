@@ -26,6 +26,7 @@ from app.agent.goal.manager import GoalManager
 from app.agent.plan.repository import PlanRepository
 from app.agent.plan.planner import PlanPlanner
 from app.agent.plan.manager import PlanManager
+from app.agent.plan.replanning import ReplanningHandler
 from app.agent.response.builder import ResponseBuilder
 from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
 from app.services.trade_intelligence import get_knowledge_registry
@@ -248,6 +249,41 @@ async def create_mission(
         raise HTTPException(status_code=500, detail=f"Reasoning engine failed: {e}")
 
     decision_context = decision.get("context", {})
+
+    replanning_rec = decision_context.get("replanning_recommendation") or {}
+    if (
+        replanning_rec.get("should_replan") is True
+        and replanning_rec.get("reason") in ("no_viable_path", "empty_plan", "constraint_conflict")
+    ):
+        goal_repo = GoalRepository(get_db)
+        plan_repo = PlanRepository(get_db)
+        goal_manager = GoalManager(goal_repo)
+        plan_planner = PlanPlanner()
+        plan_manager = PlanManager(plan_repo)
+        replanning_handler = ReplanningHandler()
+        replanning_result = replanning_handler.execute(
+            goal_id=goal_plan_context.get("goal_id"),
+            old_plan_id=goal_plan_context.get("plan_id"),
+            user_id=current_user.get("id"),
+            session_id=session_id,
+            db_factory=get_db,
+            goal_repository=goal_repo,
+            plan_planner=plan_planner,
+            plan_manager=plan_manager,
+            session_manager=session_manager,
+            trigger=replanning_rec.get("trigger", "strategic_blocked"),
+            reason=replanning_rec.get("reason"),
+        )
+        if replanning_result.get("success"):
+            goal_plan_context["plan_id"] = replanning_result["new_plan_id"]
+            goal_plan_context["plan_constraints"] = replanning_result.get("new_plan_constraints", [])
+            decision_context["strategic_blocked"] = False
+            decision_context["replanning_recommendation"] = {
+                **replanning_rec,
+                "executed": True,
+                "result": replanning_result,
+            }
+
     if decision_context.get("strategic_blocked") is True:
         raise HTTPException(status_code=400, detail="Strategic execution blocked")
 
