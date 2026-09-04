@@ -93,6 +93,10 @@ class OutcomeEvaluator:
             return "tool_unavailable"
         if "dependency" in error:
             return "dependency_issue"
+        if "no_viable_path" in error:
+            return "no_viable_path"
+        if "constraint_conflict" in error:
+            return "constraint_conflict"
         return "unknown"
 
     def _build_feedback(self, outcome: ExecutionOutcome) -> Dict[str, Any]:
