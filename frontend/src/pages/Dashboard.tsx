@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
-import { getDashboard } from '@/services/api';
-import { Truck, Users, UserCheck, FileText, TrendingUp, Bell, Activity } from 'lucide-react';
+import { getDashboard, getDEMExecutionState, getDEMInsights } from '@/services/api';
+import { useDEMStore } from '@/store/demStore';
+import { Truck, Users, UserCheck, FileText, TrendingUp, Bell, Activity, Lightbulb } from 'lucide-react';
 
 interface DashboardStats {
   suppliers: number;
@@ -36,6 +37,7 @@ export function Dashboard() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { activeSession, executionState, insights, setExecutionState, setInsights } = useDEMStore();
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -52,6 +54,17 @@ export function Dashboard() {
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  useEffect(() => {
+    if (activeSession?.session_id) {
+      getDEMExecutionState(activeSession.session_id)
+        .then((res) => setExecutionState(res.data))
+        .catch(() => {});
+      getDEMInsights(activeSession.session_id)
+        .then((res) => setInsights(res.data.insights || []))
+        .catch(() => {});
+    }
+  }, [activeSession, setExecutionState, setInsights]);
 
   useEffect(() => {
     const timer = setInterval(loadDashboard, POLL_INTERVAL_MS);
@@ -139,6 +152,32 @@ export function Dashboard() {
               <p className="text-emerald-100 text-sm">Your digital gateway for Egyptian exports.</p></div>
           </div>
         </div>
+        {activeSession && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2"><Lightbulb size={20} /> Agent Insights</h3>
+            {insights.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-8">No strategic insights available yet.</p>
+            ) : (
+              <ul className="space-y-3">
+                {insights.slice(0, 5).map((item) => (
+                  <li key={item.insight_id} className="text-sm text-slate-700 border-b border-slate-100 pb-2 last:border-0">
+                    <span className="font-medium">{item.title}</span>
+                    <span className="text-slate-500"> — {item.summary}</span>
+                    <div className="text-xs text-slate-400 mt-1">Confidence: {item.confidence} {item.severity ? `· Severity: ${item.severity}` : ''}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {executionState && (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-600">
+                <div><span className="block text-slate-400">Missions</span><span className="font-medium">{executionState.mission_count}</span></div>
+                <div><span className="block text-slate-400">Completed</span><span className="font-medium">{executionState.completed_missions}</span></div>
+                <div><span className="block text-slate-400">Failed</span><span className="font-medium">{executionState.failed_missions}</span></div>
+                <div><span className="block text-slate-400">Pending Approval</span><span className="font-medium">{executionState.pending_approval_missions}</span></div>
+              </div>
+            )}
+          </div>
+        )}
       </>)}
     </div>
   );

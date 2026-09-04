@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, ChevronRight, RefreshCw } from 'lucide-react';
 import { useDEMStore } from '@/store/demStore';
-import { getDEMSessions, getDEMSession } from '@/services/api';
+import { getDEMSessions, getDEMSession, getDEMExecutionState } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,6 +25,7 @@ export function DEMSessions() {
   const { toast } = useToast();
   const { setMissions } = useDEMStore();
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [executionSummaries, setExecutionSummaries] = useState<Record<string, { completed: number; failed: number; pending_approval: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const loadSessions = async () => {
@@ -33,6 +34,21 @@ export function DEMSessions() {
       const res = await getDEMSessions();
       const data = res.data;
       setSessions(data || []);
+      const summaries: Record<string, { completed: number; failed: number; pending_approval: number }> = {};
+      for (const session of data || []) {
+        try {
+          const stateRes = await getDEMExecutionState(session.session_id);
+          const state = stateRes.data;
+          summaries[session.session_id] = {
+            completed: state.completed_missions || 0,
+            failed: state.failed_missions || 0,
+            pending_approval: state.pending_approval_missions || 0,
+          };
+        } catch {
+          summaries[session.session_id] = { completed: 0, failed: 0, pending_approval: 0 };
+        }
+      }
+      setExecutionSummaries(summaries);
     } catch {
       toast({ title: t('common.error'), description: 'Failed to load sessions', variant: 'destructive' });
     } finally {
@@ -118,6 +134,11 @@ export function DEMSessions() {
                     <p className="text-xs text-slate-500">
                       {new Date(session.started_at).toLocaleString()} · {session.mission_count} missions
                     </p>
+                    {executionSummaries[session.session_id] && (
+                      <p className="text-xs text-slate-500">
+                        Completed: {executionSummaries[session.session_id].completed} · Failed: {executionSummaries[session.session_id].failed} · Pending Approval: {executionSummaries[session.session_id].pending_approval}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

@@ -170,6 +170,13 @@ export const approveMission = (approvalId: string) =>
 export const rejectMission = (approvalId: string) =>
   api.post(`/api/v1/digital-export-manager/approvals/${approvalId}/reject`);
 
+export const getDEMInsights = (sessionId: string) =>
+  api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/insights`);
+export const getDEMDecisions = (sessionId: string) =>
+  api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/decisions`);
+export const getDEMExecutionState = (sessionId: string) =>
+  api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/execution-state`);
+
 export const getGraphNode = (entityType: string, entityId: number) =>
   api.get(`/api/v1/knowledge-graph/nodes/${entityType}/${entityId}`);
 export const searchGraph = (query: string, entityType?: string) =>

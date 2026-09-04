@@ -30,6 +30,9 @@ from app.agent.plan.replanning import ReplanningHandler
 from app.agent.outcome import ExecutionOutcome, OutcomeEvaluator, OutcomeFeedbackLoop
 from app.agent.response.builder import ResponseBuilder
 from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
+from app.agent.insights.builder import InsightBuilder
+from app.agent.insights.extractor import PatternExtractor
+from app.agent.insights.generator import InsightGenerator
 from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
 from app.routers.auth import get_current_user, require_role
@@ -645,3 +648,210 @@ async def reject_approval(
         decided_at=decided_at,
         message="Rejection recorded. Mission remains in pending_approval state.",
     )
+
+
+class AgentInsightResponse(BaseModel):
+    goal_id: Optional[str] = None
+    plan_id: Optional[str] = None
+    session_id: str
+    insight_count: int = 0
+    high_severity_count: int = 0
+    insights: List[Dict[str, Any]] = []
+    summary: str = ""
+
+
+class AgentDecisionResponse(BaseModel):
+    session_id: str
+    mission_id: Optional[str] = None
+    decision_id: Optional[str] = None
+    chosen_path: Optional[str] = None
+    reasoning: Optional[str] = None
+    alternatives: List[str] = []
+    requires_approval: bool = False
+    approval_status: str = "pending"
+    created_at: Optional[datetime] = None
+
+
+class AgentExecutionStateResponse(BaseModel):
+    session_id: str
+    goal_id: Optional[str] = None
+    plan_id: Optional[str] = None
+    goal_status: Optional[str] = None
+    plan_status: Optional[str] = None
+    mission_count: int = 0
+    completed_missions: int = 0
+    failed_missions: int = 0
+    pending_approval_missions: int = 0
+    autonomy_level: Optional[str] = None
+
+
+@router.get("/sessions/{session_id}/insights", response_model=AgentInsightResponse)
+async def get_session_insights(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    session_manager: SessionManager = Depends(get_session_manager),
+    memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
+):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session.user_id != current_user.get("id"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    context = session_manager.get_context(session_id) or {}
+    goal_id = context.get("goal_id")
+    plan_id = context.get("plan_id")
+
+    goal_obj = None
+    plan_obj = None
+    if goal_id:
+        try:
+            goal_repo = GoalRepository(get_db)
+            goal_obj = goal_repo.get(goal_id)
+        except Exception:
+            pass
+
+    if plan_id:
+        try:
+            plan_repo = PlanRepository(get_db)
+            plan_obj = plan_repo.get(plan_id)
+        except Exception:
+            pass
+
+    missions = session_manager.get_missions(session_id) or []
+    history = [
+        {
+            "mission_id": m.get("mission_id"),
+            "status": m.get("status"),
+            "evaluation": m.get("evaluation", {}),
+            "outcome_timestamp": m.get("updated_at"),
+        }
+        for m in missions
+        if isinstance(m, dict)
+    ]
+
+    extractor = PatternExtractor()
+    patterns = extractor.extract(
+        goal=goal_obj,
+        plan=plan_obj,
+        missions=[],
+        execution_history=history,
+        memory_provider=memory_provider,
+        user_id=current_user.get("id"),
+        session_id=session_id,
+    )
+
+    generator = InsightGenerator()
+    insights = generator.generate(
+        patterns,
+        goal=goal_obj,
+        plan=plan_obj,
+        session_id=session_id,
+        user_id=current_user.get("id"),
+    )
+
+    builder = InsightBuilder()
+    insight_set = builder.build_insight_set(insights, goal=goal_obj, plan=plan_obj)
+
+    return AgentInsightResponse(
+        goal_id=insight_set.get("goal_id"),
+        plan_id=insight_set.get("plan_id"),
+        session_id=session_id,
+        insight_count=insight_set.get("insight_count", 0),
+        high_severity_count=insight_set.get("high_severity_count", 0),
+        insights=insight_set.get("insights", []),
+        summary=insight_set.get("summary", ""),
+    )
+
+
+@router.get("/sessions/{session_id}/decisions", response_model=List[AgentDecisionResponse])
+async def get_session_decisions(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    session_manager: SessionManager = Depends(get_session_manager),
+):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session.user_id != current_user.get("id"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    context = session_manager.get_context(session_id) or {}
+    missions = session_manager.get_missions(session_id) or []
+    decisions = []
+    for m in missions:
+        if not isinstance(m, dict):
+            continue
+        decision_context = m.get("decision_context") or {}
+        decisions.append(
+            AgentDecisionResponse(
+                session_id=session_id,
+                mission_id=m.get("mission_id"),
+                decision_id=decision_context.get("decision_id"),
+                chosen_path=decision_context.get("chosen_path"),
+                reasoning=m.get("reasoning"),
+                alternatives=decision_context.get("alternatives", []),
+                requires_approval=m.get("requires_approval", False),
+                approval_status=m.get("approval_status", "pending"),
+                created_at=m.get("created_at"),
+            )
+        )
+    return decisions
+
+
+@router.get("/sessions/{session_id}/execution-state", response_model=AgentExecutionStateResponse)
+async def get_session_execution_state(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    session_manager: SessionManager = Depends(get_session_manager),
+):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session.user_id != current_user.get("id"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    context = session_manager.get_context(session_id) or {}
+    goal_id = context.get("goal_id")
+    plan_id = context.get("plan_id")
+    missions = session_manager.get_missions(session_id) or []
+
+    completed = sum(1 for m in missions if isinstance(m, dict) and m.get("status") == "completed")
+    failed = sum(1 for m in missions if isinstance(m, dict) and m.get("status") == "failed")
+    pending_approval = sum(1 for m in missions if isinstance(m, dict) and m.get("status") == "pending_approval")
+
+    goal_status = None
+    plan_status = None
+    autonomy_level = None
+    if goal_id:
+        try:
+            goal_repo = GoalRepository(get_db)
+            goal_obj = goal_repo.get(goal_id)
+            if goal_obj:
+                goal_status = goal_obj.status
+                autonomy_level = goal_obj.autonomy_level
+        except Exception:
+            pass
+
+    if plan_id:
+        try:
+            plan_repo = PlanRepository(get_db)
+            plan_obj = plan_repo.get(plan_id)
+            if plan_obj:
+                plan_status = plan_obj.status
+        except Exception:
+            pass
+
+    return AgentExecutionStateResponse(
+        session_id=session_id,
+        goal_id=goal_id,
+        plan_id=plan_id,
+        goal_status=goal_status,
+        plan_status=plan_status,
+        mission_count=len(missions),
+        completed_missions=completed,
+        failed_missions=failed,
+        pending_approval_missions=pending_approval,
+        autonomy_level=autonomy_level,
+    )
+

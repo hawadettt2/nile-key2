@@ -102,6 +102,11 @@ export function DEMMissions() {
                   <p className="text-xs text-slate-500">
                     {new Date(mission.created_at).toLocaleString()} · Session {mission.session_id.slice(0, 8)}...
                   </p>
+                  {mission.result && (
+                    <p className="text-xs text-slate-500">
+                      Outcome: {mission.result.mission_status || 'unknown'} · Steps: {(mission.result.results || []).length}
+                    </p>
+                  )}
                 </div>
                 <Badge variant={statusColors[mission.status] || 'secondary'}>{mission.status}</Badge>
               </div>
