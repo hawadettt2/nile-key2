@@ -139,6 +139,13 @@ class ReasoningEngine:
             knowledge = await self._query_knowledge(intent, parameters)
             research = await self._query_external_research(intent, parameters)
 
+            execution_memories = request_context.get("execution_memories") or []
+            if execution_memories:
+                memories = list(memories) + [
+                    m for m in execution_memories
+                    if isinstance(m, dict) and m.get("key") not in {x.get("key") for x in memories if isinstance(x, dict)}
+                ]
+
             # Preserve orchestration metadata in request_context
             orchestration_meta = getattr(self, "_last_orchestration_meta", None)
             if orchestration_meta:
