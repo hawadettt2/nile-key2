@@ -176,6 +176,10 @@ export const getDEMDecisions = (sessionId: string) =>
   api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/decisions`);
 export const getDEMExecutionState = (sessionId: string) =>
   api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/execution-state`);
+export const getDEMWorkflow = (sessionId: string) =>
+  api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/workflow`);
+export const getDEMWorkflowSummary = (sessionId: string) =>
+  api.get(`/api/v1/digital-export-manager/sessions/${sessionId}/workflow/summary`);
 
 export const getGraphNode = (entityType: string, entityId: number) =>
   api.get(`/api/v1/knowledge-graph/nodes/${entityType}/${entityId}`);

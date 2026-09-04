@@ -59,6 +59,32 @@ interface AgentExecutionState {
   autonomy_level?: string | null;
 }
 
+interface WorkflowState {
+  session_id: string;
+  workflow_id?: number | null;
+  workflow_number?: string | null;
+  state?: string | null;
+  customer_id?: number | null;
+  supplier_id?: number | null;
+  invoice_id?: number | null;
+  customs_declaration_id?: number | null;
+  shipment_id?: number | null;
+  items: Array<Record<string, unknown>>;
+}
+
+interface WorkflowSummary {
+  session_id: string;
+  workflow?: Record<string, unknown> | null;
+  customer?: Record<string, unknown> | null;
+  supplier?: Record<string, unknown> | null;
+  invoice?: Record<string, unknown> | null;
+  customs_declaration?: Record<string, unknown> | null;
+  shipment?: Record<string, unknown> | null;
+  documents: Array<Record<string, unknown>>;
+  audit_logs: Array<Record<string, unknown>>;
+  items: Array<Record<string, unknown>>;
+}
+
 interface DEMState {
   activeSession: DEMSession | null;
   missions: Mission[];
@@ -67,6 +93,8 @@ interface DEMState {
   insights: AgentInsight[];
   decisions: AgentDecision[];
   executionState: AgentExecutionState | null;
+  workflow: WorkflowState | null;
+  workflowSummary: WorkflowSummary | null;
   isLoading: boolean;
   error: string | null;
   setActiveSession: (session: DEMSession | null) => void;
@@ -76,6 +104,8 @@ interface DEMState {
   setInsights: (insights: AgentInsight[]) => void;
   setDecisions: (decisions: AgentDecision[]) => void;
   setExecutionState: (state: AgentExecutionState | null) => void;
+  setWorkflow: (workflow: WorkflowState | null) => void;
+  setWorkflowSummary: (workflowSummary: WorkflowSummary | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
@@ -89,6 +119,8 @@ const initialState = {
   insights: [],
   decisions: [],
   executionState: null,
+  workflow: null,
+  workflowSummary: null,
   isLoading: false,
   error: null,
 };
@@ -102,6 +134,8 @@ export const useDEMStore = create<DEMState>((set) => ({
   setInsights: (insights) => set({ insights }),
   setDecisions: (decisions) => set({ decisions }),
   setExecutionState: (executionState) => set({ executionState }),
+  setWorkflow: (workflow) => set({ workflow }),
+  setWorkflowSummary: (workflowSummary) => set({ workflowSummary }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   reset: () => set(initialState),

@@ -1,4 +1,6 @@
 import pytest
+import sqlite3
+from app.core.config import settings
 
 
 def _unique_credentials(role="staff"):
@@ -9,17 +11,33 @@ def _unique_credentials(role="staff"):
         "username": f"test_user_{unique_id}",
         "full_name": "Test User",
         "password": "TestPassword123!",
-        "role": role,
     }
 
 
 def _register_and_login(client, role="staff"):
     credentials = _unique_credentials(role)
-    client.post("/api/v1/auth/register", json=credentials)
+    register_resp = client.post("/api/v1/auth/register", json=credentials)
+    assert register_resp.status_code == 200, f"Register failed: {register_resp.text}"
+    owner_resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!"
+    })
+    assert owner_resp.status_code == 200
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = ?", (credentials["email"],))
+    row = cursor.fetchone()
+    user_id = row[0] if row else None
+    conn.close()
+    if user_id:
+        approve_resp = client.post(f"/api/v1/users/{user_id}/approve?role={role}", json={})
+        assert approve_resp.status_code == 200, f"Approve failed: {approve_resp.text}"
     login_resp = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
     })
+    assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
     return login_resp.json()["access_token"], credentials
 
 
@@ -97,10 +115,20 @@ def test_update_export_workflow_authorized(client):
 
 def test_submit_export_workflow_authorized(client):
     token, _ = _register_and_login(client, role="logistics")
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO shipments (customer_id, supplier_id, origin, destination, carrier, service_type, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (1, 1, "Cairo", "Dubai", "LetMeShip", "Standard", "draft", "2024-01-01T00:00:00", "2024-01-01T00:00:00")
+    )
+    shipment_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
     create_resp = client.post("/api/v1/export-workflows", json={
         "customer_id": 1,
         "supplier_id": 1,
-        "shipment_id": 1,
+        "shipment_id": shipment_id,
     }, headers={"Authorization": f"Bearer {token}"})
     workflow_id = create_resp.json()["id"]
 

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
-import { getDashboard, getDEMExecutionState, getDEMInsights } from '@/services/api';
+import { getDashboard, getDEMExecutionState, getDEMInsights, getDEMWorkflow } from '@/services/api';
 import { useDEMStore } from '@/store/demStore';
 import { Truck, Users, UserCheck, FileText, TrendingUp, Bell, Activity, Lightbulb } from 'lucide-react';
 
@@ -37,7 +37,7 @@ export function Dashboard() {
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { activeSession, executionState, insights, setExecutionState, setInsights } = useDEMStore();
+  const { activeSession, executionState, insights, workflow, setExecutionState, setInsights, setWorkflow } = useDEMStore();
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -63,8 +63,11 @@ export function Dashboard() {
       getDEMInsights(activeSession.session_id)
         .then((res) => setInsights(res.data.insights || []))
         .catch(() => {});
+      getDEMWorkflow(activeSession.session_id)
+        .then((res) => setWorkflow(res.data))
+        .catch(() => {});
     }
-  }, [activeSession, setExecutionState, setInsights]);
+  }, [activeSession, setExecutionState, setInsights, setWorkflow]);
 
   useEffect(() => {
     const timer = setInterval(loadDashboard, POLL_INTERVAL_MS);
@@ -174,6 +177,17 @@ export function Dashboard() {
                 <div><span className="block text-slate-400">Completed</span><span className="font-medium">{executionState.completed_missions}</span></div>
                 <div><span className="block text-slate-400">Failed</span><span className="font-medium">{executionState.failed_missions}</span></div>
                 <div><span className="block text-slate-400">Pending Approval</span><span className="font-medium">{executionState.pending_approval_missions}</span></div>
+              </div>
+            )}
+            {workflow && (
+              <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <h4 className="text-sm font-semibold text-slate-900 mb-2">Workflow Status</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-slate-600">
+                  <div><span className="block text-slate-400">Workflow</span><span className="font-medium">{workflow.workflow_number || workflow.workflow_id || '—'}</span></div>
+                  <div><span className="block text-slate-400">State</span><span className="font-medium capitalize">{workflow.state || '—'}</span></div>
+                  <div><span className="block text-slate-400">Customer</span><span className="font-medium">{workflow.customer_id || '—'}</span></div>
+                  <div><span className="block text-slate-400">Supplier</span><span className="font-medium">{workflow.supplier_id || '—'}</span></div>
+                </div>
               </div>
             )}
           </div>

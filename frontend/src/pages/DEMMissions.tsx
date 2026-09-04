@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Search } from 'lucide-react';
 import { useDEMStore } from '@/store/demStore';
-import { getDEMSession } from '@/services/api';
+import { getDEMSession, getDEMWorkflow } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +20,7 @@ const statusColors: Record<string, 'default' | 'secondary' | 'destructive' | 'ou
 export function DEMMissions() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { missions, activeSession, setMissions } = useDEMStore();
+  const { missions, activeSession, setMissions, workflow, setWorkflow } = useDEMStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredMissions, setFilteredMissions] = useState<typeof missions>([]);
 
@@ -47,6 +47,14 @@ export function DEMMissions() {
         .catch(() => {});
     }
   }, [missions.length, activeSession, setMissions]);
+
+  useEffect(() => {
+    if (activeSession?.session_id) {
+      getDEMWorkflow(activeSession.session_id)
+        .then((res) => setWorkflow(res.data))
+        .catch(() => {});
+    }
+  }, [activeSession, setWorkflow]);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -104,11 +112,16 @@ export function DEMMissions() {
                   </p>
                   {mission.result && (
                     <p className="text-xs text-slate-500">
-                      Outcome: {mission.result.mission_status || 'unknown'} · Steps: {(mission.result.results || []).length}
+                      Outcome: {(mission.result as any)?.mission_status || 'unknown'} · Steps: {((mission.result as any)?.results || []).length}
                     </p>
                   )}
                 </div>
-                <Badge variant={statusColors[mission.status] || 'secondary'}>{mission.status}</Badge>
+                <div className="flex items-center gap-2">
+                  {workflow && (
+                    <Badge variant="outline" className="text-xs capitalize">{workflow.state || 'workflow'}</Badge>
+                  )}
+                  <Badge variant={statusColors[mission.status] || 'secondary'}>{mission.status}</Badge>
+                </div>
               </div>
             </Card>
           ))}

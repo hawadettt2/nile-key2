@@ -33,6 +33,7 @@ from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
 from app.agent.insights.builder import InsightBuilder
 from app.agent.insights.extractor import PatternExtractor
 from app.agent.insights.generator import InsightGenerator
+from app.agent.workflow.orchestrator import WorkflowOrchestrator
 from app.services.trade_intelligence import get_knowledge_registry
 from app.core.database import get_db
 from app.routers.auth import get_current_user, require_role
@@ -48,6 +49,10 @@ def get_session_manager() -> SessionManager:
 
 def get_memory_provider() -> SQLiteMemoryProvider:
     return SQLiteMemoryProvider(db_path="nile_key.db")
+
+
+def get_workflow_orchestrator() -> WorkflowOrchestrator:
+    return WorkflowOrchestrator(db_session_factory=get_db, current_user={})
 
 
 def get_reasoning_engine() -> ReasoningEngine:
@@ -221,6 +226,7 @@ async def create_mission(
     session_manager: SessionManager = Depends(get_session_manager),
     memory_provider: SQLiteMemoryProvider = Depends(get_memory_provider),
     reasoning_engine: ReasoningEngine = Depends(get_reasoning_engine),
+    workflow_orchestrator: WorkflowOrchestrator = Depends(get_workflow_orchestrator),
 ):
     session = session_manager.get_session(session_id)
     if not session:
@@ -329,6 +335,18 @@ async def create_mission(
         session_context["plan_id"] = goal_plan_context.get("plan_id")
         session_context["plan_constraints"] = goal_plan_context.get("plan_constraints", [])
 
+    # Workflow-Aware Mission Orchestration: ensure business workflow exists
+    workflow_info = None
+    try:
+        workflow_info = await workflow_orchestrator.ensure_workflow_for_mission(
+            session_id=session_id,
+            mission_type=request.mission_type.value,
+            payload=request.payload,
+            user_id=current_user.get("id"),
+        )
+    except Exception:
+        pass
+
     try:
         task_planner = TaskPlanner(tool_registry=tool_registry)
         plan_result = task_planner.plan(decision_for_planner, session_context)
@@ -405,6 +423,18 @@ async def create_mission(
             goal_plan_context=goal_plan_context,
             session_context=session_context,
         )
+
+        # Workflow-Aware Mission Orchestration: update workflow state based on outcome
+        try:
+            await workflow_orchestrator.update_workflow_state(
+                session_id=session_id,
+                mission_type=request.mission_type.value,
+                mission_status=final_status,
+                mission_result=execution_output,
+                user_id=current_user.get("id"),
+            )
+        except Exception:
+            pass
 
         goal_obj = None
         plan_obj = None
@@ -853,5 +883,97 @@ async def get_session_execution_state(
         failed_missions=failed,
         pending_approval_missions=pending_approval,
         autonomy_level=autonomy_level,
+    )
+
+
+class WorkflowStateResponse(BaseModel):
+    session_id: str
+    workflow_id: Optional[int] = None
+    workflow_number: Optional[str] = None
+    state: Optional[str] = None
+    customer_id: Optional[int] = None
+    supplier_id: Optional[int] = None
+    invoice_id: Optional[int] = None
+    customs_declaration_id: Optional[int] = None
+    shipment_id: Optional[int] = None
+    items: List[Dict[str, Any]] = []
+
+
+class WorkflowSummaryResponse(BaseModel):
+    session_id: str
+    workflow: Optional[Dict[str, Any]] = None
+    customer: Optional[Dict[str, Any]] = None
+    supplier: Optional[Dict[str, Any]] = None
+    invoice: Optional[Dict[str, Any]] = None
+    customs_declaration: Optional[Dict[str, Any]] = None
+    shipment: Optional[Dict[str, Any]] = None
+    documents: List[Dict[str, Any]] = []
+    audit_logs: List[Dict[str, Any]] = []
+    items: List[Dict[str, Any]] = []
+
+
+@router.get("/sessions/{session_id}/workflow", response_model=WorkflowStateResponse)
+async def get_session_workflow(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    session_manager: SessionManager = Depends(get_session_manager),
+    workflow_orchestrator: WorkflowOrchestrator = Depends(get_workflow_orchestrator),
+):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session.user_id != current_user.get("id"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    workflow = await workflow_orchestrator.get_workflow_state(session_id)
+    if not workflow:
+        return WorkflowStateResponse(session_id=session_id)
+
+    return WorkflowStateResponse(
+        session_id=session_id,
+        workflow_id=workflow.get("id"),
+        workflow_number=workflow.get("workflow_number"),
+        state=workflow.get("state"),
+        customer_id=workflow.get("customer_id"),
+        supplier_id=workflow.get("supplier_id"),
+        invoice_id=workflow.get("invoice_id"),
+        customs_declaration_id=workflow.get("customs_declaration_id"),
+        shipment_id=workflow.get("shipment_id"),
+        items=workflow.get("items", []),
+    )
+
+
+@router.get("/sessions/{session_id}/workflow/summary", response_model=WorkflowSummaryResponse)
+async def get_session_workflow_summary(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+    session_manager: SessionManager = Depends(get_session_manager),
+    workflow_orchestrator: WorkflowOrchestrator = Depends(get_workflow_orchestrator),
+):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if session.user_id != current_user.get("id"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    workflow = await workflow_orchestrator.get_workflow_state(session_id)
+    if not workflow:
+        return WorkflowSummaryResponse(session_id=session_id)
+
+    # Use existing business workflow summary generator
+    from app.services.workflow import generate_workflow_summary
+    summary = generate_workflow_summary(workflow_id=workflow["id"])
+
+    return WorkflowSummaryResponse(
+        session_id=session_id,
+        workflow=summary.get("workflow"),
+        customer=summary.get("customer"),
+        supplier=summary.get("supplier"),
+        invoice=summary.get("invoice"),
+        customs_declaration=summary.get("customs_declaration"),
+        shipment=summary.get("shipment"),
+        documents=summary.get("documents", []),
+        audit_logs=summary.get("audit_logs", []),
+        items=summary.get("items", []),
     )
 
