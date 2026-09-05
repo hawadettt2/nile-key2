@@ -229,15 +229,9 @@ class PatternExtractor:
                 import asyncio
                 try:
                     loop = asyncio.get_running_loop()
+                    return []
                 except RuntimeError:
-                    loop = None
-                if loop is not None and loop.is_running():
-                    new_loop = asyncio.new_event_loop()
-                    try:
-                        return new_loop.run_until_complete(result) or []
-                    finally:
-                        new_loop.close()
-                return asyncio.run(result) or []
+                    return asyncio.run(result) or []
             return result or []
         except Exception:
             return []

@@ -253,10 +253,15 @@ class TestGoalEvolutionHandler:
             proposed_changes={"constraints": [{"type": "soft_region"}]},
         )
         handler.execute("goal-1", 1, "session-1", signal)
-        memory_provider.store.assert_called_once()
-        call_kwargs = memory_provider.store.call_args.kwargs
-        assert call_kwargs["memory_type"] == "goal_evolution"
-        assert call_kwargs["importance"] == 0.8
+        assert memory_provider.store.call_count == 2
+
+        direct_call = memory_provider.store.call_args_list[0]
+        cross_component_call = memory_provider.store.call_args_list[1]
+
+        assert direct_call.kwargs["memory_type"] == "goal_evolution"
+        assert direct_call.kwargs["importance"] == 0.8
+        assert cross_component_call.kwargs["memory_type"] == "cross_component"
+        assert cross_component_call.kwargs["key"].startswith("goal_evolution:")
 
     def test_execute_supersedes_old_plan(self):
         handler, _, _, _, old_plan, _, _ = self._setup_mocks()

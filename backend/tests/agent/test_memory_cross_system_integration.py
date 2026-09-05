@@ -1,5 +1,6 @@
 import pytest
 import sqlite3
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
 
@@ -7,7 +8,7 @@ from app.agent.decision_engine.engine import ReasoningEngine
 from app.agent.insights.extractor import PatternExtractor
 from app.agent.goal_evolution import GoalEvolutionHandler, GoalEvolutionSignal
 from app.agent.outcome import ExecutionOutcome, OutcomeEvaluator, OutcomeFeedbackLoop
-from app.agent.memory.cross_system import recall_cross_system, store_cross_component
+from app.agent.memory.cross_system import recall_cross_system, recall_cross_session, store_cross_component, store_cross_component_sync
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 
 
@@ -53,8 +54,7 @@ class TestDecisionEngineCrossSystemMemory:
 
 
 class TestInsightsCrossComponentMemory:
-    @pytest.mark.asyncio
-    async def test_cross_component_memory_recalled_in_insights(self, tmp_path):
+    def test_cross_component_memory_recalled_in_insights(self, tmp_path):
         db_path = str(tmp_path / "test_insights.db")
         conn = sqlite3.connect(db_path)
         conn.execute("""
@@ -69,13 +69,13 @@ class TestInsightsCrossComponentMemory:
         conn.close()
 
         provider = SQLiteMemoryProvider(db_path=db_path)
-        await provider.store(
+        asyncio.run(provider.store(
             1,
             "session-1",
             "insights:cross_component_pattern:workflow",
             {"pattern": "success"},
             memory_type="cross_component",
-        )
+        ))
 
         extractor = PatternExtractor()
         patterns = extractor.extract(
@@ -98,10 +98,21 @@ class TestInsightsCrossComponentMemory:
 
 
 class TestGoalEvolutionCrossComponentMemory:
-    @pytest.mark.asyncio
-    async def test_goal_evolution_stores_cross_component(self):
-        memory_provider = AsyncMock()
-        memory_provider.store.return_value = "memory-123"
+    def test_goal_evolution_stores_cross_component(self, tmp_path):
+        db_path = str(tmp_path / "test_goal_evolution.db")
+        conn = sqlite3.connect(db_path)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_sessions (
+                id TEXT PRIMARY KEY,
+                user_id INTEGER,
+                status TEXT
+            )
+        """)
+        conn.execute("INSERT INTO agent_sessions (id, user_id, status) VALUES (?, ?, ?)", ("session-1", 1, "active"))
+        conn.commit()
+        conn.close()
+
+        provider = SQLiteMemoryProvider(db_path=db_path)
 
         goal_manager = MagicMock()
         goal_repo = MagicMock()
@@ -114,7 +125,7 @@ class TestGoalEvolutionCrossComponentMemory:
             plan_planner=plan_planner,
             plan_manager=plan_manager,
             plan_repository=plan_repo,
-            memory_provider=memory_provider,
+            memory_provider=provider,
         )
         goal = MagicMock()
         goal.goal_id = "goal-1"
@@ -131,6 +142,7 @@ class TestGoalEvolutionCrossComponentMemory:
 
         new_plan = MagicMock()
         new_plan.plan_id = "plan-2"
+        plan_planner.decompose_goal_to_plan.return_value = (new_plan, [])
         plan_manager.create_plan.return_value = new_plan
         plan_manager.create_missions.return_value = []
 
@@ -140,32 +152,47 @@ class TestGoalEvolutionCrossComponentMemory:
             session_id="session-1",
             signal=GoalEvolutionSignal(
                 goal_id="goal-1",
-                decision="evolve",
+                decision="goal_evolved",
                 reason="test",
                 evidence={},
                 proposed_changes={},
             ),
         )
-        store_calls = memory_provider.store.call_args_list
-        cross_component_calls = [
-            call for call in store_calls
-            if call.args and str(call.args[3]).startswith("goal_evolution:")
-        ]
-        assert len(cross_component_calls) >= 1
+
+        memories = asyncio.run(provider.recall(
+            1,
+            "session-1",
+            "goal_evolution:evolution_goal-1_plan-2",
+            limit=10,
+            cross_session=True,
+        ))
+        assert len(memories) >= 1
+        assert memories[0]["key"] == "goal_evolution:evolution_goal-1_plan-2"
 
 
 class TestOutcomeFeedbackCrossComponentMemory:
     @pytest.mark.asyncio
-    async def test_outcome_feedback_stores_cross_component(self):
-        memory_provider = AsyncMock()
-        memory_provider.store.return_value = "memory-123"
+    async def test_outcome_feedback_stores_cross_component(self, tmp_path):
+        db_path = str(tmp_path / "test_outcome.db")
+        conn = sqlite3.connect(db_path)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_sessions (
+                id TEXT PRIMARY KEY,
+                user_id INTEGER,
+                status TEXT
+            )
+        """)
+        conn.execute("INSERT INTO agent_sessions (id, user_id, status) VALUES (?, ?, ?)", ("session-1", 1, "active"))
+        conn.commit()
+        conn.close()
 
+        provider = SQLiteMemoryProvider(db_path=db_path)
         feedback_loop = OutcomeFeedbackLoop(
             goal_repository=MagicMock(),
             plan_repository=MagicMock(),
             session_manager=MagicMock(),
             audit_recorder=MagicMock(),
-            memory_provider=memory_provider,
+            memory_provider=provider,
         )
 
         outcome = ExecutionOutcome(
@@ -181,12 +208,16 @@ class TestOutcomeFeedbackCrossComponentMemory:
         outcome.outcome_timestamp = datetime.now(timezone.utc)
 
         result = await feedback_loop.process(outcome, goal_plan_context={"user_id": 1, "goal_id": "goal-1", "plan_id": "plan-1"})
-        store_calls = memory_provider.store.call_args_list
-        cross_component_calls = [
-            call for call in store_calls
-            if call.args and str(call.args[3]).startswith("outcome_feedback:")
-        ]
-        assert len(cross_component_calls) >= 1
+
+        memories = await provider.recall(
+            1,
+            "session-1",
+            "outcome_feedback:outcome_mission-1",
+            limit=10,
+            cross_session=True,
+        )
+        assert len(memories) >= 1
+        assert memories[0]["key"] == "outcome_feedback:outcome_mission-1"
 
 
 class TestMemoryGracefulDegradation:
