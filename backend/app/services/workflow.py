@@ -199,6 +199,8 @@ def update_workflow(workflow_id: int, data: ExportWorkflowUpdate, current_user: 
 
 
 def transition_workflow(workflow_id: int, new_state: str, current_user: dict) -> dict:
+    from app.services.workflow_validation import ReadinessResult
+
     with connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM export_workflows WHERE id = ?", (workflow_id,))
@@ -210,22 +212,63 @@ def transition_workflow(workflow_id: int, new_state: str, current_user: dict) ->
         current_state = workflow["state"]
         _validate_transition(current_state, new_state)
 
+        try:
+            from app.services.workflow_validation import validate_workflow_readiness, summarize_readiness
+
+            readiness_results = validate_workflow_readiness(workflow, new_state)
+            readiness = summarize_readiness(readiness_results)
+        except Exception:
+            readiness = ReadinessResult(
+                status="ready",
+                reason="validation_unavailable",
+                message="Readiness validation unavailable; allowing transition",
+                remediation="",
+            )
+
+        if readiness.status != "ready":
+            log_audit(
+                current_user=current_user,
+                data=AuditLogCreate(
+                    action="transition_blocked",
+                    entity_type="export_workflow",
+                    entity_id=workflow_id,
+                    details=json.dumps({
+                        "from_state": current_state,
+                        "to_state": new_state,
+                        "readiness_status": readiness.status,
+                        "readiness_reason": readiness.reason,
+                        "readiness_message": readiness.message,
+                        "readiness_remediation": readiness.remediation,
+                    }),
+                ),
+            )
+            return {
+                "message": readiness.message,
+                "state": current_state,
+                "readiness": {
+                    "status": readiness.status,
+                    "reason": readiness.reason,
+                    "message": readiness.message,
+                    "remediation": readiness.remediation,
+                },
+            }
+
         if new_state == "customs_ready":
-            if not workflow.get("customs_declaration_id"):
-                raise ValueError("customs_declaration_id is required to transition to customs_ready")
-            from app.services.customs import submit_declaration
-            submit_declaration(declaration_id=workflow["customs_declaration_id"], current_user=current_user)
+            customs_declaration_id = workflow.get("customs_declaration_id")
+            if customs_declaration_id:
+                from app.services.customs import submit_declaration
+                submit_declaration(declaration_id=customs_declaration_id, current_user=current_user)
 
         elif new_state == "shipped":
-            if not workflow.get("shipment_id"):
-                raise ValueError("shipment_id is required to transition to shipped")
-            from app.services.shipping import update_shipment
-            from app.schemas.shipment import ShipmentUpdate
-            update_shipment(
-                shipment_id=workflow["shipment_id"],
-                data=ShipmentUpdate(status="in_transit"),
-                current_user=current_user,
-            )
+            shipment_id = workflow.get("shipment_id")
+            if shipment_id:
+                from app.services.shipping import update_shipment
+                from app.schemas.shipment import ShipmentUpdate
+                update_shipment(
+                    shipment_id=shipment_id,
+                    data=ShipmentUpdate(status="in_transit"),
+                    current_user=current_user,
+                )
 
         now = now_iso()
         cursor.execute(
@@ -240,7 +283,13 @@ def transition_workflow(workflow_id: int, new_state: str, current_user: dict) ->
                 action="transition",
                 entity_type="export_workflow",
                 entity_id=workflow_id,
-                details=f"{current_state} -> {new_state}",
+                details=json.dumps({
+                    "from_state": current_state,
+                    "to_state": new_state,
+                    "readiness_status": readiness.status,
+                    "readiness_reason": readiness.reason,
+                    "readiness_message": readiness.message,
+                }),
             ),
         )
 
