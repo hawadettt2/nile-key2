@@ -158,6 +158,57 @@ def init_db():
         _seed_data(cursor, conn)
         conn.commit()
 
+        _register_core_schemas(conn)
+        _run_migrations(conn)
+
+
+def _register_core_schemas(conn: sqlite3.Connection) -> None:
+    from app.core.schema_registry import SchemaRegistry
+
+    registry = SchemaRegistry()
+    registry.register_table("suppliers", {
+        "name": "TEXT NOT NULL",
+        "name_en": "TEXT",
+        "contact_person": "TEXT",
+        "email": "TEXT",
+        "phone": "TEXT",
+        "address": "TEXT",
+        "city": "TEXT",
+        "country": "TEXT DEFAULT 'Egypt'",
+        "tax_id": "TEXT",
+        "commercial_registry": "TEXT",
+        "certificates": "TEXT",
+        "status": "TEXT DEFAULT 'active'",
+        "notes": "TEXT",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "created_by": "INTEGER",
+    })
+    registry.register_table("customers", {
+        "name": "TEXT NOT NULL",
+        "name_en": "TEXT",
+        "contact_person": "TEXT",
+        "email": "TEXT",
+        "phone": "TEXT",
+        "address": "TEXT",
+        "city": "TEXT",
+        "country": "TEXT NOT NULL",
+        "tax_id": "TEXT",
+        "import_license": "TEXT",
+        "category": "TEXT",
+        "notes": "TEXT",
+        "status": "TEXT DEFAULT 'active'",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    })
+    registry.ensure_schema(conn, "suppliers")
+    registry.ensure_schema(conn, "customers")
+
+
+def _run_migrations(conn: sqlite3.Connection) -> None:
+    from app.core.migrations import MigrationRunner, INITIAL_MIGRATIONS
+
+    runner = MigrationRunner(conn)
+    runner.run_migrations(INITIAL_MIGRATIONS)
+
 
 def ensure_columns(c: sqlite3.Cursor, table_name: str, expected_columns: dict[str, str]) -> None:
     existing = {row[1] for row in c.execute(f"PRAGMA table_info({table_name})").fetchall()}

@@ -3,9 +3,10 @@ import io
 from typing import Optional
 
 from app.schemas.customer import CustomerCreate, CustomerUpdate
-from app.services.base import connection, build_list_query, now_iso, execute_update
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
+from app.core.database import get_db, DatabaseSession
+from app.services.base import now_iso
 
 
 def _customer_row_to_response(row: dict) -> dict:
@@ -26,85 +27,110 @@ def list_customers(
     skip: int = 0,
     limit: int = 100,
 ) -> list[dict]:
-    with connection() as conn:
+    from app.services.base import build_list_query
+
+    conn = get_db()
+    try:
         query, params = build_list_query(
             "customers",
             filters={"status": status, "country": country, "category": category},
             search_fields=["name", "name_en", "email", "phone"],
             search=search,
         )
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
+        session = DatabaseSession(conn)
+        rows = session.fetch_all(query, tuple(params))
         return [_customer_row_to_response(dict(r)) for r in rows]
+    finally:
+        conn.close()
 
 
 def get_customer(customer_id: int) -> dict:
-    with connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
-        row = cursor.fetchone()
+    conn = get_db()
+    try:
+        session = DatabaseSession(conn)
+        row = session.fetch_one("SELECT * FROM customers WHERE id = ?", (customer_id,))
         if not row:
             raise ValueError("Customer not found")
         return _customer_row_to_response(dict(row))
+    finally:
+        conn.close()
 
 
 def create_customer(data: CustomerCreate, current_user: dict) -> dict:
-    with connection() as conn:
-        cursor = conn.cursor()
-        now = now_iso()
-        cursor.execute(
-            """INSERT INTO customers (name, contact_person, email, phone, address, city, country,
-               tax_id, import_license, category, notes, status, created_at, created_by)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (data.name, data.contact_person, data.email, data.phone,
-             data.address, data.city, data.country, data.tax_id, data.import_license,
-             data.category, data.notes, "active", now, current_user["id"])
-        )
-        conn.commit()
-        customer_id = cursor.lastrowid
+    conn = get_db()
+    try:
+        session = DatabaseSession(conn)
+        with session.transaction():
+            customer_id = session.insert(
+                "customers",
+                {
+                    "name": data.name,
+                    "name_en": data.name_en,
+                    "contact_person": data.contact_person,
+                    "email": data.email,
+                    "phone": data.phone,
+                    "address": data.address,
+                    "city": data.city,
+                    "country": data.country,
+                    "tax_id": data.tax_id,
+                    "import_license": data.import_license,
+                    "category": data.category,
+                    "notes": data.notes,
+                    "status": "active",
+                    "created_at": now_iso(),
+                    "created_by": current_user["id"],
+                },
+            )
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="customer", entity_id=customer_id, details=data.name),
         )
         return {"id": customer_id, "message": "Customer created successfully"}
+    finally:
+        conn.close()
 
 
 def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict) -> dict:
-    with connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id FROM customers WHERE id = ?", (customer_id,))
-        if not cursor.fetchone():
+    conn = get_db()
+    try:
+        session = DatabaseSession(conn)
+        existing = session.fetch_one("SELECT id FROM customers WHERE id = ?", (customer_id,))
+        if not existing:
             raise ValueError("Customer not found")
-        if not execute_update(
-            conn=conn,
-            table_name="customers",
-            record_id=customer_id,
-            data=data,
-        ):
+
+        updates = {}
+        for field, value in data.model_dump(exclude_unset=True).items():
+            if value is not None:
+                updates[field] = value
+        if not updates:
             return {"message": "No changes"}
+
+        with session.transaction():
+            session.update("customers", customer_id, updates)
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="update", entity_type="customer", entity_id=customer_id),
         )
         return {"message": "Customer updated successfully"}
+    finally:
+        conn.close()
 
 
 def delete_customer(customer_id: int, current_user: dict) -> dict:
-    with connection() as conn:
-        if not execute_update(
-            conn=conn,
-            table_name="customers",
-            record_id=customer_id,
-            data=None,
-            extra_fields={"status": "inactive"},
-        ):
+    conn = get_db()
+    try:
+        session = DatabaseSession(conn)
+        with session.transaction():
+            updated = session.update("customers", customer_id, {"status": "inactive"})
+        if not updated:
             return {"message": "No changes"}
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="delete", entity_type="customer", entity_id=customer_id),
         )
         return {"message": "Customer deactivated successfully"}
+    finally:
+        conn.close()
 
 
 def import_customers(file: io.BytesIO, filename: str, current_user: dict) -> dict:
@@ -112,19 +138,30 @@ def import_customers(file: io.BytesIO, filename: str, current_user: dict) -> dic
         raise ValueError("Only CSV files are allowed")
     content = file.read().decode('utf-8')
     reader = csv.DictReader(io.StringIO(content))
-    with connection() as conn:
-        cursor = conn.cursor()
+    conn = get_db()
+    try:
+        session = DatabaseSession(conn)
         now = now_iso()
         imported = 0
-        for row in reader:
-            cursor.execute(
-                """INSERT INTO customers (name, contact_person, email, phone, address, city, country,
-                   category, status, created_at, created_by)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (row.get("name", ""), row.get("contact_person"), row.get("email"), row.get("phone"),
-                 row.get("address"), row.get("city"), row.get("country", ""), row.get("category"),
-                 "active", now, current_user["id"])
-            )
-            imported += 1
-        conn.commit()
+        with session.transaction():
+            for row in reader:
+                session.insert(
+                    "customers",
+                    {
+                        "name": row.get("name", ""),
+                        "contact_person": row.get("contact_person"),
+                        "email": row.get("email"),
+                        "phone": row.get("phone"),
+                        "address": row.get("address"),
+                        "city": row.get("city"),
+                        "country": row.get("country", ""),
+                        "category": row.get("category"),
+                        "status": "active",
+                        "created_at": now,
+                        "created_by": current_user["id"],
+                    },
+                )
+                imported += 1
         return {"message": f"Imported {imported} customers successfully", "count": imported}
+    finally:
+        conn.close()

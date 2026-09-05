@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from app.core.migrations import MigrationRunner
+from app.core.migrations import MigrationRunner, INITIAL_MIGRATIONS
 
 
 def _make_runner(tmp_path):
@@ -53,3 +53,37 @@ def test_run_migrations_creates_migrations_table(tmp_path):
     rows = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='schema_migrations'").fetchall()
     conn.close()
     assert len(rows) == 1
+
+
+def test_initial_migrations_contains_suppliers_and_customers():
+    versions = [version for version, _ in INITIAL_MIGRATIONS]
+    assert "v1_schema_snapshot" in versions
+    sql = " ".join(sql for _, sql in INITIAL_MIGRATIONS if _ == "v1_schema_snapshot")
+    assert "CREATE TABLE IF NOT EXISTS suppliers" in sql
+    assert "CREATE TABLE IF NOT EXISTS customers" in sql
+
+
+def test_run_initial_migrations_creates_suppliers_and_customers(tmp_path):
+    db_path = str(tmp_path / "test.db")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    runner = MigrationRunner(conn)
+    runner.run_migrations(INITIAL_MIGRATIONS)
+
+    suppliers = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suppliers'").fetchone()
+    customers = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='customers'").fetchone()
+    assert suppliers is not None
+    assert customers is not None
+    assert runner.get_current_version() == "v1_schema_snapshot"
+    conn.close()
+
+
+def test_run_initial_migrations_is_idempotent(tmp_path):
+    db_path = str(tmp_path / "test.db")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    runner = MigrationRunner(conn)
+    runner.run_migrations(INITIAL_MIGRATIONS)
+    runner.run_migrations(INITIAL_MIGRATIONS)
+    assert runner.get_current_version() == "v1_schema_snapshot"
+    conn.close()

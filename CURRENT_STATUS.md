@@ -2,8 +2,8 @@
 
 **Last Updated:** 2026-09-05
 **Branch:** main
-**Commit:** 72bc033
-**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED, Export Readiness Vertical Slice CLOSED, WP-ORM-001 CLOSED)
+**Commit:** HEAD
+**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED, Export Readiness Vertical Slice CLOSED, WP-ORM-001 CLOSED, WP-ORM-002 CLOSED)
 **Project Status:** COMPLETE / CLOSED
 **Closure Date:** 2026-08-23
 **Closure Decision:** Governance Decision Approved — Project Complete / Closure Ready
@@ -58,6 +58,7 @@
 | Credential Management Implementation | ✅ Complete | Credential abstraction layer across FAOSTAT/ETA/LetMeShip/SendCloud/Moaah/TradeData/ZATCA/GCC-Stat/SMTP/LLM; CredentialStore + 3 credential types; 163 tests passing; G1–G6 PASS; AC-1–AC-9 PASS; baseline/commit pending |
 | Export Readiness Vertical Slice | ✅ Complete | Export Readiness frontend + backend composition logic; 7 backend tests + 9 frontend tests; no regressions; CLOSED |
 | WP-ORM-001 | ✅ Complete | Introduced `DatabaseSession`, `SchemaRegistry`, `MigrationRunner`; migrated `supplier.py` to ORM abstraction layer; 20+ unit tests + 6 integration tests; no regressions; `feat(database): introduce ORM abstraction with supplier slice` pushed to origin/main |
+| WP-ORM-002 | ✅ Complete | Activated ORM foundation: registered `suppliers` and `customers` in `SchemaRegistry`; ran `v1_schema_snapshot` migration via `MigrationRunner` inside `init_db()`; migrated `customer.py` to `DatabaseSession`; 35 ORM tests + 42 regression tests passing; `feat(database): activate ORM foundation with customer slice` pushed to origin/main |
 
 ## Export Readiness Vertical Slice Implementation Summary
 

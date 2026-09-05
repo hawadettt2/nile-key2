@@ -33,9 +33,57 @@ class MigrationRunner:
         for version, sql in migrations:
             if current and version <= current:
                 continue
-            self._conn.execute(sql)
+            for statement in sql.strip().split(";"):
+                statement = statement.strip()
+                if not statement:
+                    continue
+                self._conn.execute(statement)
             self._conn.execute(
                 "INSERT INTO schema_migrations (version) VALUES (?)",
                 (version,),
             )
             self._conn.commit()
+
+
+INITIAL_MIGRATIONS: list[tuple[str, str]] = [
+    (
+        "v1_schema_snapshot",
+        """
+        CREATE TABLE IF NOT EXISTS suppliers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            name_en TEXT,
+            contact_person TEXT,
+            email TEXT,
+            phone TEXT,
+            address TEXT,
+            city TEXT,
+            country TEXT DEFAULT 'Egypt',
+            tax_id TEXT,
+            commercial_registry TEXT,
+            certificates TEXT,
+            status TEXT DEFAULT 'active',
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by INTEGER
+        );
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            name_en TEXT,
+            contact_person TEXT,
+            email TEXT,
+            phone TEXT,
+            address TEXT,
+            city TEXT,
+            country TEXT NOT NULL,
+            tax_id TEXT,
+            import_license TEXT,
+            category TEXT,
+            notes TEXT,
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """,
+    ),
+]

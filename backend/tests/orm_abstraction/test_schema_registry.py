@@ -67,3 +67,34 @@ def test_ensure_schema_skips_unregistered_table(tmp_path):
     columns = {row[1] for row in conn.execute("PRAGMA table_info(other_table)").fetchall()}
     assert columns == {"id"}
     conn.close()
+
+
+def test_suppliers_registration_contains_expected_columns():
+    registry = _make_registry()
+    registry.register_table("suppliers", {
+        "name": "TEXT NOT NULL",
+        "name_en": "TEXT",
+        "contact_person": "TEXT",
+        "country": "TEXT DEFAULT 'Egypt'",
+        "created_by": "INTEGER",
+    })
+    table = registry.get_table("suppliers")
+    assert table is not None
+    assert "name" in table.columns
+    assert "country" in table.columns
+    assert "created_by" in table.columns
+
+
+def test_customers_registration_contains_expected_columns():
+    registry = _make_registry()
+    registry.register_table("customers", {
+        "name": "TEXT NOT NULL",
+        "country": "TEXT NOT NULL",
+        "category": "TEXT",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    })
+    table = registry.get_table("customers")
+    assert table is not None
+    assert "name" in table.columns
+    assert "country" in table.columns
+    assert "category" in table.columns
