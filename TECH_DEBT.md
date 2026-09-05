@@ -1,8 +1,8 @@
 # Technical Debt
 
-**Last Updated:** 2026-07-29
+**Last Updated:** 2026-09-05
 **Branch:** main
-**Phase:** 3 — WP-40 Docker Compose Final Verification
+**Phase:** 3 — Phase 3 Readiness (WP-ORM-001 CLOSED)
 **Authority:** PLAN.md (Master Roadmap v2.1) — Single Source of Truth
 
 ---
@@ -10,9 +10,7 @@
 
 | Priority | Debt | Location | Notes |
 |----------|------|----------|-------|
-| MEDIUM | Raw SQL everywhere | `database.py`, all routers | No ORM abstraction; schema changes require coordinated manual updates |
 | MEDIUM | Rate limiting — auth endpoints only | `backend/app/routers/auth.py`, `main.py` | Implemented on auth endpoints via `slowapi`; non-auth endpoint coverage is a separate design decision |
-| MEDIUM | PostgreSQL migration path | Not started | PLAN.md Section 9.9 notes SQLite is implementation detail |
 | LOW | Root `alembic.ini` exists | Project root | Real config is `backend/alembic.ini`; root copy is stale/untracked |
 | LOW | `__pycache__` directories | Throughout Python tree | Mostly gitignored, but scattered `__pycache__` dirs remain |
 | LOW | Email notifications | `backend/app/services/eta/__init__.py` | Notification preparation functions ready; SMTP integration deferred to WP-21 |
@@ -67,3 +65,5 @@ otification_logs integration added in M5-R2 |
 | Shipping state machine | Implemented 7-state shipment state machine (pending, booked, in_transit, delivered, returned, lost, cancelled) | WP-20 |
 | Shipping contacts/addresses | Implemented dedicated `contacts` and `addresses` tables | WP-20 |
 | Shipping scheduler | Integrated APScheduler with daily tracking poll job | WP-20 |
+| Raw SQL everywhere | Introduced `DatabaseSession`, `SchemaRegistry`, `MigrationRunner`; migrated `supplier.py` to ORM abstraction layer; PostgreSQL migration path prepared | WP-ORM-001 |
+| PostgreSQL migration path | `MigrationRunner` and schema registry introduced; PostgreSQL readiness path established without migration | WP-ORM-001 |

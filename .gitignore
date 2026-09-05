@@ -47,6 +47,10 @@ uat_issues.py
 uat_verification*.py
 uat_verify*.py
 
+# Test traceback dumps and temporary output
+*_traceback.txt
+test_output.txt
+
 # Playwright e2e test artifacts
 tests/e2e/evidence/html-report/
 tests/e2e/evidence/results.json
