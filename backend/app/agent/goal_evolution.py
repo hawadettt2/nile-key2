@@ -35,7 +35,7 @@ from .schemas.mission import Mission
 from .outcome import ExecutionOutcome, OutcomeEvaluator
 
 from .memory.interface import MemoryProvider
-from app.agent.memory.cross_system import store_cross_component, recall_cross_component
+from app.agent.memory.cross_system import store_cross_component, store_cross_component_sync
 
 
 class GoalEvolutionSignal:
@@ -393,7 +393,7 @@ class GoalEvolutionHandler:
                     pass
 
                 try:
-                    store_cross_component(
+                    store_cross_component_sync(
                         memory_provider=self.memory_provider,
                         user_id=user_id,
                         session_id=session_id,

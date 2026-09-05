@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+import asyncio
 
 from app.agent.memory.interface import MemoryProvider
 
@@ -146,3 +147,46 @@ async def recall_cross_component(
         return memories or []
     except Exception:
         return []
+
+
+def store_cross_component_sync(
+    memory_provider: Optional[MemoryProvider],
+    user_id: int,
+    session_id: str,
+    component_name: str,
+    key: str,
+    value: Any,
+    memory_type: str = "cross_component",
+    importance: int = 5,
+    expires_at: Optional[Any] = None,
+) -> str:
+    """Synchronous wrapper for store_cross_component for use in sync contexts."""
+    if memory_provider is None:
+        return ""
+
+    scoped_key = f"{component_name}:{key}"
+    try:
+        coro = memory_provider.store(
+            user_id=user_id,
+            session_id=session_id,
+            key=scoped_key,
+            value=value,
+            memory_type=memory_type,
+            importance=importance,
+            expires_at=expires_at,
+        )
+        if hasattr(coro, "__await__"):
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+            if loop is not None and loop.is_running():
+                future = asyncio.run_coroutine_threadsafe(coro, loop)
+                try:
+                    return future.result(timeout=5)
+                except Exception:
+                    return ""
+            return asyncio.run(coro)
+        return coro or ""
+    except Exception:
+        return ""
