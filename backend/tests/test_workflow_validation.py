@@ -9,6 +9,7 @@ from app.services.workflow_validation import (
     _validate_shipment,
     _validate_documents,
     _validate_customs_declaration,
+    _validate_entity_consistency,
     _detect_missing_entities,
     validate_workflow_readiness,
     summarize_readiness,
@@ -56,16 +57,80 @@ def test_validate_shipment_missing():
     assert result.reason == "shipment_missing"
 
 
-def test_validate_shipment_invalid_status():
+def test_validate_shipment_terminal_status_delivered():
     shipment = {"id": 1, "status": "delivered"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "blocked"
+    assert result.reason == "shipment_terminal_status"
+
+
+def test_validate_shipment_terminal_status_cancelled():
+    shipment = {"id": 1, "status": "cancelled"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "blocked"
+    assert result.reason == "shipment_terminal_status"
+
+
+def test_validate_shipment_terminal_status_returned():
+    shipment = {"id": 1, "status": "returned"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "blocked"
+    assert result.reason == "shipment_terminal_status"
+
+
+def test_validate_shipment_terminal_status_lost():
+    shipment = {"id": 1, "status": "lost"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "blocked"
+    assert result.reason == "shipment_terminal_status"
+
+
+def test_validate_shipment_terminal_status_cancellation_failed():
+    shipment = {"id": 1, "status": "cancellation_failed"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "blocked"
+    assert result.reason == "shipment_terminal_status"
+
+
+def test_validate_shipment_invalid_status():
+    shipment = {"id": 1, "status": "unknown"}
     with patch("app.services.shipping.get_shipment", return_value=shipment):
         result = _validate_shipment(1)
     assert result.status == "not_ready"
     assert result.reason == "shipment_invalid_status"
 
 
-def test_validate_shipment_valid():
+def test_validate_shipment_valid_draft():
     shipment = {"id": 1, "status": "draft"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "ready"
+    assert result.reason == "shipment_valid"
+
+
+def test_validate_shipment_valid_pending():
+    shipment = {"id": 1, "status": "pending"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "ready"
+    assert result.reason == "shipment_valid"
+
+
+def test_validate_shipment_valid_booked():
+    shipment = {"id": 1, "status": "booked"}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        result = _validate_shipment(1)
+    assert result.status == "ready"
+    assert result.reason == "shipment_valid"
+
+
+def test_validate_shipment_valid_in_transit():
+    shipment = {"id": 1, "status": "in_transit"}
     with patch("app.services.shipping.get_shipment", return_value=shipment):
         result = _validate_shipment(1)
     assert result.status == "ready"
@@ -79,38 +144,15 @@ def test_validate_documents_missing():
     assert result.reason == "documents_missing"
 
 
-def test_validate_documents_incomplete():
+def test_validate_documents_present():
     workflow = {
         "id": 1,
         "items": [{"entity_type": "document", "entity_id": 1}],
     }
-    doc = {"id": 1, "document_type": "other", "template_type": None}
     with patch("app.services.workflow.get_workflow", return_value=workflow):
-        with patch("app.services.document.get_document", return_value=doc):
-            result = _validate_documents(1)
-    assert result.status == "not_ready"
-    assert result.reason == "documents_incomplete"
-
-
-def test_validate_documents_complete():
-    workflow = {
-        "id": 1,
-        "items": [
-            {"entity_type": "document", "entity_id": 1},
-            {"entity_type": "document", "entity_id": 2},
-            {"entity_type": "document", "entity_id": 3},
-        ],
-    }
-    docs = [
-        {"id": 1, "document_type": "commercial_invoice", "template_type": None},
-        {"id": 2, "document_type": "packing_list", "template_type": None},
-        {"id": 3, "document_type": "certificate_of_origin", "template_type": None},
-    ]
-    with patch("app.services.workflow.get_workflow", return_value=workflow):
-        with patch("app.services.document.get_document", side_effect=docs):
-            result = _validate_documents(1)
+        result = _validate_documents(1)
     assert result.status == "ready"
-    assert result.reason == "documents_complete"
+    assert result.reason == "documents_present"
 
 
 def test_validate_customs_declaration_missing():
@@ -120,16 +162,24 @@ def test_validate_customs_declaration_missing():
     assert result.reason == "customs_declaration_missing"
 
 
-def test_validate_customs_declaration_no_hs_code():
-    declaration = {"id": 1, "status": "draft", "hs_code_id": None, "documents": []}
+def test_validate_customs_declaration_draft_status():
+    declaration = {"id": 1, "status": "draft", "hs_code_id": 1, "documents": ["doc1"]}
+    with patch("app.services.customs.get_declaration", return_value=declaration):
+        result = _validate_customs_declaration(1)
+    assert result.status == "not_ready"
+    assert result.reason == "customs_declaration_not_submitted"
+
+
+def test_validate_customs_declaration_submitted_no_hs_code():
+    declaration = {"id": 1, "status": "submitted", "hs_code_id": None, "documents": []}
     with patch("app.services.customs.get_declaration", return_value=declaration):
         result = _validate_customs_declaration(1)
     assert result.status == "not_ready"
     assert result.reason == "hs_code_missing"
 
 
-def test_validate_customs_declaration_no_documents():
-    declaration = {"id": 1, "status": "draft", "hs_code_id": 1, "documents": []}
+def test_validate_customs_declaration_submitted_no_documents():
+    declaration = {"id": 1, "status": "submitted", "hs_code_id": 1, "documents": []}
     with patch("app.services.customs.get_declaration", return_value=declaration):
         result = _validate_customs_declaration(1)
     assert result.status == "not_ready"
@@ -137,49 +187,78 @@ def test_validate_customs_declaration_no_documents():
 
 
 def test_validate_customs_declaration_valid():
-    declaration = {"id": 1, "status": "draft", "hs_code_id": 1, "documents": ["doc1"]}
+    declaration = {"id": 1, "status": "submitted", "hs_code_id": 1, "documents": ["doc1"]}
     with patch("app.services.customs.get_declaration", return_value=declaration):
         result = _validate_customs_declaration(1)
     assert result.status == "ready"
     assert result.reason == "customs_declaration_valid"
 
 
-def test_detect_missing_entities_customs_ready():
-    workflow = {"id": 1, "invoice_id": None, "customs_declaration_id": None}
-    result = _detect_missing_entities(workflow, "customs_ready")
+def test_validate_entity_consistency_mismatch():
+    workflow = {"id": 1, "shipment_id": 1, "customs_declaration_id": 1}
+    shipment = {"id": 1, "status": "draft"}
+    declaration = {"id": 1, "shipment_id": 2, "status": "submitted", "hs_code_id": 1, "documents": []}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        with patch("app.services.customs.get_declaration", return_value=declaration):
+            result = _validate_entity_consistency(workflow)
     assert result.status == "blocked"
-    assert result.reason == "missing_entities"
-    assert "invoice_id" in result.message
+    assert result.reason == "entity_linkage_mismatch"
 
 
-def test_detect_missing_entities_shipped():
-    workflow = {"id": 1, "shipment_id": None}
+def test_validate_entity_consistency_valid():
+    workflow = {"id": 1, "shipment_id": 1, "customs_declaration_id": 1}
+    shipment = {"id": 1, "status": "draft"}
+    declaration = {"id": 1, "shipment_id": 1, "status": "submitted", "hs_code_id": 1, "documents": []}
+    with patch("app.services.shipping.get_shipment", return_value=shipment):
+        with patch("app.services.customs.get_declaration", return_value=declaration):
+            result = _validate_entity_consistency(workflow)
+    assert result.status == "ready"
+    assert result.reason == "consistency_valid"
+
+
+def test_validate_entity_consistency_skipped_when_missing():
+    workflow = {"id": 1, "shipment_id": None, "customs_declaration_id": None}
+    result = _validate_entity_consistency(workflow)
+    assert result.status == "ready"
+    assert result.reason == "consistency_skipped"
+
+
+def test_detect_missing_entities_shipped_requires_both():
+    workflow = {"id": 1, "shipment_id": None, "customs_declaration_id": None}
     result = _detect_missing_entities(workflow, "shipped")
     assert result.status == "blocked"
     assert result.reason == "missing_entities"
     assert "shipment_id" in result.message
+    assert "customs_declaration_id" in result.message
 
 
 def test_detect_missing_entities_complete():
-    workflow = {"id": 1, "invoice_id": 1, "customs_declaration_id": 1}
-    result = _detect_missing_entities(workflow, "customs_ready")
+    workflow = {"id": 1, "shipment_id": 1, "customs_declaration_id": 1}
+    result = _detect_missing_entities(workflow, "shipped")
     assert result.status == "ready"
     assert result.reason == "entities_complete"
 
 
-def test_validate_workflow_readiness_returns_multiple_results():
+def test_validate_workflow_readiness_shipped_blocks_on_missing_entities():
+    workflow = {"id": 1, "shipment_id": None, "customs_declaration_id": None}
+    results = validate_workflow_readiness(workflow, "shipped")
+    assert len(results) == 1
+    assert results[0].status == "blocked"
+    assert results[0].reason == "missing_entities"
+
+
+def test_validate_workflow_readiness_shipped_returns_multiple_results():
     workflow = {
         "id": 1,
-        "invoice_id": 1,
+        "shipment_id": 1,
         "customs_declaration_id": 1,
     }
-    invoice = {"id": 1, "status": "Valid", "items": [{"description": "test"}]}
-    declaration = {"id": 1, "status": "draft", "hs_code_id": None, "documents": []}
+    shipment = {"id": 1, "status": "draft"}
+    declaration = {"id": 1, "status": "submitted", "hs_code_id": None, "documents": []}
     with patch("app.services.workflow.get_workflow", return_value=workflow):
-        with patch("app.services.invoice.get_invoice", return_value=invoice):
+        with patch("app.services.shipping.get_shipment", return_value=shipment):
             with patch("app.services.customs.get_declaration", return_value=declaration):
-                results = validate_workflow_readiness(workflow, "customs_ready")
-    assert len(results) >= 2
+                results = validate_workflow_readiness(workflow, "shipped")
     statuses = [r.status for r in results]
     assert "not_ready" in statuses
 

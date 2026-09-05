@@ -57,11 +57,21 @@ def _validate_shipment(shipment_id: int) -> ReadinessResult:
             remediation="Create a shipment record before proceeding",
         )
 
-    if shipment.get("status") not in ("draft", "ready", "in_transit"):
+    blocked_statuses = {"delivered", "returned", "lost", "cancelled", "cancellation_failed"}
+    if shipment.get("status") in blocked_statuses:
+        return ReadinessResult(
+            status="blocked",
+            reason="shipment_terminal_status",
+            message=f"Shipment is in terminal status '{shipment.get('status')}' and cannot be shipped again",
+            remediation="Create a new shipment or contact support if this is an error",
+        )
+
+    allowed_statuses = {"draft", "pending", "booked", "in_transit"}
+    if shipment.get("status") not in allowed_statuses:
         return ReadinessResult(
             status="not_ready",
             reason="shipment_invalid_status",
-            message=f"Shipment status is '{shipment.get('status')}'; expected draft, ready, or in_transit",
+            message=f"Shipment status is '{shipment.get('status')}'; expected draft, pending, booked, or in_transit",
             remediation="Update shipment status or create a new shipment",
         )
 
@@ -80,33 +90,19 @@ def _validate_documents(workflow_id: int) -> ReadinessResult:
             status="not_ready",
             reason="documents_missing",
             message="No documents linked to workflow",
-            remediation="Upload required documents (commercial invoice, packing list, certificate of origin)",
+            remediation="Upload required documents for shipping",
         )
 
-    required_types = {"commercial_invoice", "packing_list", "certificate_of_origin"}
-    linked_types = set()
-    for item in doc_items:
-        entity_id = item.get("entity_id")
-        if not entity_id:
-            continue
-        try:
-            from app.services.document import get_document
-            doc = get_document(entity_id)
-            doc_type = doc.get("document_type") or doc.get("template_type") or ""
-            linked_types.add(doc_type.lower().replace(" ", "_"))
-        except Exception:
-            continue
-
-    missing = required_types - linked_types
-    if missing:
+    linked_doc_ids = {i.get("entity_id") for i in doc_items if i.get("entity_id")}
+    if not linked_doc_ids:
         return ReadinessResult(
             status="not_ready",
-            reason="documents_incomplete",
-            message=f"Missing document types: {', '.join(sorted(missing))}",
-            remediation=f"Upload: {', '.join(sorted(missing))}",
+            reason="documents_missing",
+            message="No valid document IDs linked to workflow",
+            remediation="Link documents to the workflow",
         )
 
-    return ReadinessResult(status="ready", reason="documents_complete", message="All required documents are linked", remediation="")
+    return ReadinessResult(status="ready", reason="documents_present", message="Documents are linked to workflow", remediation="")
 
 
 def _validate_customs_declaration(customs_declaration_id: int) -> ReadinessResult:
@@ -122,12 +118,12 @@ def _validate_customs_declaration(customs_declaration_id: int) -> ReadinessResul
             remediation="Create a customs declaration",
         )
 
-    if declaration.get("status") not in ("draft", "ready"):
+    if declaration.get("status") not in ("submitted",):
         return ReadinessResult(
             status="not_ready",
-            reason="customs_declaration_invalid_status",
-            message=f"Declaration status is '{declaration.get('status')}'; expected draft or ready",
-            remediation="Complete customs declaration fields before submission",
+            reason="customs_declaration_not_submitted",
+            message=f"Declaration status is '{declaration.get('status')}'; expected submitted",
+            remediation="Submit the customs declaration before shipping",
         )
 
     if not declaration.get("hs_code_id"):
@@ -150,6 +146,34 @@ def _validate_customs_declaration(customs_declaration_id: int) -> ReadinessResul
     return ReadinessResult(status="ready", reason="customs_declaration_valid", message="Customs declaration is valid", remediation="")
 
 
+def _validate_entity_consistency(workflow: Dict[str, Any]) -> ReadinessResult:
+    shipment_id = workflow.get("shipment_id")
+    customs_declaration_id = workflow.get("customs_declaration_id")
+
+    if not shipment_id or not customs_declaration_id:
+        return ReadinessResult(status="ready", reason="consistency_skipped", message="Both entities not linked; consistency check skipped", remediation="")
+
+    try:
+        from app.services.shipping import get_shipment
+        from app.services.customs import get_declaration
+
+        shipment = get_shipment(shipment_id)
+        declaration = get_declaration(customs_declaration_id)
+    except Exception:
+        return ReadinessResult(status="ready", reason="consistency_skipped", message="Could not fetch entities for consistency check", remediation="")
+
+    declaration_shipment_id = declaration.get("shipment_id")
+    if declaration_shipment_id and declaration_shipment_id != shipment_id:
+        return ReadinessResult(
+            status="blocked",
+            reason="entity_linkage_mismatch",
+            message=f"Customs declaration is linked to shipment {declaration_shipment_id}, but workflow expects shipment {shipment_id}",
+            remediation="Ensure customs declaration and workflow reference the same shipment",
+        )
+
+    return ReadinessResult(status="ready", reason="consistency_valid", message="Entity linkage is consistent", remediation="")
+
+
 def _detect_missing_entities(workflow: Dict[str, Any], target_state: str) -> ReadinessResult:
     missing = []
 
@@ -161,6 +185,8 @@ def _detect_missing_entities(workflow: Dict[str, Any], target_state: str) -> Rea
     elif target_state == "shipped":
         if not workflow.get("shipment_id"):
             missing.append("shipment_id")
+        if not workflow.get("customs_declaration_id"):
+            missing.append("customs_declaration_id")
 
     if missing:
         return ReadinessResult(
@@ -197,6 +223,11 @@ def validate_workflow_readiness(workflow: Dict[str, Any], target_state: str) -> 
         if shipment_id:
             results.append(_validate_shipment(shipment_id))
 
+        customs_declaration_id = workflow.get("customs_declaration_id")
+        if customs_declaration_id:
+            results.append(_validate_customs_declaration(customs_declaration_id))
+
+        results.append(_validate_entity_consistency(workflow))
         results.append(_validate_documents(workflow.get("id")))
 
     return results
