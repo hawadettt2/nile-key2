@@ -93,6 +93,63 @@ def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict |
     return updated
 
 
+class DatabaseSession:
+    """Thin ORM-like wrapper over a raw sqlite3 connection.
+
+    Provides a unified interface that can later be swapped for PostgreSQL
+    without changing service-layer behavior.
+    """
+
+    def __init__(self, conn: sqlite3.Connection):
+        self._conn = conn
+
+    def execute(self, query: str, params: tuple = ()) -> sqlite3.Cursor:
+        return self._conn.execute(query, params)
+
+    def fetch_one(self, query: str, params: tuple = ()) -> dict | None:
+        row = self.execute(query, params).fetchone()
+        return dict(row) if row else None
+
+    def fetch_all(self, query: str, params: tuple = ()) -> list[dict]:
+        return [dict(r) for r in self.execute(query, params).fetchall()]
+
+    def insert(self, table: str, data: dict) -> int:
+        columns = ", ".join(data.keys())
+        placeholders = ", ".join(["?" for _ in data])
+        cursor = self.execute(
+            f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
+            tuple(data.values()),
+        )
+        return cursor.lastrowid
+
+    def update(self, table: str, record_id: int, data: dict) -> bool:
+        if not data:
+            return False
+        set_clause = ", ".join([f"{k} = ?" for k in data.keys()])
+        params = tuple(data.values()) + (record_id,)
+        cursor = self.execute(
+            f"UPDATE {table} SET {set_clause} WHERE id = ?",
+            params,
+        )
+        return cursor.rowcount > 0
+
+    def delete(self, table: str, record_id: int) -> bool:
+        cursor = self.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,))
+        return cursor.rowcount > 0
+
+    @contextmanager
+    def transaction(self):
+        try:
+            yield self
+            self._conn.commit()
+        except Exception:
+            try:
+                self._conn.rollback()
+            except Exception:
+                pass
+            raise
+
+
 def init_db():
     """إنشاء الجداول وإدخال البيانات الأولية"""
     with get_db_connection() as conn:
