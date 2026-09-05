@@ -6,6 +6,7 @@ from ..schemas.decision import Decision
 from ..schemas.enums import MissionType
 from ..exceptions import DecisionEngineException
 from ..approval.gate import ApprovalGate
+from ..memory.cross_system import recall_cross_system, store_cross_system
 from app.schemas.research import ResearchRequest
 
 
@@ -146,6 +147,22 @@ class ReasoningEngine:
                     if isinstance(m, dict) and m.get("key") not in {x.get("key") for x in memories if isinstance(x, dict)}
                 ]
 
+            user_id = request_context.get("user_id")
+            if user_id and self.memory_provider:
+                try:
+                    cross_system_memories = await self._query_cross_system_memory(
+                        user_id=user_id,
+                        session_id=session_id,
+                        query=intent,
+                    )
+                    if cross_system_memories:
+                        memories = list(memories) + [
+                            m for m in cross_system_memories
+                            if isinstance(m, dict) and m.get("key") not in {x.get("key") for x in memories if isinstance(x, dict)}
+                        ]
+                except Exception:
+                    pass
+
             # Preserve orchestration metadata in request_context
             orchestration_meta = getattr(self, "_last_orchestration_meta", None)
             if orchestration_meta:
@@ -232,7 +249,22 @@ class ReasoningEngine:
                         importance=8,
                     )
                 except Exception:
-                    # Graceful degradation: Decision still returns to user even if persistence fails
+                    pass
+
+            user_id = request.get("context", {}).get("user_id")
+            if self.memory_provider and user_id:
+                try:
+                    await store_cross_system(
+                        memory_provider=self.memory_provider,
+                        user_id=user_id,
+                        session_id=session_id,
+                        system_name="decision_engine",
+                        key=f"decision:{decision.decision_id}",
+                        value=decision.model_dump(mode="json"),
+                        memory_type="cross_system_decision",
+                        importance=8,
+                    )
+                except Exception:
                     pass
 
             return decision.model_dump()
@@ -485,9 +517,26 @@ class ReasoningEngine:
         """Query MemoryProvider with graceful degradation."""
         if not self.memory_provider:
             return []
-
         try:
             return await self.memory_provider.recall(session_id, intent, limit=10)
+        except Exception:
+            return []
+
+    async def _query_cross_system_memory(
+        self, user_id: int, session_id: str, intent: str
+    ) -> List[Dict[str, Any]]:
+        """Query cross-system memories with graceful degradation."""
+        if not self.memory_provider:
+            return []
+        try:
+            return await recall_cross_system(
+                memory_provider=self.memory_provider,
+                user_id=user_id,
+                session_id=session_id,
+                system_name="decision_engine",
+                query=intent,
+                limit=10,
+            )
         except Exception:
             return []
 

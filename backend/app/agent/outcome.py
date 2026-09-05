@@ -1,6 +1,8 @@
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
+from app.agent.memory.cross_system import store_cross_component
+
 
 class ExecutionOutcome:
     """Structured execution outcome for traceability and feedback loop."""
@@ -329,6 +331,20 @@ class OutcomeFeedbackLoop:
                 key=f"execution_feedback:{outcome.mission_id}",
                 value=feedback_value,
                 memory_type="execution_feedback",
+                importance=importance,
+            )
+
+            await store_cross_component(
+                memory_provider=self.memory_provider,
+                user_id=user_id,
+                session_id=session_id,
+                component_name="outcome_feedback",
+                key=f"outcome_{outcome.mission_id}",
+                value={
+                    "outcome": outcome_value,
+                    "feedback": feedback_value,
+                },
+                memory_type="cross_component",
                 importance=importance,
             )
         except Exception:

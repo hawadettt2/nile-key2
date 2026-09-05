@@ -85,8 +85,9 @@ def _ensure_memory_schema(conn: sqlite3.Connection) -> None:
 
 
 class SQLiteMemoryProvider(MemoryProvider):
-    def __init__(self, db_path: str = "nile_key.db"):
+    def __init__(self, db_path: str = "nile_key.db", audit_recorder=None):
         self._db_path = db_path
+        self._audit_recorder = audit_recorder
         try:
             conn = sqlite3.connect(db_path)
             _ensure_memory_schema(conn)
@@ -97,39 +98,78 @@ class SQLiteMemoryProvider(MemoryProvider):
     async def _run(self, func, *args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
 
+    def _record_audit(self, operation: str, session_id: str, memory_type: Optional[str] = None, memory_key: Optional[str] = None, result_count: Optional[int] = None, component: Optional[str] = None, system: Optional[str] = None) -> None:
+        if not self._audit_recorder:
+            return
+        try:
+            self._audit_recorder.record_memory_operation(
+                session_id=session_id,
+                agent_id="memory_provider",
+                operation=operation,
+                memory_type=memory_type,
+                memory_key=memory_key,
+                result_count=result_count,
+                component=component,
+                system=system,
+            )
+        except Exception:
+            pass
+
     async def recall(
         self,
         user_id: int,
         session_id: str,
         query: str,
         limit: int = 10,
+        cross_session: bool = False,
     ) -> List[Dict[str, Any]]:
         try:
             def _query():
                 conn = sqlite3.connect(self._db_path)
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
-                cursor.execute(
-                    """
-                    SELECT id, user_id, session_id, key, value, memory_type, importance,
-                           created_at, updated_at
-                    FROM agent_memory
-                    WHERE user_id = ?
-                      AND session_id = ?
-                      AND (
-                            key LIKE ?
-                            OR value LIKE ?
-                          )
-                      AND (expires_at IS NULL OR expires_at > ?)
-                    """,
-                    (
-                        user_id,
-                        session_id,
-                        f"%{query}%",
-                        f"%{query}%",
-                        datetime.utcnow().isoformat(),
-                    ),
-                )
+                if cross_session:
+                    cursor.execute(
+                        """
+                        SELECT id, user_id, session_id, key, value, memory_type, importance,
+                               created_at, updated_at
+                        FROM agent_memory
+                        WHERE user_id = ?
+                          AND (
+                                key LIKE ?
+                                OR value LIKE ?
+                              )
+                          AND (expires_at IS NULL OR expires_at > ?)
+                        """,
+                        (
+                            user_id,
+                            f"%{query}%",
+                            f"%{query}%",
+                            datetime.utcnow().isoformat(),
+                        ),
+                    )
+                else:
+                    cursor.execute(
+                        """
+                        SELECT id, user_id, session_id, key, value, memory_type, importance,
+                               created_at, updated_at
+                        FROM agent_memory
+                        WHERE user_id = ?
+                          AND session_id = ?
+                          AND (
+                                key LIKE ?
+                                OR value LIKE ?
+                              )
+                          AND (expires_at IS NULL OR expires_at > ?)
+                        """,
+                        (
+                            user_id,
+                            session_id,
+                            f"%{query}%",
+                            f"%{query}%",
+                            datetime.utcnow().isoformat(),
+                        ),
+                    )
                 rows = cursor.fetchall()
                 conn.close()
 
@@ -181,6 +221,8 @@ class SQLiteMemoryProvider(MemoryProvider):
         except Exception as exc:
             logger.error("Memory recall failed: %s", exc)
             return []
+        finally:
+            self._record_audit("memory_recall", session_id, memory_type="query", memory_key=query, component="sqlite_provider", system="memory")
 
     async def store(
         self,
@@ -225,6 +267,7 @@ class SQLiteMemoryProvider(MemoryProvider):
                 conn.close()
 
             await self._run(_insert)
+            self._record_audit("memory_store", session_id, memory_type=memory_type, memory_key=key, component="sqlite_provider", system="memory")
             return memory_id
         except Exception as exc:
             logger.error("Memory store failed: %s", exc)
@@ -244,7 +287,9 @@ class SQLiteMemoryProvider(MemoryProvider):
                 conn.close()
                 return deleted
 
-            return await self._run(_delete)
+            result = await self._run(_delete)
+            self._record_audit("memory_forget", session_id, memory_key=key, component="sqlite_provider", system="memory")
+            return result
         except Exception as exc:
             logger.error("Memory forget failed: %s", exc)
             return False

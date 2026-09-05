@@ -86,3 +86,47 @@ class AuditRecorder:
         except Exception:
             pass
 
+    def record_memory_operation(
+        self,
+        session_id: str,
+        agent_id: str,
+        operation: str,
+        memory_type: Optional[str] = None,
+        memory_key: Optional[str] = None,
+        result_count: Optional[int] = None,
+        component: Optional[str] = None,
+        system: Optional[str] = None,
+    ) -> None:
+        timestamp = datetime.now(timezone.utc).isoformat()
+        metadata = {
+            "memory_type": memory_type,
+            "memory_key": memory_key,
+            "result_count": result_count,
+            "component": component,
+            "system": system,
+        }
+
+        try:
+            with self.db_session_factory() as db:
+                db.execute(
+                    """
+                    INSERT INTO agent_audit_logs 
+                    (session_id, agent_id, tool_name, input_hash, output_status, result_ref, duration_ms, timestamp, metadata)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        session_id,
+                        agent_id,
+                        operation,
+                        "",
+                        "success",
+                        json.dumps({}, default=str),
+                        None,
+                        timestamp,
+                        json.dumps(metadata, default=str),
+                    ),
+                )
+                db.commit()
+        except Exception:
+            pass
+

@@ -3,6 +3,8 @@
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
+from app.agent.memory.cross_system import recall_cross_component
+
 
 class ExtractedPatterns:
     """Container for extracted operational patterns."""
@@ -142,6 +144,24 @@ class PatternExtractor:
         if memory_provider and user_id and session_id:
             patterns.memory_restrictions = self._recall_memory(memory_provider, user_id, session_id, "standing_order")
             patterns.memory_preferences = self._recall_memory(memory_provider, user_id, session_id, "preference")
+
+            cross_component_patterns = self._recall_cross_component_memory(
+                memory_provider, user_id, session_id, "insights", "cross_component_pattern"
+            )
+            if cross_component_patterns:
+                patterns.evidence.append({
+                    "source": "cross_component_memory",
+                    "reference_id": session_id,
+                    "data": {
+                        "pattern_count": len(cross_component_patterns),
+                        "components": list({
+                            m.get("key", "").split(":")[0] if m.get("key") else "unknown"
+                            for m in cross_component_patterns
+                            if isinstance(m, dict)
+                        }),
+                    },
+                })
+
             patterns.evidence.append({
                 "source": "memory",
                 "reference_id": session_id,
@@ -189,6 +209,35 @@ class PatternExtractor:
                     return []
                 except RuntimeError:
                     return asyncio.run(result) or []
+            return result or []
+        except Exception:
+            return []
+
+    def _recall_cross_component_memory(
+        self, memory_provider: Any, user_id: int, session_id: str, component_name: str, query: str
+    ) -> List[Dict[str, Any]]:
+        try:
+            result = recall_cross_component(
+                memory_provider=memory_provider,
+                user_id=user_id,
+                session_id=session_id,
+                component_name=component_name,
+                query=query,
+                limit=5,
+            )
+            if hasattr(result, "__await__"):
+                import asyncio
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+                if loop is not None and loop.is_running():
+                    new_loop = asyncio.new_event_loop()
+                    try:
+                        return new_loop.run_until_complete(result) or []
+                    finally:
+                        new_loop.close()
+                return asyncio.run(result) or []
             return result or []
         except Exception:
             return []

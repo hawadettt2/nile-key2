@@ -14,6 +14,7 @@ from app.agent.schemas.api_request import MissionRequest
 from app.agent.schemas.api_response import MissionResponse
 from app.agent.tools.registry import tool_registry
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
+from app.agent.memory.cross_system import recall_cross_session, recall_cross_system
 from app.agent.knowledge.registry import KnowledgeProviderRegistry
 from app.agent.decision_engine.engine import ReasoningEngine
 from app.agent.mission_planner.planner import TaskPlanner
@@ -210,6 +211,25 @@ async def connect(
         memory_provider=memory_provider,
         user_id=request.user_id,
     )
+
+    previous_memories = await recall_cross_session(
+        memory_provider=memory_provider,
+        user_id=request.user_id,
+        current_session_id=session.session_id,
+        query="cross_session_context",
+        limit=5,
+    )
+
+    if previous_memories:
+        try:
+            await session_manager.enrich_context(
+                session_id=session.session_id,
+                memory_provider=memory_provider,
+                user_id=request.user_id,
+            )
+        except Exception:
+            pass
+
     return ConnectResponse(
         session_id=session.session_id,
         status="connected",
@@ -249,6 +269,7 @@ async def create_mission(
     idempotency_key = str(__import__("uuid").uuid4())
 
     execution_memories = []
+    cross_system_memories = []
     if memory_provider and goal_plan_context.get("user_id"):
         try:
             execution_memories = await memory_provider.recall(
@@ -257,6 +278,20 @@ async def create_mission(
                 query="execution_outcome",
                 limit=10,
             )
+        except Exception:
+            execution_memories = []
+
+        try:
+            cross_system_memories = await recall_cross_system(
+                memory_provider=memory_provider,
+                user_id=goal_plan_context["user_id"],
+                session_id=session_id,
+                system_name="decision_engine",
+                query="cross_system_decision",
+                limit=10,
+            )
+        except Exception:
+            cross_system_memories = []
         except Exception:
             execution_memories = []
 

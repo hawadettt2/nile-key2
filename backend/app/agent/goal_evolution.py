@@ -35,6 +35,7 @@ from .schemas.mission import Mission
 from .outcome import ExecutionOutcome, OutcomeEvaluator
 
 from .memory.interface import MemoryProvider
+from app.agent.memory.cross_system import store_cross_component, recall_cross_component
 
 
 class GoalEvolutionSignal:
@@ -385,6 +386,28 @@ class GoalEvolutionHandler:
                             "timestamp": datetime.now(timezone.utc).isoformat(),
                         },
                         memory_type="goal_evolution",
+                        importance=0.8,
+                        expires_at=None,
+                    )
+                except Exception:
+                    pass
+
+                try:
+                    store_cross_component(
+                        memory_provider=self.memory_provider,
+                        user_id=user_id,
+                        session_id=session_id,
+                        component_name="goal_evolution",
+                        key=f"evolution_{goal_id}_{new_plan.plan_id}",
+                        value={
+                            "goal_id": goal_id,
+                            "old_plan_id": old_plan_id,
+                            "new_plan_id": new_plan.plan_id,
+                            "reason": signal.reason,
+                            "changes": proposed_changes,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        },
+                        memory_type="cross_component",
                         importance=0.8,
                         expires_at=None,
                     )
