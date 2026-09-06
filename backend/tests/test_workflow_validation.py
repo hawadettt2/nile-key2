@@ -298,3 +298,17 @@ def test_readiness_result_always_has_reason_message_remediation():
     assert result.reason
     assert result.message
     assert result.remediation is not None
+
+
+def test_validate_workflow_readiness_completed_returns_ready_without_evidence():
+    workflow = {"id": 1, "shipment_id": None, "customs_declaration_id": None}
+    results = validate_workflow_readiness(workflow, "completed")
+    assert len(results) == 0
+
+
+def test_validate_workflow_readiness_completed_does_not_require_delivery_confirmed():
+    workflow = {"id": 1, "shipment_id": 1, "customs_declaration_id": 1}
+    results = validate_workflow_readiness(workflow, "completed")
+    statuses = [r.status for r in results]
+    assert "blocked" not in statuses
+    assert "not_ready" not in statuses

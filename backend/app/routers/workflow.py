@@ -77,7 +77,7 @@ def update_export_workflow(workflow_id: int, data: ExportWorkflowUpdate, current
     except ValueError as exc:
         if str(exc) == "Workflow not found":
             raise HTTPException(status_code=404, detail=str(exc))
-        raise
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.post("/api/v1/export-workflows/{workflow_id}/submit", response_model=dict)

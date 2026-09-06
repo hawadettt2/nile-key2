@@ -207,6 +207,9 @@ def validate_workflow_readiness(workflow: Dict[str, Any], target_state: str) -> 
         results.append(missing)
         return results
 
+    if target_state == "completed":
+        return results
+
     if target_state == "customs_ready":
         invoice_id = workflow.get("invoice_id")
         if invoice_id:

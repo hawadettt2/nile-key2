@@ -8,6 +8,7 @@ class ExportWorkflowState(str):
     CUSTOMS_READY = "customs_ready"
     SHIPPED = "shipped"
     DELIVERED = "delivered"
+    COMPLETED = "completed"
 
 
 class ExportWorkflowBase(BaseModel):
@@ -62,6 +63,10 @@ class ExportWorkflow(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     created_by: Optional[int] = None
+    delivery_confirmed_at: Optional[datetime] = None
+    documents_handed_over_at: Optional[datetime] = None
+    payment_confirmed_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

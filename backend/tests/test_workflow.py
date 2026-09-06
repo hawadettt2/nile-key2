@@ -211,3 +211,162 @@ def test_add_export_workflow_item_with_staff_role_forbidden(client):
         "supplier_id": 1,
     }, headers={"Authorization": f"Bearer {token}"})
     assert create_resp.status_code == 403
+
+
+def test_transition_to_completed_succeeds_without_evidence(client):
+    token, _ = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = create_resp.json()["id"]
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "customs_ready",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "shipped",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "completed",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "Workflow updated successfully"
+
+
+def test_completed_at_auto_set(client):
+    token, _ = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = create_resp.json()["id"]
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "customs_ready"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "shipped"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "delivered"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "completed"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.get(f"/api/v1/export-workflows/{workflow_id}", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["state"] == "completed"
+    assert data.get("completed_at") is not None
+
+
+def test_evidence_fields_accept_null(client):
+    token, _ = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = create_resp.json()["id"]
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "customs_ready",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "shipped",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "completed",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+
+def test_completed_state_in_workflow_summary(client):
+    token, _ = _register_and_login(client, role="manager")
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = create_resp.json()["id"]
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "customs_ready"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "shipped"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "delivered"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={"state": "completed"}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.get(f"/api/v1/export-workflows/{workflow_id}/summary", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["workflow"]["state"] == "completed"
+    assert "completed_at" in data["workflow"]
+    assert data["workflow"].get("completed_at") is not None
+
+
+def test_invalid_transition_to_completed_from_draft(client):
+    token, _ = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = create_resp.json()["id"]
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "completed",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "Invalid state transition" in response.json()["detail"]
+
+
+def test_backward_compatible_delivered_workflows_unchanged(client):
+    token, _ = _register_and_login(client, role="manager")
+    create_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = create_resp.json()["id"]
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "customs_ready",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "shipped",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.put(f"/api/v1/export-workflows/{workflow_id}", json={
+        "state": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+
+    response = client.get(f"/api/v1/export-workflows/{workflow_id}", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["state"] == "delivered"

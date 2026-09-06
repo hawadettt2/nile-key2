@@ -17,7 +17,8 @@ def _validate_transition(current_state: str, new_state: str) -> None:
         "draft": ["customs_ready", "shipped"],
         "customs_ready": ["shipped"],
         "shipped": ["delivered"],
-        "delivered": [],
+        "delivered": ["completed"],
+        "completed": [],
     }
     allowed = valid_transitions.get(current_state, [])
     if new_state not in allowed:
@@ -40,6 +41,10 @@ def _row_to_workflow(row: dict) -> dict:
     result.setdefault("created_at", None)
     result.setdefault("updated_at", None)
     result.setdefault("created_by", None)
+    result.setdefault("delivery_confirmed_at", None)
+    result.setdefault("documents_handed_over_at", None)
+    result.setdefault("payment_confirmed_at", None)
+    result.setdefault("completed_at", None)
     return result
 
 
@@ -177,6 +182,8 @@ def update_workflow(workflow_id: int, data: ExportWorkflowUpdate, current_user: 
             return {"message": "No changes"}
 
         updates["updated_at"] = now_iso()
+        if data.state == "completed":
+            updates["completed_at"] = now_iso()
 
         set_clause = ", ".join(f"{k} = ?" for k in updates.keys())
         values = list(updates.values())
@@ -271,10 +278,16 @@ def transition_workflow(workflow_id: int, new_state: str, current_user: dict) ->
                 )
 
         now = now_iso()
-        cursor.execute(
-            "UPDATE export_workflows SET state = ?, updated_at = ? WHERE id = ?",
-            (new_state, now, workflow_id),
-        )
+        if new_state == "completed":
+            cursor.execute(
+                "UPDATE export_workflows SET state = ?, updated_at = ?, completed_at = ? WHERE id = ?",
+                (new_state, now, now, workflow_id),
+            )
+        else:
+            cursor.execute(
+                "UPDATE export_workflows SET state = ?, updated_at = ? WHERE id = ?",
+                (new_state, now, workflow_id),
+            )
         conn.commit()
 
         log_audit(
@@ -321,6 +334,8 @@ def submit_workflow(workflow_id: int, current_user: dict) -> dict:
                 raise ValueError("Cannot submit workflow: shipment_id is required")
         elif current_state == "shipped":
             return transition_workflow(workflow_id, "delivered", current_user)
+        elif current_state == "delivered":
+            return transition_workflow(workflow_id, "completed", current_user)
         else:
             raise ValueError(f"Workflow is already in final state: {current_state}")
 

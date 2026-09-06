@@ -535,6 +535,15 @@ def _ensure_audit_logs_schema(c: sqlite3.Cursor):
     })
 
 
+def _ensure_workflows_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "export_workflows", {
+        "delivery_confirmed_at": "TIMESTAMP",
+        "documents_handed_over_at": "TIMESTAMP",
+        "payment_confirmed_at": "TIMESTAMP",
+        "completed_at": "TIMESTAMP",
+    })
+
+
 def _ensure_documents_schema(c: sqlite3.Cursor):
     ensure_columns(c, "documents", {
         "document_type": "TEXT",
@@ -839,6 +848,8 @@ def _create_tables(c: sqlite3.Cursor):
             FOREIGN KEY (workflow_id) REFERENCES export_workflows(id)
         )
     """)
+
+    _ensure_workflows_schema(c)
 
     # ========== جداول WP-30: Digital Export Manager ==========
     c.execute("""
