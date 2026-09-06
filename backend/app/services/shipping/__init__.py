@@ -1107,3 +1107,117 @@ def get_label(shipment_id: int) -> dict:
         "label_url": resp.label_url,
         "message": resp.message,
     }
+
+
+# ========== Delivery Confirmation Capability ==========
+
+
+def record_delivery_confirmation(
+    shipment_id: int,
+    export_workflow_id: int,
+    confirmed_by: int,
+    proof_reference: Optional[str] = None,
+    event_data: Optional[dict] = None,
+) -> dict:
+    now = datetime.utcnow().isoformat()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT status FROM shipments WHERE id = ?", (shipment_id,))
+            shipment = cursor.fetchone()
+            if not shipment or shipment["status"] not in ("delivered", "in_transit"):
+                raise ValueError("Shipment not eligible for delivery confirmation")
+
+            cursor.execute(
+                "SELECT shipment_id FROM export_workflows WHERE id = ?",
+                (export_workflow_id,),
+            )
+            wf = cursor.fetchone()
+            if not wf or wf["shipment_id"] != shipment_id:
+                raise ValueError("export_workflow_id does not match shipment_id")
+
+            cursor.execute(
+                """SELECT id FROM shipping_logs
+                   WHERE shipment_id = ? AND event_type = 'delivery_confirmed'
+                   AND delivery_confirmed_by = ? AND export_workflow_id = ?""",
+                (shipment_id, confirmed_by, export_workflow_id),
+            )
+            if cursor.fetchone():
+                raise ValueError("Duplicate delivery confirmation")
+
+            cursor.execute(
+                """INSERT INTO shipping_logs
+                   (shipment_id, provider, action, event_type, delivery_confirmed_by, proof_of_delivery_reference,
+                    export_workflow_id, event_data, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    shipment_id,
+                    "internal",
+                    "delivery_confirmed",
+                    "delivery_confirmed",
+                    confirmed_by,
+                    proof_reference,
+                    export_workflow_id,
+                    json.dumps(event_data) if event_data else None,
+                    now,
+                ),
+            )
+            log_id = cursor.lastrowid
+
+            cursor.execute(
+                "UPDATE export_workflows SET delivery_confirmed_at = ? WHERE id = ?",
+                (now, export_workflow_id),
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+
+    log_audit(
+        current_user={"id": confirmed_by},
+        data=AuditLogCreate(
+            action="delivery_confirmation",
+            entity_type="shipping_log",
+            entity_id=log_id,
+            details=json.dumps({
+                "shipment_id": shipment_id,
+                "export_workflow_id": export_workflow_id,
+                "delivery_confirmed_by": confirmed_by,
+                "proof_reference": proof_reference,
+            }),
+        ),
+    )
+
+    return {
+        "id": log_id,
+        "shipment_id": shipment_id,
+        "export_workflow_id": export_workflow_id,
+        "event_type": "delivery_confirmed",
+        "delivery_confirmed_by": confirmed_by,
+        "proof_of_delivery_reference": proof_reference,
+        "created_at": now,
+    }
+
+
+def get_delivery_history(
+    shipment_id: Optional[int] = None,
+    export_workflow_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> List[dict]:
+    query = "SELECT * FROM shipping_logs WHERE event_type = 'delivery_confirmed'"
+    params = []
+    if shipment_id is not None:
+        query += " AND shipment_id = ?"
+        params.append(shipment_id)
+    if export_workflow_id is not None:
+        query += " AND export_workflow_id = ?"
+        params.append(export_workflow_id)
+    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    params.extend([limit, skip])
+
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+    return [dict(r) for r in rows]

@@ -177,5 +177,45 @@ def update_parcel_template_endpoint(template_id: int, data: ParcelTemplateUpdate
 
 @router.delete("/parcel-templates/{template_id}", response_model=MessageResponse)
 def delete_parcel_template_endpoint(template_id: int, current_user: dict = Depends(require_role(["owner", "manager", "logistics"]))):
-    delete_parcel_template(template_id)
+    delete_parcel_template(template_id, current_user)
     return {"message": "Parcel template deleted successfully"}
+
+
+# ========== Delivery Confirmation Routes ==========
+
+from app.schemas.shipping import DeliveryConfirmationRequest, DeliveryHistoryRequest
+from app.services.shipping import record_delivery_confirmation, get_delivery_history
+
+
+@router.post("/delivery/confirm", response_model=dict)
+def confirm_delivery(
+    data: DeliveryConfirmationRequest,
+    current_user: dict = Depends(require_role(["owner", "manager", "logistics"])),
+):
+    try:
+        return record_delivery_confirmation(
+            shipment_id=data.shipment_id,
+            export_workflow_id=data.export_workflow_id,
+            confirmed_by=current_user["id"],
+            proof_reference=data.proof_reference,
+            event_data=data.event_data,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/delivery/history", response_model=dict)
+def delivery_history(
+    shipment_id: Optional[int] = None,
+    export_workflow_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user),
+):
+    events = get_delivery_history(
+        shipment_id=shipment_id,
+        export_workflow_id=export_workflow_id,
+        skip=skip,
+        limit=limit,
+    )
+    return {"events": events, "total": len(events)}

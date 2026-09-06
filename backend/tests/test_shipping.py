@@ -146,3 +146,200 @@ def test_get_label_authorized(client):
     response = client.get(f"/api/v1/shipping/shipments/{shipment_id}/label", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     assert "label_url" in response.json()
+
+
+# ========== WP-DEM-002: Delivery Confirmation Tests ==========
+
+
+def test_delivery_confirmation_requires_workflow_link(client):
+    _, token = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "US",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id = create_resp.json()["id"]
+
+    client.put(f"/api/v1/shipping/shipments/{shipment_id}", json={
+        "status": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    response = client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id,
+        "export_workflow_id": 999999,
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "export_workflow_id does not match shipment_id" in response.json().get("detail", "")
+
+
+def test_delivery_confirmation_workflow_shipment_mismatch(client):
+    _, token = _register_and_login(client, role="logistics")
+    create_resp1 = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "US",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id_1 = create_resp1.json()["id"]
+
+    create_resp2 = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "AE",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id_2 = create_resp2.json()["id"]
+
+    client.put(f"/api/v1/shipping/shipments/{shipment_id_1}", json={
+        "status": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    client.put(f"/api/v1/shipping/shipments/{shipment_id_2}", json={
+        "status": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    workflow_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+        "shipment_id": shipment_id_1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = workflow_resp.json()["id"]
+
+    response = client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id_2,
+        "export_workflow_id": workflow_id,
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "export_workflow_id does not match shipment_id" in response.json().get("detail", "")
+
+
+def test_delivery_confirmation_invalid_shipment_status(client):
+    _, token = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "US",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id = create_resp.json()["id"]
+
+    response = client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id,
+        "export_workflow_id": 1,
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "Shipment not eligible for delivery confirmation" in response.json().get("detail", "")
+
+
+def test_delivery_confirmation_duplicate_prevention(client):
+    _, token = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "US",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id = create_resp.json()["id"]
+
+    workflow_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+        "shipment_id": shipment_id,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = workflow_resp.json()["id"]
+
+    client.put(f"/api/v1/shipping/shipments/{shipment_id}", json={
+        "status": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    response1 = client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id,
+        "export_workflow_id": workflow_id,
+        "proof_reference": "https://proof.example.com/1",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response1.status_code == 200
+
+    response2 = client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id,
+        "export_workflow_id": workflow_id,
+        "proof_reference": "https://proof.example.com/2",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response2.status_code == 400
+    assert "Duplicate delivery confirmation" in response2.json().get("detail", "")
+
+
+def test_delivery_confirmation_atomic_workflow_update(client):
+    _, token = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "US",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id = create_resp.json()["id"]
+
+    workflow_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+        "shipment_id": shipment_id,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = workflow_resp.json()["id"]
+
+    client.put(f"/api/v1/shipping/shipments/{shipment_id}", json={
+        "status": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    response = client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id,
+        "export_workflow_id": workflow_id,
+        "proof_reference": "https://proof.example.com/atomic",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["delivery_confirmed_by"] == 2
+
+    workflow_detail = client.get(f"/api/v1/export-workflows/{workflow_id}", headers={"Authorization": f"Bearer {token}"})
+    assert workflow_detail.status_code == 200
+    assert workflow_detail.json().get("delivery_confirmed_at") is not None
+
+
+def test_delivery_history_requires_auth(client):
+    response = client.get("/api/v1/shipping/delivery/history")
+    assert response.status_code == 401
+
+
+def test_delivery_history_returns_events(client):
+    _, token = _register_and_login(client, role="logistics")
+    create_resp = client.post("/api/v1/shipping/shipments", json={
+        "origin": "EG",
+        "destination": "US",
+        "weight": 10,
+        "weight_unit": "kg",
+    }, headers={"Authorization": f"Bearer {token}"})
+    shipment_id = create_resp.json()["id"]
+
+    workflow_resp = client.post("/api/v1/export-workflows", json={
+        "customer_id": 1,
+        "supplier_id": 1,
+        "shipment_id": shipment_id,
+    }, headers={"Authorization": f"Bearer {token}"})
+    workflow_id = workflow_resp.json()["id"]
+
+    client.put(f"/api/v1/shipping/shipments/{shipment_id}", json={
+        "status": "delivered",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    client.post("/api/v1/shipping/delivery/confirm", json={
+        "shipment_id": shipment_id,
+        "export_workflow_id": workflow_id,
+        "proof_reference": "https://proof.example.com/history",
+    }, headers={"Authorization": f"Bearer {token}"})
+
+    response = client.get("/api/v1/shipping/delivery/history", params={
+        "shipment_id": shipment_id,
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["events"]) == 1
+    assert data["events"][0]["event_type"] == "delivery_confirmed"

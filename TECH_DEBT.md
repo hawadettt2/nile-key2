@@ -67,3 +67,4 @@ otification_logs integration added in M5-R2 |
 | Shipping scheduler | Integrated APScheduler with daily tracking poll job | WP-20 |
 | Raw SQL everywhere | Introduced `DatabaseSession`, `SchemaRegistry`, `MigrationRunner`; migrated `supplier.py` to ORM abstraction layer; PostgreSQL migration path prepared | WP-ORM-001 |
 | PostgreSQL migration path | `MigrationRunner` and schema registry introduced; PostgreSQL readiness path established without migration | WP-ORM-001 |
+| Delivery confirmation capability missing | Implemented `delivery_confirmed` business event in `shipping_logs`, atomic workflow link via `export_workflows.delivery_confirmed_at`, duplicate prevention, history API, 16 shipping tests + 14 workflow regression tests; no new tables, no PostgreSQL migration | WP-DEM-002 |

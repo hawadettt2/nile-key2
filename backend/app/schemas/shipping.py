@@ -233,3 +233,32 @@ class ShippingLabelResponse(BaseModel):
     created_at: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class DeliveryConfirmationRequest(BaseModel):
+    shipment_id: int
+    export_workflow_id: int
+    proof_reference: Optional[str] = None
+    event_data: Optional[dict] = None
+
+
+class DeliveryConfirmationResponse(BaseModel):
+    id: int
+    shipment_id: int
+    export_workflow_id: int
+    event_type: str
+    delivery_confirmed_by: int
+    proof_of_delivery_reference: Optional[str]
+    created_at: str
+
+
+class DeliveryHistoryRequest(BaseModel):
+    shipment_id: Optional[int] = None
+    export_workflow_id: Optional[int] = None
+    skip: int = 0
+    limit: int = 100
+
+
+class DeliveryHistoryResponse(BaseModel):
+    events: List[dict]
+    total: int

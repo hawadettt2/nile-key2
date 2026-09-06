@@ -34,6 +34,7 @@
 | WP-18 | ✅ Complete | Fixed HS-code `created_at` compatibility and document upload `type` compatibility; Docker production artifacts validated |
 | WP-19 | ✅ Complete | ETA Engine — full implementation with production-ready infrastructure |
 | WP-20 | ✅ Complete | Shipping Engine — provider abstraction, LetMeShip + SendCloud clients, scheduler, 34+ tests |
+| WP-DEM-002 | ✅ Complete | Delivery Confirmation Capability — `delivery_confirmed` business event, atomic workflow link, duplicate prevention, history API; 16 shipping tests + 14 workflow tests; no regressions |
 | WP-21 M1 | ✅ Complete | Notification service + audit logging foundation; 52 tests |
 | WP-21 M2 | ✅ Complete | Unified search + live dashboard; 10 tests |
 | WP-21 M3 | ✅ Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
@@ -263,6 +264,26 @@
 - **Backward Compatibility:** Existing `app.services.shipping` imports preserved via shim
 - **Secrets:** Loaded exclusively from environment variables (`LETME_API_ID`, `LETME_API_PASSWORD`, `SENDCLOUD_PUBLIC_KEY`, `SENDCLOUD_SECRET_KEY`)
 - **Test Coverage:** 34 shipping-specific tests (9 router + 25 service), all passing
+
+### WP-DEM-002: Delivery Confirmation Capability (Completed)
+- **Business Event:** `delivery_confirmed` recorded in `shipping_logs` as the only WP-DEM-002 business event
+- **Schema Extension:** `shipping_logs` extended via `_ensure_shipping_logs_schema()` with `event_type`, `event_data`, `delivery_confirmed_by`, `proof_of_delivery_reference`, `export_workflow_id`
+- **Service Functions:**
+  - `record_delivery_confirmation()`: atomic INSERT into `shipping_logs` + UPDATE `export_workflows.delivery_confirmed_at`
+  - `get_delivery_history()`: queryable delivery events with filtering and pagination
+- **Validation Order:**
+  1. Shipment exists and status is `delivered` or `in_transit`
+  2. `export_workflow_id` exists and `export_workflow.shipment_id == shipment_id`
+  3. `confirmed_by` taken from `current_user["id"]` (not client-supplied)
+  4. RBAC: `owner | manager | logistics`
+- **Atomic Transaction:** INSERT business event + UPDATE workflow timestamp in single transaction; rollback on any failure
+- **Duplicate Prevention:** One confirmation per `shipment_id + export_workflow_id + delivery_confirmed_by` combination
+- **API Endpoints:**
+  - `POST /api/v1/shipping/delivery/confirm` — records delivery confirmation
+  - `GET /api/v1/shipping/delivery/history` — returns delivery events with filtering
+- **Audit Logging:** Every delivery confirmation logged via `log_audit()`
+- **Backward Compatibility:** Existing tracking via providers unchanged; no new tables; no PostgreSQL migration
+- **Test Coverage:** 16 shipping tests (10 existing + 6 new WP-DEM-002) + 14 workflow regression tests; all passing
 
 ### Test Coverage
 - 71 pytest tests (70 passing, 1 skipped by design) covering:

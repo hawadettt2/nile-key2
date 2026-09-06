@@ -471,6 +471,16 @@ def _ensure_contacts_addresses_schema(c: sqlite3.Cursor):
         )
     """)
 
+
+def _ensure_shipping_logs_schema(c: sqlite3.Cursor):
+    ensure_columns(c, "shipping_logs", {
+        "event_type": "TEXT",
+        "event_data": "TEXT",
+        "delivery_confirmed_by": "INTEGER",
+        "proof_of_delivery_reference": "TEXT",
+        "export_workflow_id": "INTEGER",
+    })
+
     c.execute("""
         CREATE TABLE IF NOT EXISTS addresses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -802,6 +812,7 @@ def _create_tables(c: sqlite3.Cursor):
     _ensure_resources_schema(c)
     
     _ensure_shipping_schema(c)
+    _ensure_shipping_logs_schema(c)
     _ensure_contacts_addresses_schema(c)
     _ensure_notification_schema(c)
     
