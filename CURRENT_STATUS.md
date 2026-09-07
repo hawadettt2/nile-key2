@@ -1,9 +1,9 @@
 ﻿# Current Status
 
-**Last Updated:** 2026-09-05
+**Last Updated:** 2026-09-07
 **Branch:** main
 **Commit:** HEAD
-**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED, Export Readiness Vertical Slice CLOSED, WP-ORM-001 CLOSED, WP-ORM-002 CLOSED)
+**Phase:** 3 — Production & Deployment (WP-30I CLOSED, WP-32 CLOSED, WP-33 CLOSED, WP-37 CLOSED, WP-40 CLOSED, WP-41 CLOSED, WP-42 CLOSED, Export Readiness Vertical Slice CLOSED, WP-ORM-001 CLOSED, WP-ORM-002 CLOSED, WP-DEM-001a CLOSED, WP-DEM-002 CLOSED)
 **Project Status:** COMPLETE / CLOSED
 **Closure Date:** 2026-08-23
 **Closure Decision:** Governance Decision Approved — Project Complete / Closure Ready
@@ -35,6 +35,7 @@
 | WP-19 | ✅ Complete | ETA Engine — full implementation with production-ready infrastructure |
 | WP-20 | ✅ Complete | Shipping Engine — provider abstraction, LetMeShip + SendCloud clients, scheduler, 34+ tests |
 | WP-DEM-002 | ✅ Complete | Delivery Confirmation Capability — `delivery_confirmed` business event, atomic workflow link, duplicate prevention, history API; 16 shipping tests + 14 workflow tests; no regressions |
+| WP-DEM-001a | ✅ Complete | Export Workflow Post-Delivery Lifecycle — `delivered → completed` transition, nullable evidence fields (`delivery_confirmed_at`, `documents_handed_over_at`, `payment_confirmed_at`, `completed_at`), auto-set `completed_at`, audit logging; 4 workflow tests + 14 workflow regression tests; backward compatible |
 | WP-21 M1 | ✅ Complete | Notification service + audit logging foundation; 52 tests |
 | WP-21 M2 | ✅ Complete | Unified search + live dashboard; 10 tests |
 | WP-21 M3 | ✅ Complete | Notification triggers + frontend integration; 34 tests (17 frontend + 17 backend triggers) |
@@ -284,6 +285,15 @@
 - **Audit Logging:** Every delivery confirmation logged via `log_audit()`
 - **Backward Compatibility:** Existing tracking via providers unchanged; no new tables; no PostgreSQL migration
 - **Test Coverage:** 16 shipping tests (10 existing + 6 new WP-DEM-002) + 14 workflow regression tests; all passing
+
+### WP-DEM-001a: Export Workflow Post-Delivery Lifecycle (Completed)
+- **State Extension:** `export_workflows` state machine extended from `draft → customs_ready → shipped → delivered` to `draft → customs_ready → shipped → delivered → completed`
+- **Evidence Fields:** Added nullable columns `delivery_confirmed_at`, `documents_handed_over_at`, `payment_confirmed_at`, `completed_at` via `_ensure_workflows_schema()`
+- **Transition:** `delivered → completed` allowed without evidence fields required; `completed_at` auto-set on transition
+- **Service Layer:** `transition_workflow()` and `update_workflow()` handle `completed` state with auto-timestamp
+- **Audit Logging:** `transition` audit event recorded for all state transitions including `completed`
+- **Backward Compatibility:** Existing workflows unchanged; no schema breaks; evidence fields nullable
+- **Test Coverage:** 4 workflow tests (transition, auto-set, null evidence, summary) + 14 workflow regression tests; all passing
 
 ### Test Coverage
 - 71 pytest tests (70 passing, 1 skipped by design) covering:
