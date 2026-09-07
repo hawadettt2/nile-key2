@@ -25,6 +25,7 @@ interface MissionTraceProps {
     error?: string;
     requires_approval?: boolean;
     approval_status?: string;
+    intent_content?: Record<string, unknown>;
   };
 }
 
@@ -127,6 +128,15 @@ function ExecutionTraceViewer({ mission }: MissionTraceProps) {
         </div>
       )}
 
+      {mission.intent_content && (
+        <div className="space-y-2">
+          <h3 className="font-medium text-slate-900">Structured Business Response</h3>
+          <pre className="bg-slate-50 p-4 rounded-lg text-xs overflow-auto max-h-96 text-slate-700">
+            {JSON.stringify(mission.intent_content, null, 2)}
+          </pre>
+        </div>
+      )}
+
       {mission.requires_approval && (
         <div className="mt-4 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg">
           <p className="font-medium">Approval Required</p>
@@ -166,6 +176,7 @@ export function DEMMissionDetail() {
           reasoning: m.reasoning as string | undefined,
           requires_approval: m.requires_approval as boolean | undefined,
           approval_status: m.approval_status as string | undefined,
+          intent_content: m.intent_content as Record<string, unknown> | undefined,
         }));
         setMissions(updated);
         const updatedMission = updated.find((m: Record<string, unknown>) => m.mission_id === missionId);
@@ -197,6 +208,7 @@ export function DEMMissionDetail() {
                 reasoning: m.reasoning as string | undefined,
                 requires_approval: m.requires_approval as boolean | undefined,
                 approval_status: m.approval_status as string | undefined,
+                intent_content: m.intent_content as Record<string, unknown> | undefined,
               }));
               setMissions(mapped);
               const found = mapped.find((m: Record<string, unknown>) => m.mission_id === missionId);

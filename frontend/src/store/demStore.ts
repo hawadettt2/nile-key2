@@ -18,6 +18,7 @@ interface Mission {
   reasoning?: string;
   requires_approval?: boolean;
   approval_status?: string;
+  intent_content?: Record<string, unknown>;
 }
 
 interface AgentInsight {

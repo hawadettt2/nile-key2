@@ -29,6 +29,7 @@ export function DEMMissionComposer() {
   const { activeSession, setCurrentMission } = useDEMStore();
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [payload, setPayload] = useState<Record<string, unknown>>({});
+  const [freeTextIntent, setFreeTextIntent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingTools, setIsLoadingTools] = useState(true);
 
@@ -40,9 +41,13 @@ export function DEMMissionComposer() {
     if (!activeSession || !selectedType) return;
     setIsLoading(true);
     try {
+      const missionPayload = { ...payload };
+      if (freeTextIntent.trim()) {
+        missionPayload.query = freeTextIntent.trim();
+      }
       const response = await createMission(activeSession.session_id, {
         mission_type: selectedType,
-        payload,
+        payload: missionPayload,
       });
       const mission = response.data;
       setCurrentMission({
@@ -56,6 +61,7 @@ export function DEMMissionComposer() {
         reasoning: mission.reasoning,
         requires_approval: mission.requires_approval,
         approval_status: mission.approval_status,
+        intent_content: mission.intent_content,
       });
       toast({ title: t('dem.newMission'), description: `Mission ${mission.mission_id.slice(0, 8)}... created` });
       navigate(`/digital-export-manager/missions/${mission.mission_id}`);
@@ -88,6 +94,20 @@ export function DEMMissionComposer() {
         <h1 className="text-2xl font-bold text-slate-900">{t('dem.newMission')}</h1>
         <p className="text-slate-500 text-sm">{t('dem.selectMissionConfigure')}</p>
       </div>
+
+      <Card className="p-6">
+        <h2 className="font-medium text-slate-900 mb-4">User Intent</h2>
+        <div className="space-y-1">
+          <Label htmlFor="free-text-intent" className="text-sm">Describe your request in natural language</Label>
+          <textarea
+            id="free-text-intent"
+            value={freeTextIntent}
+            onChange={(e) => setFreeTextIntent(e.target.value)}
+            placeholder="أريد تصدير الخضر والفواكه المصرية إلى الأردن"
+            className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+      </Card>
 
       <Card className="p-6">
         <h2 className="font-medium text-slate-900 mb-4">{t('dem.missionType')}</h2>

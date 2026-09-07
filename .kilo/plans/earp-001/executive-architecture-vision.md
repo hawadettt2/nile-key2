@@ -104,6 +104,77 @@ From outermost to innermost:
 
 ---
 
+## 7.1 Conceptual Architecture: Core AI and Frontend Destinations
+
+Conceptually, the architecture separates into three macro layers:
+
+```
+Core AI Architecture
+    ↓
+Frontend Destinations / Intelligent Interfaces
+    ↓
+Company Employees
+```
+
+### 7.1.1 Core AI Architecture
+
+The **Core AI Architecture** is the reusable intelligence substrate. It includes:
+
+- Executive Intelligence Layer (DEM)
+- Reasoning Layer
+- Planning Layer
+- Execution Layer
+- Knowledge Layer
+- Analytics Layer
+
+The Core AI is **independent** and **reusable**. It owns no UI. It exposes capabilities through the Business Façade Layer.
+
+### 7.1.2 Frontend Destinations / Intelligent Interfaces
+
+**Frontend Destinations** are the access points through which company employees consume Core AI capabilities. They are **not** separate AI architectures. They reuse the same Core AI.
+
+Current Frontend Destinations:
+
+1. **Digital Export Manager (DEM)** — The primary operational Frontend Destination. It makes Core AI capabilities directly usable for export operations: structured missions, reasoning, knowledge, execution, and business responses.
+
+2. **AI Avatar / Employee-facing AI Persona** — A conversational natural-language interface for employees. It uses the same Core AI (Reasoning, Knowledge, Memory, Decision, Execution) and does **not** build an independent AI architecture.
+
+3. **Future Intelligent Destinations** — The architecture permits adding new intelligent interfaces in the future without rebuilding the Core AI. Examples: mobile assistant, workflow-specific console, analytics dashboard with AI recommendations.
+
+### 7.1.3 Integration Contract
+
+Every Frontend Destination accesses the Core AI through the same end-to-end capability chain:
+
+```
+Intent
+  → Reasoning
+  → Knowledge
+  → Decision
+  → Goal / Plan
+  → Mission
+  → Task
+  → Execution
+  → Tools
+  → Structured Business Response
+```
+
+Supporting capabilities preserved across all destinations:
+
+- Memory
+- Autonomy
+- ApprovalGate
+- Audit
+- Security
+- Knowledge Orchestration
+
+### 7.1.4 Current Gap Classification
+
+The **current gap** is a **Frontend Integration / Consumption Gap** when a user interface does not consume existing Core AI capabilities. It is **not** necessarily a Knowledge Gap. The Core AI may already support a capability; the missing piece is the Frontend Destination connection.
+
+Long-term goal: **DEM is not a new AI Engine. DEM becomes one of the primary Frontend Destinations for the Core AI Architecture.**
+
+---
+
 ## 8. What Are the Architecture Invariants?
 
 These rules are non-negotiable and must hold in every architecture document, every Work Package, and every implementation decision.
