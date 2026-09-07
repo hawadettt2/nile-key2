@@ -31,6 +31,10 @@ from app.agent.plan.replanning import ReplanningHandler
 from app.agent.outcome import ExecutionOutcome, OutcomeEvaluator, OutcomeFeedbackLoop
 from app.agent.response.builder import ResponseBuilder
 from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
+from app.agent.autonomy.evaluator import AutonomyEvaluator
+from app.agent.autonomy.enforcer import AutonomyEnforcer
+from app.agent.approval.gate import ApprovalGate
+from app.agent.approval.resume import ResumeService
 from app.agent.insights.builder import InsightBuilder
 from app.agent.insights.extractor import PatternExtractor
 from app.agent.insights.generator import InsightGenerator
@@ -655,13 +659,34 @@ async def approve_approval(
     audit_recorder: AuditRecorder = Depends(lambda: AuditRecorder(get_db)),
 ):
     session_id = None
+    target_mission = None
     for session in session_manager.get_pending_approvals():
         if session.get("mission_id") == approval_id:
             session_id = session.get("session_id")
+            target_mission = session_manager.get_mission_by_id(session_id, approval_id)
             break
 
-    if not session_id:
+    if not session_id or not target_mission:
         raise HTTPException(status_code=404, detail="Approval not found")
+
+    approval_state = (target_mission.get("result") or {}).get("approval_state", {}) if isinstance(target_mission.get("result"), dict) else {}
+    if approval_state.get("status") != "PENDING_APPROVAL":
+        raise HTTPException(status_code=400, detail=f"Approval cannot be approved in status: {approval_state.get('status')}")
+
+    approval_state["status"] = "APPROVED"
+    approval_state["explicit_approval"] = {
+        "approved_by": current_user.get("id"),
+        "decided_at": datetime.now(timezone.utc).isoformat(),
+        "approval_id": approval_id,
+    }
+    approval_state["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    session_manager.update_mission_status(
+        session_id=session_id,
+        mission_id=approval_id,
+        status="approved",
+        result={"approval_state": approval_state},
+    )
 
     decided_at = datetime.now(timezone.utc).isoformat()
     audit_recorder.record_agent_action(
@@ -669,15 +694,25 @@ async def approve_approval(
         agent_id=current_user.get("username", "unknown"),
         action="approval_decision",
         input_data={"approval_id": approval_id, "decision": "approved"},
-        output_data={"decision": "approved", "approved_by": current_user.get("id"), "decided_at": decided_at},
+        output_data={"decision": "approved", "approved_by": current_user.get("id"), "decided_at": decided_at, "approval_state": approval_state},
     )
+
+    tool_orchestrator = ToolOrchestrator(
+        tool_registry=tool_registry,
+        audit_recorder=audit_recorder,
+        session_manager=session_manager,
+    )
+    resume_service = ResumeService(session_manager=session_manager, tool_orchestrator=tool_orchestrator)
+    task_id = approval_state.get("task_id", approval_id)
+    step_id = approval_state.get("step_id", task_id)
+    await resume_service.resume_if_approved(session_id, approval_id, task_id, step_id)
 
     return ApprovalDecisionResponse(
         mission_id=approval_id,
         decision="approved",
         approved_by=current_user.get("id", 0),
         decided_at=decided_at,
-        message="Approval recorded. Mission remains in pending_approval state.",
+        message="Approval approved. Resume initiated.",
     )
 
 
@@ -689,13 +724,35 @@ async def reject_approval(
     audit_recorder: AuditRecorder = Depends(lambda: AuditRecorder(get_db)),
 ):
     session_id = None
+    target_mission = None
     for session in session_manager.get_pending_approvals():
         if session.get("mission_id") == approval_id:
             session_id = session.get("session_id")
+            target_mission = session_manager.get_mission_by_id(session_id, approval_id)
             break
 
-    if not session_id:
+    if not session_id or not target_mission:
         raise HTTPException(status_code=404, detail="Approval not found")
+
+    approval_state = (target_mission.get("result") or {}).get("approval_state", {}) if isinstance(target_mission.get("result"), dict) else {}
+    if approval_state.get("status") != "PENDING_APPROVAL":
+        raise HTTPException(status_code=400, detail=f"Approval cannot be rejected in status: {approval_state.get('status')}")
+
+    approval_state["status"] = "REJECTED"
+    approval_state["explicit_approval"] = {
+        "rejected_by": current_user.get("id"),
+        "decided_at": datetime.now(timezone.utc).isoformat(),
+        "approval_id": approval_id,
+        "decision": "rejected",
+    }
+    approval_state["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    session_manager.update_mission_status(
+        session_id=session_id,
+        mission_id=approval_id,
+        status="rejected",
+        result={"approval_state": approval_state},
+    )
 
     decided_at = datetime.now(timezone.utc).isoformat()
     audit_recorder.record_agent_action(
@@ -703,7 +760,7 @@ async def reject_approval(
         agent_id=current_user.get("username", "unknown"),
         action="approval_decision",
         input_data={"approval_id": approval_id, "decision": "rejected"},
-        output_data={"decision": "rejected", "rejected_by": current_user.get("id"), "decided_at": decided_at},
+        output_data={"decision": "rejected", "rejected_by": current_user.get("id"), "decided_at": decided_at, "approval_state": approval_state},
     )
 
     return ApprovalDecisionResponse(
@@ -711,7 +768,7 @@ async def reject_approval(
         decision="rejected",
         approved_by=current_user.get("id", 0),
         decided_at=decided_at,
-        message="Rejection recorded. Mission remains in pending_approval state.",
+        message="Approval rejected. Mission remains halted.",
     )
 
 

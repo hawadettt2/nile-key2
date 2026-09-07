@@ -7,6 +7,9 @@ from ..core.planner import Planner, ExecutionPlan
 from ..audit.recorder import AuditRecorder
 from ..session.manager import SessionManager
 from ..schemas.tool_result import ToolResultSchema
+from ..approval.gate import ApprovalGate
+from ..autonomy.helpers import is_sensitive_operation
+from ..autonomy.enforcer import AutonomyEnforcer
 
 
 class AgentOrchestrator:
@@ -16,12 +19,16 @@ class AgentOrchestrator:
         session_manager: SessionManager,
         audit_recorder: AuditRecorder,
         agent_id: str = "wp30-digital-export-manager",
+        autonomy_enforcer: Optional[AutonomyEnforcer] = None,
+        approval_gate: Optional[ApprovalGate] = None,
     ):
         self.tool_registry = tool_registry
         self.session_manager = session_manager
         self.audit_recorder = audit_recorder
         self.agent_id = agent_id
         self.planner = Planner()
+        self.autonomy_enforcer = autonomy_enforcer
+        self.approval_gate = approval_gate or ApprovalGate()
 
     async def execute(
         self,
@@ -92,9 +99,175 @@ class AgentOrchestrator:
                         "completed_steps": results,
                     }
 
+                step_parameters = {**parameters, **step.parameters}
+                risk = context.get("risk")
+                is_sensitive = is_sensitive_operation(
+                    approval_gate=self.approval_gate,
+                    tool_name=step.tool_name,
+                    parameters=step_parameters,
+                    risk=risk,
+                )
+
+                if self.autonomy_enforcer:
+                    step_context = {
+                        "session_id": session_id,
+                        "agent_id": self.agent_id,
+                        "goal_id": context.get("goal_id"),
+                        "plan_id": context.get("plan_id"),
+                        "chosen_path": "",
+                        "intent": intent,
+                        "user_id": context.get("user_id"),
+                        "execution_history": context.get("execution_history"),
+                        "memory_provider": context.get("memory_provider"),
+                        "mission_id": context.get("mission_id"),
+                        "task_id": step.step_id,
+                        "step_id": step.step_id,
+                        "risk": risk,
+                        "is_sensitive": is_sensitive,
+                        "approval_proof": context.get("approval_proof"),
+                    }
+
+                    enforcement_decision = self.autonomy_enforcer.enforce(
+                        operation=step.tool_name,
+                        context=step_context,
+                        risk=risk,
+                    )
+
+                    if enforcement_decision.decision == "BLOCK":
+                        self.audit_recorder.record_agent_action(
+                            session_id=session_id,
+                            agent_id=self.agent_id,
+                            action=f"tool_blocked:{step.tool_name}",
+                            input_data={"intent": intent, "step": step.step_id},
+                            output_data={"error": f"Blocked by autonomy policy: {enforcement_decision.reason}"},
+                            duration_ms=0,
+                        )
+                        results.append({
+                            "step_id": step.step_id,
+                            "tool": step.tool_name,
+                            "result": {"status": "blocked", "error": f"Blocked by autonomy policy: {enforcement_decision.reason}"},
+                            "duration_ms": 0,
+                        })
+                        break
+
+                    elif enforcement_decision.decision == "APPROVAL_REQUIRED":
+                        approval_state = {
+                            "mission_id": context.get("mission_id", ""),
+                            "task_id": step.step_id,
+                            "step_id": step.step_id,
+                            "operation": step.tool_name,
+                            "status": "PENDING_APPROVAL",
+                            "autonomy_decision": enforcement_decision.to_dict(),
+                            "approval_gate_result": {},
+                            "explicit_approval": None,
+                            "created_at": datetime.now(timezone.utc).isoformat(),
+                            "updated_at": datetime.now(timezone.utc).isoformat(),
+                        }
+
+                        if getattr(self, 'approval_gate', None):
+                            requires_human_approval, approval_status = self.approval_gate.check_approval(
+                                chosen_path="",
+                                intent=intent,
+                                parameters=step_parameters,
+                            )
+                            approval_state["approval_gate_result"] = {
+                                "requires_approval": requires_human_approval,
+                                "status": approval_status,
+                            }
+
+                        if self.session_manager and context.get("mission_id"):
+                            self.session_manager.update_mission_status(
+                                session_id=session_id,
+                                mission_id=context.get("mission_id"),
+                                status="pending_approval",
+                                result={"approval_state": approval_state},
+                            )
+
+                        self.audit_recorder.record_agent_action(
+                            session_id=session_id,
+                            agent_id=self.agent_id,
+                            action=f"tool_approval_required:{step.tool_name}",
+                            input_data={"intent": intent, "step": step.step_id},
+                            output_data={
+                                "approval_required": True,
+                                "approval_state": approval_state,
+                            },
+                            duration_ms=0,
+                        )
+                        results.append({
+                            "step_id": step.step_id,
+                            "tool": step.tool_name,
+                            "result": {
+                                "status": "pending_approval",
+                                "approval_required": True,
+                                "approval_state": approval_state,
+                            },
+                            "duration_ms": 0,
+                        })
+                        break
+
+                else:
+                    if is_sensitive:
+                        approval_state = {
+                            "mission_id": context.get("mission_id", ""),
+                            "task_id": step.step_id,
+                            "step_id": step.step_id,
+                            "operation": step.tool_name,
+                            "status": "PENDING_APPROVAL",
+                            "autonomy_decision": {"decision": "APPROVAL_REQUIRED", "reason": "sensitive_operation_without_enforcer"},
+                            "approval_gate_result": {},
+                            "explicit_approval": None,
+                            "created_at": datetime.now(timezone.utc).isoformat(),
+                            "updated_at": datetime.now(timezone.utc).isoformat(),
+                        }
+
+                        if getattr(self, 'approval_gate', None):
+                            requires_human_approval, approval_status = self.approval_gate.check_approval(
+                                chosen_path="",
+                                intent=intent,
+                                parameters=step_parameters,
+                            )
+                            approval_state["approval_gate_result"] = {
+                                "requires_approval": requires_human_approval,
+                                "status": approval_status,
+                            }
+
+                        if self.session_manager and context.get("mission_id"):
+                            self.session_manager.update_mission_status(
+                                session_id=session_id,
+                                mission_id=context.get("mission_id"),
+                                status="pending_approval",
+                                result={"approval_state": approval_state},
+                            )
+
+                        self.audit_recorder.record_agent_action(
+                            session_id=session_id,
+                            agent_id=self.agent_id,
+                            action=f"tool_approval_required:{step.tool_name}",
+                            input_data={"intent": intent, "step": step.step_id},
+                            output_data={
+                                "reason": "sensitive_operation_without_enforcer",
+                                "approval_required": True,
+                                "approval_state": approval_state,
+                            },
+                            duration_ms=0,
+                        )
+                        results.append({
+                            "step_id": step.step_id,
+                            "tool": step.tool_name,
+                            "result": {
+                                "status": "pending_approval",
+                                "approval_required": True,
+                                "reason": "sensitive_operation_without_enforcer",
+                                "approval_state": approval_state,
+                            },
+                            "duration_ms": 0,
+                        })
+                        break
+
                 execution_start = time.time()
                 try:
-                    tool_result = await tool_instance.execute(context, {**parameters, **step.parameters})
+                    tool_result = await tool_instance.execute(context, step_parameters)
                     duration_ms = int((time.time() - execution_start) * 1000)
 
                     result_schema = ToolResultSchema(

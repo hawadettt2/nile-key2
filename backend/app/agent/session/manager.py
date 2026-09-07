@@ -1,5 +1,6 @@
 import uuid
 import json
+import threading
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 from ..schemas.session import (
@@ -15,6 +16,7 @@ from ..exceptions import SessionException
 class SessionManager:
     def __init__(self, db_session_factory):
         self.db_session_factory = db_session_factory
+        self._mission_status_lock = threading.Lock()
 
     def create_session(self, request: SessionCreateRequest) -> SessionResponse:
         session_id = str(uuid.uuid4())
@@ -355,3 +357,56 @@ class SessionManager:
             if mission.get("mission_id") == mission_id:
                 return mission
         return None
+
+    def update_mission_status_if(
+        self,
+        session_id: str,
+        mission_id: str,
+        expected_status: str,
+        new_status: str,
+        result: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Atomically update mission/approval state only if current status matches expected_status.
+
+        Returns True if update succeeded, False otherwise.
+        """
+        with self._mission_status_lock:
+            try:
+                context = self.get_context(session_id)
+                if context is None:
+                    return False
+
+                missions = context.get("missions", [])
+                mission = None
+                for m in missions:
+                    if m.get("mission_id") == mission_id:
+                        mission = m
+                        break
+
+                if not mission:
+                    return False
+
+                approval_state = mission.get("result", {}).get("approval_state", {}) if isinstance(mission.get("result"), dict) else {}
+                current_status = mission.get("status", "")
+                approval_status = approval_state.get("status", "")
+
+                if approval_status != expected_status:
+                    return False
+
+                mission["status"] = new_status
+                if result is not None:
+                    mission["result"] = result
+                mission["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+                context["missions"] = missions
+                context["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+                with self.db_session_factory() as db:
+                    db.execute(
+                        "UPDATE agent_sessions SET context = ? WHERE id = ?",
+                        (json.dumps(context, default=str), session_id),
+                    )
+                    db.commit()
+                return True
+            except Exception:
+                return False

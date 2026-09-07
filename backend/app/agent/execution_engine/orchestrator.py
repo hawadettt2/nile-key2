@@ -9,6 +9,8 @@ from ..schemas.mission import Mission
 from ..exceptions import ExecutionEngineException, ToolNotFoundException, ToolExecutionException
 from ..approval.gate import ApprovalGate
 from ..monitoring.service import MonitoringService
+from ..autonomy.helpers import is_sensitive_operation
+from ..autonomy.enforcer import AutonomyEnforcer, AutonomyEnforcementDecision
 
 
 class ExecutionStep:
@@ -46,12 +48,13 @@ class ToolOrchestrator:
     retry with backoff, idempotency propagation, and graceful degradation.
     """
 
-    def __init__(self, tool_registry=None, audit_recorder=None, session_manager=None, approval_gate=None, monitoring_service=None):
+    def __init__(self, tool_registry=None, audit_recorder=None, session_manager=None, approval_gate=None, monitoring_service=None, autonomy_enforcer=None):
         self.tool_registry = tool_registry
         self.audit_recorder = audit_recorder
         self.session_manager = session_manager
         self.approval_gate = approval_gate or ApprovalGate()
         self.monitoring_service = monitoring_service or MonitoringService()
+        self.autonomy_enforcer = autonomy_enforcer
 
     async def execute(self, execution_plan, session_context=None) -> Dict[str, Any]:
         """Execute an ExecutionPlan sequentially.
@@ -113,6 +116,8 @@ class ToolOrchestrator:
         failed_task_id = None
         mission_status = MissionStatus.COMPLETED.value
         context = session_context or {}
+        if not mission_id:
+            mission_id = context.get("mission_id")
         completed_task_ids = set()
 
         for task_dict in tasks:
@@ -143,7 +148,7 @@ class ToolOrchestrator:
                         execution_time_ms=0.0,
                         retry_count=0,
                         error="Skipped due to previous failure",
-                    )
+                         )
                 continue
 
             if depends_on:
@@ -172,40 +177,194 @@ class ToolOrchestrator:
                             execution_time_ms=0.0,
                             retry_count=0,
                             error=f"Skipped due to unmet dependencies: {missing_deps}",
-                        )
+                         )
                     continue
 
-            requires_approval, approval_status = self.approval_gate.check_approval(
-                chosen_path=context.get("chosen_path", ""),
-                intent=context.get("intent", ""),
+            risk = context.get("risk")
+            is_sensitive = is_sensitive_operation(
+                approval_gate=self.approval_gate,
+                tool_name=tool_name,
                 parameters=parameters,
+                risk=risk,
             )
-            if requires_approval:
-                task_dict["status"] = TaskStatus.PENDING.value
-                task_dict["result"] = {"approval_required": True, "approval_status": approval_status}
-                execution_trace.append(
-                    ExecutionStep(
-                        task_id=task_id,
-                        tool_name=tool_name,
-                        start_time=datetime.now(timezone.utc),
-                        finish_time=datetime.now(timezone.utc),
-                        execution_status="pending_approval",
-                        result=ToolResult(status="pending_approval", error="Approval required before execution"),
-                    ).to_dict()
+
+            if self.autonomy_enforcer:
+                operation = tool_name
+                context_for_enforcement = {
+                    "session_id": context.get("session_id"),
+                    "agent_id": getattr(self, 'agent_id', 'tool-orchestrator'),
+                    "goal_id": context.get("goal_id"),
+                    "plan_id": context.get("plan_id"),
+                    "chosen_path": context.get("chosen_path", ""),
+                    "intent": context.get("intent", ""),
+                    "user_id": context.get("user_id"),
+                    "execution_history": context.get("execution_history"),
+                    "memory_provider": context.get("memory_provider"),
+                    "risk": risk,
+                    "is_sensitive": context.get("is_sensitive", is_sensitive),
+                    "mission_id": mission_id,
+                    "task_id": task_id,
+                    "step_id": task_id,
+                    "approval_proof": context.get("approval_proof"),
+                }
+
+                enforcement_decision = self.autonomy_enforcer.enforce(
+                    operation=operation,
+                    context=context_for_enforcement,
+                    risk=risk,
                 )
-                failed_task_id = task_id
-                mission_status = MissionStatus.PENDING_APPROVAL.value
-                if self.monitoring_service:
-                    self.monitoring_service.record_task_execution(
-                        mission_id=mission_id or "",
-                        task_id=task_id,
-                        tool_name=tool_name,
-                        execution_status="pending_approval",
-                        execution_time_ms=0.0,
-                        retry_count=0,
-                        error="Approval required before execution",
+
+                if enforcement_decision.decision == "BLOCK":
+                    task_dict["status"] = TaskStatus.FAILED.value
+                    task_dict["result"] = {"error": f"Blocked by autonomy policy: {enforcement_decision.reason}"}
+                    execution_trace.append(
+                        ExecutionStep(
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            start_time=datetime.now(timezone.utc),
+                            finish_time=datetime.now(timezone.utc),
+                            execution_status="blocked",
+                            result=ToolResult(status="blocked", error=f"Blocked by autonomy policy: {enforcement_decision.reason}"),
+                        ).to_dict()
                     )
-                continue
+                    failed_task_id = task_id
+                    mission_status = MissionStatus.FAILED.value
+                    if self.monitoring_service:
+                        self.monitoring_service.record_task_execution(
+                            mission_id=mission_id or "",
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            execution_status="blocked",
+                            execution_time_ms=0.0,
+                            retry_count=0,
+                            error=f"Blocked by autonomy policy: {enforcement_decision.reason}",
+                        )
+                    break
+
+                elif enforcement_decision.decision == "APPROVAL_REQUIRED":
+                    approval_state = {
+                        "mission_id": mission_id or "",
+                        "task_id": task_id,
+                        "step_id": task_id,
+                        "operation": tool_name,
+                        "status": "PENDING_APPROVAL",
+                        "autonomy_decision": enforcement_decision.to_dict(),
+                        "approval_gate_result": {},
+                        "explicit_approval": None,
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+
+                    if self.approval_gate:
+                        requires_human_approval, approval_status = self.approval_gate.check_approval(
+                            chosen_path=context.get("chosen_path", ""),
+                            intent=context.get("intent", ""),
+                            parameters=parameters,
+                        )
+                        approval_state["approval_gate_result"] = {
+                            "requires_approval": requires_human_approval,
+                            "status": approval_status,
+                        }
+
+                    if self.session_manager and mission_id:
+                        self.session_manager.update_mission_status(
+                            session_id=context.get("session_id"),
+                            mission_id=mission_id,
+                            status="pending_approval",
+                            result={"approval_state": approval_state},
+                        )
+
+                    task_dict["status"] = TaskStatus.PENDING.value
+                    task_dict["result"] = {
+                        "approval_required": True,
+                        "approval_state": approval_state,
+                    }
+                    execution_trace.append(
+                        ExecutionStep(
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            start_time=datetime.now(timezone.utc),
+                            finish_time=datetime.now(timezone.utc),
+                            execution_status="pending_approval",
+                            result=ToolResult(status="pending_approval", error="Approval required by autonomy policy"),
+                        ).to_dict()
+                    )
+                    failed_task_id = task_id
+                    mission_status = MissionStatus.PENDING_APPROVAL.value
+                    if self.monitoring_service:
+                        self.monitoring_service.record_task_execution(
+                            mission_id=mission_id or "",
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            execution_status="pending_approval",
+                            execution_time_ms=0.0,
+                            retry_count=0,
+                            error="Approval required by autonomy policy",
+                        )
+                    break
+
+            else:
+                if is_sensitive:
+                    approval_state = {
+                        "mission_id": mission_id or "",
+                        "task_id": task_id,
+                        "step_id": task_id,
+                        "operation": tool_name,
+                        "status": "PENDING_APPROVAL",
+                        "autonomy_decision": {"decision": "APPROVAL_REQUIRED", "reason": "sensitive_operation_without_enforcer"},
+                        "approval_gate_result": {},
+                        "explicit_approval": None,
+                        "created_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }
+
+                    if self.approval_gate:
+                        requires_human_approval, approval_status = self.approval_gate.check_approval(
+                            chosen_path=context.get("chosen_path", ""),
+                            intent=context.get("intent", ""),
+                            parameters=parameters,
+                        )
+                        approval_state["approval_gate_result"] = {
+                            "requires_approval": requires_human_approval,
+                            "status": approval_status,
+                        }
+
+                    if self.session_manager and mission_id:
+                        self.session_manager.update_mission_status(
+                            session_id=context.get("session_id"),
+                            mission_id=mission_id,
+                            status="pending_approval",
+                            result={"approval_state": approval_state},
+                        )
+
+                    task_dict["status"] = TaskStatus.PENDING.value
+                    task_dict["result"] = {
+                        "approval_required": True,
+                        "approval_state": approval_state,
+                    }
+                    execution_trace.append(
+                        ExecutionStep(
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            start_time=datetime.now(timezone.utc),
+                            finish_time=datetime.now(timezone.utc),
+                            execution_status="pending_approval",
+                            result=ToolResult(status="pending_approval", error="Sensitive operation requires approval (enforcer unavailable)"),
+                        ).to_dict()
+                    )
+                    failed_task_id = task_id
+                    mission_status = MissionStatus.PENDING_APPROVAL.value
+                    if self.monitoring_service:
+                        self.monitoring_service.record_task_execution(
+                            mission_id=mission_id or "",
+                            task_id=task_id,
+                            tool_name=tool_name,
+                            execution_status="pending_approval",
+                            execution_time_ms=0.0,
+                            retry_count=0,
+                            error="Sensitive operation requires approval (enforcer unavailable)",
+                        )
+                    break
 
             start_time = datetime.now(timezone.utc)
 
