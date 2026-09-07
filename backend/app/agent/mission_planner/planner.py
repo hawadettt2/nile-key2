@@ -313,6 +313,7 @@ class TaskPlanner:
                 "goal_id": session_context.get("goal_id"),
                 "plan_id": session_context.get("plan_id"),
                 "plan_constraints": session_context.get("plan_constraints", []),
+                "knowledge": decision.get("context", {}).get("knowledge", []),
             },
             constraints=constraints,
             approval_policy={"requires_approval": requires_approval},
@@ -342,8 +343,11 @@ class TaskPlanner:
             filtered_tasks.append(task_def)
 
         tasks: List[Task] = []
+        knowledge = mission.context.get("knowledge", []) if isinstance(mission.context, dict) else []
         for index, task_def in enumerate(filtered_tasks):
             parameters = dict(task_def.get("parameters", {}))
+            if knowledge:
+                parameters["knowledge"] = knowledge
             if mission.mission_type == MissionType.RESEARCH.value:
                 research_result = mission.payload.get("research")
                 if research_result:

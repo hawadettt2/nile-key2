@@ -374,16 +374,23 @@ class ReasoningEngine:
         """Evaluate and score candidates using deterministic rules and provider data."""
         evaluated = []
 
+        knowledge_boost = 0.0
+        if knowledge:
+            high_confidence_count = 0
+            for k in knowledge:
+                if isinstance(k, dict):
+                    confidence = k.get("confidence")
+                    if isinstance(confidence, (int, float)) and confidence >= 0.6:
+                        high_confidence_count += 1
+            knowledge_boost = min(high_confidence_count * 0.05, 0.3)
+
         for candidate in candidates:
             score = candidate.get("score", candidate["confidence"])
 
             if parameters:
                 score += 0.1
 
-            for k in knowledge:
-                if isinstance(k, dict):
-                    if k.get("path") == candidate["path"]:
-                        score += 0.15
+            score += knowledge_boost
 
             evaluated.append({
                 **candidate,
