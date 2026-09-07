@@ -221,8 +221,9 @@ def test_update_workflow_no_changes():
 
 
 @patch("app.services.workflow.log_audit")
+@patch("app.services.workflow_validation.validate_workflow_readiness")
 @patch("app.services.shipping.update_shipment")
-def test_transition_workflow_success(mock_update_shipment, mock_log_audit):
+def test_transition_workflow_success(mock_update_shipment, mock_validate_readiness, mock_log_audit):
     mock_cursor = MagicMock()
     mock_cursor.fetchone.return_value = {
         "id": 1,
@@ -231,11 +232,21 @@ def test_transition_workflow_success(mock_update_shipment, mock_log_audit):
         "customer_id": 1,
         "supplier_id": 1,
         "invoice_id": None,
-        "customs_declaration_id": None,
+        "customs_declaration_id": 1,
         "shipment_id": 10,
         "notes": None,
     }
     mock_conn = _mock_connection(mock_cursor)
+
+    from app.services.workflow_validation import ReadinessResult
+    mock_validate_readiness.return_value = [
+        ReadinessResult(
+            status="ready",
+            reason="entities_complete",
+            message="All required entities are linked",
+            remediation="",
+        )
+    ]
 
     with patch("app.services.workflow.connection", return_value=mock_conn):
         result = transition_workflow(workflow_id=1, new_state="shipped", current_user={"id": 1})
