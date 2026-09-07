@@ -90,7 +90,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
   const sidebarContent = (
     <div className={`bg-slate-900 text-white flex flex-col transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
       <div className="flex items-center justify-between p-4 border-b border-slate-700">
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
               <span className="font-bold text-white text-sm">NK</span>
@@ -98,7 +98,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
             <span className="font-bold text-lg">{t('app.name')}</span>
           </div>
         )}
-        {collapsed && (
+        {isCollapsed && (
           <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center mx-auto">
             <span className="font-bold text-white text-sm">NK</span>
           </div>
@@ -107,10 +107,10 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
           type="button"
           onClick={onToggleCollapsed}
           className="hidden lg:block text-slate-400 hover:text-white transition-colors"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-expanded={!collapsed}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!isCollapsed}
         >
-          {collapsed ? <Menu size={20} /> : <X size={20} />}
+          {isCollapsed ? <Menu size={20} /> : <X size={20} />}
         </button>
       </div>
 
@@ -123,7 +123,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
       </div>
 
       <div className="p-4">
-        {!collapsed && user && (
+        {!isCollapsed && user && (
           <div className="mb-3 px-3">
             <p className="text-sm font-medium text-white">{user.full_name}</p>
             <p className="text-xs text-slate-400">{user.role}</p>
@@ -136,7 +136,7 @@ export function Sidebar({ collapsed, onToggleCollapsed, forceCollapsed }: Sideba
           aria-label={t('app.logout')}
         >
           <LogOut size={20} />
-          {!collapsed && <span className="text-sm font-medium">{t('app.logout')}</span>}
+          {!isCollapsed && <span className="text-sm font-medium">{t('app.logout')}</span>}
         </button>
       </div>
     </div>
