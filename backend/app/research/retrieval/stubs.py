@@ -13,7 +13,13 @@ from app.schemas.research import Source
 class StubRetriever(SourceRetriever):
     """Stub retriever that returns simulated content for testing and placeholder purposes."""
 
-    async def retrieve(self, source: Source, query: str) -> RetrievalResult:
+    async def retrieve(
+        self,
+        source: Source,
+        query: str,
+        context: Optional[Dict[str, Any]] = None,
+        scope: Optional[Dict[str, Any]] = None,
+    ) -> RetrievalResult:
         return RetrievalResult(
             source_id=source.source_id,
             status=RetrievalStatus.SUCCESS,

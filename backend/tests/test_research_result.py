@@ -190,7 +190,7 @@ class TestStructuringStageIntegration:
 
         request = ResearchRequest(goal="test")
         result = await orchestrator.execute(request, "req_1")
-        assert result.status == "completed"
+        assert result.status == "failed"
 
     @pytest.mark.asyncio
     async def test_full_lifecycle_with_structurer(self):
@@ -213,7 +213,7 @@ class TestStructuringStageIntegration:
 
         request = ResearchRequest(goal="test")
         result = await orchestrator.execute(request, "req_1")
-        assert result.status == "completed"
+        assert result.status == "failed"
 
 
 class TestTraceabilityChain:
@@ -238,7 +238,7 @@ class TestTraceabilityChain:
 
         request = ResearchRequest(goal="test")
         result = await orchestrator.execute(request, "req_1")
-        assert result.status == "completed"
+        assert result.status == "failed"
         for finding in result.findings:
             for evidence_item in finding.evidence:
                 assert evidence_item.source_id is not None

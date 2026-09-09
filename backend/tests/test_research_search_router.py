@@ -126,7 +126,7 @@ class TestSearchProviderRouter:
         adapter = _make_adapter("a", retrieve_result=_success_result("src_1"))
         router.register_adapter(adapter)
 
-        result = await router.retrieve_with_fallback(source, "query")
+        result = await router.retrieve_with_fallback(source, "query", context=None, scope=None)
         assert result.status == RetrievalStatus.SUCCESS
         assert result.content.raw_content == {"data": "success"}
 
@@ -139,7 +139,7 @@ class TestSearchProviderRouter:
         router.register_adapter(failing)
         router.register_adapter(succeeding)
 
-        result = await router.retrieve_with_fallback(source, "query")
+        result = await router.retrieve_with_fallback(source, "query", context=None, scope=None)
         assert result.status == RetrievalStatus.SUCCESS
 
     @pytest.mark.asyncio
@@ -151,7 +151,7 @@ class TestSearchProviderRouter:
         router.register_adapter(fail1)
         router.register_adapter(fail2)
 
-        result = await router.retrieve_with_fallback(source, "query")
+        result = await router.retrieve_with_fallback(source, "query", context=None, scope=None)
         assert result.status == RetrievalStatus.FAILED
         assert "All search adapters failed" in (result.error or "")
 
@@ -162,7 +162,7 @@ class TestSearchProviderRouter:
         disabled = _make_adapter("disabled", enabled=False)
         router.register_adapter(disabled)
 
-        result = await router.retrieve_with_fallback(source, "query")
+        result = await router.retrieve_with_fallback(source, "query", context=None, scope=None)
         assert result.status == RetrievalStatus.FAILED
         assert "No qualified search adapters available" in (result.error or "")
 
@@ -173,7 +173,7 @@ class TestSearchProviderRouter:
         fail = _make_adapter("fail", retrieve_result=_fail_result("src_1"))
         router.register_adapter(fail)
 
-        result = await router.retrieve_with_fallback(source, "query")
+        result = await router.retrieve_with_fallback(source, "query", context=None, scope=None)
         assert result.status == RetrievalStatus.FAILED
         assert "stub" not in (result.error or "").lower()
 

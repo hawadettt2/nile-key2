@@ -221,7 +221,9 @@ class TestUnComtradeContextMapping:
             }
         )
 
-        path, params = adapter._build_request("test", {}, None, 10)
+        requests = adapter._build_request("test", {}, None, 10)
+        assert len(requests) == 1
+        path, params, _cmd_code = requests[0]
         assert path == "/public/v1/preview/C/A/HS"
         assert params["flowCode"] == "X"
         assert params["maxrecords"] == 10
@@ -234,18 +236,45 @@ class TestUnComtradeContextMapping:
             }
         )
 
-        path, params = adapter._build_request(
+        requests = adapter._build_request(
             "test",
             {"reporter": 156, "partner": 842, "flow": "M", "period": "2022", "frequency": "M", "classification": "SITC"},
             None,
             10,
         )
+        assert len(requests) == 1
+        path, params, _cmd_code = requests[0]
         assert path == "/public/v1/preview/C/M/SITC"
         assert params["reporterCode"] == 156
         assert params["partnerCode"] == 842
         assert params["flowCode"] == "M"
         assert params["period"] == "2022"
         assert params["maxrecords"] == 10
+
+    def test_commodities_map_to_cmd_code(self):
+        adapter = UnComtradeExternalSourceAdapter(
+            config={
+                "base_url": "https://comtradeapi.un.org",
+                "source_id": "un-comtrade",
+            }
+        )
+
+        requests = adapter._build_request(
+            "test",
+            {"reporter": 818, "partner": 400, "commodities": ["07", "08"]},
+            None,
+            10,
+        )
+        assert len(requests) == 2
+        assert requests[0][0] == "/public/v1/preview/C/A/HS"
+        assert requests[1][0] == "/public/v1/preview/C/A/HS"
+        assert requests[0][1]["reporterCode"] == 818
+        assert requests[1][1]["reporterCode"] == 818
+        assert requests[0][1]["partnerCode"] == 400
+        assert requests[1][1]["partnerCode"] == 400
+        assert requests[0][1]["cmdCode"] == "07"
+        assert requests[1][1]["cmdCode"] == "08"
+        assert requests[0][1]["maxrecords"] == 10
 
     def test_scope_maps_to_type_code(self):
         adapter = UnComtradeExternalSourceAdapter(
@@ -255,7 +284,9 @@ class TestUnComtradeContextMapping:
             }
         )
 
-        path, params = adapter._build_request("test", {}, "S", 10)
+        requests = adapter._build_request("test", {}, "S", 10)
+        assert len(requests) == 1
+        path, _params, _cmd_code = requests[0]
         assert path == "/public/v1/preview/S/A/HS"
 
     def test_limit_capped_at_500_for_preview(self):
@@ -266,7 +297,9 @@ class TestUnComtradeContextMapping:
             }
         )
 
-        _, params = adapter._build_request("test", {}, None, 1000)
+        requests = adapter._build_request("test", {}, None, 1000)
+        assert len(requests) == 1
+        _path, params, _cmd_code = requests[0]
         assert params["maxrecords"] == 500
 
 

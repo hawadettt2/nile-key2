@@ -50,15 +50,23 @@ class UnComtradeExternalSourceAdapter(KnowledgeProvider):
         limit: int = 10,
     ) -> Dict[str, Any]:
         try:
-            path, params = self._build_request(query=query, context=context, scope=scope, limit=limit)
-            if not path:
+            requests = self._build_request(query=query, context=context, scope=scope, limit=limit)
+            if not requests:
                 return {
                     "results": [],
                     "confidence": None,
                     "sources": [self._source_id],
                 }
 
-            raw = await self._client.request(method="GET", path=path, params=params)
+            raw_results: List[tuple] = []
+            for path, params, _cmd_code in requests:
+                try:
+                    raw = await self._client.request(method="GET", path=path, params=params)
+                    raw_results.append((raw, _cmd_code))
+                except Exception:
+                    continue
+
+            results = self._transform_multi(raw_results, context=context, limit=limit, scope=scope)
         except Exception:
             return {
                 "results": [],
@@ -66,7 +74,6 @@ class UnComtradeExternalSourceAdapter(KnowledgeProvider):
                 "sources": [self._source_id],
             }
 
-        results = self._transform(raw, context=context, limit=limit, scope=scope)
         if not results:
             return {
                 "results": results,
@@ -86,11 +93,11 @@ class UnComtradeExternalSourceAdapter(KnowledgeProvider):
         context: Optional[Dict[str, Any]],
         scope: Optional[str],
         limit: int,
-    ) -> tuple:
+    ) -> List[tuple]:
         """Build UN Comtrade API request path and query parameters.
 
         Returns:
-            Tuple of (path, params).
+            List of (path, params, cmd_code) tuples, one per commodity.
         """
         if not isinstance(context, dict):
             context = {}
@@ -109,25 +116,64 @@ class UnComtradeExternalSourceAdapter(KnowledgeProvider):
 
         path = f"/public/v1/preview/{type_code}/{freq_code}/{cl_code}"
 
-        params: Dict[str, Any] = {}
+        base_params: Dict[str, Any] = {}
         reporter = context.get("reporter")
         if reporter is not None:
-            params["reporterCode"] = reporter
+            base_params["reporterCode"] = reporter
         partner = context.get("partner")
         if partner is not None:
-            params["partnerCode"] = partner
+            base_params["partnerCode"] = partner
         flow = context.get("flow") or "X"
         if not isinstance(flow, str) or not flow:
             flow = "X"
-        params["flowCode"] = flow
+        base_params["flowCode"] = flow
         period = context.get("period")
         if period is not None:
-            params["period"] = period
+            base_params["period"] = period
 
         maxrecords = min(limit, 500)
-        params["maxrecords"] = maxrecords
+        base_params["maxrecords"] = maxrecords
 
-        return path, params
+        commodities = context.get("commodities") or (scope.get("commodities") if isinstance(scope, dict) else None)
+        requests: List[tuple] = []
+        if commodities:
+            if isinstance(commodities, list):
+                cmd_codes = [c for c in commodities if isinstance(c, str) and c]
+            else:
+                cmd_codes = [commodities] if isinstance(commodities, str) and commodities else []
+            for cmd_code in cmd_codes:
+                params = dict(base_params)
+                params["cmdCode"] = cmd_code
+                requests.append((path, params, cmd_code))
+        else:
+            requests.append((path, dict(base_params), None))
+
+        return requests
+
+    def _transform_multi(
+        self,
+        raw_results: List[tuple],
+        context: Optional[Dict[str, Any]],
+        limit: int,
+        scope: Optional[str],
+    ) -> List[Dict[str, Any]]:
+        items: List[Dict[str, Any]] = []
+        for raw, _cmd_code in raw_results:
+            if not isinstance(raw, dict):
+                continue
+            data = raw.get("data") or raw.get("dataset")
+            if not isinstance(data, list):
+                continue
+            for entry in data:
+                if not isinstance(entry, dict):
+                    continue
+                item = self._transform_entry(entry)
+                if _cmd_code:
+                    item_cmd = item.get("metadata", {}).get("cmd_code") or item.get("cmd_code") or ""
+                    if item_cmd != _cmd_code:
+                        continue
+                items.append(item)
+        return items[:limit]
 
     def _transform(self, raw: Any, context: Optional[Dict[str, Any]], limit: int, scope: Optional[str]) -> List[Dict[str, Any]]:
         if not isinstance(raw, dict):

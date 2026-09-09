@@ -1,17 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from app.core.config import settings
 from app.routers.auth import get_current_user
 from app.research.orchestrator import ResearchOrchestrator, PlanningStage, DiscoveryStage, RetrievalStage, ProcessingStage, EvidenceCaptureStage, StructuringStage, VerificationStage
 from app.research.sources.registry import SourceRegistry
 from app.research.sources.discovery import SourceDiscovery
+from app.research.retrieval.contracts import (
+    ContentProcessor,
+    RetrievedContent,
+    RetrievalResult,
+    RetrievalStatus,
+    SourceRetriever,
+)
 from app.research.retrieval.orchestrator import RetrievalOrchestrator
 from app.research.retrieval.providers.capability import ProviderCapability
 from app.research.retrieval.providers.router import SearchProviderRouter
 from app.research.retrieval.providers.searxng_adapter import SearXNGAdapter
 from app.research.retrieval.stubs import StubRetriever, StubProcessor
+from app.research.retrieval.composite_retriever import CompositeSourceRetriever, KnowledgeProviderSourceRetriever
 from app.schemas.research import (
     ResearchRequest,
     ResearchResult,
@@ -26,43 +34,148 @@ router = APIRouter(prefix="/api/v1/research", tags=["External Research"])
 _source_registry = SourceRegistry()
 _source_discovery = SourceDiscovery(registry=_source_registry)
 
-if settings.SEARCH_STUB_FALLBACK:
-    _retrieval_orchestrator = RetrievalOrchestrator(
-        retriever=StubRetriever(),
-        processor=StubProcessor(),
-    )
-else:
+# Build web search retriever if configured
+_web_search_retriever: Optional[SourceRetriever] = None
+if settings.SEARXNG_BASE_URL:
     _search_router = SearchProviderRouter()
-    if settings.SEARXNG_BASE_URL:
-        _search_router.register_adapter(
-            SearXNGAdapter(
-                capability=ProviderCapability(
-                    provider_id="searxng",
-                    supports_web_search=True,
-                    supports_snippets=True,
-                    supports_source_urls=True,
-                    requires_api_key=bool(settings.SEARXNG_API_KEY),
-                    priority=10,
-                    enabled=True,
-                ),
-                base_url=settings.SEARXNG_BASE_URL,
-                api_key=settings.SEARXNG_API_KEY or "",
-                timeout=settings.SEARXNG_TIMEOUT_SECONDS,
-            )
+    _search_router.register_adapter(
+        SearXNGAdapter(
+            capability=ProviderCapability(
+                provider_id="searxng",
+                supports_web_search=True,
+                supports_snippets=True,
+                supports_source_urls=True,
+                requires_api_key=bool(settings.SEARXNG_API_KEY),
+                priority=10,
+                enabled=True,
+            ),
+            base_url=settings.SEARXNG_BASE_URL,
+            api_key=settings.SEARXNG_API_KEY or "",
+            timeout=settings.SEARXNG_TIMEOUT_SECONDS,
         )
-    _retrieval_orchestrator = RetrievalOrchestrator(
-        retriever=_search_router,
-        processor=StubProcessor(),
     )
+    _web_search_retriever = _search_router
+
+# Build composite retriever: knowledge providers first, then web search, then optional stub fallback
+_fallback_retriever: Optional[SourceRetriever] = None
+if settings.SEARCH_STUB_FALLBACK:
+    _fallback_retriever = StubRetriever()
+
+_composite_retriever = CompositeSourceRetriever(
+    knowledge_retrievers={},
+    web_search_retriever=_web_search_retriever,
+    fallback_retriever=_fallback_retriever,
+)
+
+_retrieval_orchestrator = RetrievalOrchestrator(
+    retriever=_composite_retriever,
+    processor=StubProcessor(),
+)
 
 _orchestrator = ResearchOrchestrator()
 _orchestrator.register_stage(PlanningStage())
 _orchestrator.register_stage(DiscoveryStage(discovery=_source_discovery))
 _orchestrator.register_stage(RetrievalStage(retrieval_orchestrator=_retrieval_orchestrator, registry=_source_registry))
 _orchestrator.register_stage(ProcessingStage(processor=StubProcessor()))
-_orchestrator.register_stage(EvidenceCaptureStage())
+_orchestrator.register_stage(EvidenceCaptureStage(registry=_source_registry))
 _orchestrator.register_stage(StructuringStage())
 _orchestrator.register_stage(VerificationStage())
+
+
+def _get_provider_readiness(provider: Any) -> str:
+    config = getattr(provider, "_config", {}) or {}
+    base_url = config.get("base_url", "")
+    api_key = config.get("api_key")
+    username = config.get("username")
+    password = config.get("password")
+
+    if not base_url:
+        return "unconfigured"
+
+    provider_id = config.get("source_id", "")
+    if provider_id == "un-comtrade":
+        return "available"
+    if provider_id == "worldbank-lpi":
+        return "available"
+    if provider_id == "faostat":
+        if username and password:
+            return "available"
+        return "unconfigured"
+    if provider_id in {"zatca", "tradedata", "gccstat"}:
+        if api_key:
+            return "available"
+        return "unconfigured"
+
+    if api_key or (username and password):
+        return "available"
+    return "unconfigured"
+
+
+def _knowledge_source_to_research_source(source_meta: Dict[str, Any], provider: Any) -> Source:
+    source_id = source_meta.get("id") or ""
+    name = source_meta.get("name") or source_id
+    source_type = source_meta.get("type") or "other"
+    valid_types = {"market_data", "regulation", "news", "trade_statistics", "other"}
+    if source_type not in valid_types:
+        source_type = "other"
+    reference = source_meta.get("source_url") or source_meta.get("updated_at") or source_meta.get("reference")
+    metadata = {
+        "provider_class": getattr(provider, "__class__", type(provider)).__name__,
+        "version": source_meta.get("version"),
+        "updated_at": source_meta.get("updated_at"),
+        "readiness": _get_provider_readiness(provider),
+    }
+    return Source(
+        source_id=source_id,
+        name=name,
+        source_type=source_type,
+        reference=reference,
+        metadata=metadata,
+        status="active",
+    )
+
+
+async def sync_knowledge_providers_to_research_registry(knowledge_registry: Any, source_registry: Optional[SourceRegistry] = None, composite_retriever: Optional[CompositeSourceRetriever] = None) -> None:
+    target_registry = source_registry if source_registry is not None else _source_registry
+    if knowledge_registry is None:
+        return
+    try:
+        providers_info = await knowledge_registry.list_providers()
+    except Exception:
+        providers_info = []
+
+    for source_meta in providers_info:
+        source_id = source_meta.get("id")
+        if not source_id:
+            continue
+        provider = knowledge_registry.get(source_id)
+        if provider is None:
+            continue
+        try:
+            source = _knowledge_source_to_research_source(source_meta, provider)
+            if source_id not in target_registry._sources:
+                target_registry.register(SourceRegistration(source=source, overwrite=False))
+        except Exception:
+            continue
+
+    # Update composite retriever with knowledge provider retrievers
+    if composite_retriever is not None:
+        knowledge_retrievers: Dict[str, KnowledgeProviderSourceRetriever] = {}
+        for source_meta in providers_info:
+            source_id = source_meta.get("id")
+            if not source_id:
+                continue
+            provider = knowledge_registry.get(source_id)
+            if provider is None:
+                continue
+            try:
+                knowledge_retrievers[source_id] = KnowledgeProviderSourceRetriever(
+                    provider=provider,
+                    source_id=source_id,
+                )
+            except Exception:
+                continue
+        composite_retriever.update_knowledge_retrievers(knowledge_retrievers)
 
 
 def _raise_http_error(result: dict) -> None:

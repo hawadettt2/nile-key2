@@ -74,7 +74,13 @@ class SourceRetriever(ABC):
     """Base class for source retrievers."""
 
     @abstractmethod
-    async def retrieve(self, source: Source, query: str) -> RetrievalResult:
+    async def retrieve(
+        self,
+        source: Source,
+        query: str,
+        context: Optional[Dict[str, Any]] = None,
+        scope: Optional[Dict[str, Any]] = None,
+    ) -> RetrievalResult:
         ...
 
 

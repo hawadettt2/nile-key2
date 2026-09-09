@@ -60,7 +60,13 @@ class SearXNGAdapter(SearchProviderAdapter):
     def capability(self) -> ProviderCapability:
         return self._capability
 
-    async def retrieve(self, source: Source, query: str) -> RetrievalResult:
+    async def retrieve(
+        self,
+        source: Source,
+        query: str,
+        context: Optional[Dict[str, Any]] = None,
+        scope: Optional[Dict[str, Any]] = None,
+    ) -> RetrievalResult:
         search_url = f"{self._base_url}/search"
         params: Dict[str, Any] = {
             "q": query,

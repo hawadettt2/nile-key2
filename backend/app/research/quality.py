@@ -160,6 +160,8 @@ class FailureHandler:
             return "failed"
         if sources_failed and not sources_consulted:
             return "failed"
+        if not sources_consulted:
+            return "failed"
         return "completed"
 
     @staticmethod

@@ -194,7 +194,7 @@ class ReasoningEngine:
 
             if (
                 isinstance(research, dict)
-                and research.get("status") == "completed"
+                and research.get("status") in ("completed", "failed")
                 and self._should_trigger_external_research(intent)
             ):
                 chosen_path = "research"
@@ -287,6 +287,7 @@ class ReasoningEngine:
             ("dashboard", MissionType.GET_DASHBOARD, ["لوحة", "dashboard", "إحصائيات", "stats"]),
             ("notification", MissionType.SEND_NOTIFICATION, ["إشعار", "notification", "تنبيه", "alert"]),
             ("workflow", MissionType.TRANSITION_WORKFLOW, ["إجراء", "workflow", "procedure", "sop"]),
+            ("research", MissionType.RESEARCH, ["تصدير", "export", "سوق", "market", "فرصة", "opportunity", "مشتر", "buyer", "خضروات", "فاكهة", "agriculture", "أردن", "jordan", "دراسة", "study", "بحث", "research"]),
         ]
 
         for path_key, mission_type, keywords in path_patterns:
@@ -449,6 +450,10 @@ class ReasoningEngine:
             return "search", [c["path"] for c in scored_candidates]
 
         if best_score < 0.3:
+            if best["path"] == "search":
+                return "search", [c["path"] for c in scored_candidates]
+            if best["path"] == "research" and best.get("match_count", 0) >= 2:
+                return "research", [c["path"] for c in scored_candidates[1:]]
             return "search", [c["path"] for c in scored_candidates]
 
         chosen_path = best["path"]
@@ -597,6 +602,45 @@ class ReasoningEngine:
         return results
 
     @staticmethod
+    def _build_qualified_query(intent: str, extracted: Dict[str, Any]) -> str:
+        parts: List[str] = []
+
+        request_type = extracted.get("request_type")
+        if request_type:
+            parts.append(request_type)
+
+        commodities = extracted.get("commodities") or []
+        commodity_labels = {
+            "07": "vegetables",
+            "08": "fruits",
+        }
+        commodity_words = []
+        for code in commodities:
+            label = commodity_labels.get(code)
+            if label:
+                commodity_words.append(label)
+        if commodity_words:
+            parts.append(" ".join(commodity_words))
+
+        reporter = extracted.get("reporter")
+        partner = extracted.get("partner")
+        country_names = {
+            "818": "Egypt",
+            "400": "Jordan",
+        }
+        if reporter:
+            parts.append(country_names.get(reporter, reporter))
+        if partner:
+            parts.append(country_names.get(partner, partner))
+
+        if not parts:
+            intent_clean = intent.strip()
+            if intent_clean:
+                parts.append(intent_clean)
+
+        return " ".join(parts)
+
+    @staticmethod
     def _extract_research_parameters(intent: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
         intent_lower = intent.lower()
         extracted: Dict[str, Any] = {}
@@ -611,8 +655,23 @@ class ReasoningEngine:
         commodity_map = {
             "خضر": "07",
             "vegetables": "07",
+            "خضروات": "07",
             "فواكه": "08",
+            "فاكهة": "08",
             "fruits": "08",
+        }
+
+        request_type_map = {
+            "تصدير": "export",
+            "export": "export",
+            "استيراد": "import",
+            "import": "import",
+            "دراسة جدوى": "market_study",
+            "دراسة سوق": "market_study",
+            "market study": "market_study",
+            "market research": "market_research",
+            "بحث": "market_research",
+            "بحث سوقي": "market_research",
         }
 
         for name, code in country_map.items():
@@ -630,6 +689,11 @@ class ReasoningEngine:
             unique = list(dict.fromkeys(extracted["commodities"]))
             extracted["commodities"] = unique
 
+        for name, request_type in request_type_map.items():
+            if name.lower() in intent_lower:
+                extracted["request_type"] = request_type
+                break
+
         return extracted
 
     async def _query_external_research(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -642,16 +706,20 @@ class ReasoningEngine:
             return []
 
         extracted = self._extract_research_parameters(intent, parameters)
+        qualified_query = self._build_qualified_query(intent, extracted)
 
         context = {
             "session_id": parameters.get("session_id"),
             "user_id": parameters.get("user_id"),
             "request_context": parameters.get("context", {}),
+            "request_type": extracted.get("request_type"),
         }
         if extracted.get("reporter"):
             context["reporter"] = extracted["reporter"]
         if extracted.get("partner"):
             context["partner"] = extracted["partner"]
+        if extracted.get("commodities"):
+            context["commodities"] = extracted["commodities"]
 
         scope = parameters.get("scope") or {
             "domains": parameters.get("domains"),
@@ -666,7 +734,7 @@ class ReasoningEngine:
             ]
 
         request = ResearchRequest(
-            goal=intent,
+            goal=qualified_query,
             context=context,
             scope=scope,
             constraints=parameters.get("constraints"),

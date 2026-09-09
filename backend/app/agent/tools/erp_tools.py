@@ -331,6 +331,13 @@ class SearchGlobalTool(BaseTool):
             query = parameters.get("query", "")
             entity_type = parameters.get("entity_type")
             result = search_all(query, entity_type)
+            results = result.get("results", []) if isinstance(result, dict) else []
+            if not results:
+                return ToolResult(
+                    status="error",
+                    error="Search returned no results",
+                    audit_ref=f"{self.tool_name}:{uuid.uuid4()}",
+                )
             return ToolResult(status="success", data=result, audit_ref=f"{self.tool_name}:{uuid.uuid4()}")
         except Exception as e:
             return ToolResult(status="error", error=str(e), audit_ref=f"{self.tool_name}:{uuid.uuid4()}")
@@ -479,6 +486,14 @@ class ResearchPresentResultTool(BaseTool):
                 return ToolResult(
                     status="error",
                     error="Invalid research result: expected object",
+                    audit_ref=f"{self.tool_name}:{uuid.uuid4()}",
+                )
+
+            research_status = research_result.get("status")
+            if research_status == "failed":
+                return ToolResult(
+                    status="error",
+                    error="Research failed: no meaningful results produced",
                     audit_ref=f"{self.tool_name}:{uuid.uuid4()}",
                 )
 

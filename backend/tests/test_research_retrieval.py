@@ -1,7 +1,7 @@
 import uuid
 import pytest
 import asyncio
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from app.research.retrieval.contracts import (
     ContentProcessor,
@@ -34,7 +34,7 @@ class CustomRetriever(SourceRetriever):
         self.fail_on_source_id = fail_on_source_id
         self.delay_seconds = delay_seconds
 
-    async def retrieve(self, source: Source, query: str) -> RetrievalResult:
+    async def retrieve(self, source: Source, query: str, context: Optional[Dict[str, Any]] = None, scope: Optional[Dict[str, Any]] = None) -> RetrievalResult:
         if self.fail_on_source_id and source.source_id == self.fail_on_source_id:
             return RetrievalResult(
                 source_id=source.source_id,
@@ -71,7 +71,7 @@ class TestRetrievalContracts:
     def test_stub_retriever_returns_success(self):
         retriever = StubRetriever()
         source = _make_source()
-        result = asyncio.run(retriever.retrieve(source, "test query"))
+        result = asyncio.run(retriever.retrieve(source, "test query", context=None, scope=None))
         assert result.status == RetrievalStatus.SUCCESS
         assert result.content is not None
         assert result.content.source_id == source.source_id
@@ -80,7 +80,7 @@ class TestRetrievalContracts:
     def test_custom_retriever_failure(self):
         retriever = CustomRetriever(fail_on_source_id="src_fail")
         source = _make_source(source_id="src_fail")
-        result = asyncio.run(retriever.retrieve(source, "test"))
+        result = asyncio.run(retriever.retrieve(source, "test", context=None, scope=None))
         assert result.status == RetrievalStatus.CONNECTION_FAILURE
         assert result.error is not None
         assert result.content is None
@@ -142,14 +142,14 @@ class TestRetrievalOrchestrator:
         retriever = StubRetriever()
         orchestrator = RetrievalOrchestrator(retriever=retriever)
         sources = [_make_source()]
-        results = asyncio.run(orchestrator.retrieve_sources(sources, "test"))
+        results = asyncio.run(orchestrator.retrieve_sources(sources, "test", context=None, scope=None))
         processed = asyncio.run(orchestrator.process_results(results))
         assert processed == results
 
     def test_retrieval_result_structure(self):
         retriever = StubRetriever()
         source = _make_source()
-        result = asyncio.run(retriever.retrieve(source, "test"))
+        result = asyncio.run(retriever.retrieve(source, "test", context=None, scope=None))
         data = result.to_dict()
         assert "source_id" in data
         assert "status" in data

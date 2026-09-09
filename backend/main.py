@@ -436,6 +436,10 @@ async def lifespan(app: FastAPI):
     reasoning_engine._research_orchestrator = research._orchestrator
     print("[SUCCESS] Research Orchestrator attached to ReasoningEngine")
 
+    from app.routers.research import sync_knowledge_providers_to_research_registry
+    await sync_knowledge_providers_to_research_registry(knowledge_provider_registry, composite_retriever=research._composite_retriever)
+    print("[SUCCESS] Knowledge providers synced to Research SourceRegistry")
+
     app.state.reasoning_engine = reasoning_engine
     
     # Initialize ETA background scheduler
@@ -486,7 +490,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # ط¥ط¹ط¯ط§ط¯ CORS â€” ظٹظڈط¹ط¯ظ„ ظپظٹ ط§ظ„ط¥ظ†طھط§ط¬ ظ„ظٹظƒظˆظ† ط£ظƒط«ط± طھط­ط¯ظٹط¯ط§ظ‹
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://nile-key.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

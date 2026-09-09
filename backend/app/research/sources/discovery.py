@@ -23,7 +23,7 @@ class SourceDiscovery:
                     metadata.setdefault("skipped_inactive", []).append(pref)
 
         if not discovered and request.scope:
-            domains = request.scope.get("domains", [])
+            domains = request.scope.get("domains") or []
             for source in self._registry.list():
                 if source.status != "active":
                     continue

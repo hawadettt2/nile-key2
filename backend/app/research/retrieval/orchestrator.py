@@ -25,12 +25,19 @@ class RetrievalOrchestrator:
         self._retriever = retriever
         self._processor = processor
 
+    def update_retriever(self, retriever: SourceRetriever) -> None:
+        self._retriever = retriever
+
     async def retrieve_sources(
-        self, sources: List[Source], query: str
+        self,
+        sources: List[Source],
+        query: str,
+        context: Optional[Dict[str, Any]] = None,
+        scope: Optional[Dict[str, Any]] = None,
     ) -> List[RetrievalResult]:
         results: List[RetrievalResult] = []
         for source in sources:
-            result = await self._retrieve_one(source, query)
+            result = await self._retrieve_one(source, query, context=context, scope=scope)
             results.append(result)
         return results
 
@@ -52,10 +59,16 @@ class RetrievalOrchestrator:
             processed.append(result)
         return processed
 
-    async def _retrieve_one(self, source: Source, query: str) -> RetrievalResult:
+    async def _retrieve_one(
+        self,
+        source: Source,
+        query: str,
+        context: Optional[Dict[str, Any]] = None,
+        scope: Optional[Dict[str, Any]] = None,
+    ) -> RetrievalResult:
         start = datetime.utcnow()
         try:
-            result = await self._retriever.retrieve(source, query)
+            result = await self._retriever.retrieve(source, query, context=context, scope=scope)
             duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
             result.duration_ms = duration_ms
             return result

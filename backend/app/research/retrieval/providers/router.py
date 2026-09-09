@@ -29,7 +29,13 @@ class SearchProviderRouter(SourceRetriever):
     def unregister_adapter(self, adapter: SearchProviderAdapter) -> None:
         self._adapters = [a for a in self._adapters if a is not adapter]
 
-    async def retrieve_with_fallback(self, source: Source, query: str) -> RetrievalResult:
+    async def retrieve_with_fallback(
+        self,
+        source: Source,
+        query: str,
+        context: Optional[Dict[str, Any]] = None,
+        scope: Optional[Dict[str, Any]] = None,
+    ) -> RetrievalResult:
         qualified = self._get_qualified_adapters()
 
         if not qualified:
@@ -65,8 +71,8 @@ class SearchProviderRouter(SourceRetriever):
             error="All search adapters failed",
         )
 
-    async def retrieve(self, source: Source, query: str) -> RetrievalResult:
-        return await self.retrieve_with_fallback(source, query)
+    async def retrieve(self, source: Source, query: str, context: Optional[Dict[str, Any]] = None, scope: Optional[Dict[str, Any]] = None) -> RetrievalResult:
+        return await self.retrieve_with_fallback(source, query, context=context, scope=scope)
 
     def _get_qualified_adapters(self) -> List[SearchProviderAdapter]:
         return sorted(

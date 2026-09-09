@@ -292,6 +292,63 @@ class TestReasoningEngineCore:
 
         assert result["chosen_path"] == "search"
 
+    def test_extract_research_parameters_export_intent(self):
+        extracted = ReasoningEngine._extract_research_parameters(
+            "أريد تصدير خضروات وفاكهة مصرية إلى الأردن.",
+            {},
+        )
+        assert extracted["reporter"] == "818"
+        assert extracted["partner"] == "400"
+        assert "07" in extracted["commodities"]
+        assert "08" in extracted["commodities"]
+        assert extracted["request_type"] == "export"
+
+    def test_build_qualified_query_export_intent(self):
+        extracted = ReasoningEngine._extract_research_parameters(
+            "أريد تصدير خضروات وفاكهة مصرية إلى الأردن.",
+            {},
+        )
+        query = ReasoningEngine._build_qualified_query(
+            "أريد تصدير خضروات وفاكهة مصرية إلى الأردن.",
+            extracted,
+        )
+        assert "export" in query
+        assert "vegetables" in query
+        assert "fruits" in query
+        assert "Egypt" in query
+        assert "Jordan" in query
+
+    def test_build_qualified_query_without_intent_duplication(self):
+        extracted = {"reporter": "818", "partner": "400", "commodities": ["07"], "request_type": "export"}
+        query = ReasoningEngine._build_qualified_query("export vegetables Egypt Jordan", extracted)
+        assert query == "export vegetables Egypt Jordan"
+
+    def test_build_qualified_query_fallback_to_intent_when_no_extraction(self):
+        extracted = {}
+        query = ReasoningEngine._build_qualified_query("أريد تصدير خضروات وفاكهة مصرية إلى الأردن.", extracted)
+        assert query == "أريد تصدير خضروات وفاكهة مصرية إلى الأردن."
+
+    def test_query_external_research_uses_qualified_query(self):
+        import asyncio
+        engine = ReasoningEngine()
+        mock_orchestrator = AsyncMock()
+        mock_result = AsyncMock()
+        mock_result.model_dump.return_value = {"status": "completed", "findings": []}
+        mock_orchestrator.execute.return_value = mock_result
+        engine._research_orchestrator = mock_orchestrator
+
+        result = asyncio.get_event_loop().run_until_complete(
+            engine._query_external_research("أريد تصدير خضروات وفاكهة مصرية إلى الأردن.", {})
+        )
+
+        call_args = mock_orchestrator.execute.call_args
+        request = call_args.args[0]
+        assert "export" in request.goal
+        assert "vegetables" in request.goal
+        assert "fruits" in request.goal
+        assert "Egypt" in request.goal
+        assert "Jordan" in request.goal
+
 
 class TestReasoningEngineApprovalGates:
     """Tests for approval gate detection (Phase 3)."""
@@ -508,7 +565,7 @@ class TestReasoningEngineProviderIntegration:
     @pytest.mark.asyncio
     async def test_provider_data_adjusts_scoring(self):
         self.memory_provider.recall.return_value = [
-            {"value": {"preferred_path": "eta"}}
+            {"memory_type": "preference", "value": {"preferred_path": "eta"}}
         ]
         self.knowledge_provider.query.return_value = [
             {"path": "eta", "rule": "preferred"}
@@ -756,8 +813,13 @@ class TestReasoningEngineResearchOverride:
 
         engine._research_orchestrator = FailingOrchestrator()
         decision = await engine.reason("session-1", {"intent": "أريد دراسة جدوى تصدير الفواكه المصرية إلى الأردن"})
-        assert decision["chosen_path"] != "research"
-        assert decision["chosen_path"] in ("search", "shipping", "eta", "customs", "document", "dashboard", "notification", "workflow")
+        assert decision["chosen_path"] == "research"
+
+    @pytest.mark.asyncio
+    async def test_export_intent_maps_to_research_path(self):
+        engine = ReasoningEngine()
+        decision = await engine.reason("session-1", {"intent": "أريد تصدير خضروات وفاكهة مصرية إلى الأردن"})
+        assert decision["chosen_path"] == "research"
 
     @pytest.mark.asyncio
     async def test_non_research_intent_unaffected_by_research_override(self):

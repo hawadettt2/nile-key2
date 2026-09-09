@@ -1,10 +1,12 @@
 import uuid
 import pytest
+import asyncio
 from pydantic import ValidationError
 
 from app.research.sources.registry import SourceRegistry
 from app.research.sources.discovery import SourceDiscovery
 from app.schemas.research import Source, SourceRegistration, DiscoveryRequest
+from app.agent.knowledge.registry import KnowledgeProviderRegistry
 
 
 def _unique_source_id():
@@ -175,3 +177,153 @@ class TestSourceDiscovery:
         result = discovery.discover(request)
         assert result.discovered_sources == []
         assert "stage_results" not in result.discovery_metadata
+
+
+# ========== KnowledgeProvider -> SourceRegistry Bridge ==========
+
+
+class FakeKnowledgeProvider:
+    def __init__(self, source_id, name, source_type="other"):
+        self._source_id = source_id
+        self._name = name
+        self._source_type = source_type
+
+    async def query(self, query, context=None, scope=None, sources=None, limit=10):
+        return {"results": [], "confidence": None, "sources": [self._source_id]}
+
+    async def get_sources(self):
+        return [
+            {
+                "id": self._source_id,
+                "name": self._name,
+                "type": self._source_type,
+                "version": "1.0.0",
+                "updated_at": "2026-01-01T00:00:00Z",
+            }
+        ]
+
+
+class TestKnowledgeProviderToSourceRegistryBridge:
+    def test_sync_creates_research_sources_from_knowledge_providers(self):
+        from app.routers.research import sync_knowledge_providers_to_research_registry
+
+        registry = SourceRegistry()
+        knowledge_registry = KnowledgeProviderRegistry()
+
+        provider = FakeKnowledgeProvider("test-source", "Test Source", "regulation")
+        import asyncio
+        asyncio.run(knowledge_registry.register(provider))
+
+        asyncio.run(sync_knowledge_providers_to_research_registry(knowledge_registry, source_registry=registry))
+
+        assert registry.get("test-source") is not None
+        source = registry.get("test-source")
+        assert source.name == "Test Source"
+        assert source.source_type == "regulation"
+        assert source.status == "active"
+
+    def test_sync_avoids_duplicate_registration(self):
+        from app.routers.research import sync_knowledge_providers_to_research_registry
+
+        registry = SourceRegistry()
+        knowledge_registry = KnowledgeProviderRegistry()
+
+        provider = FakeKnowledgeProvider("dup-source", "Dup Source", "market_data")
+        import asyncio
+        asyncio.run(knowledge_registry.register(provider))
+
+        asyncio.run(sync_knowledge_providers_to_research_registry(knowledge_registry, source_registry=registry))
+        asyncio.run(sync_knowledge_providers_to_research_registry(knowledge_registry, source_registry=registry))
+
+        sources = registry.list()
+        assert len(sources) == 1
+        assert sources[0].source_id == "dup-source"
+
+    def test_sync_with_none_registry_is_safe(self):
+        from app.routers.research import sync_knowledge_providers_to_research_registry
+
+        knowledge_registry = KnowledgeProviderRegistry()
+        asyncio.run(sync_knowledge_providers_to_research_registry(None, source_registry=SourceRegistry()))
+        asyncio.run(sync_knowledge_providers_to_research_registry(knowledge_registry, source_registry=None))
+
+
+class TestProviderReadiness:
+    def test_unconfigured_provider_has_unconfigured_status(self):
+        from app.routers.research import _get_provider_readiness
+
+        class FakeProvider:
+            _config = {"source_id": "test", "base_url": ""}
+
+        assert _get_provider_readiness(FakeProvider()) == "unconfigured"
+
+    def test_available_provider_has_available_status(self):
+        from app.routers.research import _get_provider_readiness
+
+        class FakeProvider:
+            _config = {"source_id": "un-comtrade", "base_url": "https://comtradeapi.un.org"}
+
+        assert _get_provider_readiness(FakeProvider()) == "available"
+
+    def test_faostat_without_credentials_is_unconfigured(self):
+        from app.routers.research import _get_provider_readiness
+
+        class FakeProvider:
+            _config = {"source_id": "faostat", "base_url": "https://faostatservices.fao.org/api/v1"}
+
+        assert _get_provider_readiness(FakeProvider()) == "unconfigured"
+
+    def test_faostat_with_credentials_is_available(self):
+        from app.routers.research import _get_provider_readiness
+
+        class FakeProvider:
+            _config = {"source_id": "faostat", "base_url": "https://faostatservices.fao.org/api/v1", "username": "user", "password": "pass"}
+
+        assert _get_provider_readiness(FakeProvider()) == "available"
+
+    def test_sync_sets_readiness_in_metadata(self):
+        from app.routers.research import sync_knowledge_providers_to_research_registry, _knowledge_source_to_research_source
+
+        registry = SourceRegistry()
+        knowledge_registry = KnowledgeProviderRegistry()
+
+        class FakeProvider:
+            _config = {"source_id": "ready-source", "base_url": "https://example.com", "api_key": "key"}
+
+            async def query(self, query, context=None, scope=None, sources=None, limit=10):
+                return {"results": [], "confidence": None, "sources": ["ready-source"]}
+
+            async def get_sources(self):
+                return [{"id": "ready-source", "name": "Ready Source", "type": "market_data", "version": "1.0.0"}]
+
+        provider = FakeProvider()
+        import asyncio
+        asyncio.run(knowledge_registry.register(provider))
+        asyncio.run(sync_knowledge_providers_to_research_registry(knowledge_registry, source_registry=registry))
+
+        source = registry.get("ready-source")
+        assert source is not None
+        assert source.metadata.get("readiness") == "available"
+
+    def test_sync_marks_unconfigured_provider(self):
+        from app.routers.research import sync_knowledge_providers_to_research_registry
+
+        registry = SourceRegistry()
+        knowledge_registry = KnowledgeProviderRegistry()
+
+        class FakeProvider:
+            _config = {"source_id": "unconfigured-source", "base_url": ""}
+
+            async def query(self, query, context=None, scope=None, sources=None, limit=10):
+                return {"results": [], "confidence": None, "sources": ["unconfigured-source"]}
+
+            async def get_sources(self):
+                return [{"id": "unconfigured-source", "name": "Unconfigured Source", "type": "market_data", "version": "1.0.0"}]
+
+        provider = FakeProvider()
+        import asyncio
+        asyncio.run(knowledge_registry.register(provider))
+        asyncio.run(sync_knowledge_providers_to_research_registry(knowledge_registry, source_registry=registry))
+
+        source = registry.get("unconfigured-source")
+        assert source is not None
+        assert source.metadata.get("readiness") == "unconfigured"

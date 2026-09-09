@@ -176,6 +176,14 @@ class TestFailureHandling:
         )
         assert status == "failed"
 
+    def test_determine_status_empty_sources_without_errors_is_failed(self):
+        status = FailureHandler.determine_status(
+            sources_consulted=[],
+            sources_failed=[],
+            errors=[],
+        )
+        assert status == "failed"
+
     def test_is_partial(self):
         assert FailureHandler.is_partial(["src_1"], ["src_2"]) is True
         assert FailureHandler.is_partial([], ["src_1"]) is False
@@ -199,7 +207,7 @@ class TestVerificationStageIntegration:
 
         request = ResearchRequest(goal="test")
         result = await orchestrator.execute(request, "req_1")
-        assert result.status == "completed"
+        assert result.status == "failed"
 
 
 class TestPartialAndFailedResults:
@@ -210,7 +218,7 @@ class TestPartialAndFailedResults:
         registry.register(SourceRegistration(source=_make_source("src_2")))
 
         class FailingRetriever:
-            async def retrieve(self, source, query):
+            async def retrieve(self, source, query, context=None, scope=None):
                 from app.research.retrieval.contracts import RetrievalResult, RetrievalStatus
                 return RetrievalResult(
                     source_id=source.source_id,
@@ -249,7 +257,7 @@ class TestPartialAndFailedResults:
         registry.register(SourceRegistration(source=_make_source("src_1")))
 
         class FailingRetriever:
-            async def retrieve(self, source, query):
+            async def retrieve(self, source, query, context=None, scope=None):
                 from app.research.retrieval.contracts import RetrievalResult, RetrievalStatus
                 return RetrievalResult(
                     source_id=source.source_id,
@@ -312,7 +320,7 @@ class TestTraceabilityAfterVerification:
 
         request = ResearchRequest(goal="test")
         result = await orchestrator.execute(request, "req_1")
-        assert result.status == "completed"
+        assert result.status == "failed"
         for finding in result.findings:
             for evidence_item in finding.evidence:
                 assert evidence_item.source_id is not None

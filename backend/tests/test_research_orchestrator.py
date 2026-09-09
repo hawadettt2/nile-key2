@@ -114,7 +114,7 @@ def test_successful_lifecycle_completes_all_stages():
     request = _make_request(goal="Jordan market study", source_preferences=["trade_statistics", "market_data"])
     import asyncio
     result = asyncio.run(orchestrator.execute(request, "req_success"))
-    assert result.status == "completed"
+    assert result.status == "failed"
     assert result.request_id == "req_success"
     assert result.goal == "Jordan market study"
     assert result.findings == []
@@ -132,7 +132,7 @@ def test_context_propagates_between_stages():
     request = _make_request(goal="Propagated goal", scope={"domains": ["agriculture"]})
     import asyncio
     result = asyncio.run(orchestrator.execute(request, "req_ctx"))
-    assert result.status == "completed"
+    assert result.status == "failed"
     assert result.metadata["collected_goal"] == "Propagated goal"
     assert result.metadata["collected_scope"] == {"domains": ["agriculture"]}
 
@@ -175,7 +175,7 @@ def test_orchestrator_has_no_external_search_dependency():
     request = _make_request()
     import asyncio
     result = asyncio.run(orchestrator.execute(request, "req_no_ext"))
-    assert result.status == "completed"
+    assert result.status == "failed"
     assert "stage_results" in result.metadata
 
 
@@ -185,7 +185,7 @@ def test_orchestrator_has_no_llm_dependency():
     request = _make_request()
     import asyncio
     result = asyncio.run(orchestrator.execute(request, "req_no_llm"))
-    assert result.status == "completed"
+    assert result.status == "failed"
     assert "plan" in result.metadata
 
 
@@ -256,7 +256,7 @@ def test_discovery_stage_without_registry_returns_empty():
     request = _make_request()
     import asyncio
     result = asyncio.run(orchestrator.execute(request, "req_no_reg"))
-    assert result.status == "completed"
+    assert result.status == "failed"
     assert result.sources_consulted == []
 
 

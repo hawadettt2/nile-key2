@@ -87,7 +87,7 @@ class TestSearXNGAdapterRetrieve:
             mock_response = _make_response(status_code=200, json_data=json_data)
             _patch_async_client(mock_client_cls, response=mock_response)
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.SUCCESS
         assert result.source_id == "src_1"
@@ -105,7 +105,7 @@ class TestSearXNGAdapterRetrieve:
         with patch("app.research.retrieval.providers.searxng_adapter.httpx.AsyncClient") as mock_client_cls:
             _patch_async_client(mock_client_cls, side_effect=httpx.TimeoutException("timeout"))
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.TIMEOUT
         assert result.source_id == "src_1"
@@ -119,7 +119,7 @@ class TestSearXNGAdapterRetrieve:
         with patch("app.research.retrieval.providers.searxng_adapter.httpx.AsyncClient") as mock_client_cls:
             _patch_async_client(mock_client_cls, side_effect=httpx.ConnectError("connection failed"))
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.CONNECTION_FAILURE
         assert result.source_id == "src_1"
@@ -133,7 +133,7 @@ class TestSearXNGAdapterRetrieve:
         with patch("app.research.retrieval.providers.searxng_adapter.httpx.AsyncClient") as mock_client_cls:
             _patch_async_client(mock_client_cls, side_effect=httpx.HTTPError("HTTP error"))
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.CONNECTION_FAILURE
         assert result.source_id == "src_1"
@@ -147,7 +147,7 @@ class TestSearXNGAdapterRetrieve:
             mock_response = _make_response(status_code=500)
             _patch_async_client(mock_client_cls, response=mock_response)
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.CONNECTION_FAILURE
         assert result.source_id == "src_1"
@@ -163,7 +163,7 @@ class TestSearXNGAdapterRetrieve:
             mock_response.json.side_effect = ValueError("invalid json")
             _patch_async_client(mock_client_cls, response=mock_response)
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.INVALID_RESPONSE
         assert result.source_id == "src_1"
@@ -178,7 +178,7 @@ class TestSearXNGAdapterRetrieve:
             mock_response = _make_response(status_code=200, json_data={"message": "ok"})
             _patch_async_client(mock_client_cls, response=mock_response)
 
-            result = await adapter.retrieve(source, "test query")
+            result = await adapter.retrieve(source, "test query", context=None, scope=None)
 
         assert result.status == RetrievalStatus.INVALID_RESPONSE
         assert result.source_id == "src_1"

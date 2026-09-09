@@ -200,7 +200,12 @@ class RetrievalStage(ResearchStage):
                 context.record_stage_result(StageResult(stage_name=self.name, success=True, data={"note": "no retrieval orchestrator configured", "sources_queried": context.sources_consulted}))
                 return context
 
-            results = await self._retrieval_orchestrator.retrieve_sources(sources, context.request.goal)
+            results = await self._retrieval_orchestrator.retrieve_sources(
+                sources,
+                context.request.goal,
+                context=context.request.context,
+                scope=context.request.scope,
+            )
             processed = await self._retrieval_orchestrator.process_results(results)
 
             context.sources_consulted = [r.source_id for r in processed if r.status == RetrievalStatus.SUCCESS]
