@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avatar TTS Behavior Tests</title>
+  <style>
+    body { font-family: monospace; padding: 24px; background: #0f172a; color: #e2e8f0; }
+    .pass { color: #10b981; }
+    .fail { color: #ef4444; }
+    .info { color: #94a3b8; }
+    #results { white-space: pre-wrap; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Avatar TTS Behavior Tests</h1>
+  <div id="results">Running...</div>
+
+  <script>
+    const results = document.getElementById('results');
+    const cases = [];
+
+    function log(text, type = 'info') {
+      const line = document.createElement('div');
+      line.className = type;
+      line.textContent = text;
+      results.appendChild(line);
+    }
+
+    function assert(condition, name) {
+      const passed = !!condition;
+      cases.push({ name, passed });
+      log((passed ? '[PASS] ' : '[FAIL] ') + name, passed ? 'pass' : 'fail');
+      return passed;
+    }
+
+    function summarize() {
+      const passed = cases.filter(c => c.passed).length;
+      const total = cases.length;
+      log('', 'info');
+      log('Summary: ' + passed + '/' + total + ' passed', passed === total ? 'pass' : 'fail');
+    }
+
+    (async function run() {
+      log('Web Speech API TTS Behavior Tests', 'info');
+      log('', 'info');
+
+      const ttsAvailable = 'speechSynthesis' in window;
+      assert(ttsAvailable === true, 'Web Speech API is available in this browser');
+
+      if (ttsAvailable) {
+        const voices = speechSynthesis.getVoices();
+        assert(voices.length >= 0, 'getVoices() returns without error');
+
+        const arabicVoice = voices.find(v => v.lang === 'ar') || voices.find(v => v.lang.startsWith('ar'));
+        assert(arabicVoice !== undefined || voices.length === 0, 'Arabic voice lookup does not throw');
+
+        const utterance = new SpeechSynthesisUtterance('test');
+        assert(utterance !== null, 'SpeechSynthesisUtterance can be created');
+
+        const supportsOnend = 'onend' in utterance;
+        assert(supportsOnend === true, 'Utterance supports onend event');
+
+        const supportsOnerror = 'onerror' in utterance;
+        assert(supportsOnerror === true, 'Utterance supports onerror event');
+
+        speechSynthesis.cancel();
+        assert(true, 'speechSynthesis.cancel() does not throw');
+
+        const speakingBefore = speechSynthesis.speaking;
+        assert(speakingBefore === false, 'speechSynthesis.speaking is false after cancel');
+      } else {
+        assert(true, 'Web Speech API unavailable: text-only mode is acceptable');
+      }
+
+      log('', 'info');
+      summarize();
+    })();
+  </script>
+</body>
+</html>

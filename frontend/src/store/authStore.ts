@@ -16,6 +16,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  accessToken: string | null;
   login: (username: string, password: string) => Promise<void>;
   register: (data: Record<string, string>) => Promise<void>;
   logout: () => void;
@@ -30,12 +31,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  accessToken: typeof window !== 'undefined' ? localStorage.getItem('access_token') : null,
 
   login: async (username: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
       const response = await apiLogin(username, password);
-      const { refresh_token } = response.data;
+      const { access_token, refresh_token } = response.data;
+      if (access_token) {
+        localStorage.setItem('access_token', access_token);
+        set({ accessToken: access_token });
+      }
       if (refresh_token) {
         localStorage.setItem('refresh_token', refresh_token);
       }
@@ -59,22 +65,29 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
+    localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    set({ user: null, isAuthenticated: false, error: null });
+    set({ user: null, isAuthenticated: false, accessToken: null, error: null });
     window.location.href = '/login';
   },
 
   loadUser: async () => {
     set({ isLoading: true });
     try {
+      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      set({ accessToken });
       const response = await getMe();
       set({ user: response.data, isAuthenticated: true, isLoading: false });
     } catch {
-      const storedRefreshToken = localStorage.getItem('refresh_token');
+      const storedRefreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
       if (storedRefreshToken) {
         try {
           const refreshResponse = await apiRefreshToken({ refresh_token: storedRefreshToken });
-          const { refresh_token } = refreshResponse.data;
+          const { access_token, refresh_token } = refreshResponse.data;
+          if (access_token) {
+            localStorage.setItem('access_token', access_token);
+            set({ accessToken: access_token });
+          }
           if (refresh_token) {
             localStorage.setItem('refresh_token', refresh_token);
           }
@@ -85,23 +98,29 @@ export const useAuthStore = create<AuthState>((set) => ({
           // fall through
         }
       }
+      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      set({ user: null, isAuthenticated: false, isLoading: false });
+      set({ user: null, isAuthenticated: false, accessToken: null, isLoading: false });
     }
   },
 
   refreshTokens: async () => {
     set({ error: null });
-    const storedRefreshToken = localStorage.getItem('refresh_token');
+    const storedRefreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
     if (!storedRefreshToken) return false;
     try {
       const response = await apiRefreshToken({ refresh_token: storedRefreshToken });
-      const { refresh_token } = response.data;
+      const { access_token, refresh_token } = response.data;
+      if (access_token) {
+        localStorage.setItem('access_token', access_token);
+        set({ accessToken: access_token });
+      }
       if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
       return true;
     } catch {
+      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      set({ user: null, isAuthenticated: false });
+      set({ user: null, isAuthenticated: false, accessToken: null });
       return false;
     }
   },

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Executive Avatar — DEM</title>
+  <style>
+    :root {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      gap: 16px;
+    }
+    .avatar-card {
+      width: 100%;
+      max-width: 480px;
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+    .avatar-face {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: white;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 0 0 4px rgba(14,165,233,0.25);
+      transition: transform 0.2s ease;
+    }
+    .avatar-face.thinking { animation: pulse 1.4s infinite ease-in-out; }
+    .avatar-face.speaking { animation: pulse 0.9s infinite ease-in-out; }
+    .avatar-face.error { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .status-badge {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .status-badge.ready { color: #10b981; border-color: #10b981; }
+    .status-badge.thinking { color: #f59e0b; border-color: #f59e0b; }
+    .status-badge.responding { color: #6366f1; border-color: #6366f1; }
+    .status-badge.speaking { color: #0ea5e9; border-color: #0ea5e9; }
+    .status-badge.error { color: #ef4444; border-color: #ef4444; }
+
+    .transcript {
+      width: 100%;
+      max-width: 480px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 120px;
+      max-height: 260px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+    .transcript .user { color: #94a3b8; }
+    .transcript .avatar { color: #e2e8f0; font-weight: 600; }
+    .transcript .system { color: #64748b; font-style: italic; }
+
+    .response-card {
+      width: 100%;
+      max-width: 480px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #334155;
+      display: none;
+    }
+    .response-card.visible { display: block; }
+    .response-card h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+    }
+    .response-card pre {
+      margin: 0;
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      overflow-x: auto;
+      color: #e2e8f0;
+    }
+
+    .controls {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      gap: 8px;
+    }
+    .controls input {
+      flex: 1;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .controls button {
+      min-height: 44px;
+      border-radius: 10px;
+      border: none;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #10b981;
+      color: white;
+    }
+    .controls button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+    .controls button.secondary {
+      background: #334155;
+    }
+
+    .tts-bar {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .tts-bar button {
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #e2e8f0;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .tts-bar button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .tts-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+      display: inline-block;
+    }
+    .tts-dot.on { background: #10b981; }
+    .tts-dot.speaking { background: #0ea5e9; }
+    .tts-dot.failed { background: #ef4444; }
+
+    @media (max-width: 640px) {
+      .avatar-face { width: 96px; height: 96px; font-size: 36px; }
+      .transcript { max-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="avatar-card">
+    <div class="avatar-face" id="avatar-face">AI</div>
+    <div class="status-badge ready" id="status-badge">Ready</div>
+  </div>
+
+  <div class="transcript" id="transcript">
+    <div class="system">Avatar ready. Type your request and press Send.</div>
+  </div>
+
+  <div class="response-card" id="response-card">
+    <h3>Structured Business Response</h3>
+    <pre id="response-json"></pre>
+  </div>
+
+  <div class="controls">
+    <input id="intent-input" placeholder="أريد تصدير الخضر والفواكه المصرية إلى الأردن." />
+    <button id="send-btn">Send</button>
+  </div>
+
+  <div class="controls" style="margin-top:8px;">
+    <input id="session-id-input" placeholder="DEM Session ID" style="flex:1;" />
+    <input id="token-input" placeholder="Bearer Token" style="flex:2;" />
+  </div>
+
+  <div class="tts-bar">
+    <div>
+      <span class="tts-dot" id="tts-dot"></span>
+      <span id="tts-status">TTS: checking...</span>
+    </div>
+    <button id="tts-toggle">Enable Voice</button>
+  </div>
+
+  <script>
+    const statusBadge = document.getElementById('status-badge');
+    const avatarFace = document.getElementById('avatar-face');
+    const transcriptEl = document.getElementById('transcript');
+    const responseCard = document.getElementById('response-card');
+    const responseJson = document.getElementById('response-json');
+    const intentInput = document.getElementById('intent-input');
+    const sendBtn = document.getElementById('send-btn');
+    const sessionIdInput = document.getElementById('session-id-input');
+    const tokenInput = document.getElementById('token-input');
+    const ttsToggleBtn = document.getElementById('tts-toggle');
+    const ttsStatusEl = document.getElementById('tts-status');
+    const ttsDot = document.getElementById('tts-dot');
+
+    const API_BASE = (location.protocol === 'https:' ? 'https:' : 'http:') + '//' + location.host;
+
+    function setStatus(state, text) {
+      statusBadge.className = 'status-badge ' + state;
+      statusBadge.textContent = text;
+      avatarFace.className = 'avatar-face ' + (state === 'thinking' || state === 'responding' ? state : '');
+      if (state === 'error') avatarFace.classList.add('error');
+    }
+
+    function appendTranscript(html) {
+      transcriptEl.innerHTML += html + '\n';
+      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    }
+
+    async function sendIntent(text) {
+      if (!text.trim()) return;
+      appendTranscript('<div class="user"><strong>You:</strong> ' + escapeHtml(text) + '</div>');
+      intentInput.value = '';
+      sendBtn.disabled = true;
+      setStatus('thinking', 'Thinking');
+      try {
+        const body = {
+          text,
+          mission_type: 'create_mission',
+          session_id: sessionIdInput.value.trim() || undefined,
+          token: tokenInput.value.trim() || undefined,
+        };
+        const res = await fetch(API_BASE + '/api/text-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (data.error) {
+          setStatus('error', 'Error');
+          appendTranscript('<div class="system">Error: ' + escapeHtml(data.error) + '</div>');
+          return;
+        }
+        setStatus('responding', 'Responding');
+        const responseText = typeof data.intent_content === 'string' ? data.intent_content : JSON.stringify(data.intent_content, null, 2);
+        appendTranscript('<div class="avatar"><strong>Avatar:</strong> ' + escapeHtml(responseText) + '</div>');
+        responseCard.classList.add('visible');
+        responseJson.textContent = JSON.stringify(data.intent_content, null, 2);
+        speakText(responseText);
+        setStatus('ready', 'Ready');
+      } catch (err) {
+        setStatus('error', 'Error');
+        appendTranscript('<div class="system">Connection error: ' + escapeHtml(err.message) + '</div>');
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    sendBtn.onclick = () => sendIntent(intentInput.value);
+    intentInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendIntent(intentInput.value);
+    });
+
+    const ttsAvailable = 'speechSynthesis' in window;
+    let ttsEnabled = false;
+    let ttsSpeaking = false;
+
+    function getArabicVoice() {
+      const voices = speechSynthesis.getVoices();
+      return voices.find(v => v.lang === 'ar') || voices.find(v => v.lang.startsWith('ar')) || null;
+    }
+
+    function speakText(text) {
+      if (!ttsEnabled || !ttsAvailable || ttsSpeaking) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const arabicVoice = getArabicVoice();
+      if (arabicVoice) utterance.voice = arabicVoice;
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      ttsSpeaking = true;
+      setStatus('speaking', 'Speaking');
+      ttsDot.className = 'tts-dot speaking';
+      utterance.onend = () => {
+        ttsSpeaking = false;
+        ttsDot.className = 'tts-dot on';
+        setStatus('ready', 'Ready');
+      };
+      utterance.onerror = () => {
+        ttsSpeaking = false;
+        ttsDot.className = 'tts-dot failed';
+        setStatus('ready', 'Ready');
+      };
+      speechSynthesis.speak(utterance);
+    }
+
+    function updateTtsUI() {
+      if (!ttsAvailable) {
+        ttsStatusEl.textContent = 'TTS: not supported';
+        ttsDot.className = 'tts-dot';
+        ttsToggleBtn.disabled = true;
+        ttsToggleBtn.textContent = 'Voice Unavailable';
+        return;
+      }
+      ttsToggleBtn.disabled = false;
+      if (ttsEnabled) {
+        ttsToggleBtn.textContent = 'Disable Voice';
+        ttsStatusEl.textContent = 'TTS: enabled';
+        ttsDot.className = ttsSpeaking ? 'tts-dot speaking' : 'tts-dot on';
+      } else {
+        ttsToggleBtn.textContent = 'Enable Voice';
+        ttsStatusEl.textContent = 'TTS: disabled';
+        ttsDot.className = 'tts-dot';
+      }
+    }
+
+    ttsToggleBtn.onclick = () => {
+      if (!ttsAvailable) return;
+      ttsEnabled = !ttsEnabled;
+      if (!ttsEnabled) window.speechSynthesis.cancel();
+      updateTtsUI();
+    };
+
+    if (ttsAvailable) {
+      ttsEnabled = true;
+      speechSynthesis.onvoiceschanged = () => {
+        const voice = getArabicVoice();
+        ttsStatusEl.textContent = 'TTS: ' + (voice ? 'Arabic voice ready' : 'no Arabic voice');
+      };
+    }
+    updateTtsUI();
+  </script>
+</body>
+</html>

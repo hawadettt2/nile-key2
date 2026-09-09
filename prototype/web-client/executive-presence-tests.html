@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avatar Executive Presence Tests</title>
+  <style>
+    body { font-family: monospace; padding: 24px; background: #0f172a; color: #e2e8f0; }
+    .pass { color: #10b981; }
+    .fail { color: #ef4444; }
+    .info { color: #94a3b8; }
+    #results { white-space: pre-wrap; margin-top: 16px; }
+    button { background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button:disabled { background: #475569; cursor: not-allowed; }
+    input { min-height: 36px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; padding: 8px; width: 320px; }
+  </style>
+</head>
+<body>
+  <h1>Avatar Executive Presence Tests</h1>
+  <div id="results">Running...</div>
+
+  <script>
+    const results = document.getElementById('results');
+    const cases = [];
+
+    function log(text, type = 'info') {
+      const line = document.createElement('div');
+      line.className = type;
+      line.textContent = text;
+      results.appendChild(line);
+    }
+
+    function assert(condition, name) {
+      const passed = !!condition;
+      cases.push({ name, passed });
+      log((passed ? '[PASS] ' : '[FAIL] ') + name, passed ? 'pass' : 'fail');
+      return passed;
+    }
+
+    function summarize() {
+      const passed = cases.filter(c => c.passed).length;
+      const total = cases.length;
+      log('', 'info');
+      log('Summary: ' + passed + '/' + total + ' passed', passed === total ? 'pass' : 'fail');
+      return passed === total;
+    }
+
+    async function run() {
+      log('Executive Presence + REST API Tests', 'info');
+      log('', 'info');
+
+      const base = location.protocol + '//' + location.host;
+
+      assert(true, 'UI loaded');
+
+      const statusBadge = document.getElementById('status-badge');
+      assert(statusBadge !== null, 'Status badge exists');
+
+      const avatarFace = document.getElementById('avatar-face');
+      assert(avatarFace !== null, 'Avatar face element exists');
+
+      const transcriptEl = document.getElementById('transcript');
+      assert(transcriptEl !== null, 'Transcript element exists');
+
+      const responseCard = document.getElementById('response-card');
+      assert(responseCard !== null, 'Response card exists');
+
+      const ttsToggleBtn = document.getElementById('tts-toggle');
+      assert(ttsToggleBtn !== null, 'TTS toggle button exists');
+
+      const ttsAvailable = 'speechSynthesis' in window;
+      assert(ttsAvailable === true, 'Web Speech API is available');
+
+      try {
+        const healthRes = await fetch(base + '/health');
+        assert(healthRes.ok, 'Health endpoint responds');
+      } catch (e) {
+        assert(false, 'Health endpoint reachable');
+      }
+
+      try {
+        const res = await fetch(base + '/api/text-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: 'أريد تصدير الخضر والفواكه المصرية إلى الأردن.', mission_type: 'create_mission' }),
+        });
+        assert(res.ok, '/api/text-intent returns 200');
+        const data = await res.json();
+        assert(data !== null, '/api/text-intent returns JSON');
+        assert('intent_content' in data || 'dem_response' in data || 'error' in data, '/api/text-intent contains expected keys');
+      } catch (e) {
+        assert(false, '/api/text-intent reachable: ' + e.message);
+      }
+
+      log('', 'info');
+      summarize();
+    }
+
+    run();
+  </script>
+</body>
+</html>

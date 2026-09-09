@@ -25,6 +25,7 @@ import { KnowledgeGraph } from '@/pages/KnowledgeGraph';
 import { TradeIntelligence } from '@/pages/TradeIntelligence';
 import { ExportReadiness } from '@/pages/ExportReadiness';
 import { ArchitectureExplorer } from '@/pages/ArchitectureExplorer';
+import { Avatar } from '@/pages/Avatar';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -105,6 +106,7 @@ function App() {
           <Route path="resources" element={<Resources />} />
           <Route path="profile" element={<Profile />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="avatar" element={<Avatar />} />
           <Route path="digital-export-manager" element={<DEMLanding />} />
           <Route path="digital-export-manager/sessions" element={<DEMSessions />} />
           <Route path="digital-export-manager/sessions/:sessionId" element={<DEMSessionDetail />} />

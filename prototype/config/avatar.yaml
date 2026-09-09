@@ -1,0 +1,20 @@
+# Avatar Interaction Layer
+DEM_API_BASE_URL: "http://127.0.0.1:8001/api/v1/digital-export-manager"
+DEM_SESSION_ID: "demo-session-001"
+
+# Whisper STT
+WHISPER_MODEL: "small"
+WHISPER_LANGUAGE: "ar"
+
+# SILMA TTS
+SILMA_TTS_MODEL: "silma-ai/silma-tts"
+SILMA_TTS_REF_AUDIO: ""
+SILMA_TTS_REF_TEXT: ""
+
+# LiveTalking
+LIVETALKING_URL: "http://127.0.0.1:8010"
+LIVETALKING_AVATAR_ID: "wav2lip256_avatar1"
+
+# WebRTC / Server
+HOST: "0.0.0.0"
+PORT: 8020
