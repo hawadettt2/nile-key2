@@ -322,7 +322,7 @@ describe('Avatar', () => {
     expect(screen.getByText('Ready')).toBeDefined();
   });
 
-  it('enters error state when speech synthesis errors after response', async () => {
+  it('returns to ready when speech synthesis errors after response', async () => {
     const utteranceHandlers: any = {};
     const mockSpeak = (utterance: any) => {
       utteranceHandlers.onstart = utterance.onstart;
@@ -349,7 +349,7 @@ describe('Avatar', () => {
     await act(async () => {
       utteranceHandlers.onerror?.();
     });
-    expect(screen.getByText('Error')).toBeDefined();
+    expect(screen.getByText('Ready')).toBeDefined();
   });
 
   it('does not enter speaking state when speech synthesis is unavailable', async () => {
@@ -451,5 +451,65 @@ describe('Avatar', () => {
     });
     expect(capturedText).toBe('تم إتمام المهمة بنجاح');
     expect(capturedText).not.toBe(JSON.stringify({ content: {} }));
+  });
+
+  it('keeps structured response visible when speech synthesis errors', async () => {
+    const utteranceHandlers: any = {};
+    const mockSpeak = (utterance: any) => {
+      utteranceHandlers.onstart = utterance.onstart;
+      utteranceHandlers.onend = utterance.onend;
+      utteranceHandlers.onerror = utterance.onerror;
+    };
+    (global as any).window.speechSynthesis = { speak: mockSpeak };
+
+    render(
+      <BrowserRouter>
+        <Avatar />
+      </BrowserRouter>
+    );
+    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    await act(async () => {
+      wsInstance?.onopen?.();
+    });
+    await act(async () => {
+      wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'avatar_state', state: 'thinking' }) });
+    });
+    await act(async () => {
+      wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: '{"content": {"outcome": "ok"}}' }) });
+    });
+    await act(async () => {
+      utteranceHandlers.onerror?.();
+    });
+
+    expect(screen.getByText('Structured Business Response')).toBeDefined();
+    expect(screen.getByText('Ready')).toBeDefined();
+  });
+
+  it('still shows error state on real websocket error even when speech synthesis errors', async () => {
+    const utteranceHandlers: any = {};
+    const mockSpeak = (utterance: any) => {
+      utteranceHandlers.onstart = utterance.onstart;
+      utteranceHandlers.onend = utterance.onend;
+      utteranceHandlers.onerror = utterance.onerror;
+    };
+    (global as any).window.speechSynthesis = { speak: mockSpeak };
+
+    render(
+      <BrowserRouter>
+        <Avatar />
+      </BrowserRouter>
+    );
+    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    await act(async () => {
+      wsInstance?.onopen?.();
+    });
+    await act(async () => {
+      wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: '{"content": {"outcome": "ok"}}' }) });
+    });
+    await act(async () => {
+      wsInstance?.onerror?.();
+    });
+
+    expect(screen.getByText('Error')).toBeDefined();
   });
 });

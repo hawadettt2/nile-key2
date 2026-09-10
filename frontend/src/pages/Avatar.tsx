@@ -50,7 +50,7 @@ const ExecutiveAvatarVisual = ({ state }: { state: AvatarState }) => {
   const isResponding = state === 'responding';
   const isActive = isThinking || isInitializing || isSpeaking;
 
-  const eyeY = isThinking || isInitializing ? 52 : 56;
+  const eyeY = isThinking || isInitializing ? 58 : 62;
   const eyeRx = 5.2;
   const eyeRy = isThinking || isInitializing ? 2.8 : 5.8;
 
@@ -66,59 +66,100 @@ const ExecutiveAvatarVisual = ({ state }: { state: AvatarState }) => {
           <stop offset="0%" stopColor="#1e293b" />
           <stop offset="100%" stopColor="#0f172a" />
         </linearGradient>
+        <linearGradient id="suitGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1e293b" />
+          <stop offset="100%" stopColor="#0f172a" />
+        </linearGradient>
+        <linearGradient id="shirtGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#f1f5f9" />
+        </linearGradient>
         <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000000" floodOpacity="0.08" />
         </filter>
       </defs>
 
-      <circle cx="60" cy="62" r="36" fill="url(#faceGradient)" filter="url(#softShadow)" />
+      {/* Background ring */}
+      <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" strokeWidth="1.5" opacity="0.4" />
 
+      {/* Suit/Jacket - Upper body */}
       <path
-        d="M22 56 Q22 18 60 18 Q98 18 98 56 Q98 42 88 32 Q60 12 32 32 Q22 42 22 56"
+        d="M20 120 L20 95 Q20 85 30 80 L35 75 Q40 70 60 68 Q80 70 85 75 L90 80 Q100 85 100 95 L100 120 Z"
+        fill="url(#suitGradient)"
+        filter="url(#softShadow)"
+      />
+      {/* Suit lapels */}
+      <path d="M45 75 L55 85 L60 80 L65 85 L75 75" fill="none" stroke="#334155" strokeWidth="1.2" opacity="0.6" />
+      {/* Shirt collar */}
+      <path d="M52 78 L60 85 L68 78" fill="none" stroke="url(#shirtGradient)" strokeWidth="2" opacity="0.9" />
+      {/* Tie */}
+      <path d="M60 82 L58 95 L60 105 L62 95 Z" fill="#1e293b" opacity="0.85" />
+
+      {/* Neck */}
+      <rect x="54" y="68" width="12" height="14" rx="3" fill="url(#faceGradient)" />
+
+      {/* Face */}
+      <circle cx="60" cy="56" r="28" fill="url(#faceGradient)" filter="url(#softShadow)" />
+
+      {/* Hair - Professional style */}
+      <path
+        d="M32 50 Q32 26 60 24 Q88 26 88 50 Q88 44 82 38 Q60 22 38 38 Q32 44 32 50"
         fill="url(#hairGradient)"
       />
       <path
-        d="M22 56 Q22 42 32 32 Q60 12 88 32 Q98 42 98 56"
+        d="M32 50 Q32 42 38 36 Q60 20 82 36 Q88 42 88 50"
         fill="none"
         stroke="url(#hairGradient)"
         strokeWidth="1.5"
         opacity="0.4"
       />
 
+      {/* Eyebrows */}
+      <path d="M40 52 Q44 50 48 52" stroke="#1e293b" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.7" />
+      <path d="M72 52 Q76 50 80 52" stroke="#1e293b" strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.7" />
+
+      {/* Eyes */}
       {isError ? (
         <>
-          <line x1="36" y1="50" x2="52" y2="64" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
-          <line x1="52" y1="50" x2="36" y2="64" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
-          <line x1="68" y1="50" x2="84" y2="64" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
-          <line x1="84" y1="50" x2="68" y2="64" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
+          <line x1="40" y1="58" x2="50" y2="66" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
+          <line x1="50" y1="58" x2="40" y2="66" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
+          <line x1="70" y1="58" x2="80" y2="66" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
+          <line x1="80" y1="58" x2="70" y2="66" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
         </>
       ) : isThinking || isInitializing ? (
         <>
-          <line x1="36" y1={eyeY} x2="52" y2={eyeY} stroke="#1e293b" strokeWidth="2.8" strokeLinecap="round" />
-          <line x1="68" y1={eyeY} x2="84" y2={eyeY} stroke="#1e293b" strokeWidth="2.8" strokeLinecap="round" />
+          <line x1="40" y1={eyeY} x2="50" y2={eyeY} stroke="#1e293b" strokeWidth="2.8" strokeLinecap="round" />
+          <line x1="70" y1={eyeY} x2="80" y2={eyeY} stroke="#1e293b" strokeWidth="2.8" strokeLinecap="round" />
         </>
       ) : (
         <>
-          <ellipse cx="44" cy={eyeY} rx={eyeRx} ry={eyeRy} fill="#1e293b" />
-          <ellipse cx="76" cy={eyeY} rx={eyeRx} ry={eyeRy} fill="#1e293b" />
-          <circle cx="46" cy={eyeY - 1.2} r="1.4" fill="#ffffff" opacity="0.9" />
-          <circle cx="78" cy={eyeY - 1.2} r="1.4" fill="#ffffff" opacity="0.9" />
+          <ellipse cx="45" cy={eyeY} rx={eyeRx} ry={eyeRy} fill="#1e293b" />
+          <ellipse cx="75" cy={eyeY} rx={eyeRx} ry={eyeRy} fill="#1e293b" />
+          <circle cx="47" cy={eyeY - 1.2} r="1.4" fill="#ffffff" opacity="0.9" />
+          <circle cx="77" cy={eyeY - 1.2} r="1.4" fill="#ffffff" opacity="0.9" />
         </>
       )}
 
+      {/* Nose */}
+      <path d="M58 64 Q60 68 62 64" stroke="#cbd5e1" strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.6" />
+
+      {/* Mouth */}
       {!isError && !isThinking && !isInitializing && (
-        <path d="M40 68 Q44 66 48 68" stroke="#94a3b8" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.7" />
+        <path d="M52 74 Q56 72 60 74 Q64 72 68 74" stroke="#94a3b8" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.7" />
       )}
 
       {isSpeaking ? (
-        <ellipse cx="60" cy="80" rx="5.5" ry="3.2" fill="#1e293b" className="animate-speak" opacity="0.9" />
+        <ellipse cx="60" cy="82" rx="5.5" ry="3.2" fill="#1e293b" className="animate-speak" opacity="0.9" />
       ) : isReady || isResponding ? (
-        <path d="M48 78 Q60 84 72 78" stroke="#1e293b" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.85" />
+        <path d="M52 80 Q56 78 60 80 Q64 78 68 80" stroke="#1e293b" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.85" />
       ) : isError ? (
-        <path d="M48 84 Q60 78 72 84" stroke="#ef4444" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.85" />
+        <path d="M52 86 Q56 82 60 86 Q64 82 68 86" stroke="#ef4444" strokeWidth="2.4" fill="none" strokeLinecap="round" opacity="0.85" />
       ) : isThinking || isInitializing ? (
-        <line x1="50" y1="80" x2="70" y2="80" stroke="#1e293b" strokeWidth="2.4" strokeLinecap="round" opacity="0.7" />
+        <line x1="52" y1="82" x2="68" y2="82" stroke="#1e293b" strokeWidth="2.4" strokeLinecap="round" opacity="0.7" />
       ) : null}
+
+      {/* Executive frame/border */}
+      <circle cx="60" cy="60" r="56" fill="none" stroke="#cbd5e1" strokeWidth="0.8" opacity="0.3" />
     </svg>
   );
 };
@@ -242,13 +283,22 @@ export function Avatar() {
   };
 
   const speakText = (rawResponse: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      return;
+    }
     const text = extractSpokenText(rawResponse);
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.onstart = () => setStatus('speaking');
     utterance.onend = () => setStatus('ready');
-    utterance.onerror = () => setStatus('error');
-    window.speechSynthesis.speak(utterance);
+    utterance.onerror = () => {
+      // TTS failure is not an avatar error; keep the text response visible and return to ready.
+      setStatus('ready');
+    };
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      // Voice engine unavailable or blocked; ignore and keep text-first behavior.
+    }
   };
 
   const currentState = STATE_CONFIG[status];
