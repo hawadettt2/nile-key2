@@ -28,6 +28,23 @@ from app.research.quality import DefaultVerifier, FailureHandler, OpenArchitectu
 logger = logging.getLogger(__name__)
 
 
+def _is_meaningful_retrieval_content(raw_content: Any) -> bool:
+    if raw_content is None:
+        return False
+    if isinstance(raw_content, str):
+        return bool(raw_content.strip())
+    if isinstance(raw_content, dict):
+        results = raw_content.get("results")
+        if isinstance(results, list) and len(results) == 0:
+            return False
+        if not raw_content:
+            return False
+        return True
+    if isinstance(raw_content, list):
+        return len(raw_content) > 0
+    return True
+
+
 class StageResult:
     """Result of executing a single research stage."""
 
@@ -208,7 +225,12 @@ class RetrievalStage(ResearchStage):
             )
             processed = await self._retrieval_orchestrator.process_results(results)
 
-            context.sources_consulted = [r.source_id for r in processed if r.status == RetrievalStatus.SUCCESS]
+            context.sources_consulted = [
+                r.source_id
+                for r in processed
+                if r.status == RetrievalStatus.SUCCESS
+                and _is_meaningful_retrieval_content(r.content.raw_content if r.content else None)
+            ]
             context.sources_failed = [r.source_id for r in processed if r.status != RetrievalStatus.SUCCESS]
             if context.sources_failed:
                 context.errors.append(f"Retrieval failed for sources: {', '.join(context.sources_failed)}")
@@ -291,6 +313,9 @@ class EvidenceCaptureStage(ResearchStage):
                     continue
                 content_dict = item.get("content")
                 if not content_dict:
+                    continue
+                raw_content = content_dict.get("raw_content")
+                if not _is_meaningful_retrieval_content(raw_content):
                     continue
 
                 source_id = content_dict.get("source_id") or item.get("source_id")
