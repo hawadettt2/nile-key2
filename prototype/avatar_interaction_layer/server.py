@@ -115,7 +115,6 @@ def process_audio():
 async def ws_avatar(ws: WebSocket):
     origin = ws.headers.get("origin", "")
     allowed_origins = [
-        "http://localhost:5173",
         "http://localhost:3000",
         "https://nile-key.com",
     ]

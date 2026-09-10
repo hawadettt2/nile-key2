@@ -716,7 +716,7 @@ def run_stage_7(client: TestClient) -> dict:
     r = client.options(
         "/api/v1/auth/login",
         headers={
-            "Origin": "http://localhost:5173",
+            "Origin": "http://localhost:3000",
             "Access-Control-Request-Method": "POST",
         },
     )

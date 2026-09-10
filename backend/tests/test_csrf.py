@@ -35,7 +35,7 @@ def test_csrf_allows_post_with_valid_origin(client):
     resp = client.post("/api/v1/auth/login", json={
         "username": credentials["username"],
         "password": credentials["password"]
-    }, headers={"Origin": "http://localhost:5173"})
+    }, headers={"Origin": "http://localhost:3000"})
     assert resp.status_code == 200
 
 

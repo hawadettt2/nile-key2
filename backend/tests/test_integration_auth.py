@@ -181,7 +181,7 @@ class TestCSRFIntegration:
         resp = client.post("/api/v1/auth/login", json={
             "username": credentials["username"],
             "password": credentials["password"]
-        }, headers={"Origin": "http://localhost:5173"})
+        }, headers={"Origin": "http://localhost:3000"})
         assert resp.status_code == 200
 
     def test_csrf_get_requests_unaffected(self, client):

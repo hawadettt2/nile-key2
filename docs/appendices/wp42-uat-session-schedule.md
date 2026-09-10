@@ -54,7 +54,7 @@
 
 ## Prerequisites Verified Before Session
 
-- [x] Test environment accessible (Backend: http://localhost:8000, Frontend: http://localhost:5173)
+- [x] Test environment accessible (Backend: http://localhost:8000, Frontend: http://localhost:3000)
 - [x] Database initialized with seed data
 - [x] Owner account credentials prepared and delivered
 - [x] RBAC test accounts prepared and delivered

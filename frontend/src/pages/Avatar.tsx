@@ -48,7 +48,6 @@ const ExecutiveAvatarVisual = ({ state }: { state: AvatarState }) => {
   const isSpeaking = state === 'speaking';
   const isReady = state === 'ready';
   const isResponding = state === 'responding';
-  const isActive = isThinking || isInitializing || isSpeaking;
 
   const eyeY = isThinking || isInitializing ? 58 : 62;
   const eyeRx = 5.2;
