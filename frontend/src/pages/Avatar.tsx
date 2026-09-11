@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { connectToDEM, getDEMSessions } from '@/services/api';
+import { parseIntentContent, ParsedAvatarResult } from '@/lib/avatarResultParser';
+import { ExecutiveResultCard } from '@/components/avatar/ExecutiveResultCard';
+import { SuggestedActionsBar } from '@/components/avatar/SuggestedActionsBar';
 
 type AvatarState = 'initializing' | 'ready' | 'thinking' | 'responding' | 'speaking' | 'error' | 'disconnected';
 
-const STATE_CONFIG: Record<AvatarState, { label: string; color: string; pulse: boolean; ring: string; description: string; shadow: string }> = {
-  initializing: { label: 'Initializing', color: 'bg-slate-500', pulse: true, ring: 'ring-slate-200', description: 'Preparing your executive session...', shadow: 'shadow-slate-200/50' },
-  ready: { label: 'Ready', color: 'bg-emerald-600', pulse: false, ring: 'ring-emerald-100', description: 'Ready to assist you with export and trade decisions.', shadow: 'shadow-emerald-500/20' },
-  thinking: { label: 'Thinking', color: 'bg-amber-500', pulse: true, ring: 'ring-amber-100', description: 'Analyzing your request...', shadow: 'shadow-amber-500/20' },
-  responding: { label: 'Responding', color: 'bg-blue-600', pulse: false, ring: 'ring-blue-100', description: 'Preparing a structured response.', shadow: 'shadow-blue-500/20' },
-  speaking: { label: 'Speaking', color: 'bg-indigo-600', pulse: true, ring: 'ring-indigo-100', description: 'Presenting the response...', shadow: 'shadow-indigo-500/20' },
-  error: { label: 'Error', color: 'bg-red-500', pulse: false, ring: 'ring-red-100', description: 'Something went wrong. Please try again.', shadow: 'shadow-red-500/20' },
-  disconnected: { label: 'Disconnected', color: 'bg-orange-500', pulse: true, ring: 'ring-orange-100', description: 'Connection lost. Reconnecting...', shadow: 'shadow-orange-500/20' },
+const STATE_CONFIG: Record<AvatarState, { labelKey: string; color: string; pulse: boolean; ring: string; descriptionKey: string; shadow: string }> = {
+  initializing: { labelKey: 'avatar.states.initializing', color: 'bg-slate-500', pulse: true, ring: 'ring-slate-200', descriptionKey: 'avatar.states.initializing_desc', shadow: 'shadow-slate-200/50' },
+  ready: { labelKey: 'avatar.states.ready', color: 'bg-emerald-600', pulse: false, ring: 'ring-emerald-100', descriptionKey: 'avatar.states.ready_desc', shadow: 'shadow-emerald-500/20' },
+  thinking: { labelKey: 'avatar.states.thinking', color: 'bg-amber-500', pulse: true, ring: 'ring-amber-100', descriptionKey: 'avatar.states.thinking_desc', shadow: 'shadow-amber-500/20' },
+  responding: { labelKey: 'avatar.states.responding', color: 'bg-blue-600', pulse: false, ring: 'ring-blue-100', descriptionKey: 'avatar.states.responding_desc', shadow: 'shadow-blue-500/20' },
+  speaking: { labelKey: 'avatar.states.speaking', color: 'bg-indigo-600', pulse: true, ring: 'ring-indigo-100', descriptionKey: 'avatar.states.speaking_desc', shadow: 'shadow-indigo-500/20' },
+  error: { labelKey: 'avatar.states.error', color: 'bg-red-500', pulse: false, ring: 'ring-red-100', descriptionKey: 'avatar.states.error_desc', shadow: 'shadow-red-500/20' },
+  disconnected: { labelKey: 'avatar.states.disconnected', color: 'bg-orange-500', pulse: true, ring: 'ring-orange-100', descriptionKey: 'avatar.states.disconnected_desc', shadow: 'shadow-orange-500/20' },
 };
 
 const EXECUTIVE_AVATAR_STYLES = (
@@ -165,18 +170,23 @@ const ExecutiveAvatarVisual = ({ state }: { state: AvatarState }) => {
 };
 
 export function Avatar() {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [status, setStatus] = useState<AvatarState>('initializing');
   const [transcript, setTranscript] = useState<string[]>([]);
   const [response, setResponse] = useState<string>('');
-  const [parsedResult, setParsedResult] = useState<Record<string, any> | null>(null);
+  const [parsedResult, setParsedResult] = useState<ParsedAvatarResult | null>(null);
   const [lastSentText, setLastSentText] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showRawResponse, setShowRawResponse] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const locale = (i18n.language?.startsWith('ar') ? 'ar' : 'en') as 'ar' | 'en';
   const accessToken =
     typeof window !== 'undefined'
       ? localStorage.getItem('access_token')
@@ -254,15 +264,11 @@ export function Avatar() {
         } else if (data.type === 'transcript') {
           setTranscript((prev) => [...prev, data.text]);
         } else if (data.type === 'response') {
-          setResponse(data.text);
+          const raw = typeof data.text === 'string' ? data.text : '';
+          setResponse(raw);
           setStatus('responding');
-          try {
-            const parsed = JSON.parse(data.text);
-            setParsedResult(parsed);
-          } catch {
-            setParsedResult(null);
-          }
-          speakText(data.text);
+          setParsedResult(parseIntentContent(raw));
+          speakText(raw);
         } else if (data.type === 'error') {
           setStatus('error');
           setErrorMessage(data.text || 'Unknown error');
@@ -304,11 +310,71 @@ export function Avatar() {
     const trimmed = text.trim();
     setLastSentText(trimmed);
     wsRef.current.send(JSON.stringify({ type: 'text', text: trimmed }));
-    // Clear the input field after sending
-    const input = document.querySelector('input[type="text"]') as HTMLInputElement | null;
-    if (input) {
-      input.value = '';
+    if (inputRef.current) {
+      inputRef.current.value = '';
     }
+  };
+
+  const handleAction = (action: string) => {
+    if (action === 'view_result' && parsedResult?.missionId) {
+      navigate(`/digital-export-manager/missions/${parsedResult.missionId}`);
+      return;
+    }
+
+    if (action === 'create_another') {
+      setParsedResult(null);
+      setResponse('');
+      setShowRawResponse(false);
+      if (inputRef.current) {
+        inputRef.current.value = '';
+        inputRef.current.focus();
+      }
+      setStatus('ready');
+      return;
+    }
+
+    if (action === 'retry') {
+      if (lastSentText && wsRef.current?.readyState === WebSocket.OPEN) {
+        sendText(lastSentText);
+      }
+      return;
+    }
+
+    if (action === 'view_error') {
+      if (response) {
+        setShowRawResponse(true);
+      }
+      return;
+    }
+
+    if (['approve', 'reject', 'view_details'].includes(action)) {
+      return;
+    }
+  };
+
+  const getDisabledActionReason = (action: string): { disabled: boolean; reason?: string } => {
+    if (action === 'view_result') {
+      if (!parsedResult?.missionId) {
+        return { disabled: true, reason: t('avatar.actions.disabled_reason') };
+      }
+      return { disabled: false };
+    }
+    if (action === 'retry') {
+      if (!lastSentText || wsRef.current?.readyState !== WebSocket.OPEN) {
+        return { disabled: true, reason: t('avatar.actions.disabled_reason') };
+      }
+      return { disabled: false };
+    }
+    if (action === 'view_error') {
+      if (!response) {
+        return { disabled: true, reason: t('avatar.actions.disabled_reason') };
+      }
+      return { disabled: false };
+    }
+    if (['approve', 'reject', 'view_details'].includes(action)) {
+      return { disabled: true, reason: t('avatar.actions.disabled_not_available') };
+    }
+    return { disabled: true, reason: t('avatar.actions.disabled_not_available') };
   };
 
   const extractSpokenText = (raw: string): string => {
@@ -333,7 +399,7 @@ export function Avatar() {
     if (typeof raw === 'string' && raw.trim().length > 0 && !raw.trim().startsWith('{')) {
       return raw.trim();
     }
-    return 'لقد استلمت طلبك. يرجى التحقق من الاستجابة المنظمة أدناه.';
+    return t('avatar.sections.fallback_spoken');
   };
 
   const speakText = (rawResponse: string) => {
@@ -357,6 +423,9 @@ export function Avatar() {
 
   const currentState = STATE_CONFIG[status];
 
+  const stateLabel = t(currentState.labelKey);
+  const stateDescription = t(currentState.descriptionKey);
+
   return (
     <>
       {EXECUTIVE_AVATAR_STYLES}
@@ -378,9 +447,9 @@ export function Avatar() {
               {currentState.pulse && <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${currentState.color} opacity-75`}></span>}
               <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${currentState.color}`}></span>
             </span>
-            <span className="text-sm font-semibold text-slate-700">{currentState.label}</span>
+            <span className="text-sm font-semibold text-slate-700">{stateLabel}</span>
           </div>
-          <p className="mt-4 text-sm text-slate-500 font-medium transition-all duration-500 max-w-md">{currentState.description}</p>
+          <p className="mt-4 text-sm text-slate-500 font-medium transition-all duration-500 max-w-md">{stateDescription}</p>
           {sessionId && (
             <p className="mt-2 text-[10px] text-slate-400 font-mono tracking-wide">Session: {sessionId}</p>
           )}
@@ -391,12 +460,12 @@ export function Avatar() {
 
         <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden mb-4 transition-all duration-500 hover:shadow-md">
           <div className="px-6 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Conversation</span>
-            <span className="text-xs text-slate-400 font-medium">Text-first</span>
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{t('avatar.sections.conversation')}</span>
+            <span className="text-xs text-slate-400 font-medium">{t('avatar.sections.text_first')}</span>
           </div>
           <div className="p-6 min-h-[160px] max-h-[360px] overflow-y-auto">
             {transcript.length === 0 && !lastSentText && (
-              <p className="text-sm text-slate-400 italic">Start the conversation by typing a request below.</p>
+              <p className="text-sm text-slate-400 italic">{t('avatar.sections.start_conversation')}</p>
             )}
             <div className="space-y-3">
               {lastSentText && (
@@ -416,115 +485,42 @@ export function Avatar() {
         {response && (
           <div className="mb-6 bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden transition-all duration-500 hover:shadow-md">
             <div className="px-6 py-3.5 border-b border-slate-100 bg-slate-50/50">
-              <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Structured Business Response</span>
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{t('avatar.sections.structured_response')}</span>
             </div>
             <div className="p-6">
-              {parsedResult ? (
+              {parsedResult && parsedResult.hasStructuredContent ? (
                 <div className="space-y-4">
-                  {(() => {
-                    const intentType = parsedResult?.intent_type || '';
-                    const content = parsedResult?.content || {};
-                    const outcome = typeof content?.outcome === 'string' ? content.outcome : '';
-                    const result = content?.result || {};
-                    const resultsArray = Array.isArray(result?.results) ? result.results : [];
-                    const firstResult = resultsArray[0] || {};
-                    const resultData = firstResult?.data || {};
-                    const context = parsedResult?.context || {};
-                    const suggestedActions = Array.isArray(parsedResult?.suggested_actions) ? parsedResult.suggested_actions : [];
-                    const findings = Array.isArray(resultData?.findings) ? resultData.findings : [];
-                    const sources = Array.isArray(resultData?.sources_consulted) ? resultData.sources_consulted : [];
-                    const summary = typeof resultData?.summary === 'string' ? resultData.summary : '';
-                    const goal = typeof resultData?.goal === 'string' ? resultData.goal : '';
-                    const status = typeof resultData?.status === 'string' ? resultData.status : '';
-                    const missionStatus = typeof result?.mission_status === 'string' ? result.mission_status : '';
-                    const missionId = typeof context?.mission_id === 'string' ? context.mission_id : '';
-                    const sessionIdDisplay = typeof context?.session_id === 'string' ? context.session_id : sessionId || '';
-                    const hasStructuredContent = outcome || goal || status || summary || findings.length > 0 || sources.length > 0 || missionId || missionStatus || suggestedActions.length > 0;
-                    if (!hasStructuredContent) {
-                      return (
-                        <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-[240px] overflow-y-auto transition-all duration-500 shadow-sm">
-                          {response}
-                        </pre>
-                      );
-                    }
-                    const statusLabel = intentType === 'mission_completed' ? 'مكتملة' : intentType === 'mission_failed' ? 'فشلت' : intentType === 'approval_required' ? 'تتطلب موافقة' : intentType || 'غير معروف';
-                    return (
-                      <div className="space-y-3 text-sm text-slate-700">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">الحالة</p>
-                            <p className="text-sm font-medium text-slate-800">{statusLabel}</p>
-                          </div>
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">حالة المهمة</p>
-                            <p className="text-sm font-medium text-slate-800">{missionStatus || '-'}</p>
-                          </div>
-                        </div>
-                        {goal && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">الهدف</p>
-                            <p className="text-sm text-slate-800">{goal}</p>
-                          </div>
-                        )}
-                        {outcome && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">النتيجة / Outcome</p>
-                            <p className="text-sm text-slate-800">{outcome}</p>
-                          </div>
-                        )}
-                        {summary && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">الملخص</p>
-                            <p className="text-sm text-slate-800 whitespace-pre-wrap">{summary}</p>
-                          </div>
-                        )}
-                        {findings.length > 0 && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">Findings</p>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
-                              {findings.map((finding: any, idx: number) => {
-                                const findingContent = typeof finding === 'string' ? finding : finding?.content || finding?.topic || JSON.stringify(finding);
-                                return <li key={idx}>{String(findingContent)}</li>;
-                              })}
-                            </ul>
-                          </div>
-                        )}
-                        {sources.length > 0 && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">المصادر</p>
-                            <div className="flex flex-wrap gap-2">
-                              {sources.map((source: string, idx: number) => (
-                                <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700">
-                                  {source}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {(missionId || sessionIdDisplay) && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">المعرفات</p>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 font-mono">
-                              {missionId && <span>Mission ID: {missionId}</span>}
-                              {sessionIdDisplay && <span>Session ID: {sessionIdDisplay}</span>}
-                            </div>
-                          </div>
-                        )}
-                        {suggestedActions.length > 0 && (
-                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
-                            <p className="text-xs font-semibold text-slate-500 mb-1">الإجراءات المقترحة</p>
-                            <div className="flex flex-wrap gap-2">
-                              {suggestedActions.map((action: string, idx: number) => (
-                                <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-700">
-                                  {action}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                  <ExecutiveResultCard parsed={parsedResult} rawResponse={response} locale={locale} />
+                  <SuggestedActionsBar
+                    parsed={parsedResult}
+                    locale={locale}
+                    onAction={handleAction}
+                    disabledActions={{
+                      view_result: getDisabledActionReason('view_result'),
+                      retry: getDisabledActionReason('retry'),
+                      view_error: getDisabledActionReason('view_error'),
+                      approve: getDisabledActionReason('approve'),
+                      reject: getDisabledActionReason('reject'),
+                      view_details: getDisabledActionReason('view_details'),
+                    }}
+                  />
+                  {showRawResponse && (
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-semibold text-slate-500">{t('avatar.sections.raw_response')}</p>
+                        <button
+                          type="button"
+                          onClick={() => setShowRawResponse(false)}
+                          className="text-xs text-slate-500 hover:text-slate-700"
+                        >
+                          {t('avatar.actions.close')}
+                        </button>
                       </div>
-                    );
-                  })()}
+                      <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono max-h-[240px] overflow-y-auto">
+                        {response}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-[240px] overflow-y-auto transition-all duration-500 shadow-sm">
@@ -538,14 +534,15 @@ export function Avatar() {
         <div className="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden transition-all duration-500 hover:shadow-md">
           <div className="p-5">
             <input
+              ref={inputRef}
               type="text"
-              placeholder="Type your request..."
+              placeholder={t('avatar.sections.start_conversation')}
               className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') sendText(e.currentTarget.value);
               }}
             />
-            <p className="mt-2.5 text-xs text-slate-400 text-center font-medium">Press Enter to send</p>
+            <p className="mt-2.5 text-xs text-slate-400 text-center font-medium">{t('avatar.sections.press_enter')}</p>
           </div>
         </div>
       </div>

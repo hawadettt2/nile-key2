@@ -1,24 +1,54 @@
-import { render, screen, act, fireEvent } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { Avatar } from '@/pages/Avatar';
-import { useAuthStore } from '@/store/authStore';
-import { vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/store/authStore');
 vi.mock('@/services/api', () => ({
-  connectToDEM: vi.fn(() => ({ data: { session_id: 'test-session-id' } })),
-  getDEMSessions: vi.fn(() => ({ data: [] })),
+  connectToDEM: () => Promise.resolve({ data: { session_id: 'test-session-id' } }),
+  getDEMSessions: () => Promise.resolve({ data: [] }),
 }));
 
-const mockedUseAuthStore = vi.mocked(useAuthStore);
+const mockUseAuthStore = vi.fn();
+vi.mock('@/store/authStore', () => ({
+  useAuthStore: (selector?: (s: any) => any) => {
+    const state = mockUseAuthStore();
+    if (typeof selector === 'function') {
+      return selector(state);
+    }
+    return state;
+  },
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'ar' },
+  }),
+  I18nextProvider: ({ children }: any) => children,
+}));
+
+import { Avatar } from '@/pages/Avatar';
+
+function renderAvatar() {
+  return render(
+    <BrowserRouter>
+      <Avatar />
+    </BrowserRouter>
+  );
+}
+
+const getWsInstance = async () => {
+  await waitFor(() => {
+    expect((global as any).WebSocket.mock.results.length).toBeGreaterThan(0);
+  });
+  return (global as any).WebSocket.mock.results?.[0]?.value;
+};
 
 describe('Avatar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.setItem('access_token', 'test-token');
     localStorage.setItem('avatar_session_id', 'test-session-id');
-    mockedUseAuthStore.mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       user: { id: 1, email: 'test@example.com', username: 'test', full_name: 'Test', role: 'owner', phone: '', company: '', is_active: true, approval_status: 'approved', created_at: '', updated_at: '' },
       isAuthenticated: true,
       isLoading: false,
@@ -31,7 +61,7 @@ describe('Avatar', () => {
       clearError: vi.fn(),
       updateProfile: vi.fn(),
       refreshTokens: vi.fn(),
-    } as any);
+    });
 
     (global as any).WebSocket = vi.fn(() => ({
       send: vi.fn(),
@@ -77,113 +107,73 @@ describe('Avatar', () => {
   };
 
   it('renders executive avatar heading', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
+    renderAvatar();
     expect(screen.getByText('AI Executive Avatar')).toBeDefined();
   });
 
   it('shows initializing state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    expect(screen.getByText('Initializing')).toBeDefined();
+    renderAvatar();
+    expect(screen.getByText('avatar.states.initializing')).toBeDefined();
   });
 
   it('renders text input', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    expect(screen.getByPlaceholderText('Type your request...')).toBeDefined();
+    renderAvatar();
+    expect(screen.getByPlaceholderText('avatar.sections.start_conversation')).toBeDefined();
   });
 
   it('shows conversation header', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    expect(screen.getByText('Conversation')).toBeDefined();
-    expect(screen.getByText('Text-first')).toBeDefined();
+    renderAvatar();
+    expect(screen.getByText('avatar.sections.conversation')).toBeDefined();
+    expect(screen.getByText('avatar.sections.text_first')).toBeDefined();
   });
 
   it('shows conversation section', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    expect(screen.getByText('Conversation')).toBeDefined();
-    expect(screen.getByText('Text-first')).toBeDefined();
+    renderAvatar();
+    expect(screen.getByText('avatar.sections.conversation')).toBeDefined();
+    expect(screen.getByText('avatar.sections.text_first')).toBeDefined();
   });
 
   it('shows input placeholder', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    expect(screen.getByPlaceholderText('Type your request...')).toBeDefined();
+    renderAvatar();
+    expect(screen.getByPlaceholderText('avatar.sections.start_conversation')).toBeDefined();
   });
 
   it('maps websocket open to ready state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
-    expect(screen.getByText('Ready')).toBeDefined();
+    expect(screen.getByText('avatar.states.ready')).toBeDefined();
   });
 
   it('maps avatar_state ready event to ready state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
     await act(async () => {
       wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'avatar_state', state: 'ready' }) });
     });
-    expect(screen.getByText('Ready')).toBeDefined();
+    expect(screen.getByText('avatar.states.ready')).toBeDefined();
   });
 
   it('maps avatar_state thinking event to thinking state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
     await act(async () => {
       wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'avatar_state', state: 'thinking' }) });
     });
-    expect(screen.getByText('Thinking')).toBeDefined();
+    expect(screen.getByText('avatar.states.thinking')).toBeDefined();
   });
 
   it('maps response event to responding state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -193,67 +183,47 @@ describe('Avatar', () => {
     await act(async () => {
       wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: '{"ok": true}' }) });
     });
-    expect(screen.getByText('Responding')).toBeDefined();
+    expect(screen.getByText('avatar.states.responding')).toBeDefined();
   });
 
   it('maps avatar_state error event to error state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
     await act(async () => {
       wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'avatar_state', state: 'error' }) });
     });
-    expect(screen.getByText('Error')).toBeDefined();
+    expect(screen.getByText('avatar.states.error')).toBeDefined();
   });
 
   it('maps websocket error to error state', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
     await act(async () => {
       wsInstance?.onerror?.();
     });
-    expect(screen.getByText('Error')).toBeDefined();
+    expect(screen.getByText('avatar.states.error')).toBeDefined();
   });
 
   it('shows state description', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    expect(screen.getByText('Preparing your executive session...')).toBeDefined();
+    renderAvatar();
+    expect(screen.getByText('avatar.states.initializing_desc')).toBeDefined();
   });
 
   it('has transition classes on avatar circle', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
+    renderAvatar();
     const avatarCircle = document.querySelector('.rounded-full.text-white');
     expect(avatarCircle?.classList.contains('transition-all')).toBe(true);
     expect(avatarCircle?.classList.contains('duration-500')).toBe(true);
   });
 
   it('has transition classes on status pill', async () => {
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
+    renderAvatar();
     const statusPill = document.querySelector('.inline-flex.items-center.gap-2');
     expect(statusPill?.classList.contains('transition-all')).toBe(true);
     expect(statusPill?.classList.contains('duration-500')).toBe(true);
@@ -268,12 +238,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -286,7 +252,7 @@ describe('Avatar', () => {
     await act(async () => {
       utteranceHandlers.onstart?.();
     });
-    expect(screen.getByText('Speaking')).toBeDefined();
+    expect(screen.getByText('avatar.states.speaking')).toBeDefined();
   });
 
   it('returns to ready when speech synthesis ends after response', async () => {
@@ -298,12 +264,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -319,7 +281,7 @@ describe('Avatar', () => {
     await act(async () => {
       utteranceHandlers.onend?.();
     });
-    expect(screen.getByText('Ready')).toBeDefined();
+    expect(screen.getByText('avatar.states.ready')).toBeDefined();
   });
 
   it('returns to ready when speech synthesis errors after response', async () => {
@@ -331,12 +293,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -349,18 +307,14 @@ describe('Avatar', () => {
     await act(async () => {
       utteranceHandlers.onerror?.();
     });
-    expect(screen.getByText('Ready')).toBeDefined();
+    expect(screen.getByText('avatar.states.ready')).toBeDefined();
   });
 
   it('does not enter speaking state when speech synthesis is unavailable', async () => {
     (global as any).window.speechSynthesis = undefined;
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -370,8 +324,8 @@ describe('Avatar', () => {
     await act(async () => {
       wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: 'Hello' }) });
     });
-    expect(screen.getByText('Responding')).toBeDefined();
-    expect(screen.queryByText('Speaking')).toBeNull();
+    expect(screen.getByText('avatar.states.responding')).toBeDefined();
+    expect(screen.queryByText('avatar.states.speaking')).toBeNull();
   });
 
   it('extracts outcome text from structured DEM response for speaking', async () => {
@@ -385,12 +339,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -411,19 +361,15 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
     await act(async () => {
       wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: JSON.stringify({ content: {} }) }) });
     });
-    expect(capturedText).toBe('I have received your request. Please check the structured response below.');
+    expect(capturedText).toBe('avatar.sections.fallback_spoken');
   });
 
   it('does not pass raw JSON when response contains only plain text', async () => {
@@ -437,12 +383,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -462,12 +404,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -481,8 +419,8 @@ describe('Avatar', () => {
       utteranceHandlers.onerror?.();
     });
 
-    expect(screen.getByText('Structured Business Response')).toBeDefined();
-    expect(screen.getByText('Ready')).toBeDefined();
+    expect(screen.getByText('avatar.sections.structured_response')).toBeDefined();
+    expect(screen.getByText('avatar.states.ready')).toBeDefined();
   });
 
   it('still shows error state on real websocket error even when speech synthesis errors', async () => {
@@ -494,12 +432,8 @@ describe('Avatar', () => {
     };
     (global as any).window.speechSynthesis = { speak: mockSpeak };
 
-    render(
-      <BrowserRouter>
-        <Avatar />
-      </BrowserRouter>
-    );
-    const wsInstance = (global as any).WebSocket.mock.results?.[0]?.value;
+    renderAvatar();
+    const wsInstance = await getWsInstance();
     await act(async () => {
       wsInstance?.onopen?.();
     });
@@ -510,6 +444,6 @@ describe('Avatar', () => {
       wsInstance?.onerror?.();
     });
 
-    expect(screen.getByText('Error')).toBeDefined();
+    expect(screen.getByText('avatar.states.error')).toBeDefined();
   });
 });
