@@ -246,7 +246,7 @@ async def _process_text_intent(ws: WebSocket, prototype: AvatarPrototype, text: 
     try:
         response = await asyncio.to_thread(send_intent_to_dem, text, session_id=session_id, token=token)
         intent_content = response.get("intent_content") or response.get("result") or response
-        await ws.send_json({"type": "response", "text": str(intent_content)})
+        await ws.send_json({"type": "response", "text": json.dumps(intent_content, ensure_ascii=False)})
         await ws.send_json({"type": "avatar_state", "state": "responding"})
         await ws.send_json({"type": "status", "text": "Done."})
     except Exception as exc:

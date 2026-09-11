@@ -169,6 +169,7 @@ export function Avatar() {
   const [status, setStatus] = useState<AvatarState>('initializing');
   const [transcript, setTranscript] = useState<string[]>([]);
   const [response, setResponse] = useState<string>('');
+  const [parsedResult, setParsedResult] = useState<Record<string, any> | null>(null);
   const [lastSentText, setLastSentText] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -255,6 +256,12 @@ export function Avatar() {
         } else if (data.type === 'response') {
           setResponse(data.text);
           setStatus('responding');
+          try {
+            const parsed = JSON.parse(data.text);
+            setParsedResult(parsed);
+          } catch {
+            setParsedResult(null);
+          }
           speakText(data.text);
         } else if (data.type === 'error') {
           setStatus('error');
@@ -412,9 +419,118 @@ export function Avatar() {
               <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Structured Business Response</span>
             </div>
             <div className="p-6">
-              <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-[240px] overflow-y-auto transition-all duration-500 shadow-sm">
-                {response}
-              </pre>
+              {parsedResult ? (
+                <div className="space-y-4">
+                  {(() => {
+                    const intentType = parsedResult?.intent_type || '';
+                    const content = parsedResult?.content || {};
+                    const outcome = typeof content?.outcome === 'string' ? content.outcome : '';
+                    const result = content?.result || {};
+                    const resultsArray = Array.isArray(result?.results) ? result.results : [];
+                    const firstResult = resultsArray[0] || {};
+                    const resultData = firstResult?.data || {};
+                    const context = parsedResult?.context || {};
+                    const suggestedActions = Array.isArray(parsedResult?.suggested_actions) ? parsedResult.suggested_actions : [];
+                    const findings = Array.isArray(resultData?.findings) ? resultData.findings : [];
+                    const sources = Array.isArray(resultData?.sources_consulted) ? resultData.sources_consulted : [];
+                    const summary = typeof resultData?.summary === 'string' ? resultData.summary : '';
+                    const goal = typeof resultData?.goal === 'string' ? resultData.goal : '';
+                    const status = typeof resultData?.status === 'string' ? resultData.status : '';
+                    const missionStatus = typeof result?.mission_status === 'string' ? result.mission_status : '';
+                    const missionId = typeof context?.mission_id === 'string' ? context.mission_id : '';
+                    const sessionIdDisplay = typeof context?.session_id === 'string' ? context.session_id : sessionId || '';
+                    const hasStructuredContent = outcome || goal || status || summary || findings.length > 0 || sources.length > 0 || missionId || missionStatus || suggestedActions.length > 0;
+                    if (!hasStructuredContent) {
+                      return (
+                        <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-[240px] overflow-y-auto transition-all duration-500 shadow-sm">
+                          {response}
+                        </pre>
+                      );
+                    }
+                    const statusLabel = intentType === 'mission_completed' ? 'مكتملة' : intentType === 'mission_failed' ? 'فشلت' : intentType === 'approval_required' ? 'تتطلب موافقة' : intentType || 'غير معروف';
+                    return (
+                      <div className="space-y-3 text-sm text-slate-700">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">الحالة</p>
+                            <p className="text-sm font-medium text-slate-800">{statusLabel}</p>
+                          </div>
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">حالة المهمة</p>
+                            <p className="text-sm font-medium text-slate-800">{missionStatus || '-'}</p>
+                          </div>
+                        </div>
+                        {goal && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">الهدف</p>
+                            <p className="text-sm text-slate-800">{goal}</p>
+                          </div>
+                        )}
+                        {outcome && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">النتيجة / Outcome</p>
+                            <p className="text-sm text-slate-800">{outcome}</p>
+                          </div>
+                        )}
+                        {summary && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">الملخص</p>
+                            <p className="text-sm text-slate-800 whitespace-pre-wrap">{summary}</p>
+                          </div>
+                        )}
+                        {findings.length > 0 && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">Findings</p>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+                              {findings.map((finding: any, idx: number) => {
+                                const findingContent = typeof finding === 'string' ? finding : finding?.content || finding?.topic || JSON.stringify(finding);
+                                return <li key={idx}>{String(findingContent)}</li>;
+                              })}
+                            </ul>
+                          </div>
+                        )}
+                        {sources.length > 0 && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">المصادر</p>
+                            <div className="flex flex-wrap gap-2">
+                              {sources.map((source: string, idx: number) => (
+                                <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700">
+                                  {source}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {(missionId || sessionIdDisplay) && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">المعرفات</p>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 font-mono">
+                              {missionId && <span>Mission ID: {missionId}</span>}
+                              {sessionIdDisplay && <span>Session ID: {sessionIdDisplay}</span>}
+                            </div>
+                          </div>
+                        )}
+                        {suggestedActions.length > 0 && (
+                          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                            <p className="text-xs font-semibold text-slate-500 mb-1">الإجراءات المقترحة</p>
+                            <div className="flex flex-wrap gap-2">
+                              {suggestedActions.map((action: string, idx: number) => (
+                                <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-700">
+                                  {action}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-[240px] overflow-y-auto transition-all duration-500 shadow-sm">
+                  {response}
+                </pre>
+              )}
             </div>
           </div>
         )}
