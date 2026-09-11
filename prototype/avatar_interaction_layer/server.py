@@ -19,6 +19,7 @@ import pathlib
 import tempfile
 import threading
 import queue
+import asyncio
 from typing import Optional
 
 import requests
@@ -116,6 +117,11 @@ async def ws_avatar(ws: WebSocket):
     origin = ws.headers.get("origin", "")
     allowed_origins = [
         "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:4173",
         "https://nile-key.com",
     ]
     if not any(origin.startswith(allowed) for allowed in allowed_origins):
@@ -238,7 +244,7 @@ async def _process_text_intent(ws: WebSocket, prototype: AvatarPrototype, text: 
     await ws.send_json({"type": "status", "text": "Processing intent..."})
     await ws.send_json({"type": "avatar_state", "state": "thinking"})
     try:
-        response = send_intent_to_dem(text, session_id=session_id, token=token)
+        response = await asyncio.to_thread(send_intent_to_dem, text, session_id=session_id, token=token)
         intent_content = response.get("intent_content") or response.get("result") or response
         await ws.send_json({"type": "response", "text": str(intent_content)})
         await ws.send_json({"type": "avatar_state", "state": "responding"})

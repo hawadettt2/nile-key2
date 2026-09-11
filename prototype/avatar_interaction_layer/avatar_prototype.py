@@ -59,7 +59,7 @@ def send_intent_to_dem(intent_text: str, mission_type: str = "RESEARCH", session
         headers["Authorization"] = f"Bearer {token}"
     params = {"session_id": session_id}
     body = {"mission_type": mission_type, "payload": payload}
-    resp = requests.post(url, data=json.dumps(body), headers=headers, params=params, timeout=60)
+    resp = requests.post(url, json=body, headers=headers, params=params, timeout=60)
     resp.raise_for_status()
     return resp.json()
 

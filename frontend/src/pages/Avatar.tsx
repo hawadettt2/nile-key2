@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { connectToDEM, getDEMSessions } from '@/services/api';
 
-type AvatarState = 'initializing' | 'ready' | 'thinking' | 'responding' | 'speaking' | 'error';
+type AvatarState = 'initializing' | 'ready' | 'thinking' | 'responding' | 'speaking' | 'error' | 'disconnected';
 
 const STATE_CONFIG: Record<AvatarState, { label: string; color: string; pulse: boolean; ring: string; description: string; shadow: string }> = {
   initializing: { label: 'Initializing', color: 'bg-slate-500', pulse: true, ring: 'ring-slate-200', description: 'Preparing your executive session...', shadow: 'shadow-slate-200/50' },
@@ -11,6 +11,7 @@ const STATE_CONFIG: Record<AvatarState, { label: string; color: string; pulse: b
   responding: { label: 'Responding', color: 'bg-blue-600', pulse: false, ring: 'ring-blue-100', description: 'Preparing a structured response.', shadow: 'shadow-blue-500/20' },
   speaking: { label: 'Speaking', color: 'bg-indigo-600', pulse: true, ring: 'ring-indigo-100', description: 'Presenting the response...', shadow: 'shadow-indigo-500/20' },
   error: { label: 'Error', color: 'bg-red-500', pulse: false, ring: 'ring-red-100', description: 'Something went wrong. Please try again.', shadow: 'shadow-red-500/20' },
+  disconnected: { label: 'Disconnected', color: 'bg-orange-500', pulse: true, ring: 'ring-orange-100', description: 'Connection lost. Reconnecting...', shadow: 'shadow-orange-500/20' },
 };
 
 const EXECUTIVE_AVATAR_STYLES = (
@@ -169,8 +170,11 @@ export function Avatar() {
   const [transcript, setTranscript] = useState<string[]>([]);
   const [response, setResponse] = useState<string>('');
   const [lastSentText, setLastSentText] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const accessToken =
     typeof window !== 'undefined'
@@ -183,8 +187,17 @@ export function Avatar() {
       try {
         const storedSessionId = typeof window !== 'undefined' ? localStorage.getItem('avatar_session_id') : null;
         if (storedSessionId) {
-          setSessionId(storedSessionId);
-          return;
+          // Validate stored session_id is still valid before reusing it
+          try {
+            const checkRes = await getDEMSessions();
+            const valid = checkRes.data?.some((s: any) => s.session_id === storedSessionId);
+            if (valid) {
+              setSessionId(storedSessionId);
+              return;
+            }
+          } catch {
+            // ignore validation failure and fall through to create a new session
+          }
         }
         const sessionsRes = await getDEMSessions();
         if (sessionsRes.data && sessionsRes.data.length > 0) {
@@ -211,7 +224,8 @@ export function Avatar() {
   useEffect(() => {
     if (!accessToken || !sessionId) return;
 
-    const ws = new WebSocket(`ws://${window.location.hostname}:8020/ws/avatar`);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.hostname}:8020/ws/avatar`);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -221,39 +235,73 @@ export function Avatar() {
         token: accessToken,
       }));
       setStatus('ready');
+      setErrorMessage(null);
+      reconnectAttemptsRef.current = 0;
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'avatar_state') {
-        setStatus(data.state);
-      } else if (data.type === 'status') {
-        if (data.text.toLowerCase().includes('ready') || data.text.toLowerCase().includes('connected') || data.text.toLowerCase().includes('authenticated')) {
-          setStatus('ready');
-        } else if (data.text.toLowerCase().includes('error')) {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'avatar_state') {
+          setStatus(data.state);
+        } else if (data.type === 'status') {
+          if (data.text.toLowerCase().includes('ready') || data.text.toLowerCase().includes('connected') || data.text.toLowerCase().includes('authenticated')) {
+            setStatus('ready');
+          } else if (data.text.toLowerCase().includes('error')) {
+            setStatus('error');
+          }
+        } else if (data.type === 'transcript') {
+          setTranscript((prev) => [...prev, data.text]);
+        } else if (data.type === 'response') {
+          setResponse(data.text);
+          setStatus('responding');
+          speakText(data.text);
+        } else if (data.type === 'error') {
           setStatus('error');
+          setErrorMessage(data.text || 'Unknown error');
         }
-      } else if (data.type === 'transcript') {
-        setTranscript((prev) => [...prev, data.text]);
-      } else if (data.type === 'response') {
-        setResponse(data.text);
-        setStatus('responding');
-        speakText(data.text);
-      } else if (data.type === 'error') {
-        setStatus('error');
+      } catch {
+        // ignore malformed messages
       }
     };
 
-    ws.onerror = () => setStatus('error');
-    ws.onclose = () => setStatus('ready');
+    ws.onerror = () => {
+      setStatus('error');
+      setErrorMessage('WebSocket connection error');
+    };
 
-    return () => ws.close();
+    ws.onclose = () => {
+      setStatus('disconnected');
+      // Auto-reconnect with exponential backoff
+      const attempts = reconnectAttemptsRef.current + 1;
+      reconnectAttemptsRef.current = attempts;
+      const delay = Math.min(1000 * Math.pow(2, attempts - 1), 30000);
+      reconnectTimerRef.current = setTimeout(() => {
+        if (accessToken && sessionId) {
+          setStatus('initializing');
+        }
+      }, delay);
+    };
+
+    return () => {
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      ws.close();
+    };
   }, [accessToken, sessionId]);
 
   const sendText = (text: string) => {
     if (!text.trim() || wsRef.current?.readyState !== WebSocket.OPEN) return;
-    setLastSentText(text.trim());
-    wsRef.current.send(JSON.stringify({ type: 'text', text }));
+    const trimmed = text.trim();
+    setLastSentText(trimmed);
+    wsRef.current.send(JSON.stringify({ type: 'text', text: trimmed }));
+    // Clear the input field after sending
+    const input = document.querySelector('input[type="text"]') as HTMLInputElement | null;
+    if (input) {
+      input.value = '';
+    }
   };
 
   const extractSpokenText = (raw: string): string => {
@@ -278,7 +326,7 @@ export function Avatar() {
     if (typeof raw === 'string' && raw.trim().length > 0 && !raw.trim().startsWith('{')) {
       return raw.trim();
     }
-    return 'I have received your request. Please check the structured response below.';
+    return 'لقد استلمت طلبك. يرجى التحقق من الاستجابة المنظمة أدناه.';
   };
 
   const speakText = (rawResponse: string) => {
@@ -328,6 +376,9 @@ export function Avatar() {
           <p className="mt-4 text-sm text-slate-500 font-medium transition-all duration-500 max-w-md">{currentState.description}</p>
           {sessionId && (
             <p className="mt-2 text-[10px] text-slate-400 font-mono tracking-wide">Session: {sessionId}</p>
+          )}
+          {errorMessage && status === 'error' && (
+            <p className="mt-2 text-xs text-red-600 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">{errorMessage}</p>
           )}
         </div>
 
