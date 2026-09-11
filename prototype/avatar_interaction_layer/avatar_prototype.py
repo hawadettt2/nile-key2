@@ -28,7 +28,7 @@ import requests
 # Configuration
 # ============================================================
 
-DEM_API_BASE_URL = os.getenv("DEM_API_BASE_URL", "http://127.0.0.1:8000/api/v1/digital-export-manager")
+DEM_API_BASE_URL = os.getenv("DEM_API_BASE_URL", "http://localhost:8000/api/v1/digital-export-manager")
 DEM_SESSION_ID = os.getenv("DEM_SESSION_ID", "demo-session-001")
 
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "small")  # small: balance of speed/accuracy for Arabic
