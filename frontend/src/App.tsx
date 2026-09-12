@@ -41,10 +41,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const DEM_PATHS = ['/digital-export-manager', '/knowledge-graph', '/trade-intelligence'];
   const isDEMRoute = DEM_PATHS.some(path => location.pathname === path || location.pathname.startsWith(path + '/'));
   const shouldRedirectDEM = isDEMRoute && user && !INTERNAL_ROLES.includes(user.role);
-  if (shouldRedirectDEM) {
-    useEffect(() => {
+  useEffect(() => {
+    if (shouldRedirectDEM) {
       toast({ title: 'Access Denied', description: 'You do not have permission to access this module.', variant: 'destructive' });
-    }, [toast]);
+    }
+  }, [shouldRedirectDEM, toast]);
+  if (shouldRedirectDEM) {
     return <Navigate to="/" replace />;
   }
   if (isLoading) {
