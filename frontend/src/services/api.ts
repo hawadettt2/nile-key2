@@ -159,6 +159,8 @@ export const connectToDEM = (data: { user_id: number; metadata?: Record<string, 
 export const getDEMSessions = () => api.get('/api/v1/digital-export-manager/sessions');
 export const getDEMSession = (sessionId: string) =>
   api.get(`/api/v1/digital-export-manager/sessions/${sessionId}`);
+export const getMissionById = (missionId: string) =>
+  api.get(`/api/v1/digital-export-manager/missions/${missionId}`);
 export const disconnectDEM = (sessionId: string) =>
   api.post(`/api/v1/digital-export-manager/sessions/${sessionId}/close`);
 export const createMission = (sessionId: string, data: { mission_type: string; payload: Record<string, unknown> }) =>

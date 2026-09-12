@@ -358,6 +358,29 @@ class SessionManager:
                 return mission
         return None
 
+    def find_mission_by_id(self, user_id: int, mission_id: str) -> Optional[Dict[str, Any]]:
+        """Find a mission by ID across all sessions for a user."""
+        try:
+            with self.db_session_factory() as db:
+                rows = db.execute(
+                    "SELECT id, user_id, context FROM agent_sessions WHERE user_id = ?",
+                    (user_id,),
+                ).fetchall()
+        except Exception:
+            return None
+        for row in rows:
+            session_id = row[0]
+            try:
+                context = json.loads(row[2]) if row[2] else {}
+            except Exception:
+                continue
+            for mission in context.get("missions", []):
+                if mission.get("mission_id") == mission_id:
+                    mission = dict(mission)
+                    mission.setdefault("session_id", session_id)
+                    return mission
+        return None
+
     def update_mission_status_if(
         self,
         session_id: str,

@@ -343,3 +343,57 @@ def test_create_search_entities_mission_returns_completed_result(client):
         assert isinstance(data["result"], dict), f"Expected result to be dict, got {type(data['result'])}"
         assert "results" in data["result"]
 
+
+def test_get_mission_by_id_returns_mission_from_avatar_session(client):
+    resp = client.post("/api/v1/auth/login", json={
+        "username": "owner",
+        "password": "TestOwnerPass123!",
+    })
+    assert resp.status_code == 200
+    token = resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    connect_resp = client.post(
+        "/api/v1/digital-export-manager/connect",
+        json={"user_id": 1},
+        headers=headers,
+    )
+    assert connect_resp.status_code == 200
+    session_id = connect_resp.json()["session_id"]
+
+    mock_decision = {
+        "chosen_path": "search",
+        "reasoning": "Search entities",
+        "context": {},
+        "requires_approval": False,
+        "approval_status": "pending",
+    }
+
+    with patch("app.routers.digital_export_manager.get_reasoning_engine") as mock_get_re:
+        mock_re = MagicMock()
+        mock_re.reason = AsyncMock(return_value=mock_decision)
+        mock_get_re.return_value = mock_re
+
+        create_resp = client.post(
+            f"/api/v1/digital-export-manager/missions?session_id={session_id}",
+            json={"mission_type": "SEARCH_ENTITIES", "payload": {"query": "test"}},
+            headers=headers,
+        )
+        assert create_resp.status_code == 200
+        mission_id = create_resp.json()["mission_id"]
+
+    get_resp = client.get(f"/api/v1/digital-export-manager/missions/{mission_id}", headers=headers)
+    assert get_resp.status_code == 200
+    body = get_resp.json()
+    assert body["mission_id"] == mission_id
+    assert body["session_id"] == session_id
+    assert body["status"] in {"completed", "failed", "pending_approval", "pending", "running"}
+
+
+def test_get_mission_by_id_returns_404_for_unknown_mission(client):
+    _, token = _register_and_login(client, role="owner")
+    headers = _auth_headers(token)
+
+    get_resp = client.get("/api/v1/digital-export-manager/missions/unknown-mission-id", headers=headers)
+    assert get_resp.status_code == 404
+

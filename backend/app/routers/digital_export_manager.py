@@ -242,6 +242,30 @@ async def connect(
     )
 
 
+@router.get("/missions/{mission_id}", response_model=MissionResponse)
+async def get_mission(
+    mission_id: str,
+    current_user: dict = Depends(require_role(INTERNAL_ROLES)),
+    session_manager: SessionManager = Depends(get_session_manager),
+):
+    mission = session_manager.find_mission_by_id(current_user["id"], mission_id)
+    if not mission:
+        raise HTTPException(status_code=404, detail="Mission not found")
+    return MissionResponse(
+        mission_id=mission.get("mission_id", mission_id),
+        session_id=mission.get("session_id", ""),
+        status=mission.get("status", ""),
+        result=mission.get("result"),
+        error=mission.get("error"),
+        created_at=mission.get("created_at", datetime.now(timezone.utc).isoformat()),
+        completed_at=mission.get("completed_at"),
+        reasoning=mission.get("reasoning"),
+        requires_approval=mission.get("requires_approval", False),
+        approval_status=mission.get("approval_status", "pending"),
+        intent_content=mission.get("intent_content"),
+    )
+
+
 @router.post("/missions", response_model=MissionResponse)
 async def create_mission(
     request: MissionRequest,
@@ -457,6 +481,7 @@ async def create_mission(
             audit_recorder=AuditRecorder(get_db),
             memory_provider=memory_provider,
         )
+        session_context = session_manager.get_context(session_id) or {}
         feedback_result = await feedback_loop.process(
             outcome=outcome,
             goal_plan_context=goal_plan_context,
