@@ -332,6 +332,8 @@ async def execute_text_intent(text: str, session_id: str, user_id: int) -> Dict[
         if not saved:
             raise ValueError("Failed to save mission to session")
 
+        session_context = session_manager.get_context(session_id) or {}
+
         if goal_plan_context:
             try:
                 plan_repo = PlanRepository(get_db)

@@ -191,8 +191,8 @@ export function DEMMissionDetail() {
 
   useEffect(() => {
     if (!mission && missionId) {
+      setIsLoading(true);
       if (activeSession?.session_id) {
-        setIsLoading(true);
         getDEMSession(activeSession.session_id)
           .then((res) => {
             const data = res.data;
@@ -250,8 +250,36 @@ export function DEMMissionDetail() {
           .catch(() => setNotFoundMessage(t(MISSING_MISSION_MESSAGE_KEY)))
           .finally(() => setIsLoading(false));
       } else {
-        setNotFoundMessage(t(MISSING_MISSION_MESSAGE_KEY));
-        setIsLoading(false);
+        getMissionById(missionId)
+          .then((fallbackRes) => {
+            if (fallbackRes?.data) {
+              const data = fallbackRes.data;
+              const found = {
+                mission_id: data.mission_id,
+                session_id: data.session_id,
+                status: data.status,
+                result: data.result,
+                error: data.error,
+                created_at: data.created_at,
+                completed_at: data.completed_at,
+                reasoning: data.reasoning,
+                requires_approval: data.requires_approval,
+                approval_status: data.approval_status,
+                intent_content: data.intent_content,
+              } as Record<string, unknown>;
+              (setMissions as any)((prev: any[]) => {
+                const exists = prev.find((m: Record<string, unknown>) => m.mission_id === missionId);
+                if (exists) return prev;
+                return [...prev, found];
+              });
+              setCurrentMission(found as any);
+              setNotFoundMessage(null);
+            } else {
+              setNotFoundMessage(t(MISSING_MISSION_MESSAGE_KEY));
+            }
+          })
+          .catch(() => setNotFoundMessage(t(MISSING_MISSION_MESSAGE_KEY)))
+          .finally(() => setIsLoading(false));
       }
       return;
     }
