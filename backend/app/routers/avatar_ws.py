@@ -396,12 +396,6 @@ async def execute_text_intent(text: str, session_id: str, user_id: int) -> Dict[
             goal=goal_obj.model_dump(mode="json") if goal_obj else None,
             plan=plan_obj.model_dump(mode="json") if plan_obj else None,
             autonomy_policy=autonomy_policy,
-            result=execution_output,
-            error=mission.error,
-            reasoning=decision.get("reasoning"),
-            requires_approval=requires_approval,
-            approval_status=approval_status,
-            intent_content=None,
         )
         return intent_content.model_dump(mode="json") if intent_content else {}
     except ValueError:
