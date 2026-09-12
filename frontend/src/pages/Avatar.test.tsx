@@ -446,4 +446,21 @@ describe('Avatar', () => {
 
     expect(screen.getByText('avatar.states.error')).toBeDefined();
   });
+
+  it('does not set initializing after intentional cleanup from token change', async () => {
+    localStorage.setItem('access_token', 'token-v1');
+    localStorage.setItem('avatar_session_id', 'session-1');
+    renderAvatar();
+    const wsInstance1 = await getWsInstance();
+    await act(async () => {
+      wsInstance1?.onopen?.();
+    });
+    expect(screen.getByText('avatar.states.ready')).toBeDefined();
+
+    localStorage.setItem('access_token', 'token-v2');
+    await act(async () => {
+      wsInstance1?.onclose?.();
+    });
+    expect(screen.queryByText('avatar.states.initializing')).toBeNull();
+  });
 });

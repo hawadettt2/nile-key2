@@ -200,6 +200,8 @@ export function Avatar() {
 
   const [sessionId] = useState<string | null>(() => getSessionId());
 
+  const intentionalCloseRef = useRef(false);
+
   useEffect(() => {
     if (!accessToken || !sessionId) return;
 
@@ -208,6 +210,11 @@ export function Avatar() {
     wsRef.current = ws;
 
     ws.onopen = () => {
+      intentionalCloseRef.current = false;
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       ws.send(JSON.stringify({
         type: 'auth',
         session_id: sessionId,
@@ -252,6 +259,9 @@ export function Avatar() {
     };
 
     ws.onclose = () => {
+      if (intentionalCloseRef.current) {
+        return;
+      }
       setStatus('disconnected');
       // Auto-reconnect with exponential backoff
       const attempts = reconnectAttemptsRef.current + 1;
@@ -265,6 +275,7 @@ export function Avatar() {
     };
 
     return () => {
+      intentionalCloseRef.current = true;
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
