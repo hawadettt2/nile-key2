@@ -198,7 +198,7 @@ export function Avatar() {
     return sessionId;
   };
 
-  const [sessionId] = useState<string | null>(() => getSessionId());
+  const [sessionId, setSessionId] = useState<string | null>(() => getSessionId());
 
   const intentionalCloseRef = useRef(false);
 
@@ -230,6 +230,10 @@ export function Avatar() {
         const data = JSON.parse(event.data);
         if (data.type === 'avatar_state') {
           setStatus(data.state);
+          if (typeof data.session_id === 'string') {
+            setSessionId(data.session_id);
+            localStorage.setItem('avatar_session_id', data.session_id);
+          }
         } else if (data.type === 'status') {
           if (data.text.toLowerCase().includes('ready') || data.text.toLowerCase().includes('connected') || data.text.toLowerCase().includes('authenticated')) {
             setStatus('ready');

@@ -428,7 +428,7 @@ async def ws_avatar(ws: WebSocket):
                 SessionCreateRequest(user_id=user["id"], metadata={"avatar": True, "source": "avatar_ws"})
             )
             session_id = session.session_id
-        await ws.send_json({"type": "avatar_state", "state": "ready"})
+        await ws.send_json({"type": "avatar_state", "state": "ready", "session_id": session_id})
         while True:
             msg = await ws.receive_text()
             data = json.loads(msg)
