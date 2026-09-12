@@ -5,14 +5,18 @@ FastAPI Backend â€” Entry Point
 """
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+import json
+import uuid
+from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import WebSocketDisconnect
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
-from app.core.database import init_db
+from app.core.database import init_db, get_db
 from app.core.csrf import CSRFMiddleware
+from app.core.security import decode_token
 from app.core.eta_scheduler import init_scheduler, start_scheduler, shutdown_scheduler
 from app.core.shipping_scheduler import init_scheduler as init_shipping_scheduler, start_scheduler as start_shipping_scheduler, shutdown_scheduler as shutdown_shipping_scheduler
 from app.core.credentials.credential_store import CredentialStore
@@ -27,11 +31,53 @@ from app.agent.knowledge.company_knowledge_provider import CompanyKnowledgeProvi
 from app.agent.knowledge.regulations_provider import RegulationsKnowledgeProvider
 from app.agent.memory.sqlite_provider import SQLiteMemoryProvider
 from app.agent.llm.provider import GeminiProvider, llm_registry
+from app.agent.session.manager import SessionManager
+from app.agent.schemas.session import SessionCreateRequest
+from app.agent.schemas.api_request import MissionRequest
+from app.agent.schemas.enums import MissionType
+from app.agent.workflow.orchestrator import WorkflowOrchestrator
 from app.services.trade_intelligence import set_memory_provider, set_knowledge_registry
 from app.routers import auth, shipping, invoice, suppliers, customers, customs, resources, documents, eta, notifications, audit, workflow, digital_export_manager_router, knowledge_graph, trade_intelligence, dashboard, search, users_router, roles_router, research, export_readiness, architecture_explorer
+from app.routers.auth import _is_token_blacklisted
 
 knowledge_provider_registry = KnowledgeProviderRegistry()
 memory_provider = SQLiteMemoryProvider(db_path="nile_key.db")
+session_manager = SessionManager(get_db)
+
+
+def get_user_from_token(token: str) -> dict:
+    if _is_token_blacklisted(token):
+        raise HTTPException(status_code=401, detail="Token has been revoked")
+    payload = decode_token(token)
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, email, username, full_name, phone, company, role, is_active, approval_status, created_at, updated_at "
+        "FROM users WHERE id = ? AND is_active = 1",
+        (int(user_id),),
+    )
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=401, detail="User not found or inactive")
+    return {
+        "id": row["id"],
+        "email": row["email"],
+        "username": row["username"],
+        "full_name": row["full_name"],
+        "phone": row["phone"],
+        "company": row["company"],
+        "role": row["role"],
+        "is_active": bool(row["is_active"]),
+        "approval_status": row["approval_status"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"],
+    }
 
 
 class SecurityHeadersMiddleware:
@@ -492,6 +538,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:4173",
         "https://nile-key.com",
     ],
     allow_credentials=True,
@@ -547,5 +598,64 @@ def health_check():
         "version": "1.0.0",
         "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
     }
+
+
+@app.websocket("/ws/avatar")
+async def ws_avatar(ws: WebSocket):
+    await ws.accept()
+    try:
+        msg = await ws.receive_text()
+        data = json.loads(msg)
+        if data.get("type") != "auth":
+            await ws.close(code=1008)
+            return
+        token = data.get("token")
+        session_id = data.get("session_id")
+        if not token:
+            await ws.close(code=1008)
+            return
+        user = get_user_from_token(token)
+        if session_id:
+            session = session_manager.get_session(session_id)
+            if not session or session.user_id != user["id"]:
+                session_id = None
+        if not session_id:
+            session = session_manager.create_session(
+                SessionCreateRequest(user_id=user["id"], metadata={"avatar": True, "source": "avatar_ws"})
+            )
+            session_id = session.session_id
+        await ws.send_json({"type": "avatar_state", "state": "ready"})
+        async with httpx.AsyncClient() as client:
+            while True:
+                msg = await ws.receive_text()
+                data = json.loads(msg)
+                if data.get("type") == "text":
+                    text = data.get("text", "").strip()
+                    if not text:
+                        continue
+                    await ws.send_json({"type": "avatar_state", "state": "thinking"})
+                    try:
+                        resp = await client.post(
+                            f"http://localhost:8000/api/v1/digital-export-manager/missions?session_id={session_id}",
+                            json={"mission_type": "RESEARCH", "payload": {"query": text}},
+                            headers={"Authorization": f"Bearer {token}"},
+                            timeout=120.0,
+                        )
+                        resp.raise_for_status()
+                        mission_data = resp.json()
+                        intent_content = mission_data.get("intent_content") or mission_data.get("result") or mission_data
+                        await ws.send_json({"type": "response", "text": json.dumps(intent_content, ensure_ascii=False)})
+                        await ws.send_json({"type": "avatar_state", "state": "responding"})
+                    except httpx.HTTPStatusError as e:
+                        await ws.send_json({"type": "error", "text": f"Mission failed: {e.response.status_code}"})
+                        await ws.send_json({"type": "avatar_state", "state": "error"})
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        try:
+            await ws.send_json({"type": "error", "text": str(e)})
+            await ws.send_json({"type": "avatar_state", "state": "error"})
+        except Exception:
+            pass
 
 

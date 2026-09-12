@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-const WS_URL = process.env.WS_URL || 'ws://localhost:8020/ws/avatar';
+const WS_URL = process.env.WS_URL || 'ws://localhost:8000/ws/avatar';
 
 test.describe('Avatar Result Presentation — Real WebSocket E2E', () => {
   test('Arabic request reaches Core AI and returns IntentContent to executive UI', async ({ page }) => {

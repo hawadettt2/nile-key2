@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import { connectToDEM, getDEMSessions } from '@/services/api';
 import { parseIntentContent, ParsedAvatarResult } from '@/lib/avatarResultParser';
 import { ExecutiveResultCard } from '@/components/avatar/ExecutiveResultCard';
 import { SuggestedActionsBar } from '@/components/avatar/SuggestedActionsBar';
@@ -172,7 +170,6 @@ const ExecutiveAvatarVisual = ({ state }: { state: AvatarState }) => {
 export function Avatar() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
   const [status, setStatus] = useState<AvatarState>('initializing');
   const [transcript, setTranscript] = useState<string[]>([]);
   const [response, setResponse] = useState<string>('');
@@ -181,7 +178,6 @@ export function Avatar() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showRawResponse, setShowRawResponse] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -192,51 +188,23 @@ export function Avatar() {
       ? localStorage.getItem('access_token')
       : null;
 
-  useEffect(() => {
-    const initSession = async () => {
-      if (!user) return;
-      try {
-        const storedSessionId = typeof window !== 'undefined' ? localStorage.getItem('avatar_session_id') : null;
-        if (storedSessionId) {
-          // Validate stored session_id is still valid before reusing it
-          try {
-            const checkRes = await getDEMSessions();
-            const valid = checkRes.data?.some((s: any) => s.session_id === storedSessionId);
-            if (valid) {
-              setSessionId(storedSessionId);
-              return;
-            }
-          } catch {
-            // ignore validation failure and fall through to create a new session
-          }
-        }
-        const sessionsRes = await getDEMSessions();
-        if (sessionsRes.data && sessionsRes.data.length > 0) {
-          const sessionId = sessionsRes.data[0].session_id;
-          localStorage.setItem('avatar_session_id', sessionId);
-          setSessionId(sessionId);
-          return;
-        }
-        const connectRes = await connectToDEM({ user_id: user.id });
-        const sessionId = connectRes.data?.session_id;
-        if (sessionId) {
-          localStorage.setItem('avatar_session_id', sessionId);
-          setSessionId(sessionId);
-        }
-      } catch (err) {
-        console.error('Failed to init DEM session:', err);
-        setStatus('error');
-      }
-    };
+  const getSessionId = () => {
+    if (typeof window === 'undefined') return null;
+    let sessionId = localStorage.getItem('avatar_session_id');
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('avatar_session_id', sessionId);
+    }
+    return sessionId;
+  };
 
-    initSession();
-  }, [user]);
+  const [sessionId] = useState<string | null>(() => getSessionId());
 
   useEffect(() => {
     if (!accessToken || !sessionId) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.hostname}:8020/ws/avatar`);
+    const ws = new WebSocket(`${protocol}//${window.location.hostname}:8000/ws/avatar`);
     wsRef.current = ws;
 
     ws.onopen = () => {
