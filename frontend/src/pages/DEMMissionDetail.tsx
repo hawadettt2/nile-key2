@@ -44,6 +44,7 @@ function ExecutionTraceViewer({ mission }: MissionTraceProps) {
 
   const stepStatusConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
     completed: { icon: <CheckCircle size={14} />, color: 'text-green-600', label: 'Completed' },
+    success: { icon: <CheckCircle size={14} />, color: 'text-green-600', label: 'Completed' },
     failed: { icon: <XCircle size={14} />, color: 'text-red-600', label: 'Failed' },
     running: { icon: <Loader2 size={14} className="animate-spin" />, color: 'text-blue-600', label: 'Running' },
     pending: { icon: <Clock size={14} />, color: 'text-amber-600', label: 'Pending' },
