@@ -14,7 +14,7 @@ const MISSING_MISSION_MESSAGE_KEY = 'dem.missionNotFoundContext';
 interface ExecutionStep {
   status: string;
   tool?: string;
-  output?: unknown;
+  data?: unknown;
   error?: string;
 }
 
@@ -93,9 +93,9 @@ function ExecutionTraceViewer({ mission }: MissionTraceProps) {
                 {step.tool && (
                   <p className="text-xs text-slate-500 mt-1">Tool: {step.tool}</p>
                 )}
-                {step.output !== undefined && (
+                {step.data !== undefined && (
                   <pre className="bg-slate-50 p-2 rounded text-xs overflow-auto mt-2 text-slate-700">
-                    {JSON.stringify(step.output, null, 2)}
+                    {JSON.stringify(step.data, null, 2)}
                   </pre>
                 )}
                 {step.error && (
