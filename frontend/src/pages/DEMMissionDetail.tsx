@@ -131,16 +131,50 @@ function renderStructuredResultData(data: unknown): React.ReactNode {
                   {sources && sources.length > 0 && (
                     <div>
                       <p className="text-xs font-medium text-slate-700">المصادر المرتبطة</p>
-                      <ul className="list-disc list-inside text-xs text-slate-600 space-y-1">
+                      <div className="space-y-2">
                         {sources.map((source: unknown, sIdx: number) => {
                           if (!source || typeof source !== 'object') {
-                            return <li key={sIdx}>{String(source)}</li>;
+                            return <div key={sIdx}>{String(source)}</div>;
                           }
                           const s = source as Record<string, unknown>;
-                          const label = typeof s.source_id === 'string' ? s.source_id : typeof s.source_url === 'string' ? s.source_url : JSON.stringify(source);
-                          return <li key={sIdx}>{label}</li>;
+                          const sourceId = typeof s.source_id === 'string' ? s.source_id : undefined;
+                          const sourceUrl = typeof s.source_url === 'string' ? s.source_url : undefined;
+                          const excerpt = typeof s.excerpt === 'string' ? s.excerpt : undefined;
+                          const reservedSourceKeys = ['source_id', 'source_url', 'excerpt'];
+                          const extraSourceKeys = Object.keys(s).filter((key) => !reservedSourceKeys.includes(key));
+
+                          return (
+                            <div key={sIdx} className="rounded border border-slate-100 bg-slate-50 p-2 space-y-1">
+                              <div>
+                                <span className="font-medium">المصدر: </span>
+                                <span>{sourceId || '-'}</span>
+                              </div>
+                              {sourceUrl && (
+                                <div>
+                                  <span className="font-medium">الرابط/مرجع: </span>
+                                  <span>{sourceUrl}</span>
+                                </div>
+                              )}
+                              {excerpt && (
+                                <div>
+                                  <span className="font-medium">الدليل الفعلي: </span>
+                                  <pre className="whitespace-pre-wrap text-xs">{excerpt}</pre>
+                                </div>
+                              )}
+                              {extraSourceKeys.length > 0 && (
+                                <div className="text-xs text-slate-500">
+                                  {extraSourceKeys.map((key) => (
+                                    <div key={key}>
+                                      <span className="font-medium">{key}: </span>
+                                      {renderValue(s[key])}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
                         })}
-                      </ul>
+                      </div>
                     </div>
                   )}
                   {extraKeys.length > 0 && (
