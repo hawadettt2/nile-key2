@@ -392,12 +392,26 @@ async def execute_text_intent(text: str, session_id: str, user_id: int) -> Dict[
             except Exception:
                 pass
 
+        business_answer = None
+        try:
+            from app.agent.business_intelligence.synthesizer import BusinessIntelligenceSynthesizer
+            synthesizer = BusinessIntelligenceSynthesizer()
+            business_answer = await synthesizer.synthesize(
+                mission=mission,
+                goal=goal_obj.model_dump(mode="json") if goal_obj else None,
+                plan=plan_obj.model_dump(mode="json") if plan_obj else None,
+                research_result=decision_context.get("research"),
+            )
+        except Exception:
+            raise
+
         intent_content = ResponseBuilder.build(
             mission=mission,
             decision=decision,
             goal=goal_obj.model_dump(mode="json") if goal_obj else None,
             plan=plan_obj.model_dump(mode="json") if plan_obj else None,
             autonomy_policy=autonomy_policy,
+            business_answer=business_answer.model_dump(mode="json") if business_answer else None,
         )
         return intent_content.model_dump(mode="json") if intent_content else {}
     except ValueError:

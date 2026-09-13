@@ -70,6 +70,7 @@ class ResponseBuilder:
         goal: Optional[Dict[str, Any]] = None,
         plan: Optional[Dict[str, Any]] = None,
         autonomy_policy: Optional[AutonomyPolicy] = None,
+        business_answer: Optional[Dict[str, Any]] = None,
     ) -> IntentContent:
         """Build IntentContent from existing DEM state.
 
@@ -93,6 +94,8 @@ class ResponseBuilder:
             "result": mission_result,
             "progress": progress,
         }
+        if business_answer:
+            content["business_answer"] = business_answer
         if policy_hints:
             content["policy_hints"] = policy_hints
 
