@@ -27,16 +27,14 @@ Finding = BusinessFinding
 
 class BusinessEntity(BaseModel):
     name: str = Field(description="Entity identifier")
-    type: str = Field(default="", alias="entity_type", description="Entity category: company | buyer | market | supplier | importer")
+    entity_type: str = Field(alias="type", description="Entity category: company | buyer | market | supplier | importer")
     attributes: Dict[str, Any] = Field(default_factory=dict, description="Additional entity attributes")
     evidence: List[EvidenceReference] = Field(default_factory=list, description="Evidence supporting this entity")
-
-    class Config:
-        allow_population_by_field_name = True
+    model_config = {"populate_by_name": True}
 
     @property
-    def entity_type(self) -> str:
-        return self.type
+    def type(self) -> str:
+        return self.entity_type
 
 
 Entity = BusinessEntity
