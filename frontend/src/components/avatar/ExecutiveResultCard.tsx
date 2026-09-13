@@ -57,6 +57,50 @@ export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps
         </div>
       )}
 
+      {parsed.recommendations.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">Recommendations</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+            {parsed.recommendations.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {parsed.risks.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">Risks</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+            {parsed.risks.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {parsed.opportunities.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">Opportunities</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+            {parsed.opportunities.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {parsed.limitations.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">Limitations</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+            {parsed.limitations.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {parsed.sources.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.fields.sources')}</p>
