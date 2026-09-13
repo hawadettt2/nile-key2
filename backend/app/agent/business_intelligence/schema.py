@@ -52,7 +52,7 @@ class BusinessRanking(BaseModel):
 class Opportunity(BaseModel):
     description: str = Field(description="Opportunity description")
     evidence: List[EvidenceReference] = Field(default_factory=list, description="Evidence supporting this opportunity")
-    confidence: Optional[str] = Field(default=None, description="Confidence: high | medium | low | insufficient_evidence | None")
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Numeric confidence indicator")
     limitations: Optional[List[str]] = Field(default=None, description="Limitations of this opportunity")
 
 
@@ -69,7 +69,7 @@ class Recommendation(BaseModel):
     type: str = Field(description="Recommendation type: business_recommendation | next_evidence_requirement")
     rationale: str = Field(description="Explanation for this recommendation")
     evidence: List[EvidenceReference] = Field(default_factory=list, description="Evidence supporting this recommendation")
-    confidence: Optional[str] = Field(default=None, description="Confidence: high | medium | low | insufficient_evidence | None")
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Numeric confidence indicator")
     limitations: Optional[List[str]] = Field(default=None, description="Limitations of this recommendation")
 
 
@@ -89,7 +89,7 @@ class BusinessIntelligenceAnswer(BaseModel):
     opportunities: List[Opportunity] = Field(default_factory=list, description="Evidence-derived opportunities")
     risks: List[Risk] = Field(default_factory=list, description="Evidence-derived risks")
     recommendations: List[Recommendation] = Field(default_factory=list, description="Evidence-backed recommendations")
-    confidence: Optional[str] = Field(default=None, description="Overall confidence: high | medium | low | insufficient_evidence | None")
+    confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Numeric confidence indicator")
     limitations: List[Limitation] = Field(default_factory=list, description="Missing data and constraints")
     evidence: List[EvidenceReference] = Field(default_factory=list, description="All supporting evidence")
     sources: List[str] = Field(default_factory=list, description="All sources consulted")
