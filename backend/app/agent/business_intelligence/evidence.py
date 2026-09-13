@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, List, Tuple
 
 from app.schemas.research import EvidenceItem, FindingItem, ResearchResult
 
@@ -26,7 +26,7 @@ def adapt_evidence_item(item: EvidenceItem) -> "EvidenceReference":
 
 
 def adapt_finding_item(finding: FindingItem) -> "Finding":
-    from .schema import Finding, EvidenceReference
+    from .schema import Finding
     evidence = [adapt_evidence_item(ei) for ei in finding.evidence]
     return Finding(
         topic=finding.topic,
@@ -37,20 +37,29 @@ def adapt_finding_item(finding: FindingItem) -> "Finding":
     )
 
 
-def adapt_research_result(result: ResearchResult) -> tuple[List["EvidenceReference"], List[str]]:
+def adapt_research_result(result: ResearchResult) -> Tuple[List["EvidenceReference"], List[str]]:
     from .schema import EvidenceReference
     evidence: List[EvidenceReference] = []
     sources: List[str] = []
+    seen_evidence = set()
+
     for finding in result.findings:
         for ei in finding.evidence:
             ref = adapt_evidence_item(ei)
-            if ref.source_id not in [e.source_id for e in evidence]:
+            evidence_key = (
+                ref.source_id,
+                ref.source_url,
+                ref.retrieval_timestamp,
+                ref.content_excerpt,
+            )
+            if evidence_key not in seen_evidence:
+                seen_evidence.add(evidence_key)
                 evidence.append(ref)
-        if finding.evidence:
-            for ei in finding.evidence:
-                if ei.source_id not in sources:
-                    sources.append(ei.source_id)
+            if ei.source_id not in sources:
+                sources.append(ei.source_id)
+
     for source_id in result.sources_consulted:
         if source_id not in sources:
             sources.append(source_id)
+
     return evidence, sources
