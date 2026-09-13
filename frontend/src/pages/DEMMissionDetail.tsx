@@ -37,6 +37,165 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
   pending_approval: { icon: <AlertTriangle size={16} />, color: 'text-orange-600', label: 'Pending Approval' },
 };
 
+function renderStructuredResultData(data: unknown): React.ReactNode {
+  if (!data || typeof data !== 'object') {
+    return <span className="text-sm text-slate-700">{String(data)}</span>;
+  }
+
+  const record = data as Record<string, unknown>;
+  const goal = typeof record.goal === 'string' ? record.goal : undefined;
+  const status = typeof record.status === 'string' ? record.status : undefined;
+  const summary = typeof record.summary === 'string' ? record.summary : undefined;
+  const findings = Array.isArray(record.findings) ? record.findings : undefined;
+  const sourcesConsulted = Array.isArray(record.sources_consulted) ? record.sources_consulted : undefined;
+  const sourcesFailed = Array.isArray(record.sources_failed) ? record.sources_failed : undefined;
+
+  const reservedKeys = ['goal', 'status', 'summary', 'findings', 'sources_consulted', 'sources_failed'];
+  const remainingKeys = Object.keys(record).filter((key) => !reservedKeys.includes(key));
+
+  const renderValue = (value: unknown): React.ReactNode => {
+    if (value === null || value === undefined) {
+      return <span className="text-slate-400">-</span>;
+    }
+    if (typeof value === 'string') {
+      return <span className="text-slate-700">{value}</span>;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return <span className="text-slate-700">{String(value)}</span>;
+    }
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        return <span className="text-slate-400">-</span>;
+      }
+      return (
+        <ul className="list-disc list-inside text-slate-700 space-y-1">
+          {value.map((item, i) => (
+            <li key={i}>{renderValue(item)}</li>
+          ))}
+        </ul>
+      );
+    }
+    if (typeof value === 'object') {
+      return (
+        <div className="space-y-1">
+          {Object.entries(value as Record<string, unknown>).map(([k, v]) => (
+            <div key={k} className="text-slate-700">
+              <span className="font-medium">{k}: </span>
+              {renderValue(v)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return <span className="text-slate-700">{String(value)}</span>;
+  };
+
+  return (
+    <div className="space-y-3 text-sm">
+      {goal && (
+        <div>
+          <p className="font-medium text-slate-900">الهدف</p>
+          <p className="text-slate-700">{goal}</p>
+        </div>
+      )}
+      {status && (
+        <div>
+          <p className="font-medium text-slate-900">الحالة</p>
+          <p className="text-slate-700">{status}</p>
+        </div>
+      )}
+      {summary && (
+        <div>
+          <p className="font-medium text-slate-900">الملخص</p>
+          <p className="text-slate-700 whitespace-pre-wrap">{summary}</p>
+        </div>
+      )}
+      {findings && findings.length > 0 && (
+        <div>
+          <p className="font-medium text-slate-900">النتائج</p>
+          <div className="space-y-2">
+            {findings.map((finding: unknown, idx: number) => {
+              if (!finding || typeof finding !== 'object') return null;
+              const f = finding as Record<string, unknown>;
+              const topic = typeof f.topic === 'string' ? f.topic : undefined;
+              const content = typeof f.content === 'string' ? f.content : undefined;
+              const confidence = f.confidence !== null && f.confidence !== undefined ? String(f.confidence) : undefined;
+              const sources = Array.isArray(f.sources) ? f.sources : undefined;
+              const extraKeys = Object.keys(f).filter((key) => !['topic', 'content', 'confidence', 'sources'].includes(key));
+
+              return (
+                <div key={idx} className="rounded border border-slate-100 bg-slate-50 p-2 space-y-1">
+                  {topic && <p className="font-medium text-slate-900">{topic}</p>}
+                  {content && <p className="text-slate-700 whitespace-pre-wrap">{content}</p>}
+                  {confidence && <p className="text-xs text-slate-500">درجة الثقة: {confidence}</p>}
+                  {sources && sources.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-slate-700">المصادر المرتبطة</p>
+                      <ul className="list-disc list-inside text-xs text-slate-600 space-y-1">
+                        {sources.map((source: unknown, sIdx: number) => {
+                          if (!source || typeof source !== 'object') {
+                            return <li key={sIdx}>{String(source)}</li>;
+                          }
+                          const s = source as Record<string, unknown>;
+                          const label = typeof s.source_id === 'string' ? s.source_id : typeof s.source_url === 'string' ? s.source_url : JSON.stringify(source);
+                          return <li key={sIdx}>{label}</li>;
+                        })}
+                      </ul>
+                    </div>
+                  )}
+                  {extraKeys.length > 0 && (
+                    <div className="text-xs text-slate-500">
+                      {extraKeys.map((key) => (
+                        <div key={key}>
+                          <span className="font-medium">{key}: </span>
+                          {renderValue(f[key])}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {sourcesConsulted && sourcesConsulted.length > 0 && (
+        <div>
+          <p className="font-medium text-slate-900">المصادر</p>
+          <ul className="list-disc list-inside text-slate-700 space-y-1">
+            {sourcesConsulted.map((item: unknown, idx: number) => (
+              <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {sourcesFailed && sourcesFailed.length > 0 && (
+        <div>
+          <p className="font-medium text-slate-900">المصادر التي فشلت</p>
+          <ul className="list-disc list-inside text-red-600 space-y-1">
+            {sourcesFailed.map((item: unknown, idx: number) => (
+              <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {remainingKeys.length > 0 && (
+        <div>
+          <p className="font-medium text-slate-900">بيانات إضافية</p>
+          <div className="space-y-1">
+            {remainingKeys.map((key) => (
+              <div key={key} className="text-slate-700">
+                <span className="font-medium">{key}: </span>
+                {renderValue(record[key])}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ExecutionTraceViewer({ mission }: MissionTraceProps) {
   const result = mission.result as Record<string, unknown> | undefined;
   const reasoning = mission.reasoning as string | undefined;
@@ -94,9 +253,9 @@ function ExecutionTraceViewer({ mission }: MissionTraceProps) {
                   <p className="text-xs text-slate-500 mt-1">Tool: {step.tool}</p>
                 )}
                 {step.data !== undefined && (
-                  <pre className="bg-slate-50 p-2 rounded text-xs overflow-auto mt-2 text-slate-700">
-                    {JSON.stringify(step.data, null, 2)}
-                  </pre>
+                  <div className="mt-2 rounded border border-slate-200 bg-white p-3">
+                    {renderStructuredResultData(step.data)}
+                  </div>
                 )}
                 {step.error && (
                   <p className="text-sm text-red-600 mt-2">{step.error}</p>
