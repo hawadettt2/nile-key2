@@ -140,4 +140,18 @@ describe('ExecutiveResultCard', () => {
     expect(screen.getByText('Status')).toBeDefined();
     expect(screen.getByText('Goal')).toBeDefined();
   });
+
+  it('renders BI-parsed summary, findings, and sources', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      summary: 'BI Executive Summary',
+      findings: ['BI Finding 1', 'BI Finding 2'],
+      sources: ['BI Source A'],
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="ar" />, { wrapper: WrapperArabic });
+    expect(screen.getByText('BI Executive Summary')).toBeDefined();
+    expect(screen.getByText('BI Finding 1')).toBeDefined();
+    expect(screen.getByText('BI Finding 2')).toBeDefined();
+    expect(screen.getByText('BI Source A')).toBeDefined();
+  });
 });

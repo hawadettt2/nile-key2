@@ -49,6 +49,55 @@ function extractSources(result: Record<string, unknown>): string[] {
   return sources;
 }
 
+function extractBusinessAnswerFields(
+  content: Record<string, unknown>,
+): { goal?: string; summary?: string; findings: string[]; sources: string[] } {
+  const businessAnswer = content.business_answer;
+  if (!businessAnswer || typeof businessAnswer !== 'object') {
+    return { findings: [], sources: [] };
+  }
+
+  const ba = businessAnswer as Record<string, unknown>;
+  const findings: string[] = [];
+  const sources: string[] = [];
+
+  if (typeof ba.goal === 'string') {
+    // goal will be applied by caller
+  }
+
+  if (typeof ba.executive_summary === 'string') {
+    // summary will be applied by caller
+  }
+
+  if (Array.isArray(ba.key_findings)) {
+    for (const item of ba.key_findings) {
+      if (!item || typeof item !== 'object') continue;
+      const finding = item as Record<string, unknown>;
+      const contentValue = finding.content;
+      if (typeof contentValue === 'string' && contentValue.trim().length > 0) {
+        findings.push(contentValue);
+      } else if (typeof finding.topic === 'string') {
+        findings.push(finding.topic);
+      }
+    }
+  }
+
+  if (Array.isArray(ba.sources)) {
+    for (const source of ba.sources) {
+      if (typeof source === 'string') {
+        sources.push(source);
+      }
+    }
+  }
+
+  return {
+    goal: typeof ba.goal === 'string' ? ba.goal : undefined,
+    summary: typeof ba.executive_summary === 'string' ? ba.executive_summary : undefined,
+    findings,
+    sources,
+  };
+}
+
 function mapIntentTypeToDisplayLabel(intentType: string): string {
   const normalized = intentType.toLowerCase();
   if (normalized.includes('completed')) return 'مكتملة';
@@ -98,10 +147,11 @@ export function parseIntentContent(raw: string): ParsedAvatarResult {
 
   const outcome = safeString(content.outcome);
   const missionStatus = safeString(result.mission_status);
-  const goal = safeString(result.goal);
-  const summary = safeString(result.summary);
-  const findings = extractFindings(result);
-  const sources = extractSources(result);
+  const businessAnswerFields = extractBusinessAnswerFields(content);
+  const goal = safeString(businessAnswerFields.goal ?? result.goal);
+  const summary = safeString(businessAnswerFields.summary ?? result.summary);
+  const findings = businessAnswerFields.findings.length > 0 ? businessAnswerFields.findings : extractFindings(result);
+  const sources = businessAnswerFields.sources.length > 0 ? businessAnswerFields.sources : extractSources(result);
   const missionId = safeString(context.mission_id) || null;
   const sessionId = safeString(context.session_id) || null;
 

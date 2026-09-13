@@ -363,6 +363,10 @@ export function Avatar() {
   const extractSpokenText = (raw: string): string => {
     try {
       const parsed = JSON.parse(raw);
+      const businessAnswer = parsed?.content?.business_answer;
+      if (businessAnswer?.executive_summary && typeof businessAnswer.executive_summary === 'string' && businessAnswer.executive_summary.trim().length > 0) {
+        return businessAnswer.executive_summary.trim();
+      }
       const outcome = parsed?.content?.outcome;
       if (outcome && typeof outcome === 'string' && outcome.trim().length > 0) {
         return outcome.trim();

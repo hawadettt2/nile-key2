@@ -395,6 +395,61 @@ describe('Avatar', () => {
     expect(capturedText).not.toBe(JSON.stringify({ content: {} }));
   });
 
+  it('uses business_answer.executive_summary first for speaking', async () => {
+    const utteranceHandlers: any = {};
+    let capturedText: string | undefined;
+    const mockSpeak = (utterance: any) => {
+      utteranceHandlers.onstart = utterance.onstart;
+      utteranceHandlers.onend = utterance.onend;
+      utteranceHandlers.onerror = utterance.onerror;
+      capturedText = utterance.text;
+    };
+    (global as any).window.speechSynthesis = { speak: mockSpeak };
+
+    renderAvatar();
+    const wsInstance = await getWsInstance();
+    await act(async () => {
+      wsInstance?.onopen?.();
+    });
+    await act(async () => {
+      wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: JSON.stringify({
+        content: {
+          outcome: 'Legacy Outcome',
+          business_answer: {
+            executive_summary: 'BI Executive Summary for Speech',
+          },
+        },
+      }) }) });
+    });
+    expect(capturedText).toBe('BI Executive Summary for Speech');
+  });
+
+  it('falls back to legacy outcome when business_answer is absent for speaking', async () => {
+    const utteranceHandlers: any = {};
+    let capturedText: string | undefined;
+    const mockSpeak = (utterance: any) => {
+      utteranceHandlers.onstart = utterance.onstart;
+      utteranceHandlers.onend = utterance.onend;
+      utteranceHandlers.onerror = utterance.onerror;
+      capturedText = utterance.text;
+    };
+    (global as any).window.speechSynthesis = { speak: mockSpeak };
+
+    renderAvatar();
+    const wsInstance = await getWsInstance();
+    await act(async () => {
+      wsInstance?.onopen?.();
+    });
+    await act(async () => {
+      wsInstance?.onmessage?.({ data: JSON.stringify({ type: 'response', text: JSON.stringify({
+        content: {
+          outcome: 'Legacy Outcome Only',
+        },
+      }) }) });
+    });
+    expect(capturedText).toBe('Legacy Outcome Only');
+  });
+
   it('keeps structured response visible when speech synthesis errors', async () => {
     const utteranceHandlers: any = {};
     const mockSpeak = (utterance: any) => {

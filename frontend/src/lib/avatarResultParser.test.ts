@@ -192,4 +192,129 @@ describe('parseIntentContent', () => {
     const result = parseIntentContent(raw);
     expect(result.hasStructuredContent).toBe(true);
   });
+
+  it('parses business_answer as primary source when present', () => {
+    const raw = JSON.stringify({
+      intent_type: 'mission_completed',
+      content: {
+        outcome: 'legacy outcome',
+        business_answer: {
+          goal: 'BI Goal',
+          executive_summary: 'BI Executive Summary',
+          key_findings: [
+            { topic: 'Finding Topic 1', content: 'Finding Content 1' },
+            { content: 'Finding Content 2' },
+          ],
+          sources: ['BI Source A', 'BI Source B'],
+        },
+        result: {
+          mission_status: 'completed',
+          goal: 'Legacy Goal',
+          summary: 'Legacy Summary',
+          results: [
+            {
+              data: {
+                findings: ['Legacy Finding'],
+                sources_consulted: ['Legacy Source'],
+              },
+            },
+          ],
+        },
+      },
+      context: {
+        session_id: 'session-123',
+        mission_id: 'mission-456',
+      },
+      suggested_actions: ['view_result'],
+    });
+    const result = parseIntentContent(raw);
+    expect(result.goal).toBe('BI Goal');
+    expect(result.summary).toBe('BI Executive Summary');
+    expect(result.findings).toEqual(['Finding Content 1', 'Finding Content 2']);
+    expect(result.sources).toEqual(['BI Source A', 'BI Source B']);
+  });
+
+  it('falls back to legacy result when business_answer is absent', () => {
+    const raw = JSON.stringify({
+      intent_type: 'mission_completed',
+      content: {
+        outcome: 'legacy outcome',
+        result: {
+          mission_status: 'completed',
+          goal: 'Legacy Goal',
+          summary: 'Legacy Summary',
+          results: [
+            {
+              data: {
+                findings: ['Legacy Finding'],
+                sources_consulted: ['Legacy Source'],
+              },
+            },
+          ],
+        },
+      },
+      context: {
+        session_id: 'session-123',
+        mission_id: 'mission-456',
+      },
+      suggested_actions: ['view_result'],
+    });
+    const result = parseIntentContent(raw);
+    expect(result.goal).toBe('Legacy Goal');
+    expect(result.summary).toBe('Legacy Summary');
+    expect(result.findings).toEqual(['Legacy Finding']);
+    expect(result.sources).toEqual(['Legacy Source']);
+  });
+
+  it('uses legacy result fields when business_answer has partial data', () => {
+    const raw = JSON.stringify({
+      intent_type: 'mission_completed',
+      content: {
+        outcome: 'legacy outcome',
+        business_answer: {
+          executive_summary: 'BI Summary Only',
+        },
+        result: {
+          mission_status: 'completed',
+          goal: 'Legacy Goal',
+          summary: 'Legacy Summary',
+          results: [
+            {
+              data: {
+                findings: ['Legacy Finding'],
+                sources_consulted: ['Legacy Source'],
+              },
+            },
+          ],
+        },
+      },
+      context: {},
+      suggested_actions: [],
+    });
+    const result = parseIntentContent(raw);
+    expect(result.summary).toBe('BI Summary Only');
+    expect(result.goal).toBe('Legacy Goal');
+    expect(result.findings).toEqual(['Legacy Finding']);
+    expect(result.sources).toEqual(['Legacy Source']);
+  });
+
+  it('handles empty business_answer object gracefully', () => {
+    const raw = JSON.stringify({
+      intent_type: 'mission_completed',
+      content: {
+        outcome: 'legacy outcome',
+        business_answer: {},
+        result: {
+          mission_status: 'completed',
+          goal: 'Legacy Goal',
+          summary: 'Legacy Summary',
+        },
+      },
+      context: {},
+      suggested_actions: [],
+    });
+    const result = parseIntentContent(raw);
+    expect(result.goal).toBe('Legacy Goal');
+    expect(result.summary).toBe('Legacy Summary');
+  });
 });
