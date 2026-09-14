@@ -10,6 +10,7 @@ from app.research.retrieval.contracts import (
     SourceRetriever,
 )
 from app.schemas.research import Source
+from app.research.sources.capabilities import SourceCapabilityResolver
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +22,11 @@ class RetrievalOrchestrator:
         self,
         retriever: SourceRetriever,
         processor: Optional[ContentProcessor] = None,
+        capability_resolver: Optional[SourceCapabilityResolver] = None,
     ):
         self._retriever = retriever
         self._processor = processor
+        self._capability_resolver = capability_resolver or SourceCapabilityResolver()
 
     def update_retriever(self, retriever: SourceRetriever) -> None:
         self._retriever = retriever
@@ -35,8 +38,22 @@ class RetrievalOrchestrator:
         context: Optional[Dict[str, Any]] = None,
         scope: Optional[Dict[str, Any]] = None,
     ) -> List[RetrievalResult]:
-        results: List[RetrievalResult] = []
+        requested_dimensions = self._requested_dimensions(scope)
+        qualified_sources = (
+            [source for source in sources if self._capability_resolver.supports_any(source, requested_dimensions)]
+            if requested_dimensions
+            else sources
+        )
         for source in sources:
+            if source not in qualified_sources:
+                logger.info(
+                    "Skipping source %s for query because it lacks requested capabilities: %s",
+                    source.source_id,
+                    requested_dimensions,
+                )
+
+        results: List[RetrievalResult] = []
+        for source in qualified_sources:
             result = await self._retrieve_one(source, query, context=context, scope=scope)
             results.append(result)
         return results
@@ -81,3 +98,12 @@ class RetrievalOrchestrator:
                 error=str(exc),
                 duration_ms=duration_ms,
             )
+
+    @staticmethod
+    def _requested_dimensions(scope: Optional[Dict[str, Any]]) -> List[str]:
+        if not scope:
+            return []
+        domains = scope.get("domains") or []
+        if isinstance(domains, str):
+            domains = [domains]
+        return [str(domain) for domain in domains if str(domain).strip()]
