@@ -26,7 +26,7 @@ from app.research.evidence.contracts import DefaultEvidenceCapture, EvidenceCapt
 from app.research.result import DefaultResultStructurer, ResultStructurer
 from app.research.quality import DefaultVerifier, FailureHandler, OpenArchitecturalDecision, QualityIndicator, VerificationResult, Verifier
 from app.research.retrieval.query_enhancer import QueryEnhancer
-from app.research.query_planner import ResearchQueryPlanner
+from app.research.query_planner import ResearchQueryPlanner, _stable_hash
 from app.schemas.research_query import ResearchQuery, ResearchQueryPlan
 
 logger = logging.getLogger(__name__)
@@ -297,7 +297,7 @@ class RetrievalStage(ResearchStage):
         if not goal:
             return []
         return [ResearchQuery(
-            query_id=f"fallback_{uuid.uuid4().hex[:8]}",
+            query_id=f"fallback_{_stable_hash(goal)}",
             dimension="general",
             purpose="Fallback query when no query plan is available",
             query=goal,

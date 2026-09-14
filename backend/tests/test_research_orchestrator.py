@@ -282,3 +282,20 @@ def test_discovery_stage_respects_source_preferences():
     result = asyncio.run(orchestrator.execute(request, "req_pref"))
     assert result.status == "completed"
     assert result.sources_consulted == [source_a.source_id]
+
+
+def test_fallback_query_id_is_deterministic_for_same_goal():
+    from app.research.orchestrator import RetrievalStage
+
+    stage = RetrievalStage()
+    context1 = ResearchContext(request=_make_request(goal="Same deterministic goal"), request_id="req_1")
+    context1.metadata.setdefault("discovery", {})["discovered_sources"] = []
+    context2 = ResearchContext(request=_make_request(goal="Same deterministic goal"), request_id="req_2")
+    context2.metadata.setdefault("discovery", {})["discovered_sources"] = []
+
+    queries1 = stage._get_queries(context1)
+    queries2 = stage._get_queries(context2)
+
+    assert len(queries1) == 1
+    assert len(queries2) == 1
+    assert queries1[0].query_id == queries2[0].query_id
