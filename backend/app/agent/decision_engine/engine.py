@@ -696,6 +696,37 @@ class ReasoningEngine:
 
         return extracted
 
+    @staticmethod
+    def _normalize_research_context(context: Dict[str, Any], parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """Add safe aliases into research context for adapters that expect alternate keys.
+
+        Current normalization:
+        - ``country``: preserved from the original request context when already present,
+          otherwise derived from ``reporter`` or ``partner`` when available,
+          because multiple external adapters read ``context["country"]`` while
+          the extraction layer currently produces ISO3 codes under ``reporter``
+          and ``partner``.
+        - ``area``: passed through from the original request context only when
+          already present; never invented from commodities or country codes.
+        """
+        original_context = parameters.get("context", {}) or {}
+
+        if "country" not in context:
+            if original_context.get("country"):
+                context["country"] = original_context["country"]
+            else:
+                reporter = context.get("reporter")
+                partner = context.get("partner")
+                if reporter:
+                    context["country"] = reporter
+                elif partner:
+                    context["country"] = partner
+
+        if "area" not in context and original_context.get("area"):
+            context["area"] = original_context["area"]
+
+        return context
+
     async def _query_external_research(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Query External Research Capability (WP-34) when request is suitable."""
         orchestrator = getattr(self, "_research_orchestrator", None)
@@ -720,6 +751,8 @@ class ReasoningEngine:
             context["partner"] = extracted["partner"]
         if extracted.get("commodities"):
             context["commodities"] = extracted["commodities"]
+
+        context = self._normalize_research_context(context, parameters)
 
         scope = parameters.get("scope") or {
             "domains": parameters.get("domains"),

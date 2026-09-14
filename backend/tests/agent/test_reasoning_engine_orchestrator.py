@@ -306,3 +306,208 @@ class TestReasoningEngineOrchestrator:
         engine = ReasoningEngine(knowledge_provider_registry=registry)
         decision = await engine.reason("session-1", {"intent": "trade statistics export"})
         assert decision["chosen_path"] is not None
+
+
+class TrackingResearchOrchestrator:
+    """Captures ResearchRequest for assertion without performing real research."""
+
+    def __init__(self, result):
+        self._result = result
+        self.captured_requests = []
+
+    async def execute(self, request, request_id):
+        self.captured_requests.append(request)
+        return self._result
+
+
+@pytest.mark.asyncio
+class TestReasoningEngineContextNormalization:
+    async def test_reporter_becomes_country(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req1",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "أريد دراسة جدوى تصدير الفواكه المصرية",
+            {},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert request.context.get("country") == "818"
+        assert request.context.get("reporter") == "818"
+
+    async def test_partner_becomes_country_when_reporter_absent(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req2",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "أريد دراسة جدوى تصدير الفواكه الأردنية",
+            {},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert request.context.get("country") == "400"
+        assert request.context.get("partner") == "400"
+
+    async def test_reporter_takes_priority_over_partner_for_country(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req3",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "أريد تصدير الفواكه المصرية إلى الأردن",
+            {},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert request.context.get("country") == "818"
+        assert request.context.get("reporter") == "818"
+        assert request.context.get("partner") == "400"
+
+    async def test_area_passed_through_when_present_in_original_context(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req4",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "market study export",
+            {"context": {"area": "Egypt"}},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert request.context.get("area") == "Egypt"
+
+    async def test_area_not_invented_when_absent(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req5",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "market study export vegetables",
+            {},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert "area" not in request.context
+
+    async def test_country_not_overwritten_when_already_present(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req6",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "market study export",
+            {"context": {"country": "USA"}},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert request.context.get("country") == "USA"
+
+    async def test_comtrade_behavior_preserved(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req7",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "أريد تصدير الفواكه المصرية إلى الأردن",
+            {},
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        # Comtrade still receives reporter/partner
+        assert request.context.get("reporter") == "818"
+        assert request.context.get("partner") == "400"
+        # And now also receives country alias
+        assert request.context.get("country") == "818"
