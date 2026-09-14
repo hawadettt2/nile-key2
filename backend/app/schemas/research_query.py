@@ -14,10 +14,11 @@ class ResearchQuery(BaseModel):
 
     @model_validator(mode="after")
     def enforce_dimension_routing_scope(self) -> "ResearchQuery":
-        """Ensure routing is qualified by this query's exact dimension."""
-        if self.dimension.strip():
+        """Ensure specialized queries route only to their declared dimension."""
+        dimension = self.dimension.strip()
+        if dimension and dimension != "general":
             scope = dict(self.scope or {})
-            scope["domains"] = [self.dimension]
+            scope["domains"] = [dimension]
             self.scope = scope
         return self
 
