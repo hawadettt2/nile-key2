@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Dict, Any, List
 
 
@@ -11,6 +11,15 @@ class ResearchQuery(BaseModel):
     source_preferences: Optional[List[str]] = Field(default=None, description="Preferred source types or IDs")
     context: Dict[str, Any] = Field(default_factory=dict, description="Query-specific context")
     scope: Optional[Dict[str, Any]] = Field(default=None, description="Query-specific scope constraints")
+
+    @model_validator(mode="after")
+    def enforce_dimension_routing_scope(self) -> "ResearchQuery":
+        """Ensure routing is qualified by this query's exact dimension."""
+        if self.dimension.strip():
+            scope = dict(self.scope or {})
+            scope["domains"] = [self.dimension]
+            self.scope = scope
+        return self
 
 
 class ResearchQueryPlan(BaseModel):
