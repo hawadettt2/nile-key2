@@ -10,6 +10,7 @@ from .schema import (
     Recommendation,
 )
 from .evidence import adapt_research_result, adapt_finding_item
+from .fusion import InputNormalizer, BusinessFactNormalizer, FactFusion
 
 
 class BusinessIntelligenceSynthesizer:
@@ -23,6 +24,7 @@ class BusinessIntelligenceSynthesizer:
         goal: Optional[Dict[str, Any]] = None,
         plan: Optional[Dict[str, Any]] = None,
         research_result: Optional[Dict[str, Any]] = None,
+        knowledge_result: Optional[Dict[str, Any]] = None,
     ) -> BusinessIntelligenceAnswer:
         if bi_input is None:
             mission_result = getattr(mission, "result", None) or {}
@@ -30,23 +32,53 @@ class BusinessIntelligenceSynthesizer:
                 goal=goal,
                 mission_result=mission_result,
                 research_result=research_result,
+                knowledge_result=knowledge_result,
             )
-        mission_result = bi_input.mission_result or getattr(mission, "result", None) or {}
-        mission_goal = (bi_input.goal or {}).get("objective") or getattr(mission, "goal", None)
-        research_supplied = bi_input.research_result is not None
-        research = self._normalize_research_result(bi_input.research_result)
+
+        normalized = InputNormalizer.normalize(bi_input)
+        mission_goal = normalized["goal"]
+        research = normalized["research"]
+        knowledge_result = normalized.get("knowledge_result")
+        mission_result = normalized["mission_result"]
 
         findings: List[Finding] = []
         evidence: List[EvidenceReference] = []
         sources: List[str] = []
+        facts: List[Any] = []
+        conflicts: List[Dict[str, Any]] = []
+
         if research is not None:
             evidence, sources = adapt_research_result(research)
             findings = [adapt_finding_item(f) for f in research.findings]
 
+            normalizer = BusinessFactNormalizer()
+            research_metadata = getattr(research, "metadata", None) or {}
+            for idx, finding in enumerate(research.findings):
+                query_id = f"q-{idx}"
+                dimension = "general"
+                if isinstance(research_metadata, dict):
+                    plan_meta = research_metadata.get("plan", {})
+                    queries = plan_meta.get("sub_queries", [])
+                    if idx < len(queries):
+                        query_id = f"q-{idx}"
+                facts.extend(normalizer.normalize_findings([finding], dimension, query_id))
+
+        if knowledge_result is not None:
+            knowledge_facts = BusinessFactNormalizer.normalize_knowledge_result(knowledge_result)
+            facts.extend(knowledge_facts)
+            for fact in knowledge_facts:
+                evidence.extend(fact.evidence)
+                sources.extend([sid for sid in fact.source_ids if sid not in sources])
+
+        if research is not None or knowledge_result is not None:
+            facts = FactFusion.deduplicate(facts)
+            conflicts = FactFusion.detect_conflicts(facts)
+
         key_findings = findings[:10]
-        limitations = self._build_limitations(key_findings, evidence, research_supplied)
+        limitations = self._build_limitations(key_findings, evidence, research is not None)
+        limitations.extend(self._build_conflict_limitations(conflicts))
         recommendations: List[Recommendation] = []
-        if research_supplied and not evidence:
+        if research is not None and not evidence:
             recommendations.append(self._next_evidence_requirement())
 
         return BusinessIntelligenceAnswer(
@@ -67,7 +99,11 @@ class BusinessIntelligenceSynthesizer:
             limitations=limitations,
             evidence=evidence,
             sources=sources,
-            provenance={"research_status": research.status if research else None},
+            provenance={
+                "research_status": research.status if research else None,
+                "fact_count": len(facts),
+                "dimensions_covered": sorted({fact.dimension for fact in facts}),
+            },
         )
 
     @staticmethod
@@ -113,6 +149,19 @@ class BusinessIntelligenceSynthesizer:
                     what_is_missing="No single aggregate confidence value was provided by the source contract.",
                     why_it_matters="BI must not invent a confidence aggregation formula.",
                     what_evidence_is_needed="Provide an explicit aggregate confidence from an authoritative contract if one is required.",
+                )
+            )
+        return limitations
+
+    @staticmethod
+    def _build_conflict_limitations(conflicts: List[Dict[str, Any]]) -> List[Limitation]:
+        limitations: List[Limitation] = []
+        for conflict in conflicts:
+            limitations.append(
+                Limitation(
+                    what_is_missing=f"Conflicting values for {conflict['statement']} in {conflict['dimension']}.",
+                    why_it_matters="Conflicting evidence cannot be silently resolved without an authoritative rule.",
+                    what_evidence_is_needed=f"Resolve conflict among sources {conflict['source_ids']} or provide an explicit deterministic resolution rule.",
                 )
             )
         return limitations

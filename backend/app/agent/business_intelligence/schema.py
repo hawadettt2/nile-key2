@@ -126,3 +126,4 @@ class BusinessIntelligenceInput(BaseModel):
     mission_result: Optional[Dict[str, Any]] = Field(default=None, description="Execution result; not authoritative evidence by default")
     execution_outcome: Optional[Dict[str, Any]] = Field(default=None, description="Existing execution outcome context")
     research_result: Optional[Union[ResearchResult, Dict[str, Any]]] = Field(default=None, description="Authoritative research carrier when present")
+    knowledge_result: Optional[Dict[str, Any]] = Field(default=None, description="Company/external knowledge carrier from KnowledgeProvider.query(); not authoritative by default")
