@@ -17,15 +17,23 @@ class SourceCapabilityResolver:
 
     def capabilities(self, source: Source) -> Set[str]:
         metadata = source.metadata or {}
+
         explicit = metadata.get("capabilities")
         if isinstance(explicit, (list, tuple, set)):
             return {str(value) for value in explicit if str(value).strip()}
+
+        legacy_domains = metadata.get("domains")
+        if isinstance(legacy_domains, (list, tuple, set)):
+            capabilities = {str(value) for value in legacy_domains if str(value).strip()}
+            if capabilities:
+                return capabilities
 
         source_type = str(source.source_type or "").lower()
         capabilities: Set[str] = set()
         for token, dimensions in self._TYPE_CAPABILITIES.items():
             if token in source_type:
                 capabilities.update(dimensions)
+
         return capabilities
 
     def supports_any(self, source: Source, dimensions: Iterable[str]) -> bool:
