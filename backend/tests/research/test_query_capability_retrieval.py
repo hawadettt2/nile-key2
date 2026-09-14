@@ -1,4 +1,4 @@
-import pytest
+import asyncio
 
 from app.research.retrieval.contracts import RetrievedContent, RetrievalResult, RetrievalStatus, SourceRetriever
 from app.research.retrieval.orchestrator import RetrievalOrchestrator
@@ -18,63 +18,57 @@ class RecordingRetriever(SourceRetriever):
         )
 
 
-@pytest.mark.asyncio
-async def test_each_query_retrieves_only_from_capable_sources():
-    retriever = RecordingRetriever()
-    orchestrator = RetrievalOrchestrator(retriever)
-    sources = [
-        Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
-        Source(source_id="logistics", name="Logistics", source_type="external_logistics_intelligence"),
-        Source(source_id="reg", name="Regulations", source_type="regulation"),
-    ]
+def test_each_query_retrieves_only_from_capable_sources():
+    async def run():
+        retriever = RecordingRetriever()
+        orchestrator = RetrievalOrchestrator(retriever)
+        sources = [
+            Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
+            Source(source_id="logistics", name="Logistics", source_type="external_logistics_intelligence"),
+            Source(source_id="reg", name="Regulations", source_type="regulation"),
+        ]
 
-    await orchestrator.retrieve_sources(
-        sources,
-        "trade query",
-        scope={"domains": ["trade_intelligence"]},
-    )
-    await orchestrator.retrieve_sources(
-        sources,
-        "logistics query",
-        scope={"domains": ["logistics_market_execution"]},
-    )
-    await orchestrator.retrieve_sources(
-        sources,
-        "regulation query",
-        scope={"domains": ["regulatory_sps_tbt"]},
-    )
+        await orchestrator.retrieve_sources(sources, "trade query", scope={"domains": ["trade_intelligence"]})
+        await orchestrator.retrieve_sources(sources, "logistics query", scope={"domains": ["logistics_market_execution"]})
+        await orchestrator.retrieve_sources(sources, "regulation query", scope={"domains": ["regulatory_sps_tbt"]})
 
-    assert [call[0] for call in retriever.calls] == ["trade", "logistics", "reg"]
+        assert [call[0] for call in retriever.calls] == ["trade", "logistics", "reg"]
+
+    asyncio.run(run())
 
 
-@pytest.mark.asyncio
-async def test_unsupported_dimension_does_not_fan_out_to_all_sources():
-    retriever = RecordingRetriever()
-    orchestrator = RetrievalOrchestrator(retriever)
-    sources = [
-        Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
-        Source(source_id="reg", name="Regulations", source_type="regulation"),
-    ]
+def test_unsupported_dimension_does_not_fan_out_to_all_sources():
+    async def run():
+        retriever = RecordingRetriever()
+        orchestrator = RetrievalOrchestrator(retriever)
+        sources = [
+            Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
+            Source(source_id="reg", name="Regulations", source_type="regulation"),
+        ]
 
-    results = await orchestrator.retrieve_sources(
-        sources,
-        "unsupported query",
-        scope={"domains": ["logistics_market_execution"]},
-    )
+        results = await orchestrator.retrieve_sources(
+            sources,
+            "unsupported query",
+            scope={"domains": ["logistics_market_execution"]},
+        )
 
-    assert results == []
-    assert retriever.calls == []
+        assert results == []
+        assert retriever.calls == []
+
+    asyncio.run(run())
 
 
-@pytest.mark.asyncio
-async def test_general_query_retains_broad_source_selection():
-    retriever = RecordingRetriever()
-    orchestrator = RetrievalOrchestrator(retriever)
-    sources = [
-        Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
-        Source(source_id="logistics", name="Logistics", source_type="external_logistics_intelligence"),
-    ]
+def test_general_query_retains_broad_source_selection():
+    async def run():
+        retriever = RecordingRetriever()
+        orchestrator = RetrievalOrchestrator(retriever)
+        sources = [
+            Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
+            Source(source_id="logistics", name="Logistics", source_type="external_logistics_intelligence"),
+        ]
 
-    await orchestrator.retrieve_sources(sources, "general query", scope={})
+        await orchestrator.retrieve_sources(sources, "general query", scope={})
 
-    assert [call[0] for call in retriever.calls] == ["trade", "logistics"]
+        assert [call[0] for call in retriever.calls] == ["trade", "logistics"]
+
+    asyncio.run(run())
