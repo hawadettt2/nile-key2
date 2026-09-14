@@ -5,7 +5,6 @@ from app.research.retrieval.contracts import (
     RetrievalStatus,
 )
 from app.research.retrieval.query_enhancer import QueryEnhancer
-from app.research.retrieval.composite_retriever import CompositeSourceRetriever
 from app.schemas.research import Source
 
 
@@ -185,12 +184,12 @@ class TestQueryEnhancer:
 
     def test_worldbank_lpi_retry_with_country(self):
         def wb_retry(source, query, context, scope):
-            if context.get("country") == "Egypt":
+            if context.get("country") == "818":
                 return _success_with_results("worldbank-lpi", [{"country": "Egypt", "indicator": "LP.LPI.OVRL.XQ"}])
             return _success_empty("worldbank-lpi")
 
         retriever = FakeSourceRetriever({
-            "comtrade": _success_with_results("comtrade", [{"reporterCode": "818", "reporter_desc": "Egypt"}]),
+            "comtrade": _success_with_results("comtrade", [{"reporter_code": "818", "reporter_desc": "Egypt"}]),
             "worldbank-lpi": wb_retry,
         })
         enhancer = QueryEnhancer(retriever=retriever)
@@ -199,7 +198,7 @@ class TestQueryEnhancer:
         result = asyncio.run(enhancer.enhance_empty_results(
             sources=[_source("comtrade"), _source("worldbank-lpi")],
             results=[
-                _success_with_results("comtrade", [{"reporterCode": "818", "reporter_desc": "Egypt"}]),
+                _success_with_results("comtrade", [{"reporter_code": "818", "reporter_desc": "Egypt"}]),
                 _success_empty("worldbank-lpi"),
             ],
             query="export Egypt",
@@ -254,3 +253,47 @@ class TestQueryEnhancer:
         faostat_calls = [c for c in retriever.calls if c["source_id"] == "faostat"]
         assert len(faostat_calls) == 1
         assert faostat_calls[0]["context"]["area"] == "Jordan"
+
+    def test_faostat_no_retry_when_descs_are_empty(self):
+        retriever = FakeSourceRetriever({
+            "comtrade": _success_with_results("comtrade", [{"reporter_desc": "", "partner_desc": ""}]),
+            "faostat": _success_empty("faostat"),
+        })
+        enhancer = QueryEnhancer(retriever=retriever)
+
+        import asyncio
+        result = asyncio.run(enhancer.enhance_empty_results(
+            sources=[_source("comtrade"), _source("faostat")],
+            results=[
+                _success_with_results("comtrade", [{"reporter_desc": "", "partner_desc": ""}]),
+                _success_empty("faostat"),
+            ],
+            query="export Egypt to Jordan",
+            context={},
+        ))
+
+        faostat_calls = [c for c in retriever.calls if c["source_id"] == "faostat"]
+        assert len(faostat_calls) == 0
+        assert len(result) == 2
+
+    def test_worldbank_lpi_no_retry_when_codes_are_empty(self):
+        retriever = FakeSourceRetriever({
+            "comtrade": _success_with_results("comtrade", [{"reporter_code": None, "partner_code": None}]),
+            "worldbank-lpi": _success_empty("worldbank-lpi"),
+        })
+        enhancer = QueryEnhancer(retriever=retriever)
+
+        import asyncio
+        result = asyncio.run(enhancer.enhance_empty_results(
+            sources=[_source("comtrade"), _source("worldbank-lpi")],
+            results=[
+                _success_with_results("comtrade", [{"reporter_code": None, "partner_code": None}]),
+                _success_empty("worldbank-lpi"),
+            ],
+            query="export Egypt",
+            context={},
+        ))
+
+        wb_calls = [c for c in retriever.calls if c["source_id"] == "worldbank-lpi"]
+        assert len(wb_calls) == 0
+        assert len(result) == 2

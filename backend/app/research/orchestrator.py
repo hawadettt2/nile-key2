@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 import logging
+import uuid
 
 from app.schemas.research import (
     ResearchRequest,
@@ -25,6 +26,8 @@ from app.research.evidence.contracts import DefaultEvidenceCapture, EvidenceCapt
 from app.research.result import DefaultResultStructurer, ResultStructurer
 from app.research.quality import DefaultVerifier, FailureHandler, OpenArchitecturalDecision, QualityIndicator, VerificationResult, Verifier
 from app.research.retrieval.query_enhancer import QueryEnhancer
+from app.research.query_planner import ResearchQueryPlanner
+from app.schemas.research_query import ResearchQuery, ResearchQueryPlan
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +91,7 @@ class ResearchContext:
         self.evidence: List[Evidence] = []
         self.errors: List[str] = []
         self.metadata: Dict[str, Any] = {}
+        self.query_plan: Optional[ResearchQueryPlan] = None
         self._stop = False
 
     def mark_stop(self, reason: str) -> None:
@@ -135,14 +139,30 @@ class ResearchStage(ABC):
 class PlanningStage(ResearchStage):
     name = "planning"
 
+    def __init__(self, planner: Optional[ResearchQueryPlanner] = None):
+        self._planner = planner
+
     async def execute(self, context: ResearchContext) -> ResearchContext:
         try:
-            sub_queries = self._build_sub_queries(context.request)
-            context.metadata["plan"] = {
-                "sub_queries": sub_queries,
-                "source_selection_strategy": "scope_based",
-                "retrieval_parameters": {},
-            }
+            if self._planner is not None:
+                query_plan = self._planner.plan(context.request)
+                context.query_plan = query_plan
+                sub_queries = [q.query for q in query_plan.queries]
+                context.metadata["plan"] = {
+                    "sub_queries": sub_queries,
+                    "source_selection_strategy": "scope_based",
+                    "retrieval_parameters": {},
+                    "intent_profile": query_plan.intent_profile,
+                    "decomposition_strategy": query_plan.decomposition_strategy,
+                    "query_count": len(query_plan.queries),
+                }
+            else:
+                sub_queries = self._build_sub_queries(context.request)
+                context.metadata["plan"] = {
+                    "sub_queries": sub_queries,
+                    "source_selection_strategy": "scope_based",
+                    "retrieval_parameters": {},
+                }
             context.record_stage_result(StageResult(stage_name=self.name, success=True))
         except Exception as exc:
             context.record_stage_result(StageResult(stage_name=self.name, success=False, error=str(exc)))
@@ -220,21 +240,37 @@ class RetrievalStage(ResearchStage):
                 context.record_stage_result(StageResult(stage_name=self.name, success=True, data={"note": "no retrieval orchestrator configured", "sources_queried": context.sources_consulted}))
                 return context
 
-            results = await self._retrieval_orchestrator.retrieve_sources(
-                sources,
-                context.request.goal,
-                context=context.request.context,
-                scope=context.request.scope,
-            )
-            if self._query_enhancer is not None:
-                results = await self._query_enhancer.enhance_empty_results(
-                    sources=sources,
-                    results=results,
-                    query=context.request.goal,
-                    context=context.request.context,
-                    scope=context.request.scope,
+            queries = self._get_queries(context)
+            all_results: List[RetrievalResult] = []
+            for query in queries:
+                query_results = await self._retrieval_orchestrator.retrieve_sources(
+                    sources,
+                    query.query,
+                    context=query.context,
+                    scope=query.scope,
                 )
-            processed = await self._retrieval_orchestrator.process_results(results)
+                for result in query_results:
+                    result.metadata = result.metadata or {}
+                    result.metadata["query_id"] = query.query_id
+                    result.metadata["dimension"] = query.dimension
+                    result.metadata["purpose"] = query.purpose
+                all_results.extend(query_results)
+
+            if self._query_enhancer is not None:
+                enhanced_results = []
+                for query in queries:
+                    query_results = [r for r in all_results if r.metadata and r.metadata.get("query_id") == query.query_id]
+                    enhanced = await self._query_enhancer.enhance_empty_results(
+                        sources=sources,
+                        results=query_results,
+                        query=query.query,
+                        context=query.context,
+                        scope=query.scope,
+                    )
+                    enhanced_results.extend(enhanced)
+                all_results = enhanced_results
+
+            processed = await self._retrieval_orchestrator.process_results(all_results)
 
             context.sources_consulted = [
                 r.source_id
@@ -253,6 +289,21 @@ class RetrievalStage(ResearchStage):
         except Exception as exc:
             context.record_stage_result(StageResult(stage_name=self.name, success=False, error=str(exc)))
         return context
+
+    def _get_queries(self, context: ResearchContext) -> List[ResearchQuery]:
+        if context.query_plan and context.query_plan.queries:
+            return context.query_plan.queries
+        goal = context.request.goal.strip()
+        if not goal:
+            return []
+        return [ResearchQuery(
+            query_id=f"fallback_{uuid.uuid4().hex[:8]}",
+            dimension="general",
+            purpose="Fallback query when no query plan is available",
+            query=goal,
+            context=context.request.context or {},
+            scope=context.request.scope,
+        )]
 
 
 class ProcessingStage(ResearchStage):
@@ -347,6 +398,13 @@ class EvidenceCaptureStage(ResearchStage):
                     request_id=context.request_id,
                     transformation=transformation,
                 )
+                evidence.metadata = evidence.metadata or {}
+                query_id = (item.get("metadata") or {}).get("query_id")
+                dimension = (item.get("metadata") or {}).get("dimension")
+                if query_id:
+                    evidence.metadata["query_id"] = query_id
+                if dimension:
+                    evidence.metadata["dimension"] = dimension
                 captured_evidence.append(evidence)
 
             context.evidence.extend(captured_evidence)

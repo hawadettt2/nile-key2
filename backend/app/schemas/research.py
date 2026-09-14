@@ -25,6 +25,7 @@ class FindingItem(BaseModel):
     evidence: List[EvidenceItem] = Field(default_factory=list, description="Evidence supporting this finding")
     confidence: Optional[float] = Field(default=None, ge=0.0, le=1.0, description="Confidence indicator if available")
     limitations: Optional[List[str]] = Field(default=None, description="Limitations of this finding")
+    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional finding metadata including query provenance")
 
 
 class ResearchResult(BaseModel):

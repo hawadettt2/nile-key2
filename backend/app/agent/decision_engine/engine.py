@@ -642,90 +642,13 @@ class ReasoningEngine:
 
     @staticmethod
     def _extract_research_parameters(intent: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
-        intent_lower = intent.lower()
-        extracted: Dict[str, Any] = {}
-
-        country_map = {
-            "مصر": "818",
-            "Egypt": "818",
-            "الأردن": "400",
-            "Jordan": "400",
-        }
-
-        commodity_map = {
-            "خضر": "07",
-            "vegetables": "07",
-            "خضروات": "07",
-            "فواكه": "08",
-            "فاكهة": "08",
-            "fruits": "08",
-        }
-
-        request_type_map = {
-            "تصدير": "export",
-            "export": "export",
-            "استيراد": "import",
-            "import": "import",
-            "دراسة جدوى": "market_study",
-            "دراسة سوق": "market_study",
-            "market study": "market_study",
-            "market research": "market_research",
-            "بحث": "market_research",
-            "بحث سوقي": "market_research",
-        }
-
-        for name, code in country_map.items():
-            if name.lower() in intent_lower:
-                if name.lower() in ["مصر", "egypt"]:
-                    extracted["reporter"] = code
-                elif name.lower() in ["الأردن", "jordan"]:
-                    extracted["partner"] = code
-
-        for name, code in commodity_map.items():
-            if name.lower() in intent_lower:
-                extracted.setdefault("commodities", []).append(code)
-
-        if "commodities" in extracted:
-            unique = list(dict.fromkeys(extracted["commodities"]))
-            extracted["commodities"] = unique
-
-        for name, request_type in request_type_map.items():
-            if name.lower() in intent_lower:
-                extracted["request_type"] = request_type
-                break
-
-        return extracted
+        from app.research.intent_extractor import extract_intent_facts
+        return extract_intent_facts(intent, parameters)
 
     @staticmethod
     def _normalize_research_context(context: Dict[str, Any], parameters: Dict[str, Any]) -> Dict[str, Any]:
-        """Add safe aliases into research context for adapters that expect alternate keys.
-
-        Current normalization:
-        - ``country``: preserved from the original request context when already present,
-          otherwise derived from ``reporter`` or ``partner`` when available,
-          because multiple external adapters read ``context["country"]`` while
-          the extraction layer currently produces ISO3 codes under ``reporter``
-          and ``partner``.
-        - ``area``: passed through from the original request context only when
-          already present; never invented from commodities or country codes.
-        """
-        original_context = parameters.get("context", {}) or {}
-
-        if "country" not in context:
-            if original_context.get("country"):
-                context["country"] = original_context["country"]
-            else:
-                reporter = context.get("reporter")
-                partner = context.get("partner")
-                if reporter:
-                    context["country"] = reporter
-                elif partner:
-                    context["country"] = partner
-
-        if "area" not in context and original_context.get("area"):
-            context["area"] = original_context["area"]
-
-        return context
+        from app.research.intent_extractor import normalize_research_context
+        return normalize_research_context(context, parameters)
 
     async def _query_external_research(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Query External Research Capability (WP-34) when request is suitable."""

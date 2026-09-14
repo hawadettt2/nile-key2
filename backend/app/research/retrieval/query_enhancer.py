@@ -146,8 +146,11 @@ def _first_reporter_desc(successful_sources: Dict[str, RetrievalResult]) -> Opti
             data = result.content.raw_content.get("results")
             if isinstance(data, list):
                 for item in data:
-                    if isinstance(item, dict) and item.get("reporter_desc"):
-                        return str(item["reporter_desc"])
+                    if not isinstance(item, dict):
+                        continue
+                    value = item.get("reporter_desc") or item.get("reporterDesc")
+                    if value:
+                        return str(value)
     return None
 
 
@@ -157,8 +160,11 @@ def _first_partner_desc(successful_sources: Dict[str, RetrievalResult]) -> Optio
             data = result.content.raw_content.get("results")
             if isinstance(data, list):
                 for item in data:
-                    if isinstance(item, dict) and item.get("partner_desc"):
-                        return str(item["partner_desc"])
+                    if not isinstance(item, dict):
+                        continue
+                    value = item.get("partner_desc") or item.get("partnerDesc")
+                    if value:
+                        return str(value)
     return None
 
 
@@ -168,8 +174,11 @@ def _first_reporter_code(successful_sources: Dict[str, RetrievalResult]) -> Opti
             data = result.content.raw_content.get("results")
             if isinstance(data, list):
                 for item in data:
-                    if isinstance(item, dict) and item.get("reporterCode"):
-                        return str(item["reporterCode"])
+                    if not isinstance(item, dict):
+                        continue
+                    value = item.get("reporter_code") or item.get("reporterCode")
+                    if value:
+                        return str(value)
     return None
 
 
@@ -179,6 +188,9 @@ def _first_partner_code(successful_sources: Dict[str, RetrievalResult]) -> Optio
             data = result.content.raw_content.get("results")
             if isinstance(data, list):
                 for item in data:
-                    if isinstance(item, dict) and item.get("partnerCode"):
-                        return str(item["partnerCode"])
+                    if not isinstance(item, dict):
+                        continue
+                    value = item.get("partner_code") or item.get("partnerCode")
+                    if value:
+                        return str(value)
     return None

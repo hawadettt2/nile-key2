@@ -21,6 +21,8 @@ from app.research.retrieval.providers.searxng_adapter import SearXNGAdapter
 from app.research.retrieval.stubs import StubRetriever, StubProcessor
 from app.research.retrieval.composite_retriever import CompositeSourceRetriever, KnowledgeProviderSourceRetriever
 from app.research.retrieval.query_enhancer import QueryEnhancer
+from app.research.query_planner import ResearchQueryPlanner
+from app.schemas.research_query import ResearchQueryPlan
 from app.schemas.research import (
     ResearchRequest,
     ResearchResult,
@@ -74,7 +76,7 @@ _retrieval_orchestrator = RetrievalOrchestrator(
 )
 
 _orchestrator = ResearchOrchestrator()
-_orchestrator.register_stage(PlanningStage())
+_orchestrator.register_stage(PlanningStage(planner=ResearchQueryPlanner()))
 _orchestrator.register_stage(DiscoveryStage(discovery=_source_discovery))
 _orchestrator.register_stage(RetrievalStage(retrieval_orchestrator=_retrieval_orchestrator, registry=_source_registry, query_enhancer=QueryEnhancer(retriever=_composite_retriever)))
 _orchestrator.register_stage(ProcessingStage(processor=StubProcessor()))

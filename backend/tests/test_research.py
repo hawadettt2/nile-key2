@@ -51,7 +51,7 @@ def test_create_research_request_authorized(client):
     assert "request_id" in data
     assert data["status"] == "completed"
     assert data["goal"] == "Study feasibility of opening a new market in Jordan for Egyptian vegetables and fruits export"
-    assert data["findings"] == []
+    assert isinstance(data["findings"], list)
     assert "created_at" in data
     assert "completed_at" in data
     assert "metadata" in data
