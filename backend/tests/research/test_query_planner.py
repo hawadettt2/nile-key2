@@ -138,3 +138,129 @@ class TestResearchQueryPlanner:
         plan = planner.plan(request)
         dimensions = [q.dimension for q in plan.queries]
         assert "logistics_market_execution" not in dimensions
+
+    def test_market_access_selected_when_keywords_present(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan tariff duties import procedures",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "market_access" in dimensions
+
+    def test_market_access_not_selected_when_keywords_absent(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "market_access" not in dimensions
+
+    def test_regulatory_selected_when_keywords_present(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan SPS TBT standards conformity",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "regulatory_sps_tbt" in dimensions
+
+    def test_regulatory_not_selected_when_keywords_absent(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "regulatory_sps_tbt" not in dimensions
+
+    def test_rules_of_origin_selected_when_keywords_present(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan FTA origin criteria certificate of origin",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "rules_of_origin" in dimensions
+
+    def test_rules_of_origin_not_selected_when_keywords_absent(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "rules_of_origin" not in dimensions
+
+    def test_no_fixed_seven_dimensions_for_every_request(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert dimensions != [
+            "trade_intelligence",
+            "market_opportunity",
+            "market_access",
+            "regulatory_sps_tbt",
+            "rules_of_origin",
+            "agrifood_intelligence",
+            "logistics_market_execution",
+        ]
+
+    def test_deterministic_output_with_new_dimensions(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan tariff SPS FTA origin",
+            context={},
+            scope={},
+        )
+        plan1 = planner.plan(request)
+        plan2 = planner.plan(request)
+        assert len(plan1.queries) == len(plan2.queries)
+        for q1, q2 in zip(plan1.queries, plan2.queries):
+            assert q1.query_id == q2.query_id
+            assert q1.dimension == q2.dimension
+
+    def test_no_invented_parameters_for_new_dimensions(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan tariff SPS FTA origin",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        for query in plan.queries:
+            assert "2025" not in query.query
+            assert "HS" not in query.query or "HS" in request.goal
+            assert "indicator" not in query.query.lower()
+            assert "tariff_rate" not in query.query.lower() or "tariff" in request.goal.lower()
+
+    def test_no_hardcoded_provider_mapping_in_queries(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan tariff SPS FTA origin",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        for query in plan.queries:
+            assert "un-comtrade" not in query.query
+            assert "faostat" not in query.query
+            assert "worldbank" not in query.query

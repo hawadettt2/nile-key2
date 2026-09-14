@@ -24,6 +24,21 @@ class ResearchQueryPlanner:
     _AGRIFOOD_COMMODITIES = {"07", "08"}
     _EXPORT_IMPORT_TYPES = {"export", "import"}
     _STUDY_TYPES = {"market_study", "market_research"}
+    _MARKET_ACCESS_KEYWORDS = {
+        "tariff", "duty", "import procedures", "permits", "entry conditions",
+        "customs duties", "market entry", "access conditions",
+        "تكلفة", "شروط دخول", "رسوم", "اجراءات استيراد", "تصريحات",
+    }
+    _REGULATORY_KEYWORDS = {
+        "sps", "tbt", "standards", "mrl", "conformity", "technical standards",
+        "regulatory requirements", "compliance", "product standards",
+        "متطلبات فنية", "مواصفات", "امتثال", "تقييدات فنية", "معايير",
+    }
+    _RULES_OF_ORIGIN_KEYWORDS = {
+        "fta", "free trade agreement", "origin criteria", "preferential origin",
+        "certificate of origin", "rules of origin", "origin documentation",
+        "قواعد المنشأ", "شهادة منشأ", "اتفاقية تجارة حرة", "منشأ",
+    }
 
     def plan(self, request: ResearchRequest) -> ResearchQueryPlan:
         """Create a research query plan from a research request."""
@@ -38,6 +53,10 @@ class ResearchQueryPlanner:
 
     def _build_intent_profile(self, request: ResearchRequest, extracted: Dict[str, Any]) -> Dict[str, Any]:
         """Build a profile of the intent from extracted facts."""
+        intent_text = " ".join([
+            request.goal or "",
+            " ".join(str(v) for v in (request.context or {}).values() if v is not None),
+        ]).lower()
         profile: Dict[str, Any] = {
             "request_type": extracted.get("request_type"),
             "reporter": extracted.get("reporter"),
@@ -48,6 +67,9 @@ class ResearchQueryPlanner:
             "is_agrifood": bool(self._AGRIFOOD_COMMODITIES.intersection(extracted.get("commodities") or [])),
             "is_trade_flow": extracted.get("request_type") in self._EXPORT_IMPORT_TYPES,
             "is_market_study": extracted.get("request_type") in self._STUDY_TYPES,
+            "needs_market_access": self._matches_keywords(intent_text, self._MARKET_ACCESS_KEYWORDS),
+            "needs_regulatory": self._matches_keywords(intent_text, self._REGULATORY_KEYWORDS),
+            "needs_rules_of_origin": self._matches_keywords(intent_text, self._RULES_OF_ORIGIN_KEYWORDS),
         }
         return profile
 
@@ -78,6 +100,18 @@ class ResearchQueryPlanner:
         # Logistics / Market Execution: relevant for physical export/import
         if intent_profile.get("is_trade_flow") and intent_profile.get("has_countries"):
             queries.append(self._logistics_query(base_query, context, scope, extracted))
+
+        # Market Access: when intent explicitly asks for tariffs, duties, entry procedures
+        if intent_profile.get("needs_market_access"):
+            queries.append(self._market_access_query(base_query, context, scope, extracted))
+
+        # Regulatory / SPS/TBT: when intent explicitly asks for technical standards or compliance
+        if intent_profile.get("needs_regulatory"):
+            queries.append(self._regulatory_query(base_query, context, scope, extracted))
+
+        # Rules of Origin: when intent explicitly asks for FTA/origin criteria/documentation
+        if intent_profile.get("needs_rules_of_origin"):
+            queries.append(self._rules_of_origin_query(base_query, context, scope, extracted))
 
         # If no specialized queries were generated, fall back to a single general query
         if not queries:
@@ -173,6 +207,54 @@ class ResearchQueryPlanner:
             scope=query_scope,
         )
 
+    def _market_access_query(
+        self, base_query: str, context: Dict[str, Any], scope: Optional[Dict[str, Any]], extracted: Dict[str, Any]
+    ) -> ResearchQuery:
+        query_id = f"market_access_{_stable_hash(base_query + 'market_access')}"
+        query_text = f"market access tariffs duties entry procedures {base_query}"
+        query_scope = dict(scope) if scope else {}
+        query_scope.setdefault("domains", []).append("market_access")
+        return ResearchQuery(
+            query_id=query_id,
+            dimension="market_access",
+            purpose="Find tariffs, duties, import procedures, permits, and market entry conditions for the target market",
+            query=query_text,
+            context=context,
+            scope=query_scope,
+        )
+
+    def _regulatory_query(
+        self, base_query: str, context: Dict[str, Any], scope: Optional[Dict[str, Any]], extracted: Dict[str, Any]
+    ) -> ResearchQuery:
+        query_id = f"regulatory_{_stable_hash(base_query + 'regulatory')}"
+        query_text = f"regulatory SPS TBT standards MRL conformity {base_query}"
+        query_scope = dict(scope) if scope else {}
+        query_scope.setdefault("domains", []).append("regulatory_sps_tbt")
+        return ResearchQuery(
+            query_id=query_id,
+            dimension="regulatory_sps_tbt",
+            purpose="Find technical standards, SPS/TBT requirements, MRLs, and conformity assessments for the target market",
+            query=query_text,
+            context=context,
+            scope=query_scope,
+        )
+
+    def _rules_of_origin_query(
+        self, base_query: str, context: Dict[str, Any], scope: Optional[Dict[str, Any]], extracted: Dict[str, Any]
+    ) -> ResearchQuery:
+        query_id = f"rules_of_origin_{_stable_hash(base_query + 'rules_of_origin')}"
+        query_text = f"rules of origin FTA criteria documentation {base_query}"
+        query_scope = dict(scope) if scope else {}
+        query_scope.setdefault("domains", []).append("rules_of_origin")
+        return ResearchQuery(
+            query_id=query_id,
+            dimension="rules_of_origin",
+            purpose="Find FTA origin criteria, preferential origin eligibility, and origin documentation requirements",
+            query=query_text,
+            context=context,
+            scope=query_scope,
+        )
+
     def _fallback_query(self, goal: str, context: Dict[str, Any], scope: Optional[Dict[str, Any]]) -> ResearchQuery:
         query_id = f"general_{_stable_hash(goal)}"
         return ResearchQuery(
@@ -183,6 +265,15 @@ class ResearchQueryPlanner:
             context=context,
             scope=scope,
         )
+
+    @staticmethod
+    def _matches_keywords(text: str, keywords: set) -> bool:
+        """Check if any keyword appears in the text."""
+        text_lower = text.lower()
+        for keyword in keywords:
+            if keyword in text_lower:
+                return True
+        return False
 
 
 def _stable_hash(text: str) -> str:
