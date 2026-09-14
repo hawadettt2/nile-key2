@@ -16,6 +16,12 @@ class RetrievalStatus(str, Enum):
     FAILED = "failed"
 
 
+class SourceExecutionStatus(str, Enum):
+    SUCCESS_WITH_DATA = "success_with_data"
+    SUCCESS_EMPTY = "success_empty"
+    FAILED = "failed"
+
+
 class RetrievedContent:
     """Content retrieved from a source."""
 

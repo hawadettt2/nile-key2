@@ -39,6 +39,7 @@ class ResearchResult(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Research creation timestamp")
     completed_at: Optional[datetime] = Field(default=None, description="Research completion timestamp")
     metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional research metadata")
+    source_execution_statuses: Optional[Dict[str, str]] = Field(default=None, description="Per-source execution status")
 
 
 class ErrorResponse(BaseModel):

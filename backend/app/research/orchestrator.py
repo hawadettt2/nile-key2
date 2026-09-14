@@ -17,6 +17,7 @@ from app.research.retrieval.contracts import (
     RetrievedContent,
     RetrievalResult,
     RetrievalStatus,
+    SourceExecutionStatus,
     SourceRetriever,
 )
 from app.research.retrieval.orchestrator import RetrievalOrchestrator
@@ -88,6 +89,7 @@ class ResearchContext:
         self.findings: List[FindingItem] = []
         self.sources_consulted: List[str] = []
         self.sources_failed: List[str] = []
+        self.source_execution_statuses: Dict[str, str] = {}
         self.evidence: List[Evidence] = []
         self.errors: List[str] = []
         self.metadata: Dict[str, Any] = {}
@@ -123,6 +125,7 @@ class ResearchContext:
                 **self.metadata,
                 "stage_results": [r.to_dict() for r in self.stage_results],
             },
+            source_execution_statuses=self.source_execution_statuses or None,
         )
 
 
@@ -279,6 +282,14 @@ class RetrievalStage(ResearchStage):
                 and _is_meaningful_retrieval_content(r.content.raw_content if r.content else None)
             ]
             context.sources_failed = [r.source_id for r in processed if r.status != RetrievalStatus.SUCCESS]
+            context.source_execution_statuses = {}
+            for r in processed:
+                if r.status == RetrievalStatus.SUCCESS and _is_meaningful_retrieval_content(r.content.raw_content if r.content else None):
+                    context.source_execution_statuses[r.source_id] = SourceExecutionStatus.SUCCESS_WITH_DATA
+                elif r.status == RetrievalStatus.SUCCESS:
+                    context.source_execution_statuses[r.source_id] = SourceExecutionStatus.SUCCESS_EMPTY
+                else:
+                    context.source_execution_statuses[r.source_id] = SourceExecutionStatus.FAILED
             if context.sources_failed:
                 context.errors.append(f"Retrieval failed for sources: {', '.join(context.sources_failed)}")
             context.metadata.setdefault("retrieval", {})["results"] = [r.to_dict() for r in processed]
@@ -478,6 +489,7 @@ class ResearchOrchestrator:
                 errors=["No research stages registered"],
                 created_at=datetime.utcnow(),
                 completed_at=datetime.utcnow(),
+                source_execution_statuses=None,
             )
             return failed_result
 
