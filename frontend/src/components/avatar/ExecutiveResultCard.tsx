@@ -7,8 +7,160 @@ interface ExecutiveResultCardProps {
   locale: 'ar' | 'en';
 }
 
+function renderEvidenceItems(
+  evidence: Array<{
+    source_id?: string;
+    source_url?: string;
+    content_excerpt?: string;
+    retrieval_timestamp?: string;
+    confidence?: number | null;
+    limitations?: string[] | null;
+    provenance?: Record<string, unknown> | null;
+  }>,
+) {
+  if (!evidence.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+      {evidence.map((item, idx) => (
+        <li key={idx}>
+          <span className="font-medium">{item.source_id || 'evidence'}</span>
+          {item.content_excerpt ? (
+            <span className="text-slate-600"> — {item.content_excerpt.slice(0, 180)}</span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFindings']) {
+  if (!findings.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
+      {findings.map((finding, idx) => (
+        <li key={idx}>
+          <div className="font-medium text-slate-700">{finding.topic || finding.content}</div>
+          <div className="text-slate-600">{finding.content}</div>
+          {renderEvidenceItems(finding.evidence)}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities']) {
+  if (!entities.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+      {entities.map((entity, idx) => (
+        <li key={idx}>
+          <span className="font-medium">{entity.name}</span>
+          <span className="text-slate-600"> — {entity.type}</span>
+          {Object.keys(entity.attributes).length > 0 ? (
+            <span className="text-slate-500"> | {JSON.stringify(entity.attributes)}</span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderComparisons(
+  comparisons: ParsedAvatarResult['businessAnswer']['comparisons'],
+) {
+  if (!comparisons) return null;
+  return (
+    <div className="space-y-2 text-sm text-slate-800">
+      <div>
+        <span className="font-medium">Options:</span> {comparisons.options.join(', ')}
+      </div>
+      <div>
+        <span className="font-medium">Criteria:</span> {comparisons.criteria.join(', ')}
+      </div>
+      <ul className="list-disc list-inside space-y-1">
+        {comparisons.results.map((result, idx) => (
+          <li key={idx}>
+            <span className="font-medium">{result.option}</span>
+            <span className="text-slate-600"> — {result.criterion}: {String(result.value)}</span>
+          </li>
+        ))}
+      </ul>
+      {renderEvidenceItems(
+        comparisons.results.flatMap((r) => r.evidence),
+      )}
+    </div>
+  );
+}
+
+function renderRankings(
+  rankings: ParsedAvatarResult['businessAnswer']['rankings'],
+) {
+  if (!rankings || !rankings.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+      {rankings.map((ranking, idx) => (
+        <li key={idx}>
+          <span className="font-medium">#{ranking.rank} {ranking.candidate}</span>
+          {ranking.total_score !== null ? (
+            <span className="text-slate-600"> — score: {ranking.total_score}</span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']['opportunities']) {
+  if (!opportunities.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+      {opportunities.map((item, idx) => (
+        <li key={idx}>
+          <span className="font-medium">{item.description}</span>
+          {item.confidence !== null ? (
+            <span className="text-slate-600"> — confidence: {item.confidence}</span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderRisks(risks: ParsedAvatarResult['businessAnswer']['risks']) {
+  if (!risks.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+      {risks.map((item, idx) => (
+        <li key={idx}>
+          <span className="font-medium">{item.description}</span>
+          {item.severity ? <span className="text-slate-600"> — severity: {item.severity}</span> : null}
+          {item.mitigation ? <span className="text-slate-500"> — mitigation: {item.mitigation}</span> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function renderRecommendations(
+  recommendations: ParsedAvatarResult['businessAnswer']['recommendations'],
+) {
+  if (!recommendations.length) return null;
+  return (
+    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+      {recommendations.map((item, idx) => (
+        <li key={idx}>
+          <span className="font-medium">{item.action}</span>
+          <span className="text-slate-600"> — {item.type}</span>
+          <div className="text-slate-600">{item.rationale}</div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps) {
   const { t } = useTranslation();
+  const bi = parsed.businessAnswer;
 
   return (
     <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-4 text-sm text-slate-700">
@@ -39,14 +191,95 @@ export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps
         </div>
       )}
 
-      {parsed.summary && (
+      {bi.executiveSummary && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.executive_summary')}</p>
+          <p className="text-sm text-slate-800 whitespace-pre-wrap">{bi.executiveSummary}</p>
+        </div>
+      )}
+
+      {bi.keyFindings.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.key_findings')}</p>
+          {renderKeyFindings(bi.keyFindings)}
+        </div>
+      )}
+
+      {bi.entities.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.entities')}</p>
+          {renderEntities(bi.entities)}
+        </div>
+      )}
+
+      {bi.comparisons && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.comparisons')}</p>
+          {renderComparisons(bi.comparisons)}
+        </div>
+      )}
+
+      {bi.rankings && bi.rankings.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.rankings')}</p>
+          {renderRankings(bi.rankings)}
+        </div>
+      )}
+
+      {bi.opportunities.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.opportunities')}</p>
+          {renderOpportunities(bi.opportunities)}
+        </div>
+      )}
+
+      {bi.risks.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.risks')}</p>
+          {renderRisks(bi.risks)}
+        </div>
+      )}
+
+      {bi.recommendations.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.recommendations')}</p>
+          {renderRecommendations(bi.recommendations)}
+        </div>
+      )}
+
+      {bi.confidence !== null && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.confidence')}</p>
+          <p className="text-sm text-slate-800">{bi.confidence}</p>
+        </div>
+      )}
+
+      {bi.limitations.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.limitations')}</p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+            {bi.limitations.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {bi.evidence.length > 0 && (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
+          <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.evidence')}</p>
+          {renderEvidenceItems(bi.evidence)}
+        </div>
+      )}
+
+      {parsed.summary && !bi.executiveSummary && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.fields.summary')}</p>
           <p className="text-sm text-slate-800 whitespace-pre-wrap">{parsed.summary}</p>
         </div>
       )}
 
-      {parsed.findings.length > 0 && (
+      {parsed.findings.length > 0 && bi.keyFindings.length === 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.fields.findings')}</p>
           <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
@@ -57,7 +290,7 @@ export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps
         </div>
       )}
 
-      {parsed.sources.length > 0 && (
+      {parsed.sources.length > 0 && bi.evidence.length === 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.fields.sources')}</p>
           <div className="flex flex-wrap gap-2">

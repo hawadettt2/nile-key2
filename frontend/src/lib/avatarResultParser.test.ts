@@ -317,4 +317,176 @@ describe('parseIntentContent', () => {
     expect(result.goal).toBe('Legacy Goal');
     expect(result.summary).toBe('Legacy Summary');
   });
+
+  it('parses full business_answer BI sections when present', () => {
+    const raw = JSON.stringify({
+      intent_type: 'mission_completed',
+      content: {
+        outcome: 'research completed successfully',
+        business_answer: {
+          goal: 'export vegetables Egypt Jordan',
+          executive_summary: '4 structured finding(s) were identified.',
+          key_findings: [
+            {
+              topic: '[trade_intelligence] Findings from un-comtrade',
+              content: 'Retrieved 1 evidence item(s) from source un-comtrade.',
+              confidence: null,
+              limitations: null,
+              evidence: [
+                {
+                  source_id: 'un-comtrade',
+                  source_url: '2026-08-15',
+                  content_excerpt: 'HS 07 ...',
+                  retrieval_timestamp: '2026-09-14T12:57:54.075566',
+                  confidence: null,
+                  limitations: null,
+                  provenance: { research_status: 'completed' },
+                },
+              ],
+            },
+          ],
+          entities: [
+            {
+              name: 'Egypt',
+              type: 'country',
+              attributes: { code: '818' },
+              evidence: [],
+            },
+          ],
+          comparisons: {
+            options: ['Egypt', 'Jordan'],
+            criteria: ['volume', 'growth'],
+            results: [
+              {
+                option: 'Egypt',
+                criterion: 'volume',
+                value: 28496743.65,
+                evidence: [],
+              },
+            ],
+            limitations: ['Limited to 2025 data'],
+          },
+          rankings: [
+            {
+              rank: 1,
+              candidate: 'Egypt-Jordan route',
+              criteria_scores: { volume: 0.9 },
+              total_score: 0.9,
+              evidence: [],
+              explanation: 'Top route by volume',
+              limitations: [],
+            },
+          ],
+          opportunities: [
+            {
+              description: 'Growing demand in Jordan',
+              evidence: [],
+              confidence: 0.8,
+              limitations: null,
+            },
+          ],
+          risks: [
+            {
+              description: 'Tariff changes',
+              evidence: [],
+              severity: 'medium',
+              mitigation: 'Monitor regulations',
+              limitations: null,
+            },
+          ],
+          recommendations: [
+            {
+              action: 'Review tariffs',
+              type: 'next_evidence_requirement',
+              rationale: 'Tariff data needed',
+              evidence: [],
+              confidence: null,
+              limitations: null,
+            },
+          ],
+          confidence: null,
+          limitations: ['No structured research findings are available.'],
+          evidence: [
+            {
+              source_id: 'un-comtrade',
+              source_url: '2026-08-15',
+              content_excerpt: 'HS 07 ...',
+              retrieval_timestamp: '2026-09-14T12:57:54.075566',
+              confidence: null,
+              limitations: null,
+              provenance: { research_status: 'completed' },
+            },
+          ],
+          sources: ['un-comtrade'],
+          provenance: { research_status: 'completed' },
+        },
+        result: {
+          mission_status: 'completed',
+          goal: 'Legacy Goal',
+          summary: 'Legacy Summary',
+          results: [],
+        },
+      },
+      context: {
+        session_id: 'session-123',
+        mission_id: 'mission-456',
+      },
+      suggested_actions: ['view_result'],
+    });
+    const result = parseIntentContent(raw);
+    expect(result.goal).toBe('export vegetables Egypt Jordan');
+    expect(result.summary).toBe('4 structured finding(s) were identified.');
+    expect(result.findings).toEqual([
+      'Retrieved 1 evidence item(s) from source un-comtrade.',
+    ]);
+    expect(result.sources).toEqual(['un-comtrade']);
+    expect(result.businessAnswer.executiveSummary).toBe('4 structured finding(s) were identified.');
+    expect(result.businessAnswer.keyFindings).toHaveLength(1);
+    expect(result.businessAnswer.keyFindings[0].topic).toBe('[trade_intelligence] Findings from un-comtrade');
+    expect(result.businessAnswer.entities).toHaveLength(1);
+    expect(result.businessAnswer.entities[0].name).toBe('Egypt');
+    expect(result.businessAnswer.comparisons?.options).toEqual(['Egypt', 'Jordan']);
+    expect(result.businessAnswer.rankings).toHaveLength(1);
+    expect(result.businessAnswer.opportunities).toHaveLength(1);
+    expect(result.businessAnswer.risks).toHaveLength(1);
+    expect(result.businessAnswer.recommendations).toHaveLength(1);
+    expect(result.businessAnswer.confidence).toBeNull();
+    expect(result.businessAnswer.limitations).toEqual(['No structured research findings are available.']);
+    expect(result.businessAnswer.evidence).toHaveLength(1);
+    expect(result.businessAnswer.provenance).toEqual({ research_status: 'completed' });
+  });
+
+  it('returns empty businessAnswer when business_answer is absent', () => {
+    const raw = JSON.stringify({
+      intent_type: 'mission_completed',
+      content: {
+        outcome: 'legacy outcome',
+        result: {
+          mission_status: 'completed',
+          goal: 'Legacy Goal',
+          summary: 'Legacy Summary',
+          results: [
+            {
+              data: {
+                findings: ['Legacy Finding'],
+                sources_consulted: ['Legacy Source'],
+              },
+            },
+          ],
+        },
+      },
+      context: {},
+      suggested_actions: [],
+    });
+    const result = parseIntentContent(raw);
+    expect(result.businessAnswer.keyFindings).toEqual([]);
+    expect(result.businessAnswer.entities).toEqual([]);
+    expect(result.businessAnswer.opportunities).toEqual([]);
+    expect(result.businessAnswer.risks).toEqual([]);
+    expect(result.businessAnswer.recommendations).toEqual([]);
+    expect(result.businessAnswer.limitations).toEqual([]);
+    expect(result.businessAnswer.evidence).toEqual([]);
+    expect(result.businessAnswer.comparisons).toBeNull();
+    expect(result.businessAnswer.rankings).toBeNull();
+  });
 });

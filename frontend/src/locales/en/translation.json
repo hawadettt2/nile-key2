@@ -396,6 +396,20 @@
       "identifiers": "Identifiers",
       "suggested_actions": "Suggested Actions"
     },
+    "bi": {
+      "executive_summary": "Executive Summary",
+      "key_findings": "Key Findings",
+      "entities": "Entities",
+      "comparisons": "Comparisons",
+      "rankings": "Rankings",
+      "opportunities": "Opportunities",
+      "risks": "Risks",
+      "recommendations": "Recommendations",
+      "confidence": "Confidence",
+      "limitations": "Limitations",
+      "evidence": "Evidence",
+      "provenance": "Provenance"
+    },
     "identifiers": {
       "mission_id": "Mission ID",
       "session_id": "Session ID"

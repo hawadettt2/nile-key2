@@ -55,6 +55,18 @@ const baseParsed: ParsedAvatarResult = {
   sessionId: 'session-456',
   hasStructuredContent: true,
   rawResponse: '{}',
+  businessAnswer: {
+    keyFindings: [],
+    entities: [],
+    opportunities: [],
+    risks: [],
+    recommendations: [],
+    limitations: [],
+    evidence: [],
+    comparisons: null,
+    rankings: null,
+    provenance: null,
+  },
 };
 
 describe('ExecutiveResultCard', () => {
@@ -153,5 +165,141 @@ describe('ExecutiveResultCard', () => {
     expect(screen.getByText('BI Finding 1')).toBeDefined();
     expect(screen.getByText('BI Finding 2')).toBeDefined();
     expect(screen.getByText('BI Source A')).toBeDefined();
+  });
+
+  it('renders BI optional sections when present', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade Intelligence',
+            content: 'Retrieved 1 evidence item(s) from source un-comtrade.',
+            evidence: [
+              {
+                source_id: 'un-comtrade',
+                source_url: '2026-08-15',
+                content_excerpt: 'HS 07 ...',
+              },
+            ],
+          },
+        ],
+        entities: [
+          {
+            name: 'Egypt',
+            type: 'country',
+            attributes: { code: '818' },
+            evidence: [],
+          },
+        ],
+        comparisons: {
+          options: ['Egypt', 'Jordan'],
+          criteria: ['volume'],
+          results: [
+            {
+              option: 'Jordan',
+              criterion: 'volume',
+              value: 1000,
+              evidence: [],
+            },
+          ],
+          limitations: ['Limited data'],
+        },
+        rankings: [
+          {
+            rank: 1,
+            candidate: 'Egypt-Jordan',
+            criteria_scores: { volume: 0.9 },
+            total_score: 0.9,
+            evidence: [],
+            limitations: [],
+          },
+        ],
+        opportunities: [
+          {
+            description: 'Growing demand',
+            evidence: [],
+            confidence: 0.8,
+            limitations: null,
+          },
+        ],
+        risks: [
+          {
+            description: 'Tariff changes',
+            evidence: [],
+            severity: 'medium',
+            mitigation: 'Monitor regulations',
+            limitations: null,
+          },
+        ],
+        recommendations: [
+          {
+            action: 'Review tariffs',
+            type: 'next_evidence_requirement',
+            rationale: 'Tariff data needed',
+            evidence: [],
+            confidence: null,
+            limitations: null,
+          },
+        ],
+        confidence: 0.7,
+        limitations: ['No structured research findings are available.'],
+        evidence: [
+          {
+            source_id: 'un-comtrade',
+            source_url: '2026-08-15',
+            content_excerpt: 'HS 07 ...',
+            retrieval_timestamp: '2026-09-14T12:57:54.075566',
+            confidence: null,
+            limitations: null,
+            provenance: { research_status: 'completed' },
+          },
+        ],
+        provenance: { research_status: 'completed' },
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="ar" />, { wrapper: WrapperArabic });
+    expect(screen.getByText('النتائج الرئيسية')).toBeDefined();
+    expect(screen.getByText('Trade Intelligence')).toBeDefined();
+    expect(screen.getByText('الكيانات')).toBeDefined();
+    expect(screen.getByText('Egypt')).toBeDefined();
+    expect(screen.getByText('المقارنات')).toBeDefined();
+    expect(screen.getByText('التصنيفات')).toBeDefined();
+    expect(screen.getByText('الفرص')).toBeDefined();
+    expect(screen.getByText('المخاطر')).toBeDefined();
+    expect(screen.getByText('التوصيات')).toBeDefined();
+    expect(screen.getByText('مستوى الثقة')).toBeDefined();
+    expect(screen.getByText('0.7')).toBeDefined();
+    expect(screen.getByText('القيود')).toBeDefined();
+    expect(screen.getByText('الأدلة')).toBeDefined();
+  });
+
+  it('does not render empty BI optional sections', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        provenance: null,
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="ar" />, { wrapper: WrapperArabic });
+    expect(screen.queryByText('النتائج الرئيسية')).toBeNull();
+    expect(screen.queryByText('الكيانات')).toBeNull();
+    expect(screen.queryByText('المقارنات')).toBeNull();
+    expect(screen.queryByText('التصنيفات')).toBeNull();
+    expect(screen.queryByText('الفرص')).toBeNull();
+    expect(screen.queryByText('المخاطر')).toBeNull();
+    expect(screen.queryByText('التوصيات')).toBeNull();
+    expect(screen.queryByText('القيود')).toBeNull();
+    expect(screen.queryByText('الأدلة')).toBeNull();
   });
 });

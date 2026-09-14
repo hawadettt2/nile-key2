@@ -396,6 +396,20 @@
       "identifiers": "المعرفات",
       "suggested_actions": "الإجراءات المقترحة"
     },
+    "bi": {
+      "executive_summary": "الملخص التنفيذي",
+      "key_findings": "النتائج الرئيسية",
+      "entities": "الكيانات",
+      "comparisons": "المقارنات",
+      "rankings": "التصنيفات",
+      "opportunities": "الفرص",
+      "risks": "المخاطر",
+      "recommendations": "التوصيات",
+      "confidence": "مستوى الثقة",
+      "limitations": "القيود",
+      "evidence": "الأدلة",
+      "provenance": "المصدر"
+    },
     "identifiers": {
       "mission_id": "معرف المهمة",
       "session_id": "معرف الجلسة"
