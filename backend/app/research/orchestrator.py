@@ -24,6 +24,7 @@ from app.research.sources.discovery import SourceDiscovery
 from app.research.evidence.contracts import DefaultEvidenceCapture, EvidenceCapture
 from app.research.result import DefaultResultStructurer, ResultStructurer
 from app.research.quality import DefaultVerifier, FailureHandler, OpenArchitecturalDecision, QualityIndicator, VerificationResult, Verifier
+from app.research.retrieval.query_enhancer import QueryEnhancer
 
 logger = logging.getLogger(__name__)
 
@@ -188,9 +189,11 @@ class RetrievalStage(ResearchStage):
         self,
         retrieval_orchestrator: Optional[RetrievalOrchestrator] = None,
         registry: Optional[SourceRegistry] = None,
+        query_enhancer: Optional[QueryEnhancer] = None,
     ):
         self._retrieval_orchestrator = retrieval_orchestrator
         self._registry = registry
+        self._query_enhancer = query_enhancer
 
     async def execute(self, context: ResearchContext) -> ResearchContext:
         try:
@@ -223,6 +226,14 @@ class RetrievalStage(ResearchStage):
                 context=context.request.context,
                 scope=context.request.scope,
             )
+            if self._query_enhancer is not None:
+                results = await self._query_enhancer.enhance_empty_results(
+                    sources=sources,
+                    results=results,
+                    query=context.request.goal,
+                    context=context.request.context,
+                    scope=context.request.scope,
+                )
             processed = await self._retrieval_orchestrator.process_results(results)
 
             context.sources_consulted = [
