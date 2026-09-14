@@ -511,3 +511,37 @@ class TestReasoningEngineContextNormalization:
         assert request.context.get("partner") == "400"
         # And now also receives country alias
         assert request.context.get("country") == "818"
+
+    async def test_scope_none_values_are_stripped_before_planning(self):
+        engine = ReasoningEngine()
+        result = FakeResearchResult({
+            "request_id": "req_none_scope",
+            "status": "completed",
+            "goal": "market study",
+            "findings": [],
+            "sources_consulted": [],
+            "sources_failed": [],
+            "errors": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:01:00Z",
+            "metadata": {},
+        })
+        orchestrator = TrackingResearchOrchestrator(result)
+        engine._research_orchestrator = orchestrator
+
+        await engine._query_external_research(
+            "أريد تصدير الفواكه المصرية إلى الأردن",
+            {
+                "scope": {
+                    "domains": None,
+                    "regions": ["818", "400"],
+                    "time_ranges": None,
+                }
+            },
+        )
+
+        assert len(orchestrator.captured_requests) == 1
+        request = orchestrator.captured_requests[0]
+        assert "domains" not in request.scope
+        assert request.scope.get("regions") == ["818", "400"]
+        assert "time_ranges" not in request.scope

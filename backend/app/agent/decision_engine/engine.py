@@ -688,6 +688,7 @@ class ReasoningEngine:
             scope["regions"] = [
                 code for code in [extracted.get("reporter"), extracted.get("partner")] if code
             ]
+        scope = {k: v for k, v in scope.items() if v is not None}
 
         request = ResearchRequest(
             goal=qualified_query,
