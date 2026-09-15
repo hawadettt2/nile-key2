@@ -72,6 +72,23 @@ class BusinessFactNormalizer:
         evidence = [self._adapt_evidence(ei) for ei in finding.evidence]
         source_ids = list(dict.fromkeys(ei.source_id for ei in finding.evidence if ei.source_id))
         metadata = finding.metadata or {}
+        provenance = {
+            "topic": finding.topic,
+            "source_count": len(source_ids),
+        }
+        if isinstance(metadata, dict):
+            for key in [
+                "entity_name",
+                "entity_type",
+                "opportunity_basis",
+                "risk_signal",
+                "severity",
+                "mitigation",
+                "candidate",
+                "criterion",
+            ]:
+                if key in metadata:
+                    provenance[key] = metadata[key]
         return BusinessFact(
             fact_type=fact_type,
             dimension=dimension,
@@ -81,10 +98,7 @@ class BusinessFactNormalizer:
             evidence=evidence,
             confidence=finding.confidence,
             limitations=list(finding.limitations or []),
-            provenance={
-                "topic": finding.topic,
-                "source_count": len(source_ids),
-            },
+            provenance=provenance,
             source_ids=source_ids,
         )
 
@@ -139,6 +153,20 @@ class BusinessFactNormalizer:
                     "source_count": 1,
                     "knowledge_sources": list(top_level_sources or [source_id]),
                     "overall_confidence": overall_confidence if isinstance(overall_confidence, (int, float)) else None,
+                    **({
+                        key: metadata[key]
+                        for key in [
+                            "entity_name",
+                            "entity_type",
+                            "opportunity_basis",
+                            "risk_signal",
+                            "severity",
+                            "mitigation",
+                            "candidate",
+                            "criterion",
+                        ]
+                        if isinstance(metadata, dict) and key in metadata
+                    }),
                 },
                 source_ids=[str(sid) for sid in (top_level_sources or [source_id])],
             )

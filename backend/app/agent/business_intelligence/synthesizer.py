@@ -11,6 +11,7 @@ from .schema import (
 )
 from .evidence import adapt_research_result, adapt_finding_item
 from .fusion import InputNormalizer, BusinessFactNormalizer, FactFusion
+from .derivers import EntityDeriver, OpportunityDeriver, RiskDeriver, ComparisonDeriver, ExecutiveSummaryDeriver
 
 
 class BusinessIntelligenceSynthesizer:
@@ -55,12 +56,7 @@ class BusinessIntelligenceSynthesizer:
             research_metadata = getattr(research, "metadata", None) or {}
             for idx, finding in enumerate(research.findings):
                 query_id = f"q-{idx}"
-                dimension = "general"
-                if isinstance(research_metadata, dict):
-                    plan_meta = research_metadata.get("plan", {})
-                    queries = plan_meta.get("sub_queries", [])
-                    if idx < len(queries):
-                        query_id = f"q-{idx}"
+                dimension = (finding.metadata or {}).get("dimension") or "general"
                 facts.extend(normalizer.normalize_findings([finding], dimension, query_id))
 
         if knowledge_result is not None:
@@ -75,25 +71,35 @@ class BusinessIntelligenceSynthesizer:
             conflicts = FactFusion.detect_conflicts(facts)
 
         key_findings = findings[:10]
-        limitations = self._build_limitations(key_findings, evidence, research is not None)
-        limitations.extend(self._build_conflict_limitations(conflicts))
+        entities = EntityDeriver.derive(facts)
+        opportunities = OpportunityDeriver.derive(facts)
+        risks = RiskDeriver.derive(facts)
+        comparisons = ComparisonDeriver.derive(facts)
+        rankings = None
         recommendations: List[Recommendation] = []
         if research is not None and not evidence:
             recommendations.append(self._next_evidence_requirement())
+        limitations = self._build_limitations(key_findings, evidence, research is not None)
+        limitations.extend(self._build_conflict_limitations(conflicts))
 
         return BusinessIntelligenceAnswer(
             goal=mission_goal,
-            executive_summary=self._build_executive_summary(
+            executive_summary=ExecutiveSummaryDeriver.build(
                 goal=mission_goal,
-                findings=key_findings,
-                evidence=evidence,
+                key_findings=key_findings,
+                entities=entities,
+                comparisons=comparisons,
+                opportunities=opportunities,
+                risks=risks,
+                limitations=limitations,
+                fact_count=len(facts),
             ),
             key_findings=key_findings,
-            entities=[],
-            comparisons=None,
-            rankings=None,
-            opportunities=[],
-            risks=[],
+            entities=entities,
+            comparisons=comparisons,
+            rankings=rankings,
+            opportunities=opportunities,
+            risks=risks,
             recommendations=recommendations,
             confidence=self._derive_confidence(key_findings, evidence),
             limitations=limitations,
