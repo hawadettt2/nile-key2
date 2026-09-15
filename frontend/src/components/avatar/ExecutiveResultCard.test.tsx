@@ -302,4 +302,364 @@ describe('ExecutiveResultCard', () => {
     expect(screen.queryByText('القيود')).toBeNull();
     expect(screen.queryByText('الأدلة')).toBeNull();
   });
+
+  it('renders evidence inside each key finding with source_url', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade',
+            content: 'Trade fact.',
+            evidence: [
+              {
+                source_id: 'src-1',
+                source_url: 'https://example.com/trade',
+                content_excerpt: 'Excerpt trade',
+              },
+            ],
+            limitations: ['Finding limitation'],
+          },
+        ],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-1')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('https://example.com/trade'))).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Excerpt trade'))).toBeDefined();
+    expect(screen.getByText('Finding limitation')).toBeDefined();
+  });
+
+  it('renders evidence inside each entity with limitations', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [
+          {
+            name: 'Egypt',
+            type: 'country',
+            attributes: {},
+            evidence: [
+              {
+                source_id: 'src-2',
+                source_url: 'https://example.com/egypt',
+                content_excerpt: 'Egypt excerpt',
+              },
+            ],
+            limitations: ['Entity limitation'],
+          },
+        ],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('Egypt')).toBeDefined();
+    expect(screen.getByText('src-2')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('https://example.com/egypt'))).toBeDefined();
+    expect(screen.getByText('Entity limitation')).toBeDefined();
+  });
+
+  it('renders evidence per comparison result with limitations', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: {
+          options: ['Egypt', 'Jordan'],
+          criteria: ['volume'],
+          results: [
+            {
+              option: 'Egypt',
+              criterion: 'volume',
+              value: 2000,
+              evidence: [
+                {
+                  source_id: 'src-egypt',
+                  source_url: 'https://example.com/egypt',
+                  content_excerpt: 'Egypt volume',
+                },
+              ],
+            },
+            {
+              option: 'Jordan',
+              criterion: 'volume',
+              value: 1000,
+              evidence: [
+                {
+                  source_id: 'src-jordan',
+                  source_url: 'https://example.com/jordan',
+                  content_excerpt: 'Jordan volume',
+                },
+              ],
+            },
+          ],
+          limitations: ['Comparison limitation'],
+        },
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-egypt')).toBeDefined();
+    expect(screen.getByText('Egypt')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('2000'))).toBeDefined();
+    expect(screen.getByText('src-jordan')).toBeDefined();
+    expect(screen.getByText('Jordan')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('1000'))).toBeDefined();
+    expect(screen.getByText('Comparison limitation')).toBeDefined();
+  });
+
+  it('renders ranking evidence, explanation, and limitations', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: [
+          {
+            rank: 1,
+            candidate: 'Egypt',
+            criteria_scores: { volume: 0.9 },
+            total_score: 0.9,
+            evidence: [
+              {
+                source_id: 'src-rank',
+                source_url: 'https://example.com/rank',
+                content_excerpt: 'Rank excerpt',
+              },
+            ],
+            explanation: 'Top candidate due to volume',
+            limitations: ['Ranking limitation'],
+          },
+        ],
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-rank')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Rank excerpt'))).toBeDefined();
+    expect(screen.getByText('Top candidate due to volume')).toBeDefined();
+    expect(screen.getByText('Ranking limitation')).toBeDefined();
+  });
+
+  it('renders opportunity evidence and limitations', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [],
+        opportunities: [
+          {
+            description: 'Growing demand',
+            evidence: [
+              {
+                source_id: 'src-opp',
+                source_url: 'https://example.com/opp',
+                content_excerpt: 'Opportunity excerpt',
+              },
+            ],
+            confidence: 0.8,
+            limitations: ['Opportunity limitation'],
+          },
+        ],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-opp')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Opportunity excerpt'))).toBeDefined();
+    expect(screen.getByText('Opportunity limitation')).toBeDefined();
+  });
+
+  it('renders risk evidence, severity, mitigation, and limitations', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [],
+        opportunities: [],
+        risks: [
+          {
+            description: 'Tariff changes',
+            evidence: [
+              {
+                source_id: 'src-risk',
+                source_url: 'https://example.com/risk',
+                content_excerpt: 'Risk excerpt',
+              },
+            ],
+            severity: 'medium',
+            mitigation: 'Monitor regulations',
+            limitations: ['Risk limitation'],
+          },
+        ],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-risk')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Risk excerpt'))).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('severity: medium'))).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Monitor regulations'))).toBeDefined();
+    expect(screen.getByText('Risk limitation')).toBeDefined();
+  });
+
+  it('renders recommendation evidence and limitations', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [
+          {
+            action: 'Review tariffs',
+            type: 'next_evidence_requirement',
+            rationale: 'Tariff data needed',
+            evidence: [
+              {
+                source_id: 'src-rec',
+                source_url: 'https://example.com/rec',
+                content_excerpt: 'Recommendation excerpt',
+              },
+            ],
+            confidence: null,
+            limitations: ['Recommendation limitation'],
+          },
+        ],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-rec')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Recommendation excerpt'))).toBeDefined();
+    expect(screen.getByText('Recommendation limitation')).toBeDefined();
+  });
+
+  it('does not render evidence sections when no evidence is present', () => {
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade',
+            content: 'Trade fact.',
+            evidence: [],
+          },
+        ],
+        entities: [
+          {
+            name: 'Egypt',
+            type: 'country',
+            attributes: {},
+            evidence: [],
+          },
+        ],
+        opportunities: [
+          {
+            description: 'Growing demand',
+            evidence: [],
+            confidence: 0.8,
+          },
+        ],
+        risks: [
+          {
+            description: 'Tariff changes',
+            evidence: [],
+            severity: 'medium',
+            mitigation: 'Monitor regulations',
+          },
+        ],
+        recommendations: [
+          {
+            action: 'Review tariffs',
+            type: 'next_evidence_requirement',
+            rationale: 'Tariff data needed',
+            evidence: [],
+          },
+        ],
+        limitations: [],
+        evidence: [],
+        comparisons: {
+          options: ['Egypt', 'Jordan'],
+          criteria: ['volume'],
+          results: [
+            {
+              option: 'Jordan',
+              criterion: 'volume',
+              value: 1000,
+              evidence: [],
+            },
+          ],
+          limitations: [],
+        },
+        rankings: [
+          {
+            rank: 1,
+            candidate: 'Egypt',
+            criteria_scores: {},
+            total_score: null,
+            evidence: [],
+            limitations: [],
+          },
+        ],
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.queryByText('evidence')).toBeNull();
+  });
 });

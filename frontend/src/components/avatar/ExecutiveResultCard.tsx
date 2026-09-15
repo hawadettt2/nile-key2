@@ -24,6 +24,9 @@ function renderEvidenceItems(
       {evidence.map((item, idx) => (
         <li key={idx}>
           <span className="font-medium">{item.source_id || 'evidence'}</span>
+          {item.source_url ? (
+            <span className="text-slate-500"> — {item.source_url}</span>
+          ) : null}
           {item.content_excerpt ? (
             <span className="text-slate-600"> — {item.content_excerpt.slice(0, 180)}</span>
           ) : null}
@@ -42,6 +45,13 @@ function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFi
           <div className="font-medium text-slate-700">{finding.topic || finding.content}</div>
           <div className="text-slate-600">{finding.content}</div>
           {renderEvidenceItems(finding.evidence)}
+          {finding.limitations && finding.limitations.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+              {finding.limitations.map((limitation, lidx) => (
+                <li key={lidx}>{limitation}</li>
+              ))}
+            </ul>
+          ) : null}
         </li>
       ))}
     </ul>
@@ -51,13 +61,21 @@ function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFi
 function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities']) {
   if (!entities.length) return null;
   return (
-    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+    <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
       {entities.map((entity, idx) => (
         <li key={idx}>
           <span className="font-medium">{entity.name}</span>
           <span className="text-slate-600"> — {entity.type}</span>
           {Object.keys(entity.attributes).length > 0 ? (
             <span className="text-slate-500"> | {JSON.stringify(entity.attributes)}</span>
+          ) : null}
+          {renderEvidenceItems(entity.evidence)}
+          {entity.limitations && entity.limitations.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+              {entity.limitations.map((limitation, lidx) => (
+                <li key={lidx}>{limitation}</li>
+              ))}
+            </ul>
           ) : null}
         </li>
       ))}
@@ -77,17 +95,22 @@ function renderComparisons(
       <div>
         <span className="font-medium">Criteria:</span> {comparisons.criteria.join(', ')}
       </div>
-      <ul className="list-disc list-inside space-y-1">
+      <ul className="list-disc list-inside space-y-2">
         {comparisons.results.map((result, idx) => (
           <li key={idx}>
             <span className="font-medium">{result.option}</span>
             <span className="text-slate-600"> — {result.criterion}: {String(result.value)}</span>
+            {renderEvidenceItems(result.evidence)}
           </li>
         ))}
       </ul>
-      {renderEvidenceItems(
-        comparisons.results.flatMap((r) => r.evidence),
-      )}
+      {comparisons.limitations && comparisons.limitations.length > 0 ? (
+        <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+          {comparisons.limitations.map((limitation, lidx) => (
+            <li key={lidx}>{limitation}</li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
@@ -97,12 +120,26 @@ function renderRankings(
 ) {
   if (!rankings || !rankings.length) return null;
   return (
-    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+    <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
       {rankings.map((ranking, idx) => (
         <li key={idx}>
           <span className="font-medium">#{ranking.rank} {ranking.candidate}</span>
           {ranking.total_score !== null ? (
             <span className="text-slate-600"> — score: {ranking.total_score}</span>
+          ) : null}
+          {ranking.criteria_scores && Object.keys(ranking.criteria_scores).length > 0 ? (
+            <span className="text-slate-500"> — criteria: {JSON.stringify(ranking.criteria_scores)}</span>
+          ) : null}
+          {ranking.explanation ? (
+            <div className="text-slate-600">{ranking.explanation}</div>
+          ) : null}
+          {renderEvidenceItems(ranking.evidence)}
+          {ranking.limitations && ranking.limitations.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+              {ranking.limitations.map((limitation, lidx) => (
+                <li key={lidx}>{limitation}</li>
+              ))}
+            </ul>
           ) : null}
         </li>
       ))}
@@ -113,12 +150,20 @@ function renderRankings(
 function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']['opportunities']) {
   if (!opportunities.length) return null;
   return (
-    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+    <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
       {opportunities.map((item, idx) => (
         <li key={idx}>
           <span className="font-medium">{item.description}</span>
           {item.confidence !== null ? (
             <span className="text-slate-600"> — confidence: {item.confidence}</span>
+          ) : null}
+          {renderEvidenceItems(item.evidence)}
+          {item.limitations && item.limitations.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+              {item.limitations.map((limitation, lidx) => (
+                <li key={lidx}>{limitation}</li>
+              ))}
+            </ul>
           ) : null}
         </li>
       ))}
@@ -129,12 +174,20 @@ function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']
 function renderRisks(risks: ParsedAvatarResult['businessAnswer']['risks']) {
   if (!risks.length) return null;
   return (
-    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+    <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
       {risks.map((item, idx) => (
         <li key={idx}>
           <span className="font-medium">{item.description}</span>
           {item.severity ? <span className="text-slate-600"> — severity: {item.severity}</span> : null}
           {item.mitigation ? <span className="text-slate-500"> — mitigation: {item.mitigation}</span> : null}
+          {renderEvidenceItems(item.evidence)}
+          {item.limitations && item.limitations.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+              {item.limitations.map((limitation, lidx) => (
+                <li key={lidx}>{limitation}</li>
+              ))}
+            </ul>
+          ) : null}
         </li>
       ))}
     </ul>
@@ -146,12 +199,20 @@ function renderRecommendations(
 ) {
   if (!recommendations.length) return null;
   return (
-    <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
+    <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
       {recommendations.map((item, idx) => (
         <li key={idx}>
           <span className="font-medium">{item.action}</span>
           <span className="text-slate-600"> — {item.type}</span>
           <div className="text-slate-600">{item.rationale}</div>
+          {renderEvidenceItems(item.evidence)}
+          {item.limitations && item.limitations.length > 0 ? (
+            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
+              {item.limitations.map((limitation, lidx) => (
+                <li key={lidx}>{limitation}</li>
+              ))}
+            </ul>
+          ) : null}
         </li>
       ))}
     </ul>
