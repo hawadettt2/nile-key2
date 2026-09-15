@@ -340,43 +340,41 @@ describe('ExecutiveResultCard', () => {
     expect(screen.getByText('Finding limitation')).toBeDefined();
   });
 
-  it('renders evidence inside each entity with limitations', () => {
-    const biParsed: ParsedAvatarResult = {
-      ...baseParsed,
-      businessAnswer: {
-        keyFindings: [],
-        entities: [
-          {
-            name: 'Egypt',
-            type: 'country',
-            attributes: {},
-            evidence: [
-              {
-                source_id: 'src-2',
-                source_url: 'https://example.com/egypt',
-                content_excerpt: 'Egypt excerpt',
-              },
-            ],
-            limitations: ['Entity limitation'],
-          },
-        ],
-        opportunities: [],
-        risks: [],
-        recommendations: [],
-        limitations: [],
-        evidence: [],
-        comparisons: null,
-        rankings: null,
-        confidence: null,
-        provenance: null,
-      },
-    };
-    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
-    expect(screen.getByText('Egypt')).toBeDefined();
-    expect(screen.getByText('src-2')).toBeDefined();
-    expect(screen.getByText((content, element) => content.includes('https://example.com/egypt'))).toBeDefined();
-    expect(screen.getByText('Entity limitation')).toBeDefined();
-  });
+   it('renders evidence inside each entity', () => {
+     const biParsed: ParsedAvatarResult = {
+       ...baseParsed,
+       businessAnswer: {
+         keyFindings: [],
+         entities: [
+           {
+             name: 'Egypt',
+             type: 'country',
+             attributes: {},
+             evidence: [
+               {
+                 source_id: 'src-2',
+                 source_url: 'https://example.com/egypt',
+                 content_excerpt: 'Egypt excerpt',
+               },
+             ],
+           },
+         ],
+         opportunities: [],
+         risks: [],
+         recommendations: [],
+         limitations: [],
+         evidence: [],
+         comparisons: null,
+         rankings: null,
+         confidence: null,
+         provenance: null,
+       },
+     };
+     render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+     expect(screen.getByText('Egypt')).toBeDefined();
+     expect(screen.getByText('src-2')).toBeDefined();
+     expect(screen.getByText((content, element) => content.includes('https://example.com/egypt'))).toBeDefined();
+   });
 
   it('renders evidence per comparison result with limitations', () => {
     const biParsed: ParsedAvatarResult = {

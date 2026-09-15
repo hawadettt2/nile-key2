@@ -70,13 +70,6 @@ function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities
             <span className="text-slate-500"> | {JSON.stringify(entity.attributes)}</span>
           ) : null}
           {renderEvidenceItems(entity.evidence)}
-          {entity.limitations && entity.limitations.length > 0 ? (
-            <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
-              {entity.limitations.map((limitation, lidx) => (
-                <li key={lidx}>{limitation}</li>
-              ))}
-            </ul>
-          ) : null}
         </li>
       ))}
     </ul>
