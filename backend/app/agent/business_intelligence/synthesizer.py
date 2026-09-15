@@ -12,6 +12,7 @@ from .schema import (
 from .evidence import adapt_research_result, adapt_finding_item
 from .fusion import InputNormalizer, BusinessFactNormalizer, FactFusion
 from .derivers import EntityDeriver, OpportunityDeriver, RiskDeriver, ComparisonDeriver, ExecutiveSummaryDeriver
+from .coverage import CoverageBuilder
 
 
 class BusinessIntelligenceSynthesizer:
@@ -82,6 +83,31 @@ class BusinessIntelligenceSynthesizer:
         limitations = self._build_limitations(key_findings, evidence, research is not None)
         limitations.extend(self._build_conflict_limitations(conflicts))
 
+        coverage = CoverageBuilder.build(research, evidence, facts)
+        coverage_limitations = [
+            Limitation(
+                what_is_missing=f"Coverage status: {coverage.coverage_level}.",
+                why_it_matters="Coverage reflects the extent of authoritative evidence available.",
+                what_evidence_is_needed="Retrieve additional sources or resolve failed sources to improve coverage.",
+            )
+        ]
+        for limitation_text in coverage.limitations:
+            coverage_limitations.append(
+                Limitation(
+                    what_is_missing=limitation_text,
+                    why_it_matters="Source execution status affects coverage confidence.",
+                    what_evidence_is_needed="Address failed or empty sources to strengthen the evidence base.",
+                )
+            )
+        limitations.extend(coverage_limitations)
+
+        provenance = {
+            "research_status": research.status if research else None,
+            "fact_count": len(facts),
+            "dimensions_covered": sorted({fact.dimension for fact in facts}),
+            "coverage": coverage.model_dump(mode="json"),
+        }
+
         return BusinessIntelligenceAnswer(
             goal=mission_goal,
             executive_summary=ExecutiveSummaryDeriver.build(
@@ -105,11 +131,7 @@ class BusinessIntelligenceSynthesizer:
             limitations=limitations,
             evidence=evidence,
             sources=sources,
-            provenance={
-                "research_status": research.status if research else None,
-                "fact_count": len(facts),
-                "dimensions_covered": sorted({fact.dimension for fact in facts}),
-            },
+            provenance=provenance,
         )
 
     @staticmethod
