@@ -53,42 +53,56 @@ class CoverageBuilder:
         for ev in evidence:
             evidence_by_source.setdefault(ev.source_id, []).append(ev)
 
-        fact_dimensions = {fact.dimension for fact in facts if fact.dimension}
+        # Build coverage entries from facts, preserving real dimension/query_id.
+        fact_groups: Dict[tuple, List[Any]] = {}
+        for fact in facts:
+            for source_id in (fact.source_ids or []):
+                key = (fact.dimension, fact.query_id, source_id)
+                fact_groups.setdefault(key, []).append(fact)
 
         entries: List[CoverageEntry] = []
-        for source_id, status in source_execution_statuses.items():
+        seen_keys = set()
+        for (dimension, query_id, source_id), matched_facts in fact_groups.items():
+            key = (dimension, query_id, source_id)
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
             try:
-                exec_status = SourceExecutionStatus(status)
+                exec_status = SourceExecutionStatus(source_execution_statuses.get(source_id, "FAILED"))
             except ValueError:
                 exec_status = SourceExecutionStatus.FAILED
             source_evidence = evidence_by_source.get(source_id, [])
-            entry = CoverageEntry(
-                dimension="general",
-                query_id="",
-                source_id=source_id,
-                status=exec_status,
-                evidence_count=len(source_evidence),
-                has_evidence=bool(source_evidence),
-                source_url=source_evidence[0].source_url if source_evidence else None,
-                retrieval_timestamp=source_evidence[0].retrieval_timestamp if source_evidence else None,
+            entries.append(
+                CoverageEntry(
+                    dimension=dimension,
+                    query_id=query_id,
+                    source_id=source_id,
+                    status=exec_status,
+                    evidence_count=len(source_evidence),
+                    has_evidence=bool(source_evidence),
+                    source_url=source_evidence[0].source_url if source_evidence else None,
+                    retrieval_timestamp=source_evidence[0].retrieval_timestamp if source_evidence else None,
+                )
             )
-            entries.append(entry)
 
-        if not entries and evidence:
-            seen_source_ids = set()
-            for ev in evidence:
-                if ev.source_id not in seen_source_ids:
-                    seen_source_ids.add(ev.source_id)
+        # Include sources from research that have no facts but have execution statuses.
+        if research_result is not None:
+            for source_id, status in source_execution_statuses.items():
+                if not any(e.source_id == source_id for e in entries):
+                    try:
+                        exec_status = SourceExecutionStatus(status)
+                    except ValueError:
+                        exec_status = SourceExecutionStatus.FAILED
                     entries.append(
                         CoverageEntry(
                             dimension="general",
                             query_id="",
-                            source_id=ev.source_id,
-                            status=SourceExecutionStatus.SUCCESS_WITH_DATA,
-                            evidence_count=len([e for e in evidence if e.source_id == ev.source_id]),
-                            has_evidence=True,
-                            source_url=ev.source_url,
-                            retrieval_timestamp=ev.retrieval_timestamp,
+                            source_id=source_id,
+                            status=exec_status,
+                            evidence_count=0,
+                            has_evidence=False,
+                            source_url=None,
+                            retrieval_timestamp=None,
                         )
                     )
 
@@ -97,18 +111,21 @@ class CoverageBuilder:
         empty_sources = sum(1 for e in entries if e.status == SourceExecutionStatus.SUCCESS_EMPTY)
         failed_sources = sum(1 for e in entries if e.status == SourceExecutionStatus.FAILED)
 
+        all_fact_dimensions = {fact.dimension for fact in facts if fact.dimension}
+        dimensions_with_evidence = {entry.dimension for entry in entries if entry.has_evidence}
         has_successful_evidence = successful_sources > 0
         has_failed = failed_sources > 0
         has_empty = empty_sources > 0
+        missing_dimensions = sorted(all_fact_dimensions - dimensions_with_evidence)
 
-        if has_successful_evidence and not has_failed and not has_empty:
+        if has_successful_evidence and not has_failed and not has_empty and not missing_dimensions:
             coverage_level = "adequate"
-        elif has_successful_evidence and (has_failed or has_empty):
+        elif has_successful_evidence and (has_failed or has_empty or missing_dimensions):
             coverage_level = "partial"
         else:
             coverage_level = "insufficient"
 
-        dimensions_covered = sorted(fact_dimensions)
+        dimensions_covered = sorted(dimensions_with_evidence)
 
         limitations: List[str] = []
         if failed_sources > 0:
@@ -118,6 +135,10 @@ class CoverageBuilder:
         if empty_sources > 0:
             limitations.append(
                 f"{empty_sources} source(s) returned no usable data."
+            )
+        if missing_dimensions:
+            limitations.append(
+                f"Coverage is partial because evidence is missing for dimensions: {', '.join(missing_dimensions)}."
             )
         if not has_successful_evidence:
             limitations.append(

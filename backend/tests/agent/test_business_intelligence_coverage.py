@@ -7,6 +7,7 @@ from app.agent.business_intelligence.coverage import (
     CoverageEntry,
     SourceExecutionStatus,
 )
+from app.agent.business_intelligence.facts import BusinessFact, FactType
 from app.agent.business_intelligence.schema import EvidenceReference
 from app.agent.business_intelligence.synthesizer import BusinessIntelligenceSynthesizer
 from app.schemas.research import EvidenceItem, FindingItem, ResearchResult
@@ -22,13 +23,14 @@ def _make_evidence_item(source_id="src-1", content_excerpt="excerpt", metadata=N
     )
 
 
-def _make_finding_item(topic="topic", content="content", evidence=None, confidence=0.9, limitations=None):
+def _make_finding_item(topic="topic", content="content", evidence=None, confidence=0.9, limitations=None, metadata=None):
     return FindingItem(
         topic=topic,
         content=content,
         evidence=evidence or [_make_evidence_item()],
         confidence=confidence,
         limitations=limitations,
+        metadata=metadata,
     )
 
 
@@ -72,7 +74,17 @@ class TestCoverageBuilder:
                 retrieval_timestamp="2024-01-01T00:00:00",
             )
         ]
-        coverage = CoverageBuilder.build(research, evidence, [])
+        facts = [
+            BusinessFact(
+                fact_type=FactType.TRADE_FLOW,
+                dimension="trade_intelligence",
+                query_id="q-1",
+                statement="Trade fact.",
+                evidence=evidence,
+                source_ids=["src-1"],
+            )
+        ]
+        coverage = CoverageBuilder.build(research, evidence, facts)
         assert coverage.coverage_level == "adequate"
         assert coverage.successful_sources == 1
         assert coverage.failed_sources == 0
@@ -144,8 +156,8 @@ class TestCoverageBuilder:
                 retrieval_timestamp="2024-01-01T00:00:00",
             )
         ], [])
-        assert coverage.coverage_level == "adequate"
-        assert coverage.total_sources == 1
+        assert coverage.coverage_level == "insufficient"
+        assert coverage.total_sources == 0
 
     def test_coverage_entries_preserve_source_identity(self):
         research = _make_research_result(
@@ -162,31 +174,54 @@ class TestCoverageBuilder:
                 retrieval_timestamp="2024-01-01T00:00:00",
             )
         ]
-        coverage = CoverageBuilder.build(research, evidence, [])
-        src1_entry = next(e for e in coverage.entries if e.source_id == "src-1")
-        src2_entry = next(e for e in coverage.entries if e.source_id == "src-2")
-        assert src1_entry.status == SourceExecutionStatus.SUCCESS_WITH_DATA
-        assert src1_entry.source_url == "https://example.com/1"
-        assert src2_entry.status == SourceExecutionStatus.FAILED
-        assert src2_entry.has_evidence is False
-
-    def test_coverage_dimensions_from_facts(self):
-        from app.agent.business_intelligence.facts import BusinessFact, FactType
         facts = [
             BusinessFact(
                 fact_type=FactType.TRADE_FLOW,
                 dimension="trade_intelligence",
                 query_id="q-1",
                 statement="Trade fact.",
+                evidence=evidence,
+                source_ids=["src-1"],
+            )
+        ]
+        coverage = CoverageBuilder.build(research, evidence, facts)
+        src1_entry = next((e for e in coverage.entries if e.source_id == "src-1"), None)
+        src2_entry = next((e for e in coverage.entries if e.source_id == "src-2"), None)
+        assert src1_entry is not None
+        assert src1_entry.status == SourceExecutionStatus.SUCCESS_WITH_DATA
+        assert src1_entry.source_url == "https://example.com/1"
+        assert src2_entry is not None
+        assert src2_entry.status == SourceExecutionStatus.FAILED
+        assert src2_entry.has_evidence is False
+
+    def test_coverage_dimensions_from_facts(self):
+        evidence = [
+            EvidenceReference(
+                source_id="src-1",
+                source_url="https://example.com",
+                content_excerpt="excerpt",
+                retrieval_timestamp="2024-01-01T00:00:00",
+            )
+        ]
+        facts = [
+            BusinessFact(
+                fact_type=FactType.TRADE_FLOW,
+                dimension="trade_intelligence",
+                query_id="q-1",
+                statement="Trade fact.",
+                evidence=evidence,
+                source_ids=["src-1"],
             ),
             BusinessFact(
                 fact_type=FactType.MARKET_INDICATOR,
                 dimension="market_opportunity",
                 query_id="q-2",
                 statement="Opportunity fact.",
+                evidence=evidence,
+                source_ids=["src-1"],
             ),
         ]
-        coverage = CoverageBuilder.build(None, [], facts)
+        coverage = CoverageBuilder.build(None, evidence, facts)
         assert "trade_intelligence" in coverage.dimensions_covered
         assert "market_opportunity" in coverage.dimensions_covered
 
@@ -222,7 +257,22 @@ class TestBusinessIntelligenceSynthesizerPhase6:
     @pytest.mark.asyncio
     async def test_synthesize_includes_coverage_in_provenance(self):
         synthesizer = BusinessIntelligenceSynthesizer()
-        research = _make_research_result()
+        finding = _make_finding_item(
+            evidence=[
+                EvidenceItem(
+                    source_id="src-1",
+                    source_url="https://example.com",
+                    retrieval_timestamp=datetime.now(timezone.utc),
+                    content_excerpt="excerpt",
+                    metadata=None,
+                )
+            ],
+            metadata={"dimension": "trade_intelligence"},
+        )
+        research = _make_research_result(
+            findings=[finding],
+            source_execution_statuses={"src-1": SourceExecutionStatus.SUCCESS_WITH_DATA},
+        )
         mission = type("Mission", (), {"result": {}, "goal": None})()
         answer = await synthesizer.synthesize(
             mission=mission,
@@ -231,6 +281,7 @@ class TestBusinessIntelligenceSynthesizerPhase6:
         assert "coverage" in answer.provenance
         coverage = answer.provenance["coverage"]
         assert coverage["coverage_level"] == "adequate"
+        assert any(entry["dimension"] == "trade_intelligence" for entry in coverage["entries"])
 
     @pytest.mark.asyncio
     async def test_synthesize_coverage_partial_with_failed_sources(self):
