@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
@@ -659,5 +659,138 @@ describe('ExecutiveResultCard', () => {
     };
     render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
     expect(screen.queryByText('evidence')).toBeNull();
+  });
+
+  it('shows compact cross-reference when evidence is duplicated across sections', () => {
+    const sharedEvidence = {
+      source_id: 'src-shared',
+      source_url: 'https://example.com/shared',
+      content_excerpt: 'Shared excerpt',
+    };
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade',
+            content: 'Trade fact.',
+            evidence: [sharedEvidence],
+          },
+        ],
+        entities: [
+          {
+            name: 'Egypt',
+            type: 'country',
+            attributes: {},
+            evidence: [sharedEvidence],
+          },
+        ],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    const sharedElements = screen.getAllByText('src-shared');
+    expect(sharedElements.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText((content, element) => content.includes('Also cited in'))).toBeDefined();
+  });
+
+  it('does not show cross-reference for unique evidence', () => {
+    const uniqueEvidence = {
+      source_id: 'src-unique',
+      source_url: 'https://example.com/unique',
+      content_excerpt: 'Unique excerpt',
+    };
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade',
+            content: 'Trade fact.',
+            evidence: [uniqueEvidence],
+          },
+        ],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-unique')).toBeDefined();
+    expect(screen.queryByText((content, element) => content.includes('Also cited in'))).toBeNull();
+  });
+
+  it('groups evidence by source and allows drill-down', () => {
+    const groupedEvidence = [
+      {
+        source_id: 'src-grouped',
+        source_url: 'https://example.com/grouped',
+        content_excerpt: 'First excerpt',
+        retrieval_timestamp: '2026-09-14T12:57:54.075566',
+        confidence: 0.8,
+        limitations: ['Limitation 1'],
+        provenance: { research_status: 'completed' },
+      },
+      {
+        source_id: 'src-grouped',
+        source_url: 'https://example.com/grouped',
+        content_excerpt: 'Second excerpt',
+        retrieval_timestamp: '2026-09-14T12:58:00.000000',
+        confidence: 0.9,
+        limitations: ['Limitation 2'],
+        provenance: { research_status: 'completed' },
+      },
+    ];
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade',
+            content: 'Trade fact.',
+            evidence: groupedEvidence,
+          },
+        ],
+        entities: [],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getByText('src-grouped')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('First excerpt'))).toBeDefined();
+    expect(screen.queryByText((content, element) => content.includes('Second excerpt'))).toBeNull();
+    expect(screen.getByText('Show more')).toBeDefined();
+    act(() => {
+      screen.getByText('Show more').click();
+    });
+    expect(screen.getByText((content, element) => content.includes('Second excerpt'))).toBeDefined();
+    expect(screen.getByText('Show less')).toBeDefined();
+    expect(screen.getByText('Retrieved: 2026-09-14T12:57:54.075566')).toBeDefined();
+    expect(screen.getByText('Confidence: 0.8')).toBeDefined();
+    expect(screen.getByText((content, element) => content.includes('Limitation 1'))).toBeDefined();
+    expect(screen.getAllByText(/Provenance:/).length).toBeGreaterThanOrEqual(2);
   });
 });

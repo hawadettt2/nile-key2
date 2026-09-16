@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ParsedAvatarResult } from '@/lib/avatarResultParser';
 
@@ -5,6 +6,155 @@ interface ExecutiveResultCardProps {
   parsed: ParsedAvatarResult;
   rawResponse: string;
   locale: 'ar' | 'en';
+}
+
+type SectionName = 'keyFindings' | 'entities' | 'comparisons' | 'rankings' | 'opportunities' | 'risks' | 'recommendations' | 'evidence';
+
+function getEvidenceKey(item: { source_id?: string; source_url?: string; content_excerpt?: string }) {
+  return `${item.source_id || ''}|${item.source_url || ''}|${item.content_excerpt || ''}`;
+}
+
+function buildEvidenceSectionMap(bi: ParsedAvatarResult['businessAnswer']) {
+  const firstSection = new Map<string, SectionName>();
+  const sections: Array<{ name: SectionName; items: Array<{ source_id?: string; source_url?: string; content_excerpt?: string }> }> = [
+    { name: 'keyFindings', items: bi.keyFindings.flatMap(f => f.evidence) },
+    { name: 'entities', items: bi.entities.flatMap(e => e.evidence) },
+    { name: 'comparisons', items: bi.comparisons?.results.flatMap(r => r.evidence) ?? [] },
+    { name: 'rankings', items: bi.rankings?.flatMap(r => r.evidence) ?? [] },
+    { name: 'opportunities', items: bi.opportunities.flatMap(o => o.evidence) },
+    { name: 'risks', items: bi.risks.flatMap(r => r.evidence) },
+    { name: 'recommendations', items: bi.recommendations.flatMap(r => r.evidence) },
+    { name: 'evidence', items: bi.evidence },
+  ];
+
+  for (const section of sections) {
+    for (const item of section.items) {
+      const key = getEvidenceKey(item);
+      if (!firstSection.has(key)) {
+        firstSection.set(key, section.name);
+      }
+    }
+  }
+
+  return firstSection;
+}
+
+function groupEvidenceBySource(
+  evidence: Array<{
+    source_id?: string;
+    source_url?: string;
+    content_excerpt?: string;
+    retrieval_timestamp?: string;
+    confidence?: number | null;
+    limitations?: string[] | null;
+    provenance?: Record<string, unknown> | null;
+  }>,
+) {
+  const groups = new Map<string, Array<{
+    source_id?: string;
+    source_url?: string;
+    content_excerpt?: string;
+    retrieval_timestamp?: string;
+    confidence?: number | null;
+    limitations?: string[] | null;
+    provenance?: Record<string, unknown> | null;
+  }>>();
+
+  for (const item of evidence) {
+    const key = item.source_id || 'unknown';
+    const list = groups.get(key) || [];
+    list.push(item);
+    groups.set(key, list);
+  }
+
+  return groups;
+}
+
+function EvidenceGroup({
+  sourceId,
+  items,
+  firstSectionMap,
+  currentSection,
+  t,
+}: {
+  sourceId: string;
+  items: Array<{
+    source_id?: string;
+    source_url?: string;
+    content_excerpt?: string;
+    retrieval_timestamp?: string;
+    confidence?: number | null;
+    limitations?: string[] | null;
+    provenance?: Record<string, unknown> | null;
+  }>;
+  firstSectionMap: Map<string, SectionName>;
+  currentSection: SectionName;
+  t: (key: string) => string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const first = items[0];
+  const firstKey = first ? getEvidenceKey(first) : '';
+  const firstSection = firstSectionMap.get(firstKey);
+  const firstIsDuplicate = firstSection !== undefined && firstSection !== currentSection;
+
+  return (
+    <div className="space-y-1">
+      <div className="text-sm text-slate-800">
+        <span className="font-medium">{sourceId || 'evidence'}</span>
+        {first?.source_url ? (
+          <span className="text-slate-500"> — {first.source_url}</span>
+        ) : null}
+        {first?.content_excerpt ? (
+          <span className="text-slate-600"> — {first.content_excerpt.slice(0, 180)}</span>
+        ) : null}
+        {firstIsDuplicate && firstSection ? (
+          <span className="text-slate-500"> — {t('avatar.bi.also_cited_in')}: {firstSection}</span>
+        ) : null}
+        {items.length > 1 ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="text-xs text-slate-500 hover:text-slate-700 ml-2"
+          >
+            {expanded ? t('avatar.bi.show_less') : t('avatar.bi.show_more')}
+          </button>
+        ) : null}
+      </div>
+      {expanded && (
+        <div className="ml-4 space-y-1">
+          {items.map((item, idx) => {
+            const key = getEvidenceKey(item);
+            const itemFirstSection = firstSectionMap.get(key);
+            const isDuplicate = itemFirstSection !== undefined && itemFirstSection !== currentSection;
+            return (
+              <div key={idx} className="text-xs text-slate-600">
+                <div>
+                  <span className="font-medium">{item.source_id || 'evidence'}</span>
+                  {item.source_url ? (
+                    <span className="text-slate-500"> — {item.source_url}</span>
+                  ) : null}
+                  {item.content_excerpt ? (
+                    <span className="text-slate-600"> — {item.content_excerpt.slice(0, 180)}</span>
+                  ) : null}
+                  {isDuplicate && itemFirstSection ? (
+                    <span className="text-slate-500"> — {t('avatar.bi.also_cited_in')}: {itemFirstSection}</span>
+                  ) : null}
+                </div>
+                {item.retrieval_timestamp || item.confidence !== null || item.limitations?.length || item.provenance ? (
+                  <div className="mt-1 text-slate-500">
+                    {item.retrieval_timestamp ? <div>Retrieved: {item.retrieval_timestamp}</div> : null}
+                    {item.confidence !== null ? <div>Confidence: {item.confidence}</div> : null}
+                    {item.limitations?.length ? <div>Limitations: {item.limitations.join(', ')}</div> : null}
+                    {item.provenance ? <div>Provenance: {JSON.stringify(item.provenance)}</div> : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function renderEvidenceItems(
@@ -17,26 +167,34 @@ function renderEvidenceItems(
     limitations?: string[] | null;
     provenance?: Record<string, unknown> | null;
   }>,
+  firstSectionMap: Map<string, SectionName>,
+  currentSection: SectionName,
+  t: (key: string) => string,
 ) {
   if (!evidence.length) return null;
+  const grouped = groupEvidenceBySource(evidence);
+  const groups = Array.from(grouped.entries());
+
+  if (groups.length === 0) return null;
+
   return (
     <ul className="list-disc list-inside space-y-1 text-sm text-slate-800">
-      {evidence.map((item, idx) => (
-        <li key={idx}>
-          <span className="font-medium">{item.source_id || 'evidence'}</span>
-          {item.source_url ? (
-            <span className="text-slate-500"> — {item.source_url}</span>
-          ) : null}
-          {item.content_excerpt ? (
-            <span className="text-slate-600"> — {item.content_excerpt.slice(0, 180)}</span>
-          ) : null}
+      {groups.map(([sourceId, items]) => (
+        <li key={sourceId}>
+          <EvidenceGroup
+            sourceId={sourceId}
+            items={items}
+            firstSectionMap={firstSectionMap}
+            currentSection={currentSection}
+            t={t}
+          />
         </li>
       ))}
     </ul>
   );
 }
 
-function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFindings']) {
+function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFindings'], firstSectionMap: Map<string, SectionName>, t: (key: string) => string) {
   if (!findings.length) return null;
   return (
     <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
@@ -44,7 +202,7 @@ function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFi
         <li key={idx}>
           <div className="font-medium text-slate-700">{finding.topic || finding.content}</div>
           <div className="text-slate-600">{finding.content}</div>
-          {renderEvidenceItems(finding.evidence)}
+          {renderEvidenceItems(finding.evidence, firstSectionMap, 'keyFindings', t)}
           {finding.limitations && finding.limitations.length > 0 ? (
             <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
               {finding.limitations.map((limitation, lidx) => (
@@ -58,7 +216,7 @@ function renderKeyFindings(findings: ParsedAvatarResult['businessAnswer']['keyFi
   );
 }
 
-function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities']) {
+function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities'], firstSectionMap: Map<string, SectionName>, t: (key: string) => string) {
   if (!entities.length) return null;
   return (
     <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
@@ -69,7 +227,7 @@ function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities
           {Object.keys(entity.attributes).length > 0 ? (
             <span className="text-slate-500"> | {JSON.stringify(entity.attributes)}</span>
           ) : null}
-          {renderEvidenceItems(entity.evidence)}
+          {renderEvidenceItems(entity.evidence, firstSectionMap, 'entities', t)}
         </li>
       ))}
     </ul>
@@ -78,6 +236,8 @@ function renderEntities(entities: ParsedAvatarResult['businessAnswer']['entities
 
 function renderComparisons(
   comparisons: ParsedAvatarResult['businessAnswer']['comparisons'],
+  firstSectionMap: Map<string, SectionName>,
+  t: (key: string) => string,
 ) {
   if (!comparisons) return null;
   return (
@@ -93,7 +253,7 @@ function renderComparisons(
           <li key={idx}>
             <span className="font-medium">{result.option}</span>
             <span className="text-slate-600"> — {result.criterion}: {String(result.value)}</span>
-            {renderEvidenceItems(result.evidence)}
+            {renderEvidenceItems(result.evidence, firstSectionMap, 'comparisons', t)}
           </li>
         ))}
       </ul>
@@ -110,6 +270,8 @@ function renderComparisons(
 
 function renderRankings(
   rankings: ParsedAvatarResult['businessAnswer']['rankings'],
+  firstSectionMap: Map<string, SectionName>,
+  t: (key: string) => string,
 ) {
   if (!rankings || !rankings.length) return null;
   return (
@@ -126,7 +288,7 @@ function renderRankings(
           {ranking.explanation ? (
             <div className="text-slate-600">{ranking.explanation}</div>
           ) : null}
-          {renderEvidenceItems(ranking.evidence)}
+          {renderEvidenceItems(ranking.evidence, firstSectionMap, 'rankings', t)}
           {ranking.limitations && ranking.limitations.length > 0 ? (
             <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
               {ranking.limitations.map((limitation, lidx) => (
@@ -140,7 +302,7 @@ function renderRankings(
   );
 }
 
-function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']['opportunities']) {
+function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']['opportunities'], firstSectionMap: Map<string, SectionName>, t: (key: string) => string) {
   if (!opportunities.length) return null;
   return (
     <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
@@ -150,7 +312,7 @@ function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']
           {item.confidence !== null ? (
             <span className="text-slate-600"> — confidence: {item.confidence}</span>
           ) : null}
-          {renderEvidenceItems(item.evidence)}
+          {renderEvidenceItems(item.evidence, firstSectionMap, 'opportunities', t)}
           {item.limitations && item.limitations.length > 0 ? (
             <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
               {item.limitations.map((limitation, lidx) => (
@@ -164,7 +326,7 @@ function renderOpportunities(opportunities: ParsedAvatarResult['businessAnswer']
   );
 }
 
-function renderRisks(risks: ParsedAvatarResult['businessAnswer']['risks']) {
+function renderRisks(risks: ParsedAvatarResult['businessAnswer']['risks'], firstSectionMap: Map<string, SectionName>, t: (key: string) => string) {
   if (!risks.length) return null;
   return (
     <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
@@ -173,7 +335,7 @@ function renderRisks(risks: ParsedAvatarResult['businessAnswer']['risks']) {
           <span className="font-medium">{item.description}</span>
           {item.severity ? <span className="text-slate-600"> — severity: {item.severity}</span> : null}
           {item.mitigation ? <span className="text-slate-500"> — mitigation: {item.mitigation}</span> : null}
-          {renderEvidenceItems(item.evidence)}
+          {renderEvidenceItems(item.evidence, firstSectionMap, 'risks', t)}
           {item.limitations && item.limitations.length > 0 ? (
             <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
               {item.limitations.map((limitation, lidx) => (
@@ -187,9 +349,7 @@ function renderRisks(risks: ParsedAvatarResult['businessAnswer']['risks']) {
   );
 }
 
-function renderRecommendations(
-  recommendations: ParsedAvatarResult['businessAnswer']['recommendations'],
-) {
+function renderRecommendations(recommendations: ParsedAvatarResult['businessAnswer']['recommendations'], firstSectionMap: Map<string, SectionName>, t: (key: string) => string) {
   if (!recommendations.length) return null;
   return (
     <ul className="list-disc list-inside space-y-2 text-sm text-slate-800">
@@ -198,7 +358,7 @@ function renderRecommendations(
           <span className="font-medium">{item.action}</span>
           <span className="text-slate-600"> — {item.type}</span>
           <div className="text-slate-600">{item.rationale}</div>
-          {renderEvidenceItems(item.evidence)}
+          {renderEvidenceItems(item.evidence, firstSectionMap, 'recommendations', t)}
           {item.limitations && item.limitations.length > 0 ? (
             <ul className="list-disc list-inside space-y-1 text-xs text-slate-500 mt-1">
               {item.limitations.map((limitation, lidx) => (
@@ -215,6 +375,7 @@ function renderRecommendations(
 export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps) {
   const { t } = useTranslation();
   const bi = parsed.businessAnswer;
+  const firstSectionMap = buildEvidenceSectionMap(bi);
 
   return (
     <div dir={locale === 'ar' ? 'rtl' : 'ltr'} className="space-y-4 text-sm text-slate-700">
@@ -255,49 +416,49 @@ export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps
       {bi.keyFindings.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.key_findings')}</p>
-          {renderKeyFindings(bi.keyFindings)}
+          {renderKeyFindings(bi.keyFindings, firstSectionMap, t)}
         </div>
       )}
 
       {bi.entities.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.entities')}</p>
-          {renderEntities(bi.entities)}
+          {renderEntities(bi.entities, firstSectionMap, t)}
         </div>
       )}
 
       {bi.comparisons && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.comparisons')}</p>
-          {renderComparisons(bi.comparisons)}
+          {renderComparisons(bi.comparisons, firstSectionMap, t)}
         </div>
       )}
 
       {bi.rankings && bi.rankings.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.rankings')}</p>
-          {renderRankings(bi.rankings)}
+          {renderRankings(bi.rankings, firstSectionMap, t)}
         </div>
       )}
 
       {bi.opportunities.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.opportunities')}</p>
-          {renderOpportunities(bi.opportunities)}
+          {renderOpportunities(bi.opportunities, firstSectionMap, t)}
         </div>
       )}
 
       {bi.risks.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.risks')}</p>
-          {renderRisks(bi.risks)}
+          {renderRisks(bi.risks, firstSectionMap, t)}
         </div>
       )}
 
       {bi.recommendations.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.recommendations')}</p>
-          {renderRecommendations(bi.recommendations)}
+          {renderRecommendations(bi.recommendations, firstSectionMap, t)}
         </div>
       )}
 
@@ -322,7 +483,7 @@ export function ExecutiveResultCard({ parsed, locale }: ExecutiveResultCardProps
       {bi.evidence.length > 0 && (
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3">
           <p className="text-xs font-semibold text-slate-500 mb-1">{t('avatar.bi.evidence')}</p>
-          {renderEvidenceItems(bi.evidence)}
+          {renderEvidenceItems(bi.evidence, firstSectionMap, 'evidence', t)}
         </div>
       )}
 

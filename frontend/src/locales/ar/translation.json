@@ -408,7 +408,12 @@
       "confidence": "مستوى الثقة",
       "limitations": "القيود",
       "evidence": "الأدلة",
-      "provenance": "المصدر"
+      "provenance": "المصدر",
+      "also_cited_in": "مذكور أيضاً في",
+      "source_group": "المصدر",
+      "show_more": "عرض المزيد",
+      "show_less": "عرض أقل",
+      "source_details": "تفاصيل المصدر"
     },
     "identifiers": {
       "mission_id": "معرف المهمة",
@@ -417,6 +422,9 @@
     "sections": {
       "structured_response": "الاستجابة المنظمة",
       "raw_response": "البيانات الخام",
+      "technical_details": "تفاصيل تقنية",
+      "show_technical": "عرض التفاصيل التقنية",
+      "hide_technical": "إخفاء التفاصيل التقنية",
       "no_structured_content": "لا توجد بيانات منظمة للعرض.",
       "conversation": "المحادثة",
       "text_first": "نص فقط",

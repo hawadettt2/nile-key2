@@ -491,23 +491,6 @@ export function Avatar() {
                       view_details: getDisabledActionReason('view_details'),
                     }}
                   />
-                  {showRawResponse && (
-                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold text-slate-500">{t('avatar.sections.raw_response')}</p>
-                        <button
-                          type="button"
-                          onClick={() => setShowRawResponse(false)}
-                          className="text-xs text-slate-500 hover:text-slate-700"
-                        >
-                          {t('avatar.actions.close')}
-                        </button>
-                      </div>
-                      <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono max-h-[240px] overflow-y-auto">
-                        {response}
-                      </pre>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 border border-slate-100 rounded-xl p-4 max-h-[240px] overflow-y-auto transition-all duration-500 shadow-sm">
@@ -515,6 +498,40 @@ export function Avatar() {
                 </pre>
               )}
             </div>
+          </div>
+        )}
+
+        {response && parsedResult && parsedResult.hasStructuredContent && (
+          <div className="mb-6 bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden transition-all duration-500 hover:shadow-md">
+            <div className="px-6 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{t('avatar.sections.technical_details')}</span>
+              <button
+                type="button"
+                onClick={() => setShowRawResponse(!showRawResponse)}
+                className="text-xs text-slate-500 hover:text-slate-700"
+              >
+                {showRawResponse ? t('avatar.sections.hide_technical') : t('avatar.sections.show_technical')}
+              </button>
+            </div>
+            {showRawResponse && (
+              <div className="p-6">
+                <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-slate-500">{t('avatar.sections.raw_response')}</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowRawResponse(false)}
+                      className="text-xs text-slate-500 hover:text-slate-700"
+                    >
+                      {t('avatar.actions.close')}
+                    </button>
+                  </div>
+                  <pre className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed font-mono max-h-[240px] overflow-y-auto">
+                    {response}
+                  </pre>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
