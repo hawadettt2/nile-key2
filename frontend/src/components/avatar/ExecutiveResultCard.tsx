@@ -109,7 +109,7 @@ function EvidenceGroup({
               <span className="text-slate-500"> — {first.source_url}</span>
             ) : null}
             {first?.content_excerpt ? (
-              <span className="text-slate-600"> — {first.content_excerpt.slice(0, 180)}</span>
+              <span className="text-slate-600"> — {first.content_excerpt}</span>
             ) : null}
           </>
         )}
@@ -144,15 +144,15 @@ function EvidenceGroup({
                     <span className="text-slate-500"> — {item.source_url}</span>
                   ) : null}
                   {item.content_excerpt ? (
-                    <span className="text-slate-600"> — {item.content_excerpt.slice(0, 180)}</span>
+                    <span className="text-slate-600"> — {item.content_excerpt}</span>
                   ) : null}
                 </div>
-                {item.retrieval_timestamp || item.confidence !== null || item.limitations?.length || item.provenance ? (
+                {(item.retrieval_timestamp || item.confidence !== null || item.limitations?.length || item.provenance) ? (
                   <div className="mt-1 text-slate-500">
-                    {item.retrieval_timestamp ? <div>Retrieved: {item.retrieval_timestamp}</div> : null}
-                    {item.confidence !== null ? <div>Confidence: {item.confidence}</div> : null}
-                    {item.limitations?.length ? <div>Limitations: {item.limitations.join(', ')}</div> : null}
-                    {item.provenance ? <div>Provenance: {JSON.stringify(item.provenance)}</div> : null}
+                    {item.retrieval_timestamp ? <div>{t('avatar.bi.retrieval_timestamp')}: {item.retrieval_timestamp}</div> : null}
+                    {item.confidence !== null ? <div>{t('avatar.bi.confidence')}: {item.confidence}</div> : null}
+                    {item.limitations?.length ? <div>{t('avatar.bi.limitations')}: {item.limitations.join(', ')}</div> : null}
+                    {item.provenance ? <div>{t('avatar.bi.provenance')}: {JSON.stringify(item.provenance)}</div> : null}
                   </div>
                 ) : null}
               </div>

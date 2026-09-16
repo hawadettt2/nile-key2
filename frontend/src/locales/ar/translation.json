@@ -413,7 +413,8 @@
       "source_group": "المصدر",
       "show_more": "عرض المزيد",
       "show_less": "عرض أقل",
-      "source_details": "تفاصيل المصدر"
+      "source_details": "تفاصيل المصدر",
+      "retrieval_timestamp": "وقت الاسترجاع"
     },
     "identifiers": {
       "mission_id": "معرف المهمة",

@@ -413,7 +413,8 @@
       "source_group": "Source",
       "show_more": "Show more",
       "show_less": "Show less",
-      "source_details": "Source details"
+      "source_details": "Source details",
+      "retrieval_timestamp": "Retrieval Timestamp"
     },
     "identifiers": {
       "mission_id": "Mission ID",

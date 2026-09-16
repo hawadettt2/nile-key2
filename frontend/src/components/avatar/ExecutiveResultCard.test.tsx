@@ -828,7 +828,7 @@ describe('ExecutiveResultCard', () => {
     });
     expect(screen.getByText((content, element) => content.includes('Second excerpt'))).toBeDefined();
     expect(screen.getByText('Show less')).toBeDefined();
-    expect(screen.getByText('Retrieved: 2026-09-14T12:57:54.075566')).toBeDefined();
+    expect(screen.getByText('Retrieval Timestamp: 2026-09-14T12:57:54.075566')).toBeDefined();
     expect(screen.getByText('Confidence: 0.8')).toBeDefined();
     expect(screen.getByText((content, element) => content.includes('Limitation 1'))).toBeDefined();
     expect(screen.getAllByText(/Provenance:/).length).toBeGreaterThanOrEqual(2);
