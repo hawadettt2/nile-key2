@@ -13,6 +13,7 @@ class SourceCapabilityResolver:
         "logistics": {"logistics_market_execution"},
         "market_data": {"market_opportunity"},
         "regulation": {"market_access", "regulatory_sps_tbt", "rules_of_origin"},
+        "external_trade_intelligence": {"trade_intelligence", "market_opportunity"},
     }
 
     def capabilities(self, source: Source) -> Set[str]:

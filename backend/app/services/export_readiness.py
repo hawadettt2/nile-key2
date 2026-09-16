@@ -55,13 +55,15 @@ class ExportReadinessService:
             return self._orchestrator
 
         try:
-            from main import app
-            reasoning_engine = getattr(app.state, "reasoning_engine", None)
-            if reasoning_engine is not None:
-                orchestrator = getattr(reasoning_engine, "_knowledge_orchestrator", None)
-                if orchestrator is not None:
-                    self._orchestrator = orchestrator
-                    return orchestrator
+            import sys
+            module = sys.modules.get("backend.main") or sys.modules.get("main")
+            if module is not None:
+                reasoning_engine = getattr(module.app.state, "reasoning_engine", None)
+                if reasoning_engine is not None:
+                    orchestrator = getattr(reasoning_engine, "_knowledge_orchestrator", None)
+                    if orchestrator is not None:
+                        self._orchestrator = orchestrator
+                        return orchestrator
         except Exception:
             pass
 

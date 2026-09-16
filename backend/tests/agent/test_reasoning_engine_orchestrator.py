@@ -140,7 +140,7 @@ class TestReasoningEngineExternalResearch:
         engine = ReasoningEngine()
         assert not hasattr(engine, "_research_orchestrator")
         results = await engine._query_external_research("market study export", {})
-        assert results == []
+        assert results is None
 
     async def test_graceful_degradation_when_execute_raises(self):
         engine = ReasoningEngine()
@@ -151,7 +151,7 @@ class TestReasoningEngineExternalResearch:
 
         engine._research_orchestrator = FailingOrchestrator()
         results = await engine._query_external_research("market study export", {})
-        assert results == []
+        assert results is None
 
     async def test_non_research_request_does_not_trigger_external_research(self):
         engine = ReasoningEngine()
@@ -175,7 +175,7 @@ class TestReasoningEngineExternalResearch:
 
         engine._research_orchestrator = TrackingOrchestrator()
         results = await engine._query_external_research("create shipment to Saudi Arabia", {})
-        assert results == []
+        assert results is None
         assert calls == []
 
     async def test_full_reason_flow_preserves_knowledge_and_research(self):

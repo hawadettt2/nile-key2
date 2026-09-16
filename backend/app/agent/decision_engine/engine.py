@@ -650,14 +650,19 @@ class ReasoningEngine:
         from app.research.intent_extractor import normalize_research_context
         return normalize_research_context(context, parameters)
 
-    async def _query_external_research(self, intent: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Query External Research Capability (WP-34) when request is suitable."""
+    async def _query_external_research(self, intent: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Query External Research Capability (WP-34) when request is suitable.
+
+        Returns:
+            Dict with research result when research is performed.
+            None when no research is available or applicable.
+        """
         orchestrator = getattr(self, "_research_orchestrator", None)
         if orchestrator is None:
-            return []
+            return None
 
         if not self._should_trigger_external_research(intent):
-            return []
+            return None
 
         extracted = self._extract_research_parameters(intent, parameters)
         qualified_query = self._build_qualified_query(intent, extracted)
@@ -701,13 +706,13 @@ class ReasoningEngine:
         try:
             result = await orchestrator.execute(request, request_id)
         except Exception:
-            return []
+            return None
 
         if hasattr(result, "model_dump"):
             return result.model_dump(mode="json")
         if isinstance(result, dict):
             return result
-        return []
+        return None
 
     @staticmethod
     def _should_trigger_external_research(intent: str) -> bool:

@@ -86,7 +86,7 @@ async def lifespan(app: FastAPI):
                 model=settings.LLM_MODEL,
                 credential_store=llm_cred_store,
             )
-            await llm_registry.register(llm_provider)
+            llm_registry.register(llm_provider)
             print(f"[SUCCESS] LLM provider registered: {settings.LLM_PROVIDER}")
         else:
             print("[WARNING] LLM_API_KEY is not configured. LLM provider not registered.")

@@ -162,8 +162,11 @@ async def _ensure_goal_plan_context(
 
 
 async def execute_text_intent(text: str, session_id: str, user_id: int) -> Dict[str, Any]:
-    from main import app
-    reasoning_engine: ReasoningEngine = app.state.reasoning_engine
+    import sys
+    module = sys.modules.get("backend.main") or sys.modules.get("main")
+    if module is None:
+        raise RuntimeError("Application module not loaded")
+    reasoning_engine: ReasoningEngine = module.app.state.reasoning_engine
 
     session = session_manager.get_session(session_id)
     if not session:

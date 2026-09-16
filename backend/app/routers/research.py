@@ -118,7 +118,7 @@ def _knowledge_source_to_research_source(source_meta: Dict[str, Any], provider: 
     source_id = source_meta.get("id") or ""
     name = source_meta.get("name") or source_id
     source_type = source_meta.get("type") or "other"
-    valid_types = {"market_data", "regulation", "news", "trade_statistics", "other"}
+    valid_types = {"market_data", "regulation", "news", "trade_statistics", "external_trade_intelligence", "other"}
     if source_type not in valid_types:
         source_type = "other"
     reference = source_meta.get("source_url") or source_meta.get("updated_at") or source_meta.get("reference")

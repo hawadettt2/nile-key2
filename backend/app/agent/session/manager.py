@@ -181,13 +181,23 @@ class SessionManager:
                 return False
 
             missions = context.get("missions", [])
+            mission_found = False
             for mission in missions:
                 if mission.get("mission_id") == mission_id:
                     mission["status"] = status
                     if result is not None:
                         mission["result"] = result
                     mission["updated_at"] = datetime.now(timezone.utc).isoformat()
+                    mission_found = True
                     break
+
+            if not mission_found:
+                missions.append({
+                    "mission_id": mission_id,
+                    "status": status,
+                    "result": result,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                })
 
             context["missions"] = missions
             context["updated_at"] = datetime.now(timezone.utc).isoformat()

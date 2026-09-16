@@ -54,12 +54,6 @@ class GeminiProvider(BaseLLMProvider):
         if credential_store is not None:
             credential = credential_store.get("llm_api_key")
             if credential is not None:
-                import asyncio
-                loop = asyncio.new_event_loop()
-                try:
-                    loop.run_until_complete(credential.on_before_use())
-                finally:
-                    loop.close()
                 self._api_key = credential.get_key()
             else:
                 self._api_key = api_key

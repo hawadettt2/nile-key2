@@ -169,17 +169,18 @@ class WorkflowOrchestrator:
 
     def _safe_get_workflow(self, workflow_id: int) -> Optional[Dict[str, Any]]:
         try:
-            return business_get_workflow(workflow_id)
+            from app.services.workflow import get_workflow
+            return get_workflow(workflow_id)
         except Exception:
             return None
 
     def _create_workflow(self, workflow_info: Dict[str, Any], user_id: Optional[int]) -> Optional[Dict[str, Any]]:
         try:
             from app.schemas.workflow import ExportWorkflowCreate
-            from app.services.workflow import create_workflow
+            from app.services.workflow import create_workflow, get_workflow
             data = ExportWorkflowCreate(**workflow_info)
             result = create_workflow(data=data, current_user=self.current_user)
-            return business_get_workflow(result["id"])
+            return get_workflow(result["id"])
         except Exception:
             return None
 

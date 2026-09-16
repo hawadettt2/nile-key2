@@ -426,7 +426,7 @@ class WorkflowGetStateTool(BaseTool):
         try:
             from app.services.workflow import get_workflow
 
-            workflow_id = int(parameters.get("workflow_id", 0))
+            workflow_id = int(parameters.get("workflow_id") or context.get("workflow_id") or 0)
             result = get_workflow(workflow_id)
             return ToolResult(status="success", data=result, audit_ref=f"{self.tool_name}:{uuid.uuid4()}")
         except Exception as e:
@@ -449,7 +449,7 @@ class WorkflowTransitionTool(BaseTool):
         try:
             from app.services.workflow import transition_workflow
 
-            workflow_id = int(parameters.get("workflow_id", 0))
+            workflow_id = int(parameters.get("workflow_id") or context.get("workflow_id") or 0)
             new_state = parameters.get("new_state", "")
             user = context.get("user", {})
             result = transition_workflow(workflow_id, new_state, user)

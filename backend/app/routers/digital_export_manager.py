@@ -35,6 +35,9 @@ from app.agent.autonomy.evaluator import AutonomyEvaluator
 from app.agent.autonomy.enforcer import AutonomyEnforcer
 from app.agent.approval.gate import ApprovalGate
 from app.agent.approval.resume import ResumeService
+from app.agent.autonomy.enforcer import AutonomyEnforcer
+from app.agent.autonomy.interpreter import AutonomyPolicyInterpreter
+from app.agent.autonomy.evaluator import AutonomyEvaluator
 from app.agent.insights.builder import InsightBuilder
 from app.agent.insights.extractor import PatternExtractor
 from app.agent.insights.generator import InsightGenerator
@@ -61,8 +64,11 @@ def get_workflow_orchestrator() -> WorkflowOrchestrator:
 
 
 def get_reasoning_engine() -> ReasoningEngine:
-    from main import app
-    return app.state.reasoning_engine
+    import sys
+    module = sys.modules.get("backend.main") or sys.modules.get("main")
+    if module is None:
+        raise RuntimeError("Application module not loaded")
+    return module.app.state.reasoning_engine
 
 
 def _is_strategic_objective(payload: Dict[str, Any]) -> bool:
@@ -398,6 +404,12 @@ async def create_mission(
         session_context["plan_id"] = goal_plan_context.get("plan_id")
         session_context["plan_constraints"] = goal_plan_context.get("plan_constraints", [])
 
+    # Ensure intent and chosen_path are available for approval gate checks
+    if not session_context.get("intent"):
+        session_context["intent"] = request.payload.get("query", "") or request.payload.get("intent", "")
+    if not session_context.get("chosen_path"):
+        session_context["chosen_path"] = chosen_path
+
     # Workflow-Aware Mission Orchestration: ensure business workflow exists
     workflow_info = None
     try:
@@ -407,6 +419,8 @@ async def create_mission(
             payload=request.payload,
             user_id=current_user.get("id"),
         )
+        if workflow_info and workflow_info.get("id"):
+            session_context["workflow_id"] = workflow_info["id"]
     except Exception:
         pass
 
@@ -420,14 +434,24 @@ async def create_mission(
         execution_plan = execution_result["execution_plan"]
 
         audit_recorder = AuditRecorder(get_db)
+        autonomy_enforcer = AutonomyEnforcer(
+            policy_interpreter=AutonomyPolicyInterpreter(),
+            evaluator=AutonomyEvaluator(),
+            audit_recorder=audit_recorder,
+            goal_repository=GoalRepository(get_db),
+            plan_repository=PlanRepository(get_db),
+            approval_gate=ApprovalGate(),
+        )
         tool_orchestrator = ToolOrchestrator(
             tool_registry=tool_registry,
             audit_recorder=audit_recorder,
             session_manager=session_manager,
+            autonomy_enforcer=autonomy_enforcer,
         )
 
         session_context_with_idempotency = dict(session_context)
         session_context_with_idempotency["idempotency_key"] = idempotency_key
+        session_context_with_idempotency["session_id"] = session_id
 
         execution_output = await tool_orchestrator.execute(
             execution_plan,
@@ -446,11 +470,22 @@ async def create_mission(
         mission.error = execution_output.get("failure_summary", {}).get("error")
         mission.updated_at = datetime.now(timezone.utc)
 
+        # Preserve approval_state when updating mission result after execution
+        existing_mission = session_manager.get_mission_by_id(session_id, mission.mission_id)
+        existing_result = existing_mission.get("result") if existing_mission else None
+        new_result = execution_output.get("results")
+
+        if isinstance(existing_result, dict) and "approval_state" in existing_result:
+            if isinstance(new_result, dict):
+                new_result = {**existing_result, **new_result}
+            else:
+                new_result = existing_result
+
         session_manager.update_mission_status(
             session_id=session_id,
             mission_id=mission.mission_id,
             status=final_status,
-            result=execution_output.get("results"),
+            result=new_result,
         )
 
         saved = session_manager.add_mission(session_id, mission)

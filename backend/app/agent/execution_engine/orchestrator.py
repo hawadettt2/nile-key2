@@ -181,11 +181,16 @@ class ToolOrchestrator:
                     continue
 
             risk = context.get("risk")
+            chosen_path = context.get("chosen_path", "")
+            parameters_with_intent = dict(parameters)
+            if not parameters_with_intent.get("intent"):
+                parameters_with_intent["intent"] = context.get("intent", "")
             is_sensitive = is_sensitive_operation(
                 approval_gate=self.approval_gate,
                 tool_name=tool_name,
-                parameters=parameters,
+                parameters=parameters_with_intent,
                 risk=risk,
+                chosen_path=chosen_path,
             )
 
             if self.autonomy_enforcer:
@@ -438,10 +443,20 @@ class ToolOrchestrator:
 
         if self.session_manager and mission_id:
             try:
+                final_result = {"results": results, "failed_task_id": failed_task_id}
+                session_id = context.get("session_id")
+                if session_id:
+                    existing_mission = self.session_manager.get_mission_by_id(session_id, mission_id)
+                    if existing_mission:
+                        existing_result = existing_mission.get("result")
+                        if isinstance(existing_result, dict) and "approval_state" in existing_result:
+                            final_result = {**existing_result, **final_result}
+
                 self.session_manager.update_mission_status(
-                    mission_id,
-                    mission_status,
-                    {"results": results, "failed_task_id": failed_task_id},
+                    session_id=session_id,
+                    mission_id=mission_id,
+                    status=mission_status,
+                    result=final_result,
                 )
             except Exception:
                 pass
