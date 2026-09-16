@@ -30,6 +30,20 @@ class TestUnComtradeAdapterContract:
         assert source["type"] == "external_trade_intelligence"
         assert source["version"] == "1.0.0"
         assert source["updated_at"] == "2026-08-15T00:00:00Z"
+        assert source["source_url"] == "https://comtrade.un.org"
+
+    def test_get_sources_does_not_expose_updated_at_as_source_url(self):
+        adapter = UnComtradeExternalSourceAdapter(
+            config={
+                "source_id": "un-comtrade",
+                "updated_at": "2026-08-15",
+            }
+        )
+
+        sources = asyncio.run(adapter.get_sources())
+        source = sources[0]
+        assert source["source_url"] == "https://comtrade.un.org"
+        assert source["source_url"] != source["updated_at"]
 
     def test_default_source_metadata_when_config_is_empty(self):
         adapter = UnComtradeExternalSourceAdapter()

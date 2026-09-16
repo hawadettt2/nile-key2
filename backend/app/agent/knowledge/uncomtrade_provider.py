@@ -258,6 +258,7 @@ class UnComtradeExternalSourceAdapter(KnowledgeProvider):
             "type": self._provider_type,
             "version": self._version,
             "updated_at": self._updated_at,
+            "source_url": "https://comtrade.un.org",
         }
         return [source]
 
