@@ -697,9 +697,8 @@ describe('ExecutiveResultCard', () => {
       },
     };
     render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
-    const sharedElements = screen.getAllByText('src-shared');
-    expect(sharedElements.length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText((content, element) => content.includes('Also cited in'))).toBeDefined();
+    expect(screen.getAllByText('src-shared').length).toBe(1);
+    expect(screen.getAllByText((content, element) => content.includes('Also cited in')).length).toBe(1);
   });
 
   it('does not show cross-reference for unique evidence', () => {
@@ -733,6 +732,47 @@ describe('ExecutiveResultCard', () => {
     render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
     expect(screen.getByText('src-unique')).toBeDefined();
     expect(screen.queryByText((content, element) => content.includes('Also cited in'))).toBeNull();
+  });
+
+  it('renders duplicated evidence once and shows cross-reference only in later sections', () => {
+    const sharedEvidence = {
+      source_id: 'src-shared',
+      source_url: 'https://example.com/shared',
+      content_excerpt: 'Shared excerpt',
+    };
+    const biParsed: ParsedAvatarResult = {
+      ...baseParsed,
+      businessAnswer: {
+        keyFindings: [
+          {
+            topic: 'Trade',
+            content: 'Trade fact.',
+            evidence: [sharedEvidence],
+          },
+        ],
+        entities: [
+          {
+            name: 'Egypt',
+            type: 'country',
+            attributes: {},
+            evidence: [sharedEvidence],
+          },
+        ],
+        opportunities: [],
+        risks: [],
+        recommendations: [],
+        limitations: [],
+        evidence: [],
+        comparisons: null,
+        rankings: null,
+        confidence: null,
+        provenance: null,
+      },
+    };
+    render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
+    expect(screen.getAllByText('src-shared').length).toBe(1);
+    expect(screen.getAllByText((content, element) => content.includes('Also cited in')).length).toBe(1);
+    expect(screen.queryByText((content, element) => content.includes('https://example.com/shared') && element.textContent?.includes('src-shared'))).toBeDefined();
   });
 
   it('groups evidence by source and allows drill-down', () => {
@@ -779,7 +819,7 @@ describe('ExecutiveResultCard', () => {
       },
     };
     render(<ExecutiveResultCard parsed={biParsed} rawResponse="{}" locale="en" />, { wrapper: WrapperEnglish });
-    expect(screen.getByText('src-grouped')).toBeDefined();
+    expect(screen.getAllByText('src-grouped').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText((content, element) => content.includes('First excerpt'))).toBeDefined();
     expect(screen.queryByText((content, element) => content.includes('Second excerpt'))).toBeNull();
     expect(screen.getByText('Show more')).toBeDefined();

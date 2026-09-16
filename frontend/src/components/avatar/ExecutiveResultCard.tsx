@@ -94,22 +94,25 @@ function EvidenceGroup({
   const [expanded, setExpanded] = useState(false);
   const first = items[0];
   const firstKey = first ? getEvidenceKey(first) : '';
-  const firstSection = firstSectionMap.get(firstKey);
+  const firstSection = firstKey ? firstSectionMap.get(firstKey) : undefined;
   const firstIsDuplicate = firstSection !== undefined && firstSection !== currentSection;
 
   return (
     <div className="space-y-1">
       <div className="text-sm text-slate-800">
-        <span className="font-medium">{sourceId || 'evidence'}</span>
-        {first?.source_url ? (
-          <span className="text-slate-500"> — {first.source_url}</span>
-        ) : null}
-        {first?.content_excerpt ? (
-          <span className="text-slate-600"> — {first.content_excerpt.slice(0, 180)}</span>
-        ) : null}
         {firstIsDuplicate && firstSection ? (
-          <span className="text-slate-500"> — {t('avatar.bi.also_cited_in')}: {firstSection}</span>
-        ) : null}
+          <span className="text-slate-500">{t('avatar.bi.also_cited_in')}: {firstSection}</span>
+        ) : (
+          <>
+            <span className="font-medium">{sourceId || 'evidence'}</span>
+            {first?.source_url ? (
+              <span className="text-slate-500"> — {first.source_url}</span>
+            ) : null}
+            {first?.content_excerpt ? (
+              <span className="text-slate-600"> — {first.content_excerpt.slice(0, 180)}</span>
+            ) : null}
+          </>
+        )}
         {items.length > 1 ? (
           <button
             type="button"
@@ -126,6 +129,13 @@ function EvidenceGroup({
             const key = getEvidenceKey(item);
             const itemFirstSection = firstSectionMap.get(key);
             const isDuplicate = itemFirstSection !== undefined && itemFirstSection !== currentSection;
+            if (isDuplicate && itemFirstSection) {
+              return (
+                <div key={idx} className="text-xs text-slate-500">
+                  {t('avatar.bi.also_cited_in')}: {itemFirstSection}
+                </div>
+              );
+            }
             return (
               <div key={idx} className="text-xs text-slate-600">
                 <div>
@@ -135,9 +145,6 @@ function EvidenceGroup({
                   ) : null}
                   {item.content_excerpt ? (
                     <span className="text-slate-600"> — {item.content_excerpt.slice(0, 180)}</span>
-                  ) : null}
-                  {isDuplicate && itemFirstSection ? (
-                    <span className="text-slate-500"> — {t('avatar.bi.also_cited_in')}: {itemFirstSection}</span>
                   ) : null}
                 </div>
                 {item.retrieval_timestamp || item.confidence !== null || item.limitations?.length || item.provenance ? (
