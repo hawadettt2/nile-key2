@@ -269,6 +269,62 @@ class TestEvidenceNoVerification:
         assert not hasattr(capture, "llm")
         assert not hasattr(capture, "model")
 
+    @pytest.mark.asyncio
+    async def test_extract_excerpt_from_results_list(self):
+        capture = DefaultEvidenceCapture()
+        content = RetrievedContent(
+            source_id="src_1",
+            raw_content={
+                "results": [
+                    {"content": "First result text"},
+                    {"reporter_desc": "Egypt"},
+                    {"partner_desc": "Jordan"},
+                ]
+            },
+        )
+        evidence = await capture.capture(content, _make_source("src_1"), "req_1")
+        assert evidence.content == "First result text Egypt Jordan"
+
+    @pytest.mark.asyncio
+    async def test_extract_excerpt_from_results_list_with_empty_items(self):
+        capture = DefaultEvidenceCapture()
+        content = RetrievedContent(
+            source_id="src_1",
+            raw_content={
+                "results": [
+                    {"title": "Title only"},
+                    {"unknown": "value"},
+                    {"description": "Useful description"},
+                ]
+            },
+        )
+        evidence = await capture.capture(content, _make_source("src_1"), "req_1")
+        assert evidence.content == "Title only Useful description"
+
+    @pytest.mark.asyncio
+    async def test_extract_excerpt_from_results_list_does_not_serialize_raw_dict(self):
+        capture = DefaultEvidenceCapture()
+        raw_content = {"results": [{"content": "Real text"}], "query": "test"}
+        content = RetrievedContent(source_id="src_1", raw_content=raw_content)
+        evidence = await capture.capture(content, _make_source("src_1"), "req_1")
+        assert "results" not in evidence.content
+        assert "query" not in evidence.content
+        assert evidence.content == "Real text"
+
+    @pytest.mark.asyncio
+    async def test_extract_excerpt_from_plain_string(self):
+        capture = DefaultEvidenceCapture()
+        content = RetrievedContent(source_id="src_1", raw_content="plain evidence text")
+        evidence = await capture.capture(content, _make_source("src_1"), "req_1")
+        assert evidence.content == "plain evidence text"
+
+    @pytest.mark.asyncio
+    async def test_extract_excerpt_from_dict_without_results(self):
+        capture = DefaultEvidenceCapture()
+        content = RetrievedContent(source_id="src_1", raw_content={"content": "inner content"})
+        evidence = await capture.capture(content, _make_source("src_1"), "req_1")
+        assert evidence.content == "inner content"
+
 
 class TestEvidenceProvenancePreserved:
     @pytest.mark.asyncio

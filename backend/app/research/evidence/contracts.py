@@ -90,5 +90,50 @@ class DefaultEvidenceCapture(EvidenceCapture):
         if isinstance(raw, str):
             return raw[:500]
         if isinstance(raw, dict):
-            return str(raw.get("content", str(raw)))[:500]
+            results = raw.get("results")
+            if isinstance(results, list):
+                extracted = []
+                for item in results:
+                    if not isinstance(item, dict):
+                        continue
+                    text = (
+                        item.get("content")
+                        or item.get("reporter_desc")
+                        or item.get("reporterDesc")
+                        or item.get("partner_desc")
+                        or item.get("partnerDesc")
+                        or item.get("description")
+                        or item.get("title")
+                    )
+                    if isinstance(text, str) and text.strip():
+                        extracted.append(text.strip())
+                    if len(extracted) >= 3:
+                        break
+                if extracted:
+                    return " ".join(extracted)[:500]
+            inner = raw.get("content")
+            if isinstance(inner, str):
+                return inner[:500]
+            return str(raw)[:500]
+        if isinstance(raw, list):
+            extracted = []
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                text = (
+                    item.get("content")
+                    or item.get("reporter_desc")
+                    or item.get("reporterDesc")
+                    or item.get("partner_desc")
+                    or item.get("partnerDesc")
+                    or item.get("description")
+                    or item.get("title")
+                )
+                if isinstance(text, str) and text.strip():
+                    extracted.append(text.strip())
+                if len(extracted) >= 3:
+                    break
+            if extracted:
+                return " ".join(extracted)[:500]
+            return str(raw)[:500]
         return str(raw)[:500]
