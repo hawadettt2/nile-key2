@@ -159,7 +159,7 @@ class TestFaostatAdapterQuery:
         assert result["confidence"] is None
         assert result["sources"] == ["faostat"]
 
-    def test_upstream_failure_returns_empty_results(self):
+    def test_upstream_failure_raises_instead_of_empty_results(self):
         adapter = FaostatExternalSourceAdapter(
             config={
                 "base_url": "https://faostatservices.fao.org/api/v1",
@@ -175,56 +175,12 @@ class TestFaostatAdapterQuery:
 
         with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
             with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, side_effect=Exception("Upstream error")):
-                result = asyncio.run(
-                    adapter.query("test", context={"area": "Egypt"}, scope="QC", limit=10)
-                )
+                with pytest.raises(Exception, match="Upstream error"):
+                    asyncio.run(
+                        adapter.query("test", context={"area": "Egypt"}, scope="QC", limit=10)
+                    )
 
-        assert result["results"] == []
-        assert result["confidence"] is None
-        assert result["sources"] == ["faostat"]
-
-    def test_missing_area_context_returns_empty_results(self):
-        adapter = FaostatExternalSourceAdapter(
-            config={
-                "base_url": "https://faostatservices.fao.org/api/v1",
-                "source_id": "faostat",
-                "name": "FAOSTAT External Knowledge",
-                "type": "external_agrifood_intelligence",
-                "version": "1.0.0",
-                "updated_at": "2026-08-14T00:00:00Z",
-                "username": "test@example.com",
-                "password": "test-password",
-            }
-        )
-
-        result = asyncio.run(
-            adapter.query("test", context={}, scope="QC", limit=10)
-        )
-
-        assert result["results"] == []
-        assert result["confidence"] is None
-        assert result["sources"] == ["faostat"]
-
-    def test_configuration_without_base_url_skips_api_call(self):
-        adapter = FaostatExternalSourceAdapter(
-            config={
-                "source_id": "faostat",
-                "name": "FAOSTAT External Knowledge",
-                "type": "external_agrifood_intelligence",
-                "version": "1.0.0",
-                "updated_at": "2026-08-14T00:00:00Z",
-            }
-        )
-
-        result = asyncio.run(
-            adapter.query("test", context={"area": "Egypt"}, scope="QC", limit=10)
-        )
-
-        assert result["results"] == []
-        assert result["confidence"] is None
-        assert result["sources"] == ["faostat"]
-
-    def test_login_failure_returns_empty_results(self):
+    def test_login_failure_raises_instead_of_empty_results(self):
         adapter = FaostatExternalSourceAdapter(
             config={
                 "base_url": "https://faostatservices.fao.org/api/v1",
@@ -239,13 +195,167 @@ class TestFaostatAdapterQuery:
         )
 
         with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock, side_effect=ValueError("Login failed")):
-            result = asyncio.run(
-                adapter.query("test", context={"area": "Egypt"}, scope="QC", limit=10)
-            )
+            with pytest.raises(ValueError, match="Login failed"):
+                asyncio.run(
+                    adapter.query("test", context={"area": "Egypt"}, scope="QC", limit=10)
+                )
 
-        assert result["results"] == []
-        assert result["confidence"] is None
-        assert result["sources"] == ["faostat"]
+    def test_reporter_maps_to_area_when_area_missing(self):
+        adapter = FaostatExternalSourceAdapter(
+            config={
+                "base_url": "https://faostatservices.fao.org/api/v1",
+                "source_id": "faostat",
+                "name": "FAOSTAT External Knowledge",
+                "type": "external_agrifood_intelligence",
+                "version": "1.0.0",
+                "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
+            }
+        )
+
+        raw_response = {
+            "data": [
+                {
+                    "Area": "Egypt",
+                    "Area Code": "EGY",
+                    "Item": "Vegetables",
+                    "Item Code": "101",
+                    "Element": "Production",
+                    "Element Code": "5510",
+                    "Year": "2023",
+                    "Year Code": "2023",
+                    "Unit": "Tonnes",
+                    "Value": "1234567",
+                    "Flag": "A",
+                    "Flag Description": "Official figure",
+                    "Domain": "QCL",
+                    "Domain Code": "QCL",
+                    "Note": "",
+                }
+            ],
+            "metadata": {},
+        }
+
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response) as mock_request:
+                result = asyncio.run(
+                    adapter.query(
+                        "vegetables export",
+                        context={"reporter": "818", "commodities": ["07"]},
+                        scope="QCL",
+                        limit=10,
+                    )
+                )
+
+        assert len(result["results"]) == 1
+        assert mock_request.call_args.kwargs.get("params", {}).get("area") == "818"
+        assert mock_request.call_args.kwargs.get("params", {}).get("item") == "07"
+
+    def test_commodities_maps_to_item_when_item_missing(self):
+        adapter = FaostatExternalSourceAdapter(
+            config={
+                "base_url": "https://faostatservices.fao.org/api/v1",
+                "source_id": "faostat",
+                "name": "FAOSTAT External Knowledge",
+                "type": "external_agrifood_intelligence",
+                "version": "1.0.0",
+                "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
+            }
+        )
+
+        raw_response = {
+            "data": [
+                {
+                    "Area": "Egypt",
+                    "Area Code": "EGY",
+                    "Item": "Vegetables",
+                    "Item Code": "101",
+                    "Element": "Production",
+                    "Element Code": "5510",
+                    "Year": "2023",
+                    "Year Code": "2023",
+                    "Unit": "Tonnes",
+                    "Value": "1234567",
+                    "Flag": "A",
+                    "Flag Description": "Official figure",
+                    "Domain": "QCL",
+                    "Domain Code": "QCL",
+                    "Note": "",
+                }
+            ],
+            "metadata": {},
+        }
+
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response):
+                with patch("app.agent.knowledge.faostat_provider.FaostatExternalSourceAdapter._build_request") as mock_build:
+                    mock_build.return_value = ("/en/data/QCL", {"area": "818", "item": "07", "format": "json"})
+                    result = asyncio.run(
+                        adapter.query(
+                            "vegetables export",
+                            context={"reporter": "818", "commodities": ["07"]},
+                            scope="QCL",
+                            limit=10,
+                        )
+                    )
+
+        assert len(result["results"]) == 1
+        assert result["results"][0]["metadata"]["area"] == "Egypt"
+
+    def test_direct_faostat_keys_override_generic_mapping(self):
+        adapter = FaostatExternalSourceAdapter(
+            config={
+                "base_url": "https://faostatservices.fao.org/api/v1",
+                "source_id": "faostat",
+                "name": "FAOSTAT External Knowledge",
+                "type": "external_agrifood_intelligence",
+                "version": "1.0.0",
+                "updated_at": "2026-08-14T00:00:00Z",
+                "username": "test@example.com",
+                "password": "test-password",
+            }
+        )
+
+        raw_response = {
+            "data": [
+                {
+                    "Area": "Egypt",
+                    "Area Code": "EGY",
+                    "Item": "Vegetables",
+                    "Item Code": "101",
+                    "Element": "Production",
+                    "Element Code": "5510",
+                    "Year": "2023",
+                    "Year Code": "2023",
+                    "Unit": "Tonnes",
+                    "Value": "1234567",
+                    "Flag": "A",
+                    "Flag Description": "Official figure",
+                    "Domain": "QCL",
+                    "Domain Code": "QCL",
+                    "Note": "",
+                }
+            ],
+            "metadata": {},
+        }
+
+        with patch.object(FaostatApiClient, "_login", new_callable=AsyncMock):
+            with patch.object(FaostatApiClient, "request", new_callable=AsyncMock, return_value=raw_response) as mock_request:
+                result = asyncio.run(
+                    adapter.query(
+                        "vegetables export",
+                        context={"area": "Egypt", "item": "Vegetables", "reporter": "818", "commodities": ["07"]},
+                        scope="QCL",
+                        limit=10,
+                    )
+                )
+
+        assert len(result["results"]) == 1
+        assert mock_request.call_args.kwargs.get("params", {}).get("area") == "Egypt"
+        assert mock_request.call_args.kwargs.get("params", {}).get("item") == "Vegetables"
 
 
 class TestFaostatApiClientAuth:

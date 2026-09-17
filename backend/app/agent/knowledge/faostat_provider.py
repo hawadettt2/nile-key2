@@ -53,23 +53,15 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         sources: Optional[List[str]] = None,
         limit: int = 10,
     ) -> Dict[str, Any]:
-        try:
-            path, params = self._build_request(query=query, context=context, scope=scope, limit=limit)
-            if not path:
-                return {
-                    "results": [],
-                    "confidence": None,
-                    "sources": [self._source_id],
-                }
-
-            raw = await self._client.request(method="GET", path=path, params=params)
-        except Exception:
+        path, params = self._build_request(query=query, context=context, scope=scope, limit=limit)
+        if not path:
             return {
                 "results": [],
                 "confidence": None,
                 "sources": [self._source_id],
             }
 
+        raw = await self._client.request(method="GET", path=path, params=params)
         results = self._transform(raw, context=context, limit=limit, scope=scope)
         if not results:
             return {
@@ -99,11 +91,12 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         if not isinstance(context, dict):
             context = {}
 
-        domain = scope or self._default_domain
+        domain = scope if isinstance(scope, str) else None
+        domain = domain or self._default_domain
         if not isinstance(domain, str) or not domain:
             domain = self._default_domain
 
-        normalized_scope = (scope or "").strip().lower()
+        normalized_scope = (scope if isinstance(scope, str) else "").strip().lower()
         if normalized_scope == "fpi":
             domain = self._fpi_domain
 
@@ -114,6 +107,18 @@ class FaostatExternalSourceAdapter(KnowledgeProvider):
         item = context.get("item")
         element = context.get("element")
         year = context.get("year")
+
+        if not area:
+            reporter = context.get("reporter")
+            if reporter:
+                area = str(reporter)
+        if not item:
+            commodities = context.get("commodities")
+            if commodities:
+                if isinstance(commodities, list):
+                    item = commodities[0]
+                else:
+                    item = str(commodities)
 
         if area:
             params["area"] = area
