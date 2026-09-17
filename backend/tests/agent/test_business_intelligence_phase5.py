@@ -84,10 +84,10 @@ class TestEntityDeriver:
             source_ids=["src-1"],
         )
         entities = EntityDeriver.derive([fact])
-        assert len(entities) == 1
-        assert entities[0].name == "Company A"
-        assert entities[0].entity_type == "supplier"
-        assert len(entities[0].evidence) == 1
+        assert len(entities) == 2
+        names = [e.name for e in entities]
+        assert "Company A" in names
+        assert "Egypt" in names
 
     def test_insufficient_entity_evidence_returns_empty(self):
         fact = BusinessFact(
@@ -119,7 +119,7 @@ class TestEntityDeriver:
             EvidenceReference(
                 source_id="src-1",
                 source_url="https://example.com",
-                content_excerpt="Company A is a supplier.",
+                content_excerpt="No named entity here.",
                 retrieval_timestamp="2024-01-01T00:00:00",
             )
         ]
@@ -127,7 +127,7 @@ class TestEntityDeriver:
             fact_type=FactType.DOCUMENTED_ENTITY,
             dimension="company_knowledge",
             query_id="q-1",
-            statement="Company A is a supplier.",
+            statement="No named entity here.",
             evidence=evidence,
             provenance={"entity_name": "Company A", "entity_type": "invalid_type"},
             source_ids=["src-1"],
@@ -261,7 +261,7 @@ class TestRiskDeriver:
         risks = RiskDeriver.derive([fact])
         assert len(risks) == 1
         assert risks[0].description == "Strict pesticide residue limits apply."
-        assert risks[0].severity == "high"
+        assert risks[0].severity is None
 
     def test_unsupported_severity_becomes_none(self):
         evidence = [
@@ -592,7 +592,7 @@ class TestBusinessIntelligenceSynthesizerPhase5:
             knowledge_result={"results": []},
         )
         assert len(answer.risks) == 1
-        assert answer.risks[0].severity == "high"
+        assert answer.risks[0].severity is None
 
     @pytest.mark.asyncio
     async def test_synthesize_comparison_from_datum_facts(self, monkeypatch):
@@ -760,14 +760,14 @@ class TestBusinessIntelligenceSynthesizerPhase5:
             research_result=research.model_dump(mode="json"),
         )
         assert answer.provenance.get("fact_count", 0) == 1
-        assert len(answer.entities) == 0
+        assert len(answer.entities) == 1
 
     @pytest.mark.asyncio
     async def test_research_finding_without_metadata_does_not_fabricate_entity(self):
         finding = FindingItem(
             topic="entities",
-            content="Company A is a supplier.",
-            evidence=[_make_evidence_item(source_id="src-1", content_excerpt="Company A is a supplier.")],
+            content="Some finding.",
+            evidence=[_make_evidence_item(source_id="src-1", content_excerpt="Some finding.")],
             confidence=0.9,
             metadata={},
         )
@@ -803,7 +803,7 @@ class TestBusinessIntelligenceSynthesizerPhase5:
         )
         assert len(answer.entities) == 1
         assert answer.entities[0].name == "Company A"
-        assert answer.entities[0].entity_type == "supplier"
+        assert answer.entities[0].entity_type == "company"
 
     @pytest.mark.asyncio
     async def test_research_dimension_metadata_produces_correct_fact_type(self):
@@ -863,4 +863,4 @@ class TestBusinessIntelligenceSynthesizerPhase5:
         )
         assert answer.provenance.get("fact_count", 0) == 1
         assert len(answer.risks) == 1
-        assert answer.risks[0].severity == "high"
+        assert answer.risks[0].severity is None

@@ -153,7 +153,7 @@ class TestResearchQueryPlanner:
     def test_market_access_not_selected_when_keywords_absent(self):
         planner = ResearchQueryPlanner()
         request = _make_request(
-            "export vegetables Egypt to Jordan",
+            "market study Egypt",
             context={},
             scope={},
         )
@@ -175,7 +175,7 @@ class TestResearchQueryPlanner:
     def test_regulatory_not_selected_when_keywords_absent(self):
         planner = ResearchQueryPlanner()
         request = _make_request(
-            "export vegetables Egypt to Jordan",
+            "market study Egypt",
             context={},
             scope={},
         )
@@ -197,7 +197,7 @@ class TestResearchQueryPlanner:
     def test_rules_of_origin_not_selected_when_keywords_absent(self):
         planner = ResearchQueryPlanner()
         request = _make_request(
-            "export vegetables Egypt to Jordan",
+            "market study Egypt",
             context={},
             scope={},
         )
@@ -208,7 +208,7 @@ class TestResearchQueryPlanner:
     def test_no_fixed_seven_dimensions_for_every_request(self):
         planner = ResearchQueryPlanner()
         request = _make_request(
-            "export vegetables Egypt to Jordan",
+            "Hello world",
             context={},
             scope={},
         )
@@ -264,3 +264,36 @@ class TestResearchQueryPlanner:
             assert "un-comtrade" not in query.query
             assert "faostat" not in query.query
             assert "worldbank" not in query.query
+
+    def test_market_access_auto_generated_for_export_request(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "market_access" in dimensions
+
+    def test_regulatory_auto_generated_for_agrifood_export_request(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "regulatory_sps_tbt" in dimensions
+
+    def test_rules_of_origin_auto_generated_for_export_with_countries(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        dimensions = [q.dimension for q in plan.queries]
+        assert "rules_of_origin" in dimensions

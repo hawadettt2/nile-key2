@@ -167,6 +167,78 @@ class TestBusinessFactNormalizer:
         facts = normalizer.normalize_findings([finding], "trade_intelligence", "q-1")
         assert facts[0].source_ids == ["src-1", "src-2"]
 
+    def test_normalize_findings_extracts_commercial_value_and_unit(self):
+        normalizer = BusinessFactNormalizer()
+        evidence = [
+            _make_evidence_item(
+                source_id="un-comtrade",
+                content_excerpt="HS 07 — 28496743.65 USD (2025)",
+                metadata={"query_id": "q1", "dimension": "trade_intelligence"},
+            )
+        ]
+        finding = _make_finding_item(
+            topic="[trade_intelligence] Trade value",
+            content="Values: 28496743.65 USD; Period(s): 2025",
+            evidence=evidence,
+            confidence=0.9,
+        )
+        facts = normalizer.normalize_findings([finding], "trade_intelligence", "q-1")
+        assert len(facts) == 1
+        assert facts[0].value == 28496743.65
+        assert facts[0].unit == "USD"
+        assert "28496743.65 USD" in facts[0].statement
+        assert "2025" in facts[0].statement
+
+    def test_normalize_findings_does_not_create_fact_from_meta_finding(self):
+        normalizer = BusinessFactNormalizer()
+        evidence = [
+            _make_evidence_item(
+                source_id="un-comtrade",
+                content_excerpt="some content",
+            )
+        ]
+        finding = _make_finding_item(
+            topic="[trade_intelligence] Findings from un-comtrade",
+            content="Retrieved 1 evidence item(s) from source un-comtrade.",
+            evidence=evidence,
+        )
+        facts = normalizer.normalize_findings([finding], "trade_intelligence", "q-1")
+        assert facts == []
+
+    def test_normalize_findings_skips_finding_without_evidence(self):
+        normalizer = BusinessFactNormalizer()
+        finding = FindingItem(
+            topic="t1",
+            content="c1",
+            evidence=[],
+            confidence=None,
+            limitations=None,
+        )
+        facts = normalizer.normalize_findings([finding], "trade_intelligence", "q-1")
+        assert facts == []
+
+    def test_normalize_findings_preserves_provenance_traceability(self):
+        normalizer = BusinessFactNormalizer()
+        evidence = [
+            _make_evidence_item(
+                source_id="un-comtrade",
+                content_excerpt="HS 07 — 28496743.65 USD (2025)",
+                metadata={"query_id": "q1", "dimension": "trade_intelligence"},
+            )
+        ]
+        finding = _make_finding_item(
+            topic="[trade_intelligence] Trade value",
+            content="Values: 28496743.65 USD; Period(s): 2025",
+            evidence=evidence,
+            confidence=0.9,
+        )
+        facts = normalizer.normalize_findings([finding], "trade_intelligence", "q-1")
+        assert len(facts) == 1
+        assert facts[0].source_ids == ["un-comtrade"]
+        assert facts[0].evidence[0].source_id == "un-comtrade"
+        assert facts[0].evidence[0].content_excerpt == "HS 07 — 28496743.65 USD (2025)"
+        assert facts[0].provenance["topic"] == "[trade_intelligence] Trade value"
+
     def test_normalize_knowledge_result_creates_facts(self):
         normalizer = BusinessFactNormalizer()
         knowledge_result = {

@@ -31,6 +31,7 @@ class BusinessIntelligenceCoverage(BaseModel):
     failed_sources: int = Field(default=0, description="Sources with FAILED")
     entries: List[CoverageEntry] = Field(default_factory=list, description="Per-source coverage details")
     dimensions_covered: List[str] = Field(default_factory=list, description="Dimensions with evidence")
+    unsupported_dimensions: List[str] = Field(default_factory=list, description="Dimensions with no capable source")
     limitations: List[str] = Field(default_factory=list, description="Coverage limitations")
 
     model_config = {"use_enum_values": True}
@@ -42,6 +43,7 @@ class CoverageBuilder:
         research_result: Optional[Any],
         evidence: List[EvidenceReference],
         facts: List[Any],
+        unsupported_dimensions: Optional[List[str]] = None,
     ) -> BusinessIntelligenceCoverage:
         source_execution_statuses: Dict[str, str] = {}
         if research_result is not None:
@@ -68,7 +70,8 @@ class CoverageBuilder:
                 continue
             seen_keys.add(key)
             try:
-                exec_status = SourceExecutionStatus(source_execution_statuses.get(source_id, "FAILED"))
+                raw_status = source_execution_statuses.get(source_id, "FAILED")
+                exec_status = SourceExecutionStatus(raw_status.upper() if isinstance(raw_status, str) else raw_status)
             except ValueError:
                 exec_status = SourceExecutionStatus.FAILED
             source_evidence = evidence_by_source.get(source_id, [])
@@ -90,7 +93,8 @@ class CoverageBuilder:
             for source_id, status in source_execution_statuses.items():
                 if not any(e.source_id == source_id for e in entries):
                     try:
-                        exec_status = SourceExecutionStatus(status)
+                        raw_status = status
+                        exec_status = SourceExecutionStatus(raw_status.upper() if isinstance(raw_status, str) else raw_status)
                     except ValueError:
                         exec_status = SourceExecutionStatus.FAILED
                     entries.append(
@@ -106,10 +110,10 @@ class CoverageBuilder:
                         )
                     )
 
-        total_sources = len(entries)
-        successful_sources = sum(1 for e in entries if e.status == SourceExecutionStatus.SUCCESS_WITH_DATA)
-        empty_sources = sum(1 for e in entries if e.status == SourceExecutionStatus.SUCCESS_EMPTY)
-        failed_sources = sum(1 for e in entries if e.status == SourceExecutionStatus.FAILED)
+        total_sources = len({e.source_id for e in entries})
+        successful_sources = len({e.source_id for e in entries if e.status == SourceExecutionStatus.SUCCESS_WITH_DATA})
+        empty_sources = len({e.source_id for e in entries if e.status == SourceExecutionStatus.SUCCESS_EMPTY})
+        failed_sources = len({e.source_id for e in entries if e.status == SourceExecutionStatus.FAILED})
 
         all_fact_dimensions = {fact.dimension for fact in facts if fact.dimension}
         dimensions_with_evidence = {entry.dimension for entry in entries if entry.has_evidence}
@@ -145,6 +149,8 @@ class CoverageBuilder:
                 "No authoritative evidence was successfully retrieved."
             )
 
+        unsupported_dimensions = sorted(set(unsupported_dimensions or []))
+
         return BusinessIntelligenceCoverage(
             coverage_level=coverage_level,
             total_sources=total_sources,
@@ -153,5 +159,6 @@ class CoverageBuilder:
             failed_sources=failed_sources,
             entries=entries,
             dimensions_covered=dimensions_covered,
+            unsupported_dimensions=unsupported_dimensions,
             limitations=limitations,
         )

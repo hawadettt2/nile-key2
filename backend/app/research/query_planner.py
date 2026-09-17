@@ -57,19 +57,22 @@ class ResearchQueryPlanner:
             request.goal or "",
             " ".join(str(v) for v in (request.context or {}).values() if v is not None),
         ]).lower()
+        is_trade_flow = extracted.get("request_type") in self._EXPORT_IMPORT_TYPES
+        is_agrifood = bool(self._AGRIFOOD_COMMODITIES.intersection(extracted.get("commodities") or []))
+        has_countries = bool(extracted.get("reporter") or extracted.get("partner"))
         profile: Dict[str, Any] = {
             "request_type": extracted.get("request_type"),
             "reporter": extracted.get("reporter"),
             "partner": extracted.get("partner"),
             "commodities": extracted.get("commodities") or [],
-            "has_countries": bool(extracted.get("reporter") or extracted.get("partner")),
+            "has_countries": has_countries,
             "has_commodities": bool(extracted.get("commodities")),
-            "is_agrifood": bool(self._AGRIFOOD_COMMODITIES.intersection(extracted.get("commodities") or [])),
-            "is_trade_flow": extracted.get("request_type") in self._EXPORT_IMPORT_TYPES,
+            "is_agrifood": is_agrifood,
+            "is_trade_flow": is_trade_flow,
             "is_market_study": extracted.get("request_type") in self._STUDY_TYPES,
-            "needs_market_access": self._matches_keywords(intent_text, self._MARKET_ACCESS_KEYWORDS),
-            "needs_regulatory": self._matches_keywords(intent_text, self._REGULATORY_KEYWORDS),
-            "needs_rules_of_origin": self._matches_keywords(intent_text, self._RULES_OF_ORIGIN_KEYWORDS),
+            "needs_market_access": self._matches_keywords(intent_text, self._MARKET_ACCESS_KEYWORDS) or is_trade_flow,
+            "needs_regulatory": self._matches_keywords(intent_text, self._REGULATORY_KEYWORDS) or is_agrifood,
+            "needs_rules_of_origin": self._matches_keywords(intent_text, self._RULES_OF_ORIGIN_KEYWORDS) or (is_trade_flow and has_countries),
         }
         return profile
 

@@ -6,7 +6,7 @@ import pytest
 
 from app.schemas.research import Evidence, EvidenceItem, FindingItem, ResearchResult, ResearchRequest, Source, SourceRegistration
 from app.research.orchestrator import ResearchContext
-from app.research.result import DefaultResultStructurer, ResultStructurer, _group_by_source, _to_evidence_item
+from app.research.result import DefaultResultStructurer, ResultStructurer, _group_by_source, _to_evidence_item, _extract_commercial_signals, _build_commercial_finding
 from app.research.orchestrator import (
     EvidenceCaptureStage,
     PlanningStage,
@@ -65,7 +65,7 @@ class TestFindingConstruction:
         context.evidence.append(_make_evidence("src_1"))
         findings = asyncio.run(structurer.structure(context))
         assert len(findings) == 1
-        assert findings[0].topic == "Findings from src_1"
+        assert findings[0].topic == "Context from src_1"
         assert len(findings[0].evidence) == 1
 
     def test_finding_links_to_evidence(self):
@@ -214,6 +214,144 @@ class TestStructuringStageIntegration:
         request = ResearchRequest(goal="test")
         result = await orchestrator.execute(request, "req_1")
         assert result.status == "failed"
+
+
+class TestCommercialFindingExtraction:
+    def test_extracts_value_and_period_from_trade_evidence(self):
+        structurer = DefaultResultStructurer()
+        request = ResearchRequest(goal="test")
+        context = ResearchContext(request=request, request_id="req_1")
+        context.evidence.append(
+            Evidence(
+                evidence_id="ev_1",
+                source_id="un-comtrade",
+                source_reference="https://comtrade.un.org",
+                captured_at=datetime.utcnow(),
+                content="HS 07 — 28496743.65 USD (2025)",
+                evidence_type="raw",
+                provenance={"request_id": "req_1"},
+                metadata={"query_id": "q1", "dimension": "trade_intelligence", "purpose": "Find trade flows"},
+            )
+        )
+        findings = asyncio.run(structurer.structure(context))
+        assert len(findings) == 1
+        assert findings[0].topic.startswith("[trade_intelligence]")
+        assert "28496743.65 USD" in findings[0].content
+        assert "2025" in findings[0].content
+        assert findings[0].evidence[0].source_id == "un-comtrade"
+
+    def test_does_not_emit_meta_finding_when_commercial_text_is_present(self):
+        structurer = DefaultResultStructurer()
+        request = ResearchRequest(goal="test")
+        context = ResearchContext(request=request, request_id="req_1")
+        context.evidence.append(
+            Evidence(
+                evidence_id="ev_1",
+                source_id="un-comtrade",
+                source_reference="https://comtrade.un.org",
+                captured_at=datetime.utcnow(),
+                content="Export value 12494.0 USD reported by China to World in 2023",
+                evidence_type="raw",
+                provenance={"request_id": "req_1"},
+                metadata={"query_id": "q1", "dimension": "trade_intelligence"},
+            )
+        )
+        findings = asyncio.run(structurer.structure(context))
+        assert len(findings) == 1
+        assert "Retrieved 1 evidence item(s)" not in findings[0].content
+        assert "12494.0 USD" in findings[0].content
+        assert "2023" in findings[0].content
+
+    def test_fallback_meta_finding_when_no_commercial_signals(self):
+        structurer = DefaultResultStructurer()
+        request = ResearchRequest(goal="test")
+        context = ResearchContext(request=request, request_id="req_1")
+        context.evidence.append(
+            Evidence(
+                evidence_id="ev_1",
+                source_id="src_1",
+                source_reference="https://example.com/1",
+                captured_at=datetime.utcnow(),
+                content="General unstructured text with no numbers or dates",
+                evidence_type="raw",
+                provenance={"request_id": "req_1"},
+                metadata={"query_id": "q1"},
+            )
+        )
+        findings = asyncio.run(structurer.structure(context))
+        assert len(findings) == 1
+        assert findings[0].content == "General unstructured text with no numbers or dates"
+        assert findings[0].topic == "Context from src_1"
+
+    def test_preserves_evidence_and_source_reference(self):
+        structurer = DefaultResultStructurer()
+        request = ResearchRequest(goal="test")
+        context = ResearchContext(request=request, request_id="req_1")
+        context.evidence.append(
+            Evidence(
+                evidence_id="ev_1",
+                source_id="un-comtrade",
+                source_reference="https://comtrade.un.org",
+                captured_at=datetime.utcnow(),
+                content="HS 07 — 28496743.65 USD (2025)",
+                evidence_type="raw",
+                provenance={"request_id": "req_1"},
+                metadata={"query_id": "q1", "dimension": "trade_intelligence"},
+            )
+        )
+        findings = asyncio.run(structurer.structure(context))
+        assert findings[0].evidence[0].source_url == "https://comtrade.un.org"
+        assert findings[0].evidence[0].content_excerpt == "HS 07 — 28496743.65 USD (2025)"
+
+    def test_does_not_invent_facts_from_insufficient_evidence(self):
+        structurer = DefaultResultStructurer()
+        request = ResearchRequest(goal="test")
+        context = ResearchContext(request=request, request_id="req_1")
+        context.evidence.append(
+            Evidence(
+                evidence_id="ev_1",
+                source_id="src_1",
+                source_reference="https://example.com/1",
+                captured_at=datetime.utcnow(),
+                content="Some unrelated text",
+                evidence_type="raw",
+                provenance={"request_id": "req_1"},
+                metadata={"query_id": "q1"},
+            )
+        )
+        findings = asyncio.run(structurer.structure(context))
+        assert len(findings) == 1
+        assert findings[0].content == "Some unrelated text"
+
+
+class TestCommercialSignalExtraction:
+    def test_extracts_values_and_units(self):
+        signals = _extract_commercial_signals("Value 12494.0 USD and 2.5 Million EUR in 2023")
+        assert len(signals["values"]) == 2
+        assert signals["values"][0]["value"] == "12494.0"
+        assert signals["values"][0]["unit"] == "USD"
+
+    def test_extracts_years(self):
+        signals = _extract_commercial_signals("Data from 2023 and 2024")
+        assert "2023" in signals["years"]
+        assert "2024" in signals["years"]
+
+    def test_extracts_hs_codes(self):
+        signals = _extract_commercial_signals("HS 07 and HS 090111")
+        assert "07" in signals["hs_codes"]
+        assert "090111" in signals["hs_codes"]
+
+    def test_extracts_trends(self):
+        signals = _extract_commercial_signals("exports increase and prices decrease")
+        assert "increase" in signals["trends"]
+        assert "decrease" in signals["trends"]
+
+    def test_returns_empty_signals_for_non_commercial_text(self):
+        signals = _extract_commercial_signals("This is just a normal sentence.")
+        assert signals["values"] == []
+        assert signals["years"] == []
+        assert signals["hs_codes"] == []
+        assert signals["trends"] == []
 
 
 class TestTraceabilityChain:

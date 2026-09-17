@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+import re
 
 from app.agent.business_intelligence.schema import BusinessIntelligenceInput, EvidenceReference, Finding, Limitation, Recommendation
 from app.agent.business_intelligence.facts import BusinessFact, FactType
@@ -57,13 +58,26 @@ class BusinessFactNormalizer:
         "logistics_market_execution": FactType.LOGISTICS_FACT,
     }
 
+    _META_FINDING_PATTERN = re.compile(r"Retrieved\s+\d+\s+evidence\s+item\(s\)\s+from\s+source\s+.+", re.IGNORECASE)
+    _VALUE_RE = re.compile(r"Values:\s*([\d,]+\.?\d*)\s*(USD|Million|Billion|EUR|GBP|tons|metric tons|kg)?")
+    _YEAR_RE = re.compile(r"Period\(s\):\s*(.+)")
+    _HS_RE = re.compile(r"HS\s+codes:\s*(.+)")
+
     def normalize_findings(self, findings: List[FindingItem], dimension: str, query_id: str) -> List[BusinessFact]:
         facts: List[BusinessFact] = []
         fact_type = self._dimension_to_fact_type(dimension)
         for finding in findings:
+            if self._is_meta_finding(finding):
+                continue
+            if not finding.evidence:
+                continue
             fact = self._finding_to_fact(finding, dimension, query_id, fact_type)
             facts.append(fact)
         return facts
+
+    def _is_meta_finding(self, finding: FindingItem) -> bool:
+        content = finding.content or ""
+        return bool(self._META_FINDING_PATTERN.search(content))
 
     def _dimension_to_fact_type(self, dimension: str) -> FactType:
         return self._DIMENSION_FACT_TYPE_MAP.get(dimension, FactType.OTHER)
@@ -89,18 +103,56 @@ class BusinessFactNormalizer:
             ]:
                 if key in metadata:
                     provenance[key] = metadata[key]
+
+        parsed = self._parse_commercial_fact(finding.content or "")
+        statement = parsed["statement"]
+        value = parsed.get("value")
+        unit = parsed.get("unit")
+
         return BusinessFact(
             fact_type=fact_type,
             dimension=dimension,
             query_id=query_id,
-            statement=finding.content,
-            value=metadata.get("value") if isinstance(metadata, dict) else None,
+            statement=statement,
+            value=value,
+            unit=unit,
             evidence=evidence,
             confidence=finding.confidence,
             limitations=list(finding.limitations or []),
             provenance=provenance,
             source_ids=source_ids,
         )
+
+    def _parse_commercial_fact(self, content: str) -> Dict[str, Any]:
+        result: Dict[str, Any] = {
+            "statement": content,
+            "value": None,
+            "unit": None,
+        }
+
+        value_match = self._VALUE_RE.search(content)
+        if value_match:
+            value_str = value_match.group(1).replace(",", "")
+            try:
+                result["value"] = float(value_str)
+            except ValueError:
+                pass
+            result["unit"] = (value_match.group(2) or "USD").strip() or "USD"
+
+        year_match = self._YEAR_RE.search(content)
+        hs_match = self._HS_RE.search(content)
+        parts = []
+        if hs_match:
+            parts.append(f"HS {hs_match.group(1).strip()}")
+        if value_match:
+            parts.append(f"value: {value_match.group(1).strip()} {result['unit']}")
+        if year_match:
+            parts.append(f"period: {year_match.group(1).strip()}")
+
+        if parts:
+            result["statement"] = "; ".join(parts)
+
+        return result
 
     @staticmethod
     def _adapt_evidence(ei: Any) -> EvidenceReference:

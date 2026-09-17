@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+import re
 
 from app.agent.business_intelligence.facts import BusinessFact, FactType
 from app.agent.business_intelligence.schema import (
@@ -13,33 +14,74 @@ from app.agent.business_intelligence.schema import (
 )
 
 
+_OPPORTUNITY_RE = re.compile(
+    r"\b(growth|increase|demand|expansion|positive|rising|upward|opportunity|potential|prospects|surge|boom|growing|rising|export|import|trade|market)\b",
+    re.IGNORECASE,
+)
+_RISK_RE = re.compile(
+    r"\b(decrease|decline|shortage|constraint|restriction|risk|threat|barrier|limitation|strict|compliance gap|deficit|drop|fall|limited|challenge|decrease|decline)\b",
+    re.IGNORECASE,
+)
+_HS_RE = re.compile(r"\bHS\s*\d{2,10}\b")
+_MULTI_WORD_ENTITY_RE = re.compile(r"\b([A-Z][a-z]+(?:\s+[A-Z][a-zA-Z]*)+)\b")
+_KNOWN_COUNTRIES = {
+    "Egypt", "Jordan", "UAE", "Saudi", "USA", "UK", "Germany", "France", "China",
+    "India", "Brazil", "Australia", "Canada", "Japan", "Korea", "Mexico",
+    "South Africa", "Nigeria", "Kenya", "Morocco", "Tunisia", "Algeria",
+    "Libya", "Sudan", "Ethiopia", "Somalia", "Djibouti", "Lebanon", "Syria",
+    "Iraq", "Iran", "Turkey", "Pakistan", "Bangladesh", "Sri Lanka", "Vietnam",
+    "Thailand", "Indonesia", "Philippines", "Malaysia", "Singapore", "Taiwan",
+    "Hong Kong", "New Zealand", "Argentina", "Chile", "Peru", "Colombia",
+}
+_STOP_WORDS = {
+    "The", "This", "That", "These", "Those", "There", "Here",
+    "Company", "Limited", "Group", "International", "Trade",
+}
+
+
 class EntityDeriver:
     @staticmethod
     def derive(facts: List[BusinessFact]) -> List[BusinessEntity]:
         entities: List[BusinessEntity] = []
         seen_names: set = set()
         for fact in facts:
-            if fact.fact_type != FactType.DOCUMENTED_ENTITY:
-                continue
             if not fact.evidence:
                 continue
-            provenance = fact.provenance or {}
-            entity_name = provenance.get("entity_name")
-            entity_type = provenance.get("entity_type")
-            if not entity_name or not entity_type:
-                continue
-            if entity_type not in {"company", "buyer", "market", "supplier", "importer"}:
-                continue
-            if entity_name in seen_names:
-                continue
-            seen_names.add(entity_name)
-            entities.append(
-                BusinessEntity(
-                    name=entity_name,
-                    entity_type=entity_type,
-                    evidence=fact.evidence,
-                )
-            )
+            for evidence in fact.evidence:
+                text = evidence.content_excerpt or ""
+                for match in _HS_RE.finditer(text):
+                    name = match.group(0)
+                    if name not in seen_names:
+                        seen_names.add(name)
+                        entities.append(
+                            BusinessEntity(
+                                name=name,
+                                entity_type="commodity",
+                                evidence=[evidence],
+                            )
+                        )
+                for match in _MULTI_WORD_ENTITY_RE.finditer(text):
+                    name = match.group(0)
+                    if name in seen_names or name in _STOP_WORDS:
+                        continue
+                    seen_names.add(name)
+                    entities.append(
+                        BusinessEntity(
+                            name=name,
+                            entity_type="company",
+                            evidence=[evidence],
+                        )
+                    )
+                for country in _KNOWN_COUNTRIES:
+                    if country in text and country not in seen_names:
+                        seen_names.add(country)
+                        entities.append(
+                            BusinessEntity(
+                                name=country,
+                                entity_type="market",
+                                evidence=[evidence],
+                            )
+                        )
         return entities
 
 
@@ -48,18 +90,16 @@ class OpportunityDeriver:
     def derive(facts: List[BusinessFact]) -> List[Opportunity]:
         opportunities: List[Opportunity] = []
         for fact in facts:
+            if not fact.evidence:
+                continue
             if fact.fact_type not in {
                 FactType.TRADE_FLOW,
                 FactType.MARKET_INDICATOR,
                 FactType.DOCUMENTED_ENTITY,
-                FactType.MARKET_ACCESS_REQUIREMENT,
             }:
                 continue
-            if not fact.evidence:
-                continue
-            provenance = fact.provenance or {}
-            opportunity_basis = provenance.get("opportunity_basis")
-            if not opportunity_basis:
+            text = " ".join([fact.statement or ""] + [e.content_excerpt or "" for e in fact.evidence])
+            if not _OPPORTUNITY_RE.search(text):
                 continue
             opportunities.append(
                 Opportunity(
@@ -76,7 +116,10 @@ class RiskDeriver:
     @staticmethod
     def derive(facts: List[BusinessFact]) -> List[Risk]:
         risks: List[Risk] = []
+        seen_descriptions: set = set()
         for fact in facts:
+            if not fact.evidence:
+                continue
             if fact.fact_type not in {
                 FactType.REGULATORY_REQUIREMENT,
                 FactType.MARKET_ACCESS_REQUIREMENT,
@@ -85,19 +128,18 @@ class RiskDeriver:
                 FactType.LOGISTICS_FACT,
             }:
                 continue
-            if not fact.evidence:
+            text = " ".join([fact.statement or ""] + [e.content_excerpt or "" for e in fact.evidence])
+            if not _RISK_RE.search(text):
                 continue
-            provenance = fact.provenance or {}
-            risk_signal = provenance.get("risk_signal")
-            if not risk_signal:
+            description = fact.statement or ""
+            if description in seen_descriptions:
                 continue
-            severity = provenance.get("severity")
-            if severity is not None and severity not in {"high", "medium", "low"}:
-                severity = None
-            mitigation = provenance.get("mitigation")
+            seen_descriptions.add(description)
+            severity = None
+            mitigation = None
             risks.append(
                 Risk(
-                    description=fact.statement,
+                    description=description,
                     evidence=fact.evidence,
                     severity=severity,
                     mitigation=mitigation,

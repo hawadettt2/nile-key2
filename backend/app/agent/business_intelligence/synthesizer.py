@@ -83,7 +83,12 @@ class BusinessIntelligenceSynthesizer:
         limitations = self._build_limitations(key_findings, evidence, research is not None)
         limitations.extend(self._build_conflict_limitations(conflicts))
 
-        coverage = CoverageBuilder.build(research, evidence, facts)
+        coverage = CoverageBuilder.build(
+            research,
+            evidence,
+            facts,
+            unsupported_dimensions=self._unsupported_dimensions(research),
+        )
         coverage_limitations = [
             Limitation(
                 what_is_missing=f"Coverage status: {coverage.coverage_level}.",
@@ -224,3 +229,27 @@ class BusinessIntelligenceSynthesizer:
             confidence=None,
             limitations=["Source evidence is insufficient for business analysis."],
         )
+
+    @staticmethod
+    def _unsupported_dimensions(research: Optional[Any]) -> List[str]:
+        if research is None:
+            return []
+        research_metadata = getattr(research, "metadata", None) or {}
+        if not isinstance(research_metadata, dict):
+            return []
+        discovery = research_metadata.get("discovery", {})
+        if not isinstance(discovery, dict):
+            return []
+        queries = discovery.get("queries", {})
+        if not isinstance(queries, dict):
+            return []
+        unsupported: List[str] = []
+        for query_data in queries.values():
+            if not isinstance(query_data, dict):
+                continue
+            query_metadata = query_data.get("metadata") or {}
+            dim_unsupported = query_metadata.get("unsupported_dimensions") or []
+            for dim in dim_unsupported:
+                if dim and dim not in unsupported:
+                    unsupported.append(dim)
+        return unsupported
