@@ -88,6 +88,16 @@ class ResearchQueryPlanner:
         context = dict(request.context or {})
         scope = dict(request.scope) if request.scope else None
 
+        # Merge extracted intent parameters into context so retrieval providers
+        # (e.g. un-comtrade) can use them as structured filters instead of
+        # falling back to unfiltered queries.
+        if extracted.get("reporter"):
+            context["reporter"] = extracted["reporter"]
+        if extracted.get("partner"):
+            context["partner"] = extracted["partner"]
+        if extracted.get("commodities"):
+            context["commodities"] = extracted["commodities"]
+
         # Trade Intelligence: always relevant when there is a trade flow or market study
         if intent_profile.get("is_trade_flow") or intent_profile.get("is_market_study"):
             queries.append(self._trade_intelligence_query(base_query, context, scope, extracted))

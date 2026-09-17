@@ -84,7 +84,7 @@ def _to_evidence_item(evidence: Evidence) -> EvidenceItem:
     )
 
 
-_VALUE_RE = re.compile(r"(\d[\d,]*\.?\d+)\s*(USD|Million|Billion|EUR|GBP|tons|metric tons|kg)?")
+_VALUE_RE = re.compile(r"(\d[\d,]*\.\d+)\s*(USD|Million|Billion|EUR|GBP|tons|metric tons|kg)?")
 _YEAR_RE = re.compile(r"^(19|20)\d{2}$")
 YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 HS_CODE_RE = re.compile(r"\bHS\s*\d{2,10}\b")

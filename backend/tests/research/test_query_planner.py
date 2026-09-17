@@ -297,3 +297,30 @@ class TestResearchQueryPlanner:
         plan = planner.plan(request)
         dimensions = [q.dimension for q in plan.queries]
         assert "rules_of_origin" in dimensions
+
+    def test_extracted_parameters_are_passed_in_query_context(self):
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "اريد تصدير الخضروات والفاكهة المصرية الى الاردن",
+            context={},
+            scope={},
+        )
+        plan = planner.plan(request)
+        for query in plan.queries:
+            assert query.context.get("reporter") == "818"
+            assert query.context.get("partner") == "400"
+            assert query.context.get("commodities") == ["07"]
+
+    def test_extracted_parameters_do_not_pollute_request_context(self):
+        original_context = {"session_id": "abc123"}
+        planner = ResearchQueryPlanner()
+        request = _make_request(
+            "export vegetables Egypt to Jordan",
+            context=original_context,
+            scope={},
+        )
+        plan = planner.plan(request)
+        assert request.context == {"session_id": "abc123"}
+        for query in plan.queries:
+            assert query.context.get("session_id") == "abc123"
+            assert query.context.get("reporter") == "818"

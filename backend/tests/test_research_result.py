@@ -381,3 +381,28 @@ class TestTraceabilityChain:
             for evidence_item in finding.evidence:
                 assert evidence_item.source_id is not None
 
+
+class TestCommercialExtractionGuardrails:
+    def test_cmd_code_not_treated_as_commercial_value(self):
+        signals = _extract_commercial_signals("HS 07 — 28496743.65 USD")
+        assert signals["hs_codes"] == ["07"]
+        assert len(signals["values"]) == 1
+        assert signals["values"][0]["value"] == "28496743.65"
+
+    def test_two_digit_ids_without_decimal_are_not_values(self):
+        signals = _extract_commercial_signals("HS 91 USD HS 18 USD HS 32 USD")
+        assert signals["hs_codes"] == ["91", "18", "32"]
+        assert signals["values"] == []
+
+    def test_decimal_numbers_are_still_extracted(self):
+        signals = _extract_commercial_signals("value 2404.299 USD and 13.56 USD")
+        values = [item["value"] for item in signals["values"]]
+        assert "2404.299" in values
+        assert "13.56" in values
+
+    def test_hs_07_content_does_not_misclassify_cmd_code_as_value(self):
+        signals = _extract_commercial_signals("HS 07 — 28496743.65 USD")
+        assert signals["hs_codes"] == ["07"]
+        assert len(signals["values"]) == 1
+        assert signals["values"][0]["value"] == "28496743.65"
+
