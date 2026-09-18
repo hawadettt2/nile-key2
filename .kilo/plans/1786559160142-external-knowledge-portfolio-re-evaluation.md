@@ -27,19 +27,32 @@
 
 ## 2. Current Portfolio Status
 
-### 2.1 Implemented Providers (Baseline)
+### 2.1 Implemented Providers (Post Master Remediation)
 
-| Provider | Sub-WP | Status | Families Covered | Intelligence Type |
-|----------|--------|--------|------------------|-------------------|
-| MoaahExternalSourceAdapter | WP-38a | Closed | Regulatory, Market Access | Global/Egypt-focused |
-| TradeDataExternalSourceAdapter | WP-38b | Closed | Trade Intelligence, Market Opportunity | 200+ countries |
-| ZatcaExternalSourceAdapter | WP-38c | Closed | Regulatory, Market Access | Saudi Arabia |
-| GccstatExternalSourceAdapter | WP-38d | Closed | Trade Intelligence, Rules of Origin | GCC-wide |
-| FaostatExternalSourceAdapter | Task 3 | Closed | Trade Intelligence, Market Opportunity, Agrifood | Global |
-| UncomtradeExternalSourceAdapter | Task 4 | Closed | Trade Intelligence | Global |
-| WorldbankLpiExternalSourceAdapter | Phase 1 | G5 Closed | Logistics / Market Execution | Global |
+**Authority:** `.kilo/plans/1789672443844-master-remediation-plan.md` Phases 0–11 PASS
 
-**Total:** 7 implemented providers (Moaah, TradeData, ZATCA, GCC-Stat, FAOSTAT, UN Comtrade, World Bank LPI).
+| Provider | Sub-WP | Operational Status | Families Covered | Intelligence Type | Notes |
+|----------|--------|-------------------|------------------|-------------------|-------|
+| UncomtradeExternalSourceAdapter | Task 4 | ✅ Operational — Partial | Trade Intelligence | Global | Preview API only; 500 records limit; HS-level bilateral flows |
+| WorldbankLpiExternalSourceAdapter | Phase 1 | ✅ Operational — Partial | Logistics / Market Execution | Global | Country-level scores only (2012-2023); NOT route-level freight cost/time |
+| CompanyKnowledgeProvider | WP-30F | ✅ Operational — Partial | General | Internal | Internal curated knowledge via `resources` table |
+| FaostatExternalSourceAdapter | Task 3 | ❌ Inactive | Trade Intelligence, Agrifood | Global | Credentials configured; JWT auth works; data availability unverified |
+| MoaahExternalSourceAdapter | WP-38a | ❌ Inactive | Regulatory, Market Access | Egypt-focused | Missing credentials; endpoint unverified |
+| TradeDataExternalSourceAdapter | WP-38b | ❌ Inactive | Trade Intelligence, Market Opportunity | 200+ countries | Missing credentials; endpoint unverified |
+| ZatcaExternalSourceAdapter | WP-38c | ❌ Inactive | Regulatory, Market Access | Saudi Arabia | Missing credentials; endpoint unverified |
+| GccstatExternalSourceAdapter | WP-38d | ❌ Inactive | Trade Intelligence, Rules of Origin | GCC-wide | Missing credentials; endpoint unverified |
+| RegulationsKnowledgeProvider | WP-37 | ❌ Inactive | Regulatory / SPS-TBT | N/A | `regulations.json` missing; no data file |
+| WTO ePing | N/A | ⚠️ Complementary Only | Regulatory / SPS-TBT | Global | Web portal + XLSX; no verifiable public REST API |
+
+**Total Operational External Providers:** 2 (UN Comtrade, World Bank LPI)
+**Total Inactive/Blocked Providers:** 7 (FAOSTAT, Moaah, TradeData, ZATCA, GCC-Stat, Regulations, WTO ePing complementary)
+
+**Key Corrections from Master Remediation:**
+- TradeData, Moaah, ZATCA, GCC-Stat: Previously listed as "Closed/Implemented" — actually Inactive due to missing credentials
+- FAOSTAT: Previously listed as "Closed" with 8/10 coverage — actually Inactive; data unverified
+- WTO ePing: Previously listed as "Blocked / Pending Evidence" — reclassified as Complementary Only (no REST API)
+- World Bank LPI: Country-level scores only; does NOT provide route-level logistics data
+- UN Comtrade: Preview API only; 500 records limit; NOT comprehensive global coverage
 
 ### 2.2 Remaining Candidates
 
@@ -203,34 +216,30 @@ Scores are derived from verified provider capabilities and documented gaps. No i
 4. Scores marked **غير مؤكدة** indicate live validation not yet completed
 5. Scores marked **Estimate** or **Inference** are expert assessments based on documented provider capabilities
 
-### 4.2 Scorecard
+### 4.2 Scorecard (Post Master Remediation)
+
+**Authority:** `.kilo/plans/1789672443844-master-remediation-plan.md` Phases 0–11 PASS
 
 | Family | Score (0-10) | Evidence | Inference |
 |--------|--------------|----------|-----------|
-| Trade Intelligence | 7/10 | TradeData covers 200+ countries shipment records; GCC-Stat covers GCC aggregates; UN Comtrade provides official global stats | Missing comprehensive official global coverage |
-| Market Opportunity | 4/10 | TradeData provides shipment records; GCC-Stat provides economic indicators | No dedicated opportunity intelligence source |
-| Market Access | 5/10 | Moaah provides duty rates and licensing; ZATCA provides Saudi tariff data | No dedicated global tariff database |
-| Regulatory / SPS / TBT | 0/10 | No implemented provider covers SPS/TBT; proposed WTO ePing covers majority of global SPS/TBT notifications | 9/10 rather than 10/10 because complete coverage would require additional national/regional sources beyond current scope |
-| Rules of Origin | 3/10 | GCC-Stat provides GCC aggregates | No dedicated rules of origin database |
-| Agrifood Intelligence | 8/10 | FAOSTAT + FPI extension implemented; live validation passed; price monitoring confirmed | Impact verified — highest business priority |
-| Logistics / Market Execution | 5/10 | World Bank LPI implemented; G5 CLOSED | Gap closed for global logistics performance data |
+| Trade Intelligence | 3/10 | UN Comtrade preview API returns real HS-level bilateral data; 500 records limit; no advanced filtering | Partial coverage only; preview API limits comprehensive analysis |
+| Market Opportunity | 0/10 | No provider provides demand signals, growth indicators, or export potential | Full Source Gap — No viable candidate in Phase 7 |
+| Market Access | 0/10 | No provider provides tariff rates, duties, or import procedures | Full Source Gap — WTO Timeseries Candidate/Pending Governance Approval |
+| Regulatory / SPS / TBT | 0/10 | No automated provider; regulations.json missing; WTO ePing = complementary only | Full Source Gap — Complementary-only acceptance for SPS/TBT |
+| Rules of Origin | 0/10 | No provider provides FTA eligibility, criteria, or certificate requirements | Full Source Gap — GCC-Stat blocked; ITC Rules of Origin = complementary only |
+| Agrifood Intelligence | 0/10 | FAOSTAT implemented but inactive; credentials configured but data unverified | Configuration Gap — Activate with Scope Restriction pending data validation |
+| Logistics / Market Execution | 2/10 | World Bank LPI provides country-level scores (2012-2023); NOT route-level cost/time/reliability | Source Limitation — Country scores insufficient for route-level requirements |
 
 **Overall Portfolio Coverage Calculation:**
 
 **Formula:** Simple average of all seven family scores.
 
-**Current baseline (pre-UN Comtrade, pre-FPI, pre-LPI):** ~2.7/10
-- Calculation: (7 + 4 + 5 + 0 + 3 + 0 + 0) / 7 = 19/7 ≈ 2.7
+**Current state (post Master Remediation):** ~0.7/10
+- Calculation: (3 + 0 + 0 + 0 + 0 + 0 + 2) / 7 = 5/7 ≈ 0.7
 
-**Current state (post-UN Comtrade, post-FPI, post-LPI):** ~4.6/10
-- Calculation: (7 + 4 + 5 + 0 + 3 + 8 + 5) / 7 = 32/7 ≈ 4.6
-- Note: This is an **Estimate** based on current scores. Actual score requires live validation of all providers.
+**Note:** This score reflects **proven operational coverage** only. Registered, configured, or implemented-but-inactive providers do not contribute to coverage. Phase 10 scenarios confirmed all five test profiles as **Not Ready** due to Minimum Sufficiency not being met.
 
-**With minimal sufficient portfolio (if P0 gaps filled):** ~4.6/10 → ~5.9/10
-- Would require WTO ePing (SPS/TBT) + verifiable public REST API
-- Calculation with P0 filled: (7 + 4 + 5 + 9 + 3 + 8 + 5) / 7 = 41/7 ≈ 5.9
-
-**Evidence Basis:** Verified from implemented provider test suites, adapter specifications, and documented API capabilities. Scores marked as Inference are explicitly labeled.
+**Evidence Basis:** Verified from Capability Truth Model (Phase 2), Provider Activation Plan (Phase 5), Gap Closure Matrix (Phase 6), Source Admission Decision (Phase 7), and Research/Evidence/BI Alignment (Phase 8).
 
 ### 4.3 Resilience Matrix
 
@@ -288,19 +297,24 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 
 ## 6. Source Classification Framework
 
-### 6.1 Implemented Providers (7)
+### 6.1 Implemented Providers (Post Master Remediation)
 
-**Evidence:** Verified from baseline tags, test suites, and git history.
+**Authority:** `.kilo/plans/1789672443844-master-remediation-plan.md` Phases 0–11 PASS
 
-| Provider | Sub-WP | Status | Families Covered |
-|----------|--------|--------|------------------|
-| MoaahExternalSourceAdapter | WP-38a | Closed | Regulatory, Market Access |
-| TradeDataExternalSourceAdapter | WP-38b | Closed | Trade Intelligence, Market Opportunity |
-| ZatcaExternalSourceAdapter | WP-38c | Closed | Regulatory, Market Access |
-| GccstatExternalSourceAdapter | WP-38d | Closed | Trade Intelligence, Rules of Origin |
-| FaostatExternalSourceAdapter | Task 3 | Closed | Trade Intelligence, Market Opportunity, Agrifood |
-| UncomtradeExternalSourceAdapter | Task 4 | Closed | Trade Intelligence |
-| WorldbankLpiExternalSourceAdapter | Phase 1 | G5 Closed | Logistics / Market Execution |
+| Provider | Sub-WP | Operational Status | Families Covered | Notes |
+|----------|--------|-------------------|------------------|-------|
+| UncomtradeExternalSourceAdapter | Task 4 | ✅ Operational — Partial | Trade Intelligence | Preview API; 500 records; HS-level bilateral |
+| WorldbankLpiExternalSourceAdapter | Phase 1 | ✅ Operational — Partial | Logistics / Market Execution | Country-level scores only; NOT route-level |
+| CompanyKnowledgeProvider | WP-30F | ✅ Operational — Partial | General | Internal `resources` table |
+| FaostatExternalSourceAdapter | Task 3 | ❌ Inactive | Trade Intelligence, Agrifood | Credentials configured; data unverified |
+| MoaahExternalSourceAdapter | WP-38a | ❌ Inactive | Regulatory, Market Access | Missing credentials |
+| TradeDataExternalSourceAdapter | WP-38b | ❌ Inactive | Trade Intelligence, Market Opportunity | Missing credentials |
+| ZatcaExternalSourceAdapter | WP-38c | ❌ Inactive | Regulatory, Market Access | Missing credentials |
+| GccstatExternalSourceAdapter | WP-38d | ❌ Inactive | Trade Intelligence, Rules of Origin | Missing credentials |
+| RegulationsKnowledgeProvider | WP-37 | ❌ Inactive | Regulatory / SPS-TBT | `regulations.json` missing |
+| WTO ePing | N/A | ⚠️ Complementary Only | Regulatory / SPS-TBT | Web portal + XLSX; no REST API |
+
+**Key Correction:** The "7 implemented providers" baseline from pre-remediation governance is outdated. Post Master Remediation (Phases 0–11), only **2 external providers** are operationally proven (UN Comtrade, World Bank LPI). The remaining 5 implemented-but-inactive providers require credentials/verification before contributing to coverage. WTO ePing is classified as Complementary Only, not an operational provider.
 
 ### 6.2 Provider Candidates
 
@@ -357,19 +371,31 @@ Agrifood Intelligence is a **cross-cutting strategic priority**, not a separate 
 
 ## 7. Seven-Family Coverage Matrix (Current + Proposed)
 
-### 7.1 Coverage by Family
+### 7.1 Coverage by Family (Post Master Remediation)
+
+**Authority:** `.kilo/plans/1789672443844-master-remediation-plan.md` Phases 0–11 PASS
 
 | Knowledge Family | Current Score | Proposed Additions | Target Score | Gap Status |
 |------------------|---------------|-------------------|--------------|------------|
-| Trade Intelligence | 7/10 | — | 9/10 | P1 |
-| Market Opportunity | 4/10 | — | 6/10 | P2 |
-| Market Access | 5/10 | WTO Timeseries API (Blocked / Pending Evidence) / TTD platform (Complementary) | 8/10 | P1 |
-| Regulatory / SPS / TBT | 0/10 | WTO ePing | 9/10 | **P0** |
-| Rules of Origin | 3/10 | — | 3/10 | P3 |
-| **Agrifood Intelligence** | **غير مؤكدة → 8/10** | **FAOSTAT + FPI extension** | **8/10** | **P0 — Implemented** |
-| Logistics / Market Execution | 5/10 | — | 5/10 | **P1 — Implemented** |
+| Trade Intelligence | 3/10 | — | 3/10 | P1 — Accept Partial (UN Comtrade preview API) |
+| Market Opportunity | 0/10 | — | 0/10 | P0 — Full Source Gap (no viable candidate) |
+| Market Access | 0/10 | WTO Timeseries API (Candidate/Pending) | 0/10 | P0 — Full Source Gap |
+| Regulatory / SPS / TBT | 0/10 | — | 0/10 | P0 — Full Source Gap (Complementary-only accepted) |
+| Rules of Origin | 0/10 | — | 0/10 | P0 — Full Source Gap (no viable candidate) |
+| Agrifood Intelligence | 0/10 | FAOSTAT (Inactive) | 0/10 | P1 — Configuration Gap (pending data validation) |
+| Logistics / Market Execution | 2/10 | — | 2/10 | P1 — Source Limitation (country-level only) |
 
-**Overall Portfolio Coverage:** ~4.6/10 (current) → ~5.9/10 (with P0 gaps filled if WTO ePing becomes accessible)
+**Overall Portfolio Coverage:** ~0.7/10 (current)
+- Calculation: (3 + 0 + 0 + 0 + 0 + 0 + 2) / 7 = 5/7 ≈ 0.7
+
+**Note:** Phase 10 readiness scenarios confirmed all test profiles as **Not Ready**. Minimum Sufficiency Criteria (Phase 1) not achieved for any scenario. Phase 11 Decision-Safe/Response-Safe Acceptance = PASS with explicit limitations.
+
+**Critical Finding:** The pre-remediation score of ~4.6/10 was based on false assumptions:
+1. Inactive providers (FAOSTAT, Moaah, TradeData, ZATCA, GCC-Stat) counted as coverage
+2. TradeData/Moaah/ZATCA/GCC-Stat capabilities assumed proven
+3. FAOSTAT assumed at 8/10 despite being inactive
+4. World Bank LPI assumed to cover route-level logistics (it does not)
+5. Complementary sources counted toward automated coverage score
 
 ### 7.2 Agrifood Cross-Cutting Coverage
 

@@ -103,14 +103,22 @@ nile-key2/
 | 6 | Invoice Management | ✅ Implemented |
 | 7 | Document Management | ✅ Implemented |
 | 8 | Export Operations | ✅ Implemented (WP-21) |
-| 9 | Trade Intelligence | ✅ Implemented (WP-33) |
+| 9 | Trade Intelligence | ⚠️ Partial — UN Comtrade preview API only (500 records, HS-level bilateral) |
 | 10 | Knowledge Graph | ✅ Implemented (WP-32) |
 | 11 | Digital Export Manager | ✅ Implemented (WP-30) |
 | 12 | AI Memory | ✅ Implemented (WP-31) |
+| 13 | Market Opportunity | ❌ Not Available — No approved provider |
+| 14 | Market Access | ❌ Not Available — WTO Timeseries pending governance approval |
+| 15 | Regulatory / SPS-TBT | ❌ Not Available — Complementary only (WTO ePing) |
+| 16 | Rules of Origin | ❌ Not Available — No approved provider |
 | 17 | Administration | ✅ Implemented |
 | 18 | Reports & Dashboard | ✅ Implemented (WP-21) |
 | 19 | Audit & Compliance | ✅ Implemented (WP-21) |
 | 20 | Notifications | ✅ Implemented (WP-21) |
+| 21 | Logistics | ⚠️ Partial — World Bank LPI country-level scores only (not route-level) |
+| 22 | Agrifood Intelligence | ❌ Not Available — FAOSTAT inactive |
+
+**Note:** Capability status reflects proven operational evidence only. Registered ≠ Available. Complementary ≠ Authoritative. See `CURRENT_STATUS.md` for full provider truth model.
 
 ## Frontend Pages (22)
 
@@ -175,12 +183,21 @@ See PLAN.md Section 24 for deployment instructions.
 
 | Phase | Work Packages | Status |
 |-------|--------------|--------|
-| Phase 1: Foundation | WP-01 through WP-18 | ✅ Complete |
-| Phase 1.5: Business Logic Alignment | WP-19, WP-20, WP-21 | ✅ Complete |
-| Phase 2: Intelligent Platform | WP-30B through WP-30I, WP-31, WP-32, WP-33 | ✅ Complete |
-| Phase 3: Production & Deployment | WP-40 | ✅ Complete |
-| Phase 3: Production & Deployment | WP-41 (Documentation) | 🔴 Planned |
-| Phase 3: Production & Deployment | WP-42 (Owner Acceptance) | 🔴 Planned |
+| Phase 0: Baseline Freeze + Security | Phase 0 | ✅ Complete |
+| Phase 1: Honest Commercial Promise | Phase 1 | ✅ Complete |
+| Phase 2: Capability Truth Model | Phase 2 | ✅ Complete |
+| Phase 3: Source Reality Revalidation | Phase 3 | ✅ Complete |
+| Phase 4: Semantic Integrity + Readiness Governance | Phase 4 | ✅ Complete |
+| Phase 5: Existing Provider Activation & Repair | Phase 5 | ✅ Complete |
+| Phase 6: Knowledge Gap Closure | Phase 6 | ✅ Complete |
+| Phase 7: Source Candidate Evaluation | Phase 7 | ✅ Complete |
+| Phase 8: Research + Evidence + BI Alignment | Phase 8 | ✅ Complete |
+| Phase 9: Decision + Strategic Reasoning Integrity | Phase 9 | ✅ Complete |
+| Phase 10: Country / Product / Route Readiness | Phase 10 | ✅ Complete |
+| Phase 11: End-to-End Decision-Safe + Response-Safe Acceptance | Phase 11 | ✅ Complete |
+| Phase 12: Governance / Documentation Reconciliation | Phase 12 | 🔄 In Progress |
+| Phase 13: Final Closure | Phase 13 | ⏳ Pending |
+| Legacy Work Packages | WP-01 through WP-42, WP-ORM-001/002, WP-DEM-001a/002 | ✅ Complete (Historical) |
 
 ---
 

@@ -21,7 +21,7 @@ def adapt_evidence_item(item: EvidenceItem) -> "EvidenceReference":
         retrieval_timestamp=_normalize_timestamp(item.retrieval_timestamp),
         confidence=None,
         limitations=None,
-        provenance=None,
+        provenance=item.metadata,
     )
 
 

@@ -4,8 +4,138 @@
 **Branch:** main  
 **Mode:** Plan Only — No Implementation  
 **Authority:** Forensic Audit findings (2026-09-17)  
-**Governing Baseline:** Commit `0a643af6d6ad9959dd529aae28681dd509d71765` + Commit `28539a3bb053554de9af0b9d1a1dae043f62e8e7` + Current `.env` and `backend/data/` state  
+**Governing Baseline:** Commit `d238f5489922ad472521cd61ca63002f73129f5d` + Baseline Document `.kilo/plans/baseline-2026-09-17.md` + Current `.env` and `backend/data/` state  
 **Objective:** إعادة ضبط الأساس المعرفي والتشغيلي والتجاري لـDEM بناءً على الحقيقة التشغيلية الحالية، دون افتراض أي قدرة لا يثبتها مصدر ودليل.
+
+---
+
+## Architectural Integrity Gate
+
+هذه الخطة تعمل داخل المعمارية القائمة، ولا تستبدلها.
+
+### Canonical AI Lifecycle
+
+```text
+USER
+ ↓
+INTENT
+ ↓
+GOAL
+ ↓
+PLAN
+ ↓
+DECISION
+ ↓
+STRATEGIC REASONING
+ ↓
+REPLANNING
+ ↓
+MISSION
+ ↓
+TASK
+ ↓
+EXECUTION
+ ↓
+OUTCOME
+ ↓
+FEEDBACK
+ ↓
+MEMORY
+ ↓
+FUTURE DECISION
+ ↓
+RESPONSEBUILDER
+ ↓
+INTENTCONTENT
+ ↓
+AVATAR
+```
+
+**ملاحظة:** Research → Evidence → Business Intelligence ليست مراحل داخل الـcanonical lifecycle. هي Knowledge Plane منفصلة تغذي Decision / Strategic Reasoning / Response.
+
+### Knowledge Plane
+
+```text
+External Knowledge Sources
+        ↓
+Research
+        ↓
+Evidence
+        ↓
+Business Intelligence
+        ↓
+Decision / Strategic Reasoning Context
+```
+
+**القاعدة:** Knowledge Plane تقدم معلومات للـAI Core، ولا تُضاف كمراحل داخل الـcanonical lifecycle.
+
+### Response Plane
+
+```text
+Decision / Strategic Context
+        +
+Research / Evidence
+        +
+Business Intelligence
+        ↓
+ResponseBuilder
+        ↓
+IntentContent
+        ↓
+Avatar
+```
+
+### Architecture Rules
+
+* `Research` ليس Decision Engine.
+* `Business Intelligence` ليس Decision Engine.
+* `ResponseBuilder` ليس Reasoning Engine.
+* `Avatar` ليس Decision Engine.
+* نقص المعرفة لا يجوز أن يتحول إلى Capability غير موجودة داخل Decision.
+* نقص المعرفة لا يجوز أن يتحول إلى Strategic Recommendation غير مثبتة.
+* نقص المعرفة لا يجوز أن يختفي داخل Business Intelligence.
+* نقص المعرفة لا يجوز أن يظهر للمستخدم كأنها حقيقة مؤكدة.
+* لا يوجد second planner.
+* لا يوجد second reasoning engine.
+* لا يوجد second decision engine.
+
+### Architectural Freeze
+
+هذه الطبقات تعتبر **Closed / Protected**:
+
+```text
+Goal
+Plan
+Decision
+Strategic Reasoning
+Adaptive Replanning
+Mission
+Task
+Execution
+Outcome
+Feedback
+Memory
+Multi-Mission Orchestration
+Goal Evolution
+Autonomy Policies
+Avatar architecture
+Business Intelligence architecture
+```
+
+لا تعاد هندستها.
+
+المسموح هو:
+
+```text
+Targeted correction
+Contract-consistent validation
+Capability truth propagation
+Evidence propagation
+Readiness enforcement
+False-claim prevention
+```
+
+فقط.
 
 ---
 
@@ -34,23 +164,91 @@
 
 ---
 
-## Phase 0 — Baseline Freeze + Security
+## Missing Knowledge Rule
 
-### الهدف
-تثبيت الحالة الحالية كمرجع، وعلاج المخاطر الأمنية، ومنع العودة للتحقيق من البداية.
+```text
+Missing Knowledge
+must never become
+Unsupported Finding
+or Unsupported Decision
+or Unsupported Strategic Conclusion
+or Unsupported User-facing Claim
+```
 
-### Inputs
+---
+
+## Readiness Model
+
+يجب الفصل بين مستويات جاهزية مختلفة:
+
+### Provider Readiness
+
+```text
+1. Implemented — Code exists
+2. Registered — In registry
+3. Configured — Credentials/settings present
+4. Activated — Registered at startup
+5. Reachable — Health check passes
+6. Returns Data — Returns non-empty results
+7. Capability Proven — Data matches family requirement
+```
+
+وهنا ينتهي **Provider Readiness**.
+
+### Capability Readiness
+
+```text
+8. Scope Ready — Covers declared scope
+9. Country/Product Ready — Coverage matches target geography and products
+```
+
+### Business Question Readiness
+
+```text
+10. Business Question Ready — Can answer the specific commercial question
+11. Decision-Safe — Evidence supports tactical decision
+12. Response-Safe — Evidence supports user-facing claim
+```
+
+**القاعدة الأساسية:**
+
+```text
+Provider ≠ Capability Bundle ≠ Business Answer
+```
+
+---
+
+# Phase 0 — Baseline Freeze + Security
+
+## الهدف
+تثبيت الحالة الحالية كمرجع Baseline، وتوثيق/احتواء المخاطر الأمنية، ومنع العودة للتحقيق من البداية.
+
+**في هذه المرحلة:**
+- يتم تجميع Baseline Document
+- يتم توثيق暴露ات الأمان
+- يتم تسجيل خطة Credential Rotation
+- لا يتم تنفيذ تدوير credentials فعلي
+- لا يتم إجراء تغييرات تطبيقية
+- لا يتم تفعيل أي Provider
+
+## Inputs
 - آخر Forensic Audit عن Production Knowledge Coverage
 - آخر Forensic Audit عن Production Knowledge Readiness
-- Commit `0a643af6d6ad9959dd529aae28681dd509d71765`
-- Commit `28539a3bb053554de9af0b9d1a1dae043f62e8e7`
+- Baseline Document `.kilo/plans/baseline-2026-09-17.md`
+- Commit `d238f5489922ad472521cd61ca63002f73129f5d`
 - ملف `.env` الحالي
 - مجلد `backend/data/` الحالي
 
-### Deliverables
+## Scope
+تثبيت الحالة الحالية فقط. لا إصلاحات. لا تفعيل مصادر.
 
-#### 0.1 Baseline Document
-وثيقة واحدة تحتوي على:
+## Dependencies
+لا يوجد. هذه أول Phase.
+
+## Exact Deliverables
+
+### 0.1 Baseline Document
+وثيقة واحدة `.kilo/plans/baseline-2026-09-17.md` تحتوي على:
 - كل Provider المُنَفَّذ حالياً
 - حالة Runtime Activation لكل منها (Active / Inactive / Conditional)
 - حالة Credentials (Configured / Missing / Placeholder)
@@ -60,40 +258,79 @@
 - Accepted Complementary Coverage
 - Known Implementation Defects
 
-#### 0.2 Security Track
+### 0.2 Security Track
 - اعتبار أي credential ظهر في التقارير السابقة **compromised**
 - توثيق أن `LLM_API_KEY` في `.env` يجب تدويره
 - توثيق أن أي credential قديم في git history يجب استبداله
 - منع أي secret من الظهور في هذه الخطة أو أي خطة لاحقة
 
-### Acceptance Criteria
+## Acceptance Criteria
 - [ ] Baseline document موحد ومعتمد
-- [ ] Security issues موثقة بدون تعديل الكود
-- [ ] لا توجد ثغرات أمنية غير موثقة
-- [ ] كل stakeholder وافق على Baseline
+- [ ] Security Track موثّق بدون تعديل الكود
+- [ ] Credential exposure risks documented with rotation plan
+- [ ] required owner approvals recorded
+- [ ] Runtime identity matches governing baseline commit
 
-### Exit Gate
-Baseline معتمد + Security Track موثق.
+## Exit Gate
+```text
+Baseline frozen
++
+Known security exposure contained with rotation plan
++
+Runtime artifact/commit identity matches governing baseline
+```
 
-### Stop Conditions
+## Stop Conditions
 - إذا ظهر credential جديد غير موثق → توقف حتى توثيقه
 - إذا ظهر source جديد غير مصنف → توقف حتى تصنيفه
 
+## What Must Not Change
+- لا تعديل الكود
+- لا تعديل Architecture
+- لا تعديل Business Intelligence
+- لا تعديل Avatar
+- لا تعديل Knowledge Graph أو Multi-Agent
+
+## Architecture Impact
+لا يوجد. Phase 0 لا تعدل Architecture.
+
+## Evidence Required
+- Baseline Document موقّع
+- Security Track موقّع
+
 ---
 
-## Phase 1 — Define the Honest Commercial Promise
+# Phase 1 — Honest Commercial Promise
 
-### الهدف
+## الهدف
 تحديد **ما الذي نعد المستخدم به فعليًا** قبل أي إصلاح للمصادر.
 
-### Inputs
+المشكلة في النسخة السابقة أنها تعاملت مع العائلات السبعة كأن كل سؤال يجب أن يحتاج نفس المستوى منها.
+
+الصحيح:
+
+```text
+Business Question
+      ↓
+Required Evidence Dimensions
+      ↓
+Minimum Sufficiency
+```
+
+## Inputs
 - Baseline من Phase 0
 - تعريفات العائلات السبعة من Governance
 - نتائج Forensic Audit
 
-### Deliverables
+## Scope
+تحديد الوعد التجاري فقط. لا إصلاح مصادر. لا تعديل كود.
 
-#### 1.1 Minimum Business Promise Definition
+## Dependencies
+- Phase 0 مكتمل
+
+## Exact Deliverables
+
+### 1.1 Minimum Business Promise Definition
 حدد بوضوح:
 
 **Core (ما يجب أن يثبته DEM لكي يكون Commercial Export Intelligence):**
@@ -104,6 +341,16 @@ Baseline معتمد + Security Track موثق.
 5. Rules of Origin: معايير المنشأ وأهلية الاتفاقيات
 6. Agrifood: معلومات زراعية متخصصة (إذا كان المنتج زراعيًا)
 7. Logistics: تكاليف العبور وأوقاته وموثوقية الطريق
+
+**ملاحظة هامة:** العائلات السبعة هي Knowledge Portfolio وليست Mandatory Checklist لكل سؤال تجاري. المطلوب من كل سؤال يُحدد حسب:
+
+```text
+Business Question
+      ↓
+Required Evidence Dimensions
+      ↓
+Minimum Sufficiency
+```
 
 **Optional (مفيد لكن ليس أساسًا):**
 - تحليل شركات
@@ -120,116 +367,256 @@ Baseline معتمد + Security Track موثق.
 - تكاملات خاصة
 - بيانات حصرية
 
-#### 1.2 Minimum Sufficiency Criteria
-لكل Family، حدد الحد الأدنى من Evidence المطلوب:
+### 1.2 Minimum Sufficiency Criteria
+لكل Family، حدد الحد الأدنى من Evidence Dimensions المطلوبة:
 
-| Family | Minimum Evidence |
-|--------|------------------|
-| Trade Intelligence | بيانات رسمية/تجارية موثقة لتدفقات مصر ↔ الدولة Y للمنتج X |
-| Market Opportunity | مصدر واحد على الأقل يثبت demand/growth/export-potential للسوق |
-| Market Access | tariff + procedures + permits للدولة/المنتج |
-| Regulatory/SPS-TBT | MRL/SPS/TBT requirements للدولة/المنتج |
-| Rules of Origin | FTA eligibility + criteria للاتفاقية/المنتج |
-| Agrifood | أسعار/ظروف سوق/تنبيهات للسلعة الزراعية |
-| Logistics | تكلفة/وقت/موثوقية الطريق مصر → الدولة Y |
+| Family | Required Evidence Dimensions | Access Tier | Notes |
+|--------|------------------------------|-------------|-------|
+| Trade Intelligence | Bilateral trade flows, HS-level, Egypt↔Y, documented values | Authoritative | UN Comtrade or equivalent official source |
+| Market Opportunity | Demand signal, growth indicator, export potential, market attractiveness | Authoritative / Complementary |至少要一個 dimension مثبتة; Complementary acceptable if disclosed |
+| Market Access | Tariff rates, duties, import procedures, permits for Y | Authoritative / Complementary | Official source preferred; Manual-accessible acceptable as Complementary |
+| Regulatory/SPS-TBT | MRL, SPS/TBT requirements, conformity standards for product+Y | Authoritative | Must be country-product-specific |
+| Rules of Origin | FTA eligibility, criteria, certificate requirements for Y | Authoritative / Complementary | Official source preferred |
+| Agrifood | Agricultural prices, market conditions, alerts for commodity | Authoritative / Complementary | FAOSTAT or equivalent if activated |
+| Logistics | Route cost, transit time, reliability Egypt→Y | Authoritative / Complementary | Route-level data required; country scores insufficient |
 
-### Acceptance Criteria
+**Access Tier Definitions:**
+
+| Tier | Description | Trust Level |
+|------|-------------|-------------|
+| Authoritative | Official API or database with provenance | Highest |
+| Complementary | Manual/web-accessible sources with clear provenance | Medium |
+| Manual-accessible | Human-verified web portals, no automated API | Lower |
+| Unverified | No provenance, no verification | Not acceptable for Core promise |
+
+**ملاحظة:** Business Question Profile هو الذي يحدد Required Evidence Set من العائلات السبعة، وليس كل سؤال يحتاج جميع العائلات.
+
+## Acceptance Criteria
 - [ ] Business Promise معتمد وموثق
 - [ ] لكل Family حد أدنى واضح
 - [ ] لا توجد قدرة غير مثبتة في الوعد
 - [ ] Complementary coverage مُعرَّفة بوضوح
 
-### Exit Gate
+## Exit Gate
 Business Promise + Minimum Sufficiency Criteria معتمدان.
 
-### Stop Conditions
+## Stop Conditions
 - إذا تعارضت Definitions مع Governance الموجودة → توقف وحسّن Governance أولاً
+
+## What Must Not Change
+- لا تعديل الكود
+- لا تعديل Architecture
+- لا تعديل Business Intelligence
+- لا تعديل Avatar
+- لا تعديل Knowledge Graph أو Multi-Agent
+
+## Architecture Impact
+لا يوجد. Phase 1 تحدد الوعد فقط.
+
+## Evidence Required
+- Business Promise Document معتمد
+- Minimum Sufficiency Matrix معتمد
 
 ---
 
-## Phase 2 — Capability Truth Model
+# Phase 2 — Capability Truth Model
 
-### الهدف
+## الهدف
 إنشاء نموذج موحد للحقيقة يُفرق بين:
 - Implemented
 - Registered
+- Configured
 - Activated
 - Reachable
 - Returns Data
 - Capability Proven
+- Scope Ready
 - Country/Product Ready
-- Business Ready
+- Business Question Ready
+- Decision-Safe
+- Response-Safe
 
-### Inputs
+## Inputs
 - Baseline من Phase 0
 - Business Promise من Phase 1
 - Governance definitions
 
-### Deliverables
+## Scope
+توثيق الحقيقة فقط. لا إصلاحات. لا تفعيل مصادر.
 
-#### 2.1 Capability Truth Matrix
+## Dependencies
+- Phase 0 مكتمل
+- Phase 1 مكتمل
+
+## Exact Deliverables
+
+### 2.1 Capability Truth Matrix
 جدول واحد موثق لكل Provider:
 
-| Provider | Implemented | Registered | Activated | Reachable | Returns Data | Capability Proven | Country/Product Ready | Business Ready | Evidence |
-|----------|-------------|------------|-----------|-----------|--------------|-------------------|-----------------------|----------------|----------|
-| UN Comtrade | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Trade flows) | Partial (HS-level only) | Partial | UN Comtrade Preview API returns real data |
-| World Bank LPI | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Country scores) | ✅ | Partial | World Bank Indicators API returns real data |
-| FAOSTAT | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
-| Moaah | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
-| TradeData | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
-| ZATCA | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
-| GCC-Stat | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
-| Regulations | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | `regulations.json` missing from `backend/data/` |
+| Provider | Implemented | Registered | Configured | Activated | Reachable | Returns Data | Capability Proven | Scope Ready | Country/Product Ready | Business Question Ready | Decision-Safe | Response-Safe | Evidence |
+|----------|-------------|------------|------------|-----------|-----------|--------------|-------------------|-------------|-----------------------|------------------------|---------------|---------------|----------|
+| UN Comtrade | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Trade flows HS-level) | Partial | Partial | Partial | Partial | Partial | Preview API returns real data |
+| World Bank LPI | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Country scores only) | ✅ | ✅ | Partial | Partial | Partial | Indicators API returns real data |
+| Company Knowledge | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ (Internal curated knowledge) | ✅ | ✅ | Partial | Partial | Partial | Internal curated knowledge, no external API |
+| FAOSTAT | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
+| Moaah | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
+| TradeData | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
+| ZATCA | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
+| GCC-Stat | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | No credentials in `.env` |
+| Regulations | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | `regulations.json` missing |
+| WTO ePing | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Config only, no implementation |
 
-#### 2.2 Capability Sufficiency Assessment
+### 2.2 Capability Sufficiency Assessment
 لكل Family، حدد:
 
 | Family | Required Capability | Current Source | Capability Actually Proven | Gap Type |
 |--------|---------------------|----------------|---------------------------|----------|
 | Trade Intelligence | Bilateral trade flows, HS-level, Egypt↔Y | UN Comtrade | ✅ Proven | None |
-| Market Opportunity | Demand, growth, export potential, market attractiveness | None | ❌ Not Proven | **Source Gap** |
-| Market Access | Tariffs, duties, procedures, permits for Y | Moaah (inactive) | ❌ Not Proven | **Configuration + Source Limitation** |
-| Regulatory/SPS-TBT | MRL, SPS/TBT, conformity for product+Y | Regulations (inactive) | ❌ Not Proven | **Data File Missing + Source Limitation** |
-| Rules of Origin | FTA criteria, eligibility, certificate for Y | GCC-Stat (inactive) | ❌ Not Proven | **Configuration + Scope Limitation** |
-| Agrifood | Agricultural prices, conditions, alerts | FAOSTAT (inactive) | ❌ Not Proven | **Configuration Gap** |
-| Logistics | Route cost, transit time, reliability Egypt→Y | World Bank LPI | ❌ Not Proven | **Source Limitation** (country scores ≠ route data) |
+| Market Opportunity | Demand, growth, export potential, market attractiveness | TBD after Phase 3 | ❌ | **Source Gap** |
+| Market Access | Tariffs, duties, procedures, permits for Y | TBD after Phase 3 | ❌ | **Source Gap** |
+| Regulatory/SPS-TBT | MRL, SPS/TBT, conformity for product+Y | TBD after Phase 3 | ❌ | **Source Gap** |
+| Rules of Origin | FTA criteria, eligibility, certificate for Y | TBD after Phase 3 | ❌ | **Source Gap** |
+| Agrifood | Agricultural prices, conditions, alerts | FAOSTAT (inactive) | ❌ | **Configuration Gap** |
+| Logistics | Route cost, transit time, reliability Egypt→Y | World Bank LPI | ❌ | **Source Limitation** |
 
-### Acceptance Criteria
+**ملاحظة:** الحكم النهائي للمصادر الخارجية يأتي بعد Phase 3 (Current Source Reality Revalidation).
+
+## Acceptance Criteria
 - [ ] Capability Truth Matrix مكتملة لجميع Providers
 - [ ] Capability Sufficiency Assessment مكتملة لجميع Families
 - [ ] لا توجد حالة غامضة (مثل "Partial" بدون دليل)
 - [ ] كل Gap مصنف بشكل واضح
 
-### Exit Gate
+## Exit Gate
 Capability Truth Model معتمد.
 
-### Stop Conditions
+## Stop Conditions
 - إذا اكتشفت أن Governance definitions تتعارض مع Evidence → توقف وحسّن Governance أولاً
+
+## What Must Not Change
+- لا تعديل الكود
+- لا تعديل Architecture
+- لا تعديل Business Intelligence
+- لا تعديل Avatar
+- لا تعديل Knowledge Graph أو Multi-Agent
+
+## Architecture Impact
+لا يوجد. Phase 2 توثّق الحقيقة فقط.
+
+## Evidence Required
+- Capability Truth Matrix معتمد
+- Capability Sufficiency Assessment معتمد
 
 ---
 
-## Phase 3 — Semantic Integrity + Production Readiness Governance
+# Phase 3 — Current Source Reality Revalidation
 
-### الهدف
-إصلاح الـ Semantic Mapping Gap وإنشاء Production Readiness Gate موحد.
+## الهدف
+التحقق الخارجي المحدود للمصادر التي قد تؤثر على قرارات الخطة.
 
-### Inputs
+هذه المرحلة تسبق Activation Decisions و Semantic Integrity fixes.
+
+## Inputs
 - Capability Truth Model من Phase 2
+- Business Promise من Phase 1
+
+## Scope
+فحص الواقع الحالي للمصادر فقط. لا إصلاحات. لا تفعيل.
+
+## Dependencies
+- Phase 0 مكتمل
+- Phase 1 مكتمل
+- Phase 2 مكتمل
+
+## Exact Deliverables
+
+### 3.1 Source Reality Check
+لكل مصدر محتمل:
+
+| Source | Current Status | API Available | Filtering | Country Coverage | Product/HS Coverage | Freshness | Licensing | Assertion To Verify |
+|--------|---------------|---------------|-----------|------------------|---------------------|-----------|-----------|---------------------|
+| UN Comtrade | ✅ Active | Preview API | Limited | Global | HS-level | 2025 max | Free | Verify licensing / activation path |
+| World Bank LPI | ✅ Active | Indicators API | Limited | Global | Indicator-level | 2012-2023 | Free | Verify licensing / activation path |
+| FAOSTAT | Inactive | REST API | Yes | Global | Item/Element | Recent | CC BY-NC-SA 3.0 IGO | Verify licensing / activation path |
+| Moaah | Inactive | REST API | Yes | Egypt-focused | HS | Recent | Commercial | Verify licensing / activation path |
+| TradeData | Inactive | REST API | Yes | 200+ countries | HS/buyer/supplier | Recent | Commercial | Verify licensing / activation path |
+| ZATCA | Inactive | REST API | Limited | Saudi Arabia | HS | Recent | Open Data | Verify licensing / activation path |
+| GCC-Stat | Inactive | SDMX/REST | Yes | GCC | Product | Recent | Open | Verify licensing / activation path |
+| WTO ePing | Complementary | Web + XLSX | No | Global | Product | Recent | WTO | Verify complementary-only status |
+| ITC Market Access Map | Complementary | Web + bulk | No | Global | HS | Recent | ITC | Verify complementary-only status |
+| ITC Export Potential Map | Complementary | Web only | No | Global | Product | Recent | ITC | Verify complementary-only status |
+| UNCTAD LSCI/PLSCI | Complementary | CSV only | No | Global | Route | Recent | UNCTAD | Verify complementary-only status |
+
+### 3.2 Stale Governance Assumptions
+سجّل أي افتراض governance قديم:
+
+| Document | Assumption | Current Reality | Status |
+|----------|-----------|-----------------|--------|
+| `external-knowledge-portfolio-re-evaluation.md` | WTO ePing may become accessible | No verifiable public REST API with filtering | **STALE** — Update trigger condition |
+| `external-knowledge-portfolio-re-evaluation.md` | World Bank LPI covers Logistics | LPI gives country scores only, not route data | **STALE** — Coverage claim needs revision |
+| `SourceCapabilityResolver` | `trade → market_opportunity` | Governance explicitly forbids this mapping | **STALE** — Remove mapping |
+
+## Acceptance Criteria
+- [ ] Source Reality Check مكتمل للمصادر ذات الصلة
+- [ ] Stale Governance Assumptions موثقة
+- [ ] لا تم تعديل الوثائق في هذه المرحلة
+
+## Exit Gate
+واضح أي مصدر قديم وأي مصدر ما زال صالحًا.
+
+## Stop Conditions
+- إذا اكتشفت أن مصدرًا مُصدَّق له API مختلف → أوقف وحسّن Candidate Evaluation أولاً
+
+## What Must Not Change
+- لا تعديل الكود
+- لا تعديل Architecture
+- لا تعديل Business Intelligence
+- لا تعديل Avatar
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Governance docs في هذه المرحلة
+
+## Architecture Impact
+لا يوجد. Phase 3 توثّق الواقع فقط.
+
+## Evidence Required
+- Source Reality Check موقّع
+- Stale Governance Assumptions موقّعة
+
+---
+
+# Phase 4 — Semantic Integrity + Readiness Governance
+
+## الهدف
+منع أن يتحول اسم الـsource إلى Capability غير حقيقية، وإنشاء Production Readiness Gate موحد.
+
+## Inputs
+- Capability Truth Model من Phase 2
+- Source Reality Check من Phase 3
 - Governance docs الموجودة
 
-### Deliverables
+## Scope
+إصلاح Semantic Mappings فقط. لا تفعيل مصادر. لا إصلاحات كود إلا ما يخص Semantic Mapping.
 
-#### 3.1 Semantic Integrity Audit
+## Dependencies
+- Phase 2 مكتمل
+- Phase 3 مكتمل
+
+## Exact Deliverables
+
+### 4.1 Semantic Integrity Audit
 افحص وقارن:
 
 | Current Mapping | Governance Definition | Verdict | Action |
 |-----------------|----------------------|---------|--------|
 | `trade → market_opportunity` | "Historical trade data alone does not satisfy Market Opportunity" | **CONTRADICTION** | Remove `market_opportunity` from trade type in `SourceCapabilityResolver` |
-| `regulation → market_access + regulatory_sps_tbt + rules_of_origin` | Local JSON file cannot cover all three with current, country-product-specific data | **OVERCLAIM** | Split capability declarations per actual source capability |
-| `external_logistics_intelligence → logistics_market_execution` | Logistics requires route-level data, not country scores | **OVERCLAIM** | Restrict LPI to partial coverage or create separate capability |
-| `external_trade_intelligence → market_opportunity` | Same as first row | **CONTRADICTION** | Remove from resolver |
+| `agrifood → market_opportunity` | Agrifood data ≠ Market Opportunity | **OVERCLAIM** | Remove `market_opportunity` from agrifood type |
+| `food → market_opportunity` | Same as above | **OVERCLAIM** | Remove `market_opportunity` from food type |
+| `logistics → logistics_market_execution` | Logistics requires route-level data, not country scores | **OVERCLAIM** | Restrict LPI to partial coverage or create separate capability |
+| `market_data → market_opportunity` | Market data label ≠ Proven opportunity | **OVERCLAIM** | Remove mapping |
+| `regulation → market_access + regulatory_sps_tbt + rules_of_origin` | Local JSON file cannot cover all three with current data | **OVERCLAIM** | Split capability declarations per actual source capability |
+| `external_trade_intelligence → market_opportunity` | Same as trade | **CONTRADICTION** | Remove from resolver |
 
-#### 3.2 Production Readiness Gate Definition
+### 4.2 Production Readiness Gate Definition
 صمم Gate موحد:
 
 ```text
@@ -241,485 +628,1160 @@ Provider Readiness Levels:
 5. Reachable — Health check passes
 6. Returns Data — Returns non-empty results
 7. Capability Proven — Data matches family requirement
-8. Country/Product Ready — Coverage matches target
-9. Business Ready — Can answer the commercial question
+8. Scope Ready — Covers declared scope
+9. Country/Product Ready — Coverage matches target
+10. Business Question Ready — Can answer the commercial question
+11. Decision-Safe — Evidence supports tactical decision
+12. Response-Safe — Evidence supports user-facing claim
 ```
 
 **WP Closure Gate:**
-لا يُغلق Provider WP إلا إذا وصل إلى مستوى **Capability Proven** على الأقل للـ Country/Product المطلوب.
+لا يُغلق Provider WP إلا إذا وصل إلى مستوى **Capability Proven** على الأقل.
 
 **No shortcuts:**
 - `Implemented` ≠ `Business Ready`
 - `Registered` ≠ `Activated`
 - `HTTP 200` ≠ `Capability Proven`
+- `Capability Proven` ≠ `Scope Ready`
+- `Scope Ready` ≠ `Country/Product Ready`
+- `Country/Product Ready` ≠ `Business Question Ready`
+- `Business Question Ready` ≠ `Decision-Safe`
+- `Decision-Safe` ≠ `Response-Safe`
 
-### Acceptance Criteria
+### 4.3 Capability Declaration Contract
+كل Capability يجب أن تكون:
+
+```text
+Declared
++
+Observed
++
+Proven
++
+Scoped
+```
+
+## Acceptance Criteria
 - [ ] Semantic Integrity Audit مكتمل
 - [ ] كل contradiction مصنف
 - [ ] Production Readiness Gate معتمد
+- [ ] Capability Declaration Contract معتمد
 - [ ] لا يوجد false capability declaration
 
-### Exit Gate
-Semantic Integrity مثبتة + Production Readiness Gate معتمد.
+## Exit Gate
+Semantic Integrity مثبتة + Production Readiness Gate معتمد + Capability Declaration Contract معتمد.
 
-### Stop Conditions
+## Stop Conditions
 - إذا تطلب الإصلاح تعديل Contract > خطة منفصلة → أوقف ووثّق
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Business Intelligence architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
+
+## Architecture Impact
+يُسمح بتعديل `SourceCapabilityResolver` فقط. لا تعديل طبقات أعلى.
+
+## Evidence Required
+- Semantic Integrity Audit موقّع
+- Production Readiness Gate موقّع
+- Capability Declaration Contract موقّع
 
 ---
 
-## Phase 4 — Existing Provider Activation & Repair
+# Phase 5 — Existing Provider Activation & Repair
 
-### الهدف
-تفعيل كل Provider الممكن تفعيله، وتوثيق سبب عدم تفعيل الباقي.
+## الهدف
+استنفاد قيمة المصادر الموجودة قبل التفكير في مصادر جديدة.
 
-### Inputs
+## لكل Provider
+القرار يكون واحدًا من:
+
+```text
+Keep Active
+Activate
+Repair
+Restrict Scope
+Replace
+Retire
+```
+
+## Inputs
 - Capability Truth Model من Phase 2
-- Semantic Integrity Audit من Phase 3
+- Source Reality Check من Phase 3
+- Semantic Integrity Audit من Phase 4
 
-### Deliverables
+## Scope
+تفعيل/إصلاح المصادر المُنفَّذة فقط. لا مصادر جديدة.
 
-#### 4.1 Provider Activation Plan
+## Dependencies
+- Phase 2 مكتمل
+- Phase 3 مكتمل
+- Phase 4 مكتمل
+
+## Exact Deliverables
+
+### 5.1 Provider Activation Plan
 لكل Provider:
 
 | Provider | Action Required | Type | Owner |
 |----------|-----------------|------|-------|
 | UN Comtrade | ✅ Already active | None | — |
 | World Bank LPI | ✅ Already active | None | — |
+| Company Knowledge | ✅ Already active | None | — |
 | FAOSTAT | Configure credentials + verify JWT | Configuration | DevOps |
 | Moaah | Configure credentials + verify endpoint | Configuration | DevOps |
 | TradeData | Configure credentials + verify plan | Configuration + Licensing | Legal/DevOps |
 | ZATCA | Configure credentials + verify endpoint | Configuration | DevOps |
 | GCC-Stat | Configure credentials + verify endpoint | Configuration | DevOps |
-| Regulations | Create `backend/data/regulations.json` OR remove production dependency | Data/Architecture Decision | Architecture |
+| Regulations | Capability/Data Decision | Capability/Data Decision | Architecture |
 
-#### 4.2 Regulations Decision
-قبل إنشاء الملف، حدد:
-1. هل Regulations Knowledge Provider جزء صحيح من Production Architecture؟
-2. هل البيانات ستكون موثوقة وحديثة وcountry/product-specific؟
-3. هل يوجد مصدر أفضل (مثل Moaah/WTO ePing) يمكن أن يحل محل الملف المحلي؟
-4. إذا كان الملف هو الحل الوحيد، حدد:
-   - حجم البيانات المطلوب
-   - مصدر البيانات
-   - آلية التحديث
-   - Validation rules
+### 5.2 Regulations Decision
+قبل إنشاء الملف، طبق المعايير التالية بالترتيب:
 
-**لا تنشئ الملف في هذه المرحلة.**
+**Decision Criteria:**
 
-### Acceptance Criteria
+1. **Minimum Sufficiency Check (Phase 1):**
+   - هل يتطلب السؤال التجاري المعتمد Regulatory/SPS-TBT evidence؟
+   - إذا كان السؤال لا يتطلبها → لا حاجة لـregulations.json
+   - إذا كان السؤال يتطلبها → استمر للخطوة 2
+
+2. **Existing Provider Check:**
+   - هل Regulations Knowledge Provider جزء صحيح من Production Architecture؟
+   - هل البيانات موثوقة وحديثة وcountry/product-specific؟
+   - هل provenance واضح؟
+
+3. **Alternative Source Check:**
+   - هل يمكن تحقيق الهدف بمصدر موجود/نشط بدل إنشاء data file؟
+   - Check existing providers: Moaah, WTO ePing, ZATCA, GCC-Stat
+   - Check complementary sources: ITC Market Access Map, WTO ePing
+   - **ملاحظة:** Complementary sources فقط لا تُحقق Authoritative evidence المطلوب في Core Business Promise
+
+4. **Local File Justification:**
+   - إذا كان الملف المحلي هو الحل الوحيد المبرر:
+     - حدد حجم البيانات المطلوب
+     - حدد مصدر البيانات
+     - حدد آلية التحديث
+     - حدد Validation rules
+
+**Decision Paths:**
+
+| Path | Condition | Action |
+|------|-----------|--------|
+| Retain | Existing source covers requirements | Keep current provider/source |
+| Activate | Provider exists but inactive | Activate with credentials |
+| Enhance | Provider needs additional data/file | Add data/file to existing provider |
+| Replace | Better source available | Replace with alternative provider |
+| Retire | No viable source or not needed | Remove production dependency |
+| Complementary | Only manual/web sources available | Document as Complementary in Business Promise |
+
+**Result:** One of the above paths. `regulations.json` is created only if the Enhance/Replace path requires it AND the decision is approved AFTER Minimum Sufficiency check.
+
+**لا تنشئ الملف تلقائيًا في هذه المرحلة.**
+
+### 5.3 Activation Verification Checklist
+التفعيل يجب أن يتحقق من:
+
+```text
+Credentials
+Licensing
+Startup registration
+Reachability
+Real response
+Real data
+Capability sufficiency
+Operational reliability
+```
+
+ليس مجرد:
+
+```text
+Credential exists
+```
+
+## Acceptance Criteria
 - [ ] كل Provider له خطة تفعيل أو توثيق سبب عدم التفعيل
 - [ ] Regulations decision مُسجَّل
 - [ ] لا يوجد "مجهول" في حالة Provider
 
-### Exit Gate
+## Exit Gate
 كل Provider له حالة نهائية موثقة.
 
-### Stop Conditions
+## Stop Conditions
 - إذا تطلب Regulations إنشاء ملف بيانات ضخم → أوقف وحدد النطاق أولاً
+- إذا تطلب Activation تعديل Closed WP → أوقف ووثّق Contract Conflict أولاً
+- إذا كان Replace يتطلب New Provider غير موجود/غير معتمد مسبقًا → أوقف ووجّه إلى Phase 7 bounded Source-Admission
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Business Intelligence architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs إلا عند Contract Conflict مثبت
+
+## Architecture Impact
+يُسمح بـ:
+- Configuration و Credential Store
+- Targeted provider repair داخل الـowning provider/layer عند الحاجة
+- Replace بـExisting Provider معتمد مسبقًا (لا يتطلب Phase 7)
+
+ممنوع:
+- Architecture redesign
+- Upper-layer redesign
+- Reopening Closed WPs
+- Replace بـNew Provider غير موجود/غير معتمد مسبقًا (يتطلب Phase 7 bounded Source-Admission)
+
+إلا وفق قواعد Contract Conflict / Real Defect / Security Issue / Production-Critical Defect / Proven Governance Contradiction.
+
+## Evidence Required
+- Provider Activation Plan موقّع
+- Regulations Decision موقّع
+- Activation Verification Checklist مكتمل لكل Provider
 
 ---
 
-## Phase 5 — Current Source Reality Revalidation
+# Phase 6 — Knowledge Gap Closure
 
-### الهدف
-التحقق الخارجي المحدود للمصادر التي قد تؤثر على قرارات الخطة.
+## الهدف
+تحويل كل Gap إلى قرار صريح.
 
-### Inputs
-- Capability Truth Model
-- Provider Activation Plan
+## Inputs
+- Capability Truth Model من Phase 2
+- Capability Sufficiency Assessment من Phase 2
+- Source Reality Check من Phase 3
+- Business Promise من Phase 1
+- Provider Activation Plan من Phase 5
 
-### Deliverables
+## Scope
+تحديد قرار Gap Closure لكل Family. لا تنفيذ.
 
-#### 5.1 Source Reality Check
-لكل مصدر محتمل:
+## Dependencies
+- Phase 1 مكتمل
+- Phase 2 مكتمل
+- Phase 3 مكتمل
+- Phase 5 مكتمل
 
-| Source | Current Status | API Available | Filtering | Country Coverage | Product/HS Coverage | Freshness | Licensing | Verdict |
-|--------|---------------|---------------|-----------|------------------|---------------------|-----------|-----------|---------|
-| UN Comtrade | ✅ Active | Preview API | Limited | Global | HS-level | 2025 max | Free | Keep |
-| World Bank LPI | ✅ Active | Indicators API | Limited | Global | Indicator-level | 2012-2023 | Free | Keep (with limitation noted) |
-| FAOSTAT | Inactive | REST API | Yes | Global | Item/Element | Recent | CC BY-NC-SA 3.0 IGO | Activate if licensing cleared |
-| Moaah | Inactive | REST API | Yes | Egypt-focused | HS | Recent | Commercial | Activate if needed |
-| TradeData | Inactive | REST API | Yes | 200+ countries | HS/buyer/supplier | Recent | Commercial | Activate if needed |
-| ZATCA | Inactive | REST API | Limited | Saudi Arabia | HS | Recent | Open Data | Activate for KSA only |
-| GCC-Stat | Inactive | SDMX/REST | Yes | GCC | Product | Recent | Open | Activate for GCC only |
-| WTO ePing | Complementary | Web + XLSX | No | Global | Product | Recent | WTO | Complementary only |
-| ITC Market Access Map | Complementary | Web + bulk | No | Global | HS | Recent | ITC | Complementary only |
-| ITC Export Potential Map | Complementary | Web only | No | Global | Product | Recent | ITC | Complementary only |
+## Exact Deliverables
 
-#### 5.2 Stale Governance Assumptions
-سجّل أي افتراض governance قديم:
+### 6.1 Preliminary Gap Classification
 
-| Document | Assumption | Current Reality | Status |
-|----------|-----------|-----------------|--------|
-| `external-knowledge-portfolio-re-evaluation.md` | WTO ePing may become accessible | No verifiable public REST API with filtering | **STALE** — Update trigger condition |
-| `external-knowledge-portfolio-re-evaluation.md` | World Bank LPI covers Logistics | LPI gives country scores only, not route data | **STALE** — Coverage claim needs revision |
-| `SourceCapabilityResolver` | `trade → market_opportunity` | Governance explicitly forbids this mapping | **STALE** — Remove mapping |
+هذه مصنّفات أولية فقط. القرار النهائي يعتمد على نتائج Phase 3–5.
 
-### Acceptance Criteria
-- [ ] Source Reality Check مكتمل للمصادر ذات الصلة
-- [ ] Stale Governance Assumptions موثقة
-- [ ] لا تم تعديل الوثائق في هذه المرحلة
+| Family | Preliminary Classification | Rationale |
+|--------|---------------------------|-----------|
+| **Trade Intelligence** | Preliminary: Accept Partial / Enhance | Comtrade gives verified trade flows. Limit: 500 records, no advanced filtering. Final decision after Phase 3 source reality check. |
+| **Market Opportunity** | Preliminary: Full Gap | No source provides demand/growth/export-potential yet. Final decision after Phase 3–5 confirms no existing provider can cover. |
+| **Market Access** | Preliminary: Full Gap | Moaah inactive + ZATCA KSA-only. Final decision after Phase 5 activation verification. |
+| **Regulatory/SPS-TBT** | Preliminary: Full Gap | No automated provider. Local file missing. Final decision after Phase 4 semantic review + Phase 5 activation check. |
+| **Rules of Origin** | Preliminary: Full Gap | GCC-Stat inactive + GCC scope only. Final decision after Phase 5 activation verification. |
+| **Agrifood** | Preliminary: Configuration Gap | FAOSTAT implemented but inactive. Final decision after Phase 5 credential verification. |
+| **Logistics** | Preliminary: Partial / Enhancement Needed | LPI gives country scores. Final decision after Phase 3 confirms no route-level source available. |
 
-### Exit Gate
-واضح أي مصدر قديم وأي مصدر ما زال صالحًا.
+### 6.2 Gap Closure Decision Tree
 
-### Stop Conditions
-- إذا اكتشفت أن مصدرًا مُصدَّق له API مختلف → أوقف وحسّن Candidate Evaluation أولاً
+لكل Gap، افحص بالترتيب قبل اللجوء إلى New Provider:
 
----
+```text
+1. Configuration — Activate existing provider with correct credentials
+2. Implementation Fix — Fix code bug in existing provider
+3. Scope Restriction — Reduce declared scope to match actual capability
+4. Existing Provider Enhancement — Add data/file to existing provider
+5. Source Composition — Combine multiple existing providers
+6. New Provider — Must go through Phase 7
+7. Complementary Acceptance — Document permanently in Business Promise
+8. Not Required — Document why and move to Optional/Future
+```
 
-## Phase 6 — Knowledge Gap Closure
+### 6.3 Gap Closure Decision Options
 
-### الهدف
-تقييم العائلات السبعة وتحديد قرار Gap Closure لكل منها.
-
-### Inputs
-- Capability Truth Model
-- Capability Sufficiency Assessment
-- Source Reality Check
-- Business Promise
-
-### Deliverables
-
-#### 6.1 Gap Closure Matrix
-لكل Family:
-
-| Family | Gap | Decision | Rationale |
-|--------|-----|----------|-----------|
-| **Trade Intelligence** | Partial (Comtrade limits) | **Accept Partial** | Comtrade gives verified trade flows. Limit: 500 records, no advanced filtering. Sufficient for basic question. | 
-| **Market Opportunity** | **Full Gap** | **New Source Required** | No source provides demand/growth/export-potential. TradeData/Comtrade give historical flows only. Cannot be filled by Configuration. | 
-| **Market Access** | **Full Gap** | **Source Required** | Moaah inactive + ZATCA KSA-only. Need global tariff database or accept Complementary (ITC Market Access Map). | 
-| **Regulatory/SPS-TBT** | **Full Gap** | **Source Required or Complementary Accepted** | No automated provider. Local file missing. WTO ePing is Complementary only. Must decide: new source OR permanent Complementary. | 
-| **Rules of Origin** | **Full Gap** | **Source Required** | GCC-Stat inactive + GCC scope only. Need FTA database or accept Complementary (ITC Rules of Origin Facilitator). | 
-| **Agrifood** | **Full Gap** | **Configuration + Source Verification** | FAOSTAT implemented but inactive. Need credentials + verify JWT flow. If activated, covers Agrifood. | 
-| **Logistics** | **Partial** | **Source Enhancement Required** | LPI gives country scores. Need route-level data (UNCTAD LSCI/PLSCI or shipping APIs). Cannot be filled by Configuration. | 
-
-#### 6.2 Gap Closure Decisions
-لكل Gap، حدد بالضبط:
-
-| Gap Type | Action |
-|----------|--------|
+| Option | Action |
+|--------|--------|
 | Configuration | Activate existing provider with correct credentials |
 | Implementation Fix | Fix code bug in existing provider |
-| Existing Source Enhancement | Add data/file to existing provider |
-| New Source Required | Must go through Phase 7 |
+| Scope Restriction | Reduce declared scope to match actual capability |
+| Existing Provider Enhancement | Add data/file to existing provider |
+| Source Composition | Combine multiple existing providers |
+| New Provider | Must go through Phase 7 |
 | Complementary Accepted | Document permanently in Business Promise |
 | Not Required for Minimum Promise | Document why and move to Optional/Future |
 
-### Acceptance Criteria
+**قاعدة هامة:**
+
+```text
+Complementary
+≠
+Authoritative
+≠
+Core Minimum Sufficiency
+```
+
+إذا كان الـBusiness Question المعتمد يتطلب `Authoritative Evidence`، فإن `Complementary Accepted` لا يغلق Gap Core Minimum. Complementary تبقى طبقة مكشوفة للمستخدم فقط.
+
+## Acceptance Criteria
 - [ ] كل Family لها قرار Gap Closure واحد واضح
 - [ ] لا توجد حالة "غير محدد"
 - [ ] Complementary coverage مُعرَّفة بوضوح في Business Promise
+- [ ] Gap Closure Decision Tree مُتبع لكل Gap
 
-### Exit Gate
+## Exit Gate
 كل Gap له قرار واضح.
 
-### Stop Conditions
-- إذا تطلب Market Opportunity أو Logistics مصدرًا جديدًا → توقف عند Phase 7
+## Stop Conditions
+- إذا احتاج Gap قرار New Provider → يتم تسجيل القرار والتقدم عبر Phase 7 bounded source-admission flow دون إعادة فتح مراحل سابقة
+- بعد approval/implementation/activation/provider-proven → استمر في المراحل التالية
+- إذا تطلب التنفيذ تعديل Closed WP → أوقف ووثّق Contract Conflict أولاً
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Business Intelligence architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs إلا عند Contract Conflict مثبت
+
+## Architecture Impact
+لا يوجد. Phase 6 يحدد القرارات فقط.
+
+## Evidence Required
+- Gap Closure Matrix موقّع
+- Gap Closure Decisions موقّعة
+- Rationales موثقة لكل قرار
 
 ---
 
-## Phase 7 — Source Candidate Evaluation
+# Phase 7 — Source Candidate Evaluation
 
-### الهدف
+## الهدف
 تقييم المرشحين للمصادر الناقصة فقط.
 
-### Inputs
+## Inputs
 - Gap Closure Matrix من Phase 6
-- Source Reality Check من Phase 5
+- Source Reality Check من Phase 3
 - Provider Ceiling = 7
 
-### Deliverables
+## Scope
+Phase 7 = Candidate Evaluation + bounded Source-Admission.
 
-#### 7.1 Candidate Evaluation
-لكل Gap الذي يتطلب مصدرًا جديدًا:
+**لـNew Provider المعتمد فقط:**
+```text
+Candidate Evaluation
+    ↓
+Governance Approval
+    ↓
+Admission Decision
+    ↓
+bounded implementation/activation handoff
+    ↓
+Capability Proven
+    ↓
+Return to Phase 8
+```
 
-| Gap | Candidate | Knowledge Value | Unique Value | API | Filtering | Countries | Products | Freshness | Licensing | Feasibility | Provider Ceiling Impact | Decision |
+هذا ليس تنفيذًا عامًا؛ بل مسار مقيد فقط للـapproved New Provider.
+
+## Dependencies
+- Phase 3 مكتمل
+- Phase 6 مكتمل
+
+## Exact Deliverables
+
+### 7.1 Candidate Evaluation
+لكل Gap الذي تقرر Phase 6 أنه يحتاج New Provider:
+
+| Gap | Candidate | Knowledge Value | Unique Value | API | Filtering | Countries | Products | Freshness | Licensing | Feasibility | Provider Ceiling Impact | Admission Decision |
 |------|-----------|-----------------|--------------|-----|-----------|-----------|----------|-----------|-----------|-------------|------------------------|----------|
-| Market Opportunity | ITC Export Potential Map | Very High | High | Web only | No | Global | Product | Recent | ITC terms | Low (no API) | N/A | **Complementary Only** |
-| Market Opportunity | TradeData | Medium | Medium | REST | Yes | 200+ | HS/buyer | Recent | Commercial | Medium (requires API key) | +1 if activated | **Candidate** |
-| Market Opportunity | UN Comtrade (re-analysis) | Low | Low | REST | Limited | Global | HS | 2025 max | Free | High | Already have | **Insufficient** |
-| Market Access | ITC Market Access Map | High | High | Web + bulk | Partial | Global | HS | Recent | ITC terms | Low | N/A | **Complementary Only** |
-| Market Access | WTO Timeseries API | High | High | REST (key required) | Yes | Global | HS | Recent | WTO | Medium | +1 | **Candidate** |
-| Regulatory/SPS-TBT | WTO ePing | Critical | High | Web + XLSX | No | Global | Product | Recent | WTO | Low (no API) | N/A | **Complementary Only** |
-| Rules of Origin | ITC Rules of Origin Facilitator | Medium | Medium | Web only | No | Global | Product | Recent | ITC terms | Low | N/A | **Complementary Only** |
-| Logistics | UNCTAD LSCI/PLSCI | Medium-High | Medium | CSV only | No | Global | Route | Recent | UNCTAD | Low | N/A | **Complementary Only** |
-| Logistics | Shipping APIs (various) | High | High | REST | Yes | Route-specific | Route | Real-time | Commercial | Medium | +1 | **Candidate** |
+| Market Opportunity | ITC Export Potential Map | Very High | High | Web only | No | Global | Product | Recent | ITC terms | Low (no API) | N/A | Complementary Only |
+| Market Opportunity | UN Comtrade (re-analysis) | Low | Low | REST | Limited | Global | HS | 2025 max | Free | High | Already have | Insufficient |
+| Market Access | WTO Timeseries API | High | High | REST (key required) | Yes | Global | HS | Recent | WTO | Medium | +1 | Candidate |
+| Regulatory/SPS-TBT | WTO ePing | Critical | High | Web + XLSX | No | Global | Product | Recent | WTO | Low (no API) | N/A | Complementary Only |
+| Rules of Origin | ITC Rules of Origin Facilitator | Medium | Medium | Web only | No | Global | Product | Recent | ITC terms | Low | N/A | Complementary Only |
+| Logistics | Shipping APIs (various) | High | High | REST | Yes | Route-specific | Route | Real-time | Commercial | Medium | +1 | Candidate |
 
-#### 7.2 Provider Ceiling Analysis
-- Current: 7 implemented providers
-- Ceiling: 7 (operational)
-- Available slots: 0
-- To add new provider: must deactivate/merge existing OR request ceiling expansion
+**ملاحظة:** TradeData هو Existing Provider (Inactive) وليس New Provider Candidate. تتم معالجته من خلال Phase 5 Activation/Repair.
 
-### Acceptance Criteria
-- [ ] كل Gap المُتطلب لمصدر جديد له تقييم مرشح واحد على الأقل
-- [ ] لا يوجد مرشح بدون تقييم Feasibility
-- [ ] Provider Ceiling impact موثق
-- [ ] لا يوجد قرار "إضافة Provider" بدون governance approval
+### 7.2 Provider Ceiling Analysis
 
-### Exit Gate
-لا يوجد Candidate غير مُقيَّم.
+**التفريق الأساسي:**
 
-### Stop Conditions
-- لا تنفذ Implementation من هذه المرحلة
+```text
+Implemented Providers
+≠
+Operational Production Provider Ceiling
+```
+
+**الوضع الحالي (من Baseline):**
+
+| العنصر | العدد | الملاحظات |
+|--------|-------|-----------|
+| إجمالي الـProviders المُنفَّذة ككود | 9 | UN Comtrade, World Bank LPI, FAOSTAT, Moaah, TradeData, ZATCA, GCC-Stat, Regulations, Company Knowledge |
+| منها Active / Operational | 2 | UN Comtrade, World Bank LPI |
+| Company Knowledge | 1 | داخلي، لا يحسب ضمن الـCeiling |
+| Config-only / Inactive | 6 | FAOSTAT, Moaah, TradeData, ZATCA, GCC-Stat, Regulations |
+| **Operational Production Provider Ceiling** | **7** | الحد الأقصى المسموح به للمصادر الإنتاجية |
+
+**قواعد Provider Ceiling:**
+
+1. `Provider Ceiling = 7` يخص **Production Operational Portfolio** فقط.
+2. Company Knowledge لا يُحسب ضمن الـ7 لأنه مصدر داخلي.
+3. Provider له كود فقط أو config فقط أو inactive لا يُحسب ضمن الـ7.
+4. Provider إضافي لا يدخل Production إلا بعد Governance Approval.
+5. لإضافة Provider جديد: must deactivate/merge existing OR request ceiling expansion.
+
+**الوضع الحالي:**
+- Active Production Providers: 2 (UN Comtrade, World Bank LPI)
+- Available slots within ceiling: 5
+- To activate inactive provider: requires credentials + verification
+- To add new provider: requires Governance Approval + ceiling management
+
+### 7.3 Bounded Source-Admission Flow
+لـNew Provider المعتمد فقط:
+
+```text
+Candidate Evaluation
+    ↓
+Governance Approval
+    ↓
+Admission Decision
+    ↓
+bounded implementation/activation handoff
+    ↓
+Capability Proven
+    ↓
+Return to Phase 8
+```
+
+## Acceptance Criteria
+- [ ] كل New Provider المعتمد له تقييم مكتمل + admission decision
+- [ ] لا يوجد New Provider بدون governance approval
+- [ ] Provider Ceiling impact موثق لكل admission
+- [ ] Existing Providers لا تُعالج كـNew Providers في Phase 7
+
+## Exit Gate
+كل New Provider المعتمد وصل إلى:
+- Capability Proven
+
+**ملاحظة:** `Admission Decision + bounded handoff plan` هو حالة وسيطة فقط، وليس Exit Gate. لا يسمح بالانتقال إلى Phase 8 إلا بعد Capability Proven.
+
+## Stop Conditions
+- إذا تطلب New Provider admission تعديل Closed WP → أوقف ووثّق Contract Conflict أولاً
+- إذا تطلب Candidate تعديل Architecture → أوقف ووثّق Contract Conflict أولاً
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Business Intelligence architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs إلا عند Contract Conflict مثبت
+
+## Architecture Impact
+Phase 7 يسمح بـ:
+- Candidate Evaluation
+- bounded implementation/activation handoff للـNew Provider المعتمد فقط
+
+لا يسمح بـ:
+- تنفيذ عام
+- تعديل Architecture
+- تعديل Upper-layer
+
+## Evidence Required
+- Candidate Evaluation موقّع
+- Provider Ceiling Analysis موقّع
+- Source Admission Decision موقّع
+- Provider Admission Evidence موقّع
 
 ---
 
-## Phase 8 — Research / BI Alignment
+# Phase 8 — Research + Evidence + BI Alignment
 
-### الهدف
-التأكد من أن طبقات البحث والذكاء التجاري لا تعلن قدرات لا يثبتها المصدر.
+## الهدف
+ربط طبقة Knowledge الجديدة مباشرة بالطبقة التي بنيناها بالفعل، وضمان أن Research + Evidence + BI تعكس الحقيقة التشغيلية الفعلية.
 
-### Inputs
-- Capability Truth Model
-- Semantic Integrity Audit
-- Provider Activation Plan
+## Inputs
+- Capability Truth Model من Phase 2
+- Semantic Integrity Audit من Phase 4
+- Provider Activation Plan من Phase 5
+- Gap Closure Decisions من Phase 6
+- Source Admission Decision / Provider Admission Evidence من Phase 7
 
-### Deliverables
+## Scope
+تحديثات مستهدفة في Research/Evidence/BI فقط. لا إعادة تصميم.
 
-#### 8.1 Research Query Planner Alignment
-افحص:
+## Dependencies
+- Phase 2 مكتمل
+- Phase 4 مكتمل
+- Phase 5 مكتمل
+- Phase 6 مكتمل
+- Phase 7 مكتمل
+
+## Exact Deliverables
+
+### 8.1 Research Query Planner Alignment
 - هل `ResearchQueryPlanner` يولد queries للعائلات التي ليس لها مصادر نشطة؟
 - هل Discovery يكتشف المصادر الصحيحة للـ queries المُولَّدة؟
 - هل intent_profile يعكس الواقع وليس الافتراضات؟
+- هل intent_profile مرتبط بالـ Capability Truth Model؟
 
-#### 8.2 BI Alignment
-افحص:
+### 8.2 Evidence Integrity
+- هل كل Evidence يحتفظ بـ:
+  - Source
+  - Source Type
+  - Retrieved At
+  - Data Date
+  - Country Scope
+  - Product / HS Scope
+  - Geographic Scope
+  - Granularity
+  - Units
+  - Currency
+  - Freshness
+  - Confidence
+  - Transformation Path
+- هل Evidence traceable chain كامل من Source → Finding → Business Fact → Opportunity/Risk/Entity؟
+
+### 8.3 Business Intelligence Alignment
 - هل `BusinessIntelligenceSynthesizer` ينتج limitations صحيحة عندما لا يوجد source؟
 - هل `unsupported_dimensions` يُبلغ عنها بوضوح؟
 - هل `CoverageBuilder` يحسب التغطية بناءً على المصادر الفعلية وليس المُسجَّلة؟
+- هل BI يمنع:
+  ```text
+  No Source
+  → Empty Dimension
+  → Inferred Fact
+  ```
+  ويستبدلها بـ:
+  ```text
+  No Source
+  → Unsupported Dimension
+  → Limitation
+  ```
 
-#### 8.3 Findings
-| Component | Issue | Fix Required | Priority |
-|-----------|-------|--------------|----------|
-| `SourceCapabilityResolver` | `trade → market_opportunity` mapping | Remove mapping | P0 |
-| `ResearchQueryPlanner` | Auto-generates 7 dimensions for any export | Adjust to actual available sources | P1 |
+### 8.4 Findings & Verification Targets
+| Component | Issue | Verification Target | Priority |
+|-----------|-------|---------------------|----------|
+| `SourceCapabilityResolver` | Phase 4 semantic corrections | Verify Phase 4 semantic corrections are reflected in Research/Evidence/BI behavior. | P0 |
+| `ResearchQueryPlanner` | Auto-generates dimensions beyond available sources | Verify planner starts from Business Question → Required Evidence Dimensions, not from all 7 families by default. | P1 |
 | `CoverageBuilder` | Counts entries not unique sources | ✅ Fixed in 0a643af | ✅ Done |
 | `BusinessIntelligenceSynthesizer` | Meta-findings in output | ✅ Fixed in 0a643af | ✅ Done |
+| `EvidenceChain` | Missing provenance fields | Verify all Evidence items include required provenance fields. | P1 |
 
-### Acceptance Criteria
+## Acceptance Criteria
 - [ ] لا يوجد false capability declaration في الكود
 - [ ] Research/BI ينتج limitations صحيحة للمصادر غير المتاحة
 - [ ] Provenance كامل للبيانات
+- [ ] Evidence traceability chain مكتمل
+- [ ] Missing Knowledge Rule مطبق في Research/Evidence/BI
 
-### Exit Gate
-Research/BI aligned مع Capability Truth Model.
+## Exit Gate
+Research + Evidence + BI تعكس الحقيقة التشغيلية الفعلية.
+
+## Stop Conditions
+- إذا تطلب الإصلاح تعديل Architecture → أوقف ووثّق Contract Conflict أولاً
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
+
+## Architecture Impact
+يُسمح بتعديل Research/Evidence/BI فقط. لا تعديل Decision أو Strategic Reasoning أو Replanning.
+
+## Evidence Required
+- Research Alignment Report موقّع
+- Evidence Integrity Report موقّع
+- BI Alignment Report موقّع
 
 ---
 
-## Phase 9 — Country / Product / Route Readiness
+# Phase 9 — Decision + Strategic Reasoning Integrity
 
-### الهدف
-إثبات أن DEM يستطيع بناء صورة تجارية موثقة لـ market/product combination.
+## الهدف
+إثبات أن نقص المعرفة **لا يتسرب إلى الـAI Core كقرار كاذب**.
 
-### Inputs
-- Capability Truth Model
-- Provider Activation Plan
-- Gap Closure Decisions
+هذه مرحلة جديدة ومهمة جدًا. الغرض هو إثبات أن:
 
-### Deliverables
+```text
+Missing Knowledge
+must never become
+Unsupported Decision
+or Unsupported Strategic Conclusion
+or Unsupported User-facing Claim
+```
 
-#### 9.1 Readiness Scenarios
+## Inputs
+- Capability Truth Model من Phase 2
+- Semantic Integrity Audit من Phase 4
+- Provider Activation Plan من Phase 5
+- Gap Closure Decisions من Phase 6
+- Research + Evidence + BI Alignment من Phase 8
+
+## Scope
+التحقق من Decision/Strategic Reasoning/Replanning فقط. لا تعديل Research/Evidence/BI.
+
+## Dependencies
+- Phase 2 مكتمل
+- Phase 4 مكتمل
+- Phase 5 مكتمل
+- Phase 6 مكتمل
+- Phase 8 مكتمل
+
+## Exact Deliverables
+
+### 9.1 Decision Integrity Check
+افحص:
+
+```text
+Research
+   ↓
+Evidence
+   ↓
+BI
+   ↓
+Decision Context
+   ↓
+Decision
+```
+
+- هل Decision يعلن فقط ما يثبته Evidence؟
+- هل Decision يعالج Unsupported Dimensions كـ Limitation وليس كـ Fact؟
+- هل Decision لا يختار Recommendation بدون Evidence؟
+
+### 9.2 Strategic Reasoning Integrity Check
+افحص:
+
+```text
+Evidence
+   ↓
+BI
+   ↓
+Strategic Context
+   ↓
+Strategic Reasoning
+   ↓
+Strategic Conclusion
+```
+
+- هل Strategic Reasoning يظل مسؤولًا عن:
+  - Strategic interpretation
+  - Trade-offs
+  - Constraints
+  - Longer-horizon reasoning
+- ولا يتحول إلى مصدر بيانات؟
+- هل Strategic Reasoning لا يختار Conclusion بدون Evidence؟
+
+### 9.3 Replanning Integrity Check
+افحص:
+
+```text
+Outcome
+   ↓
+Feedback
+   ↓
+Constraint
+   ↓
+Failure
+   ↓
+New Evidence
+   ↓
+Replanning
+```
+
+- هل Replanning تستجيب فقط إلى:
+  - New Evidence
+  - Outcome
+  - Feedback
+  - Constraint
+  - Failure
+- ولا تستخدم غياب المصدر كذريعة لاختراع معلومة؟
+
+### 9.4 Verification Targets
+| Component | Issue | Verification Target | Priority |
+|-----------|-------|---------------------|----------|
+| Decision Engine | Uses unsupported dimension as fact | Verify no unsupported dimension used as fact | P0 |
+| Strategic Reasoning | Infers market opportunity from trade alone | Verify no market opportunity inferred without explicit source | P0 |
+| Replanning | Fabricates fallback when source missing | Verify explicit degradation when source missing | P0 |
+
+## Acceptance Criteria
+- [ ] لا توجد recommendation مبنية على unsupported data
+- [ ] لا توجد strategic conclusion تتجاوز Evidence
+- [ ] Replanning لا تختبر معلومات بدون Evidence
+- [ ] Missing Knowledge Rule مطبق في Decision/Strategic Reasoning/Replanning
+
+## Exit Gate
+إثبات:
+
+```text
+Knowledge limitation
+≠
+Decision fabrication
+```
+
+## Stop Conditions
+- إذا تطلب الإصلاح تعديل Architecture → أوقف ووثّق Contract Conflict أولاً
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
+
+## Architecture Impact
+Phase 9 هي مرحلة تحقق فقط. لا تنفذ أي تعديل. أي فشل يوجّه إلى Targeted Remediation في الـowning layer → Retest → Resume. لا تعديل Decision/Strategic Reasoning/Replanning هنا.
+
+## Evidence Required
+- Decision Integrity Report موقّع
+- Strategic Reasoning Integrity Report موقّع
+- Replanning Integrity Report موقّع
+
+---
+
+# Phase 10 — Country / Product / Route Readiness
+
+## الهدف
+الانتقال من:
+
+```text
+Provider Ready
+```
+
+إلى:
+
+```text
+Business Question Ready
+```
+
+## Inputs
+- Capability Truth Model من Phase 2
+- Provider Activation Plan من Phase 5
+- Gap Closure Decisions من Phase 6
+- Business Promise من Phase 1
+- Minimum Sufficiency Criteria من Phase 1
+
+## Scope
+تقييم الجاهزية على مستوى السوق/المنتج/الطريق. لا تنفيذ.
+
+## Dependencies
+- Phase 1 مكتمل
+- Phase 2 مكتمل
+- Phase 5 مكتمل
+- Phase 6 مكتمل
+- Phase 8 مكتمل
+- Phase 9 مكتمل
+
+## Exact Deliverables
+
+### 10.1 Readiness Scenarios
 استخدم هذه الأمثلة لإثبات المبدأ:
 
-| Scenario | Market | Product | Trade Intelligence | Market Opportunity | Market Access | Regulatory | Rules of Origin | Agrifood | Logistics | Overall |
-|----------|--------|---------|-------------------|-------------------|---------------|------------|-----------------|----------|-----------|---------|
-| 1 | Jordan (Levant) | Vegetables (HS 07) | ✅ UN Comtrade | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | **Not Ready** |
-| 2 | Saudi Arabia (GCC) | Dates (HS 08) | ✅ UN Comtrade | ❌ None | ⚠️ ZATCA (inactive) | ❌ None | ⚠️ GCC-Stat (inactive) | ❌ None | ❌ None | **Not Ready** |
-| 3 | Germany (EU) | Citrus (HS 08) | ✅ UN Comtrade | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | **Not Ready** |
-| 4 | Kenya (East Africa) | Coffee (HS 09) | ✅ UN Comtrade | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | **Not Ready** |
-| 5 | China (East Asia) | Textiles (HS 61) | ✅ UN Comtrade | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | ❌ None | **Not Ready** |
+| Scenario | Market | Product | Trade | Opportunity | Market Access | Regulatory | Origin | Agrifood | Logistics | Overall |
+|----------|--------|---------|-------|-------------|---------------|------------|--------|----------|-----------|---------|
+| 1 | Jordan (Levant) | Vegetables (HS 07) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | **Computed at execution** |
+| 2 | Saudi Arabia (GCC) | Dates (HS 08) | ✅ | ❌ | ⚠️ | ❌ | ⚠️ | ❌ | ❌ | **Computed at execution** |
+| 3 | Germany (EU) | Citrus (HS 08) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | **Computed at execution** |
+| 4 | Kenya (East Africa) | Coffee (HS 09) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | **Computed at execution** |
+| 5 | China (East Asia) | Textiles (HS 61) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | **Computed at execution** |
 
-**الخلاصة:** DEM اليوم **غير جاهز** لأي سوق خارج نطاق Trade Intelligence الأساسي.
+**ملاحظة:** هذه السيناريوهات هي baseline test profiles وليست أحكامًا نهائية ثابتة. قيم `Overall` لا تُحسب مسبقًا.
 
-### Acceptance Criteria
+**حساب الجاهزية:** يُحسب `Overall Readiness` وقت التنفيذ من الأدلة الفعلية وفقًا للمنطق التالي:
+
+```text
+Overall Readiness = Required Evidence Set ∩ Proven Available Evidence
+                  + Minimum Sufficiency Check
+                  + Decision-Safe / Response-Safe conditions
+```
+
+النتيجة النهائية: `Ready / Conditionally Ready / Not Ready`
+
+## Acceptance Criteria
 - [ ] كل Scenario له تقييم واضح
 - [ ] لا يوجد سوق يعتبر "Ready" بدون دليل
 - [ ] Limitations موثقة لكل سوق
+- [ ] Minimum Sufficiency Criteria مطبقة على كل Scenario
 
-### Exit Gate
+## Exit Gate
 واضح ما هو Ready وما هو Not Ready ولماذا.
+
+## Stop Conditions
+- إذا تطلب السيناريو مصدرًا جديدًا → يتم توجيه القرار إلى Phase 7 bounded source-admission flow
+- بعد إتمام Phase 7 admission flow → استمر في Phase 8 فصاعدًا
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Business Intelligence architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
+
+## Architecture Impact
+لا يوجد. Phase 10 يقيّم الجاهزية فقط.
+
+## Evidence Required
+- Readiness Scenarios موقّعة
+- Readiness Assessment Framework موقّع
 
 ---
 
-## Phase 10 — End-to-End Commercial Acceptance
+# Phase 11 — End-to-End Decision-Safe + Response-Safe Acceptance
 
-### الهدف
-اختبار المسار الكامل من Employee Request إلى Business Response.
+## الهدف
+اختبار الـcanonical lifecycle كاملًا، وليس Research → Response فقط.
 
-### Inputs
+## Test Path
+
+### Canonical AI Lifecycle
+
+```text
+Employee Request
+ ↓
+Intent
+ ↓
+Goal
+ ↓
+Plan
+ ↓
+Decision
+ ↓
+Strategic Reasoning
+ ↓
+Replanning
+ ↓
+Mission
+ ↓
+Task
+ ↓
+Execution
+ ↓
+Outcome
+ ↓
+Feedback
+ ↓
+Memory
+ ↓
+Future Decision
+ ↓
+ResponseBuilder
+ ↓
+IntentContent
+ ↓
+Avatar
+```
+
+### Knowledge Plane (Separate)
+
+```text
+External Knowledge Sources
+        ↓
+Research
+        ↓
+Evidence
+        ↓
+Business Intelligence
+        ↓
+Decision / Strategic Reasoning Context
+```
+
+**القاعدة:** Knowledge Plane تغذي Decision/Strategic Reasoning/Response، وهي ليست مراحل داخل الـcanonical lifecycle.
+
+## Inputs
 - Capability Truth Model
 - Provider Activation Plan
 - Gap Closure Decisions
 - Readiness Scenarios
+- Decision Integrity Report من Phase 9
 
-### Deliverables
+## Scope
+اختبار End-to-End كامل. لا إصلاحات.
 
-#### 10.1 Acceptance Test Design
-صمم اختبارات تثبت:
+## Dependencies
+- Phase 9 مكتمل
+- Phase 10 مكتمل
 
-1. **Capability Truth:** يعلن النظام فقط ما يستطيع إثباته
-2. **Evidence Backing:** كل claim له دليل
-3. **Provenance:** كل dato له مصدر قابل للتتبع
-4. **Limitations:** تُظهر بوضوح ما هو غير متاح
-5. **No Overclaim:** لا توجد capability خارجة عن Capability Truth Model
+## Exact Deliverables
 
-#### 10.2 Test Scenarios
+### 11.1 Evidence Safety
+كل claim له دليل.
+
+### 11.2 Decision Safety
+لا توجد recommendation مبنية على unsupported data.
+
+### 11.3 Strategic Safety
+لا توجد strategic conclusion تتجاوز Evidence.
+
+### 11.4 Memory Safety
+Memory لا تحول نتيجة غير مؤكدة إلى حقيقة مستقبلية.
+
+### 11.5 Response Safety
+ResponseBuilder لا يضيف claims جديدة.
+
+### 11.6 Avatar Safety
+Avatar يعرض:
+
+```text
+Supported findings
++
+Confidence
++
+Limitations
++
+Provenance
+```
+
+ولا ينشئ استنتاجًا جديدًا.
+
+### 11.7 Failure / Partial Coverage
+إذا تعذر مصدر:
+
+```text
+System degrades explicitly
+```
+
+ولا:
+
+```text
+fallback → fabricated answer
+```
+
+### 11.8 Test Scenarios
 لكل سيناريو، تحقق:
 
-| Scenario | Expected Behavior | Actual Behavior (Current) | Gap |
-|----------|-------------------|---------------------------|-----|
-| Egypt → Jordan vegetables | Shows trade flows + limitations for other families | Shows trade flows + fake opportunities/risks from stub data | **Overclaim** |
-| Egypt → Saudi Arabia dates | Shows trade flows + ZATCA if activated | Shows trade flows + no market access | **Gap** |
-| Egypt → EU citrus | Shows trade flows + regulatory limitations | Shows trade flows + no regulatory data | **Gap** |
+| Scenario | Expected Behavior | Baseline Anti-Pattern | Gap |
+|----------|-------------------|-----------------------|-----|
+| Egypt → Jordan vegetables | Shows trade flows + limitations for other families | Verify system does not show fake opportunities/risks from stub data | **Overclaim** |
+| Egypt → Saudi Arabia dates | Shows trade flows + ZATCA if activated | Verify system does not show absent market access as available | **Gap** |
+| Egypt → EU citrus | Shows trade flows + regulatory limitations | Verify system does not claim regulatory data when source is absent | **Gap** |
 
-### Acceptance Criteria
+## Acceptance Criteria
 - [ ] لا يوجد Overclaim في أي سيناريو
 - [ ] Limitations ظاهرة بوضوح
 - [ ] Provenance كامل
 - [ ] لا توجد meta-findings في output
+- [ ] Missing Knowledge Rule مطبق في End-to-End flow
+- [ ] ResponseBuilder → IntentContent → Avatar لا يضيف claims جديدة
 
-### Exit Gate
-End-to-End Commercial Acceptance مُحقَّق.
+## Exit Gate
+End-to-End Decision-Safe / Response-Safe commercial behavior passed without overclaim.
+
+## Stop Conditions
+- إذا تطلب الاختبار تعديل Architecture → أوقف ووثّق Contract Conflict أولاً
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
+
+## Architecture Impact
+لا يوجد. Phase 11 يختبر فقط.
+
+## Evidence Required
+- Acceptance Test Report موقّع
+- End-to-End Evidence Log مكتمل
+- No Overclaim Certificate
 
 ---
 
-## Phase 11 — Governance / Documentation Reconciliation
+# Phase 12 — Governance / Documentation Reconciliation
 
-### الهدف
-تحديث الوثائق لتطابق الحقيقة التشغيلية الجديدة.
+## الهدف
+بعد انتهاء التنفيذ فقط، تصبح الوثائق مطابقة للحقيقة الجديدة.
 
-### Inputs
+## Update
+
+```text
+Current Status
+Capability Matrix
+Provider Status
+Knowledge Portfolio
+Source mappings
+Research status
+BI limitations
+Acceptance results
+Security status
+Commercial readiness
+```
+
+## Inputs
 - جميع المراحل السابقة
 
-### Deliverables
+## Scope
+تحديث الوثائق فقط. لا تعديل Architecture.
 
-#### 11.1 Documents to Update
+## Dependencies
+- جميع المراحل السابقة مكتملة
+
+## Exact Deliverables
+
+### 12.1 Documents to Update
 | Document | Required Update |
 |----------|-----------------|
 | `PLAN.md` | Business Promise, Capability Model, Source Status |
 | `CURRENT_STATUS.md` | Project status, source availability, gaps |
 | `external-knowledge-portfolio-re-evaluation.md` | Stale assumptions, capability mappings |
-| `SourceCapabilityResolver` | Remove false mappings |
-| `ResearchQueryPlanner` | Align with actual capabilities |
 | Provider metadata | Reflect actual activation status |
-| Acceptance tests | Remove stub-based "validation" |
 
-#### 11.2 Documents NOT to Modify
+### 12.2 Documents NOT to Modify
 - Closed WP contracts (لا تعيد فتحها)
 - Architecture contracts الثابتة
 - Provider admission criteria (لا تعديل إلا إذا ظهر conflict مثبت)
 
-### Acceptance Criteria
+## Acceptance Criteria
 - [ ] لا توجد وثيقة تتعارض مع الحقيقة التشغيلية
 - [ ] لا توجد capability claim بدون مصدر
 - [ ] لا يوجد status "Complete" بدون دليل
 
-### Exit Gate
+## Exit Gate
 Governance Reconciliation مكتمل.
+
+## Stop Conditions
+- إذا تطلب التحديث تعديل Closed WP → أوقف ووثّق Contract Conflict أولاً
+
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
+
+## Architecture Impact
+لا يوجد. Phase 12 تحدث الوثائق فقط.
+
+## Evidence Required
+- Governance Reconciliation Report موقّع
+- Document Update Log مكتمل
 
 ---
 
-## Phase 12 — Final Closure
+# Phase 13 — Final Closure
 
-### الهدف
-إثبات أن DEM وصل إلى حالة Commercial Readiness حقيقية.
+## الهدف
+الإغلاق النهائي، وليس مجرد نجاح الاختبارات.
 
-### Inputs
+## Inputs
 - جميع المراحل السابقة
 
-### Exit Criteria
+## Scope
+إثبات أن DEM وصل إلى حالة Commercial Readiness حقيقية.
 
-| Criterion | Evidence |
-|-----------|----------|
-| Architecture | ✅ سليم، لا تعديل مطلوب |
-| Business Promise | ✅ معتمد وواقعي |
-| Capability Model | ✅ موثق وموثق |
-| Semantic Integrity | ✅ لا false mappings |
-| Production Readiness | ✅ Gate معتمد |
-| Source Activation | ✅ كل source له حالة واضحة |
-| Knowledge Coverage | ✅ Gap Closure Decisions مُسجَّلة |
-| Evidence / Provenance | ✅ كامل وموثق |
-| Research / BI Alignment | ✅ aligned مع Capability Truth |
-| Country/Product/Route Readiness | ✅ scenarios موثقة |
-| Governance Consistency | ✅ لا تناقضات |
-| Security | ✅ credentials risks موثقة |
-| No Known False Capability Claims | ✅ verified |
+## Dependencies
+- جميع المراحل السابقة مكتملة
 
-### Final State
+## Exact Deliverables
+
+### 13.1 Final Gates
+| Gate | Evidence |
+|------|----------|
+| Architecture | Canonical lifecycle intact |
+| Knowledge | Capabilities proven, Coverage scoped, Gaps explicit |
+| Research | Queries match real capabilities |
+| Evidence | Provenance كامل |
+| BI | Only evidence-supported intelligence |
+| Decision | No unsupported tactical decision |
+| Strategic Reasoning | No unsupported strategic conclusion |
+| Replanning | Responds only to valid feedback/evidence |
+| Memory | Does not elevate uncertain data into fact |
+| ResponseBuilder | Transforms truth, does not create truth |
+| Avatar | Presents truth, does not create decisions |
+| Commercial Readiness | Business Question → Required Evidence → Proven Capability → Safe Decision → Safe Explanation |
+
+### 13.2 Final State
 عند تحقيق جميع Exit Criteria:
 
 ```text
-DEM COMMERCIAL READINESS REMEDIATION = COMPLETE
+MASTER REMEDIATION PLAN = EXECUTION COMPLETE
+DEM COMMERCIAL READINESS REMEDIATION = PROVEN FOR APPROVED BUSINESS PROMISE
 ```
 
-### إذا لم يتم تحقيق جميع Exit Criteria
+**ملاحظة:** لا يُعلن عن DEM كمنتج تجاري كامل إلا بعد تحقق جميع Gates للوعد الأساسي المعتمد. Complementary/Optional/Future capabilities لا تُعتبر blockers.
+
+### 13.3 إذا لم يتم تحقيق جميع Exit Criteria
 توثيق:
 - أي Criteria لم تحقق
 - السبب
 - الإجراء المطلوب لتحقيقه
 - عدم الإعلان عن DEM كمنتج تجاري كامل
 
----
+## Acceptance Criteria
+- [ ] Commercial Readiness proven for the approved Business Promise and its defined Business Questions
+- [ ] Complementary capabilities documented and disclosed to users
+- [ ] Optional capabilities documented as non-blocking
+- [ ] Future capabilities documented as out-of-scope
+- [ ] جميع Final Gates المُحقَّقة للوعد الأساسي
+- [ ] لا توجد capability claim خارجة عن الوعد بدون disclosure واضح
 
-## Closed Work Packages — قاعدة الحماية
+## Exit Gate
+Final Commercial Readiness Closure مكتمل للوعد الأساسي المعتمد.
 
-لا تعاد فتح Work Package مغلقة إلا إذا ظهر **واحد فقط** من:
+**ملاحظة:** Complementary capabilities, Optional capabilities, و Future capabilities لا تُعتبر blockers طالما هي معلنة ولا تدخل ضمن الوعد الأساسي.
 
-1. **Contract Conflict** — تعديل الكود يتطلب تعديل Contract مثبت
-2. **Defect حقيقي** — خطأ برمجي يمنع الوظيفة الأساسية
-3. **Security issue** — ثغرة أمنية مثبتة
-4. **Production-critical defect** — عطل في الإنتاج موثق
-5. **Governance contradiction مثبت** — وثيقة تتعارض مع الحقيقة التشغيلية
+## Stop Conditions
+- إذا لم تحقق جميع Gates للوعد الأساسي → وثّق Missing Criteria ولا تعلن COMPLETE
+- عدم اكتمال Complementary/Optional/Future capabilities لا يمنع الإغلاق
 
-**إذا كان الإصلاح ممكناً كـ Targeted Remediation بدون reopening WP → هذا هو المسار المفضل.**
+## What Must Not Change
+- لا تعديل Architecture
+- لا تعديل Avatar architecture
+- لا تعديل Knowledge Graph أو Multi-Agent
+- لا تعديل Closed WPs
 
----
+## Architecture Impact
+لا يوجد. Phase 13 تغلق الخطة فقط.
 
-## Prevention of Recursion
-
-لا يُسمح بـ:
-
-| الفعل | الشرط |
-|--------|-------|
-| Forensic Audit كاملة بين المراحل | ممنوع — استخدم Baseline |
-| إعادة فحص ما تم إثباته | ممنوع — استخدم Deliverables |
-| Source Research متكرر | ممنوع بعد اعتماد Requirement |
-| Provider جديد قبل Capability Gap | ممنوع — اتبع التسلسل |
-| تعديل طبقة أعلى لمعالجة نقص طبقة أدنى | ممنوع — عالج الجذر |
-| اعتبار test fixture دليل Production | ممنوع — استخدم Capability Truth |
-| اعتبار HTTP 200 دليل Capability | ممنوع — استخدم Capability Proven |
-| اعتبار registered provider دليل readiness | ممنوع — استخدم Business Ready |
-| اعتبار historical trade دليل opportunity | ممنوع — استخدم Market Opportunity source |
-| اعتبار country LPI دليل route freight cost | ممنوع — استخدم Logistics route data |
-| اعتبار Complementary = Production | ممنوع — استخدم Business Promise definitions |
-| اعتبار Planned = Available | ممنوع — استخدم Runtime Activation |
-| تغيير Architecture | ممنوع إلا عند إثبات conflict |
-| فتح Multi-Agent | ممنوع |
-| فتح Knowledge Graph | ممنوع |
-| إعادة تصميم Avatar | ممنوع |
-| إعادة تصميم BI | ممنوع |
-| إعادة فتح Closed WP بلا evidence | ممنوع |
+## Evidence Required
+- Final Closure Report موقّع
+- جميع Gates مُثبتة بأدلة
 
 ---
 
-## Phase Exit Discipline
+## Closed Work Package Protection
 
-كل Phase تحتوي على:
+لا تعاد أي Work Package مغلقة إلا إذا ثبت:
 
-| البند | الوصف |
-|--------|-------|
-| **Objective** | ما الذي تحققه هذه المرحلة |
-| **Inputs** | ماذا تحتاج لتبدأ |
-| **Scope** | ما هو داخل النطاق |
-| **Dependencies** | ما الذي يجب أن يكتمل أولاً |
-| **Exact Deliverables** | ماذا تنتج |
-| **Acceptance Criteria** | كيف تعرف أنك انتهيت |
-| **Exit Gate** | الشرط الوحيد للانتقال |
-| **Stop Conditions** | متى تتوقف |
-| **What Must Not Change** | ما الذي لا يُسمح بتعديله |
+```text
+1. Contract Conflict
+2. Real Defect
+3. Security Issue
+4. Production-Critical Defect
+5. Proven Governance Contradiction
+```
 
-**لا تبدأ Phase التالية إلا بعد Exit Gate.**
+والمسار المفضل دائمًا:
+
+```text
+Targeted Remediation
+```
+
+وليس:
+
+```text
+Reopen + Redesign
+```
+
+---
+
+## Recursion Prevention
+
+ممنوع:
+
+```text
+Full forensic audit after every phase
+Repeatedly proving the same fact
+Adding provider before proving the gap
+Fixing upper layers for lower-layer source absence
+Using fixtures as production evidence
+Using HTTP 200 as capability proof
+Using provider count as readiness
+Using historical trade as opportunity
+Using LPI as route freight
+Using complementary sources as production
+Using planned sources as available
+Creating second decision engines
+Creating second planning engines
+Changing Architecture without evidence
+Opening Multi-Agent
+Opening Knowledge Graph
+Redesigning Avatar
+Redesigning BI
+```
 
 ---
 
@@ -728,29 +1790,31 @@ DEM COMMERCIAL READINESS REMEDIATION = COMPLETE
 ```text
 Phase 0: Baseline Freeze + Security
     ↓ Gate
-Phase 1: Define Honest Commercial Promise
+Phase 1: Honest Commercial Promise
     ↓ Gate
-Phase 2: Capability Truth Model
+Phase 2: Capability + Evidence Truth
     ↓ Gate
-Phase 3: Semantic Integrity + Production Readiness Governance
+Phase 3: Current Source Reality Revalidation
     ↓ Gate
-Phase 4: Existing Provider Activation & Repair
+Phase 4: Semantic Integrity + Readiness Governance
     ↓ Gate
-Phase 5: Current Source Reality Revalidation
+Phase 5: Existing Provider Activation & Repair
     ↓ Gate
 Phase 6: Knowledge Gap Closure
     ↓ Gate
-Phase 7: Source Candidate Evaluation
+Phase 7: Candidate / Source Composition
     ↓ Gate
-Phase 8: Research / BI Alignment
+Phase 8: Research + Evidence + BI Alignment
     ↓ Gate
-Phase 9: Country / Product / Route Readiness
+Phase 9: Decision + Strategic Reasoning Integrity
     ↓ Gate
-Phase 10: End-to-End Commercial Acceptance
+Phase 10: Country / Product / Route Readiness
     ↓ Gate
-Phase 11: Governance / Documentation Reconciliation
+Phase 11: End-to-End Decision-Safe / Response-Safe Acceptance
     ↓ Gate
-Phase 12: Final Closure
+Phase 12: Governance Reconciliation
+    ↓ Gate
+Phase 13: Final Closure
 ```
 
 ---
@@ -759,9 +1823,11 @@ Phase 12: Final Closure
 
 1. **Phase 0 يُهمل غالبًا** — لا تتخطاه. Baseline الموحد هو ما يمنع العودة للتحقيق من البداية.
 2. **Phase 1 يُهمل غالبًا** — لا تحاول إصلاح المصادر قبل أن تعرف ما الذي تعد المستخدم به.
-3. **Phase 3 هو الذي يمنع العودة للfalse claims** — لا تتخطى Semantic Integrity.
-4. **Phase 6 هو نقطة القرار** — هنا تحدد ما الذي يمكن إصلاحه وما الذي يحتاج مصدرًا جديدًا.
-5. **Phase 10 هو الذي يثبت الجاهزية** — لا تعتبر Pipeline Passed = Business Ready.
+3. **Phase 3 هو الذي يمنع العودة للfalse assumptions** — لا تتخطى Current Source Reality.
+4. **Phase 4 هو الذي يمنع العودة للfalse claims** — لا تتخطى Semantic Integrity.
+5. **Phase 6 هو نقطة القرار** — هنا تحدد ما الذي يمكن إصلاحه وما الذي يحتاج مصدرًا جديدًا.
+6. **Phase 9 هو الذي يثبت سلامة الـAI Core** — لا تعتبر Pipeline Passed = Decision Safe.
+7. **Phase 11 هو الذي يثبت الجاهزية** — لا تعتبر Research Passed = Business Ready.
 
 ---
 
@@ -773,13 +1839,15 @@ Phase 12: Final Closure
 | Provider Activation يفشل بسبب credentials | Medium | Medium | وثّق Alternatives وComplementary coverage |
 | Gap Closure يتطلب مصادر جديدة | High | High | اتبع Phase 7 بصرامة |
 | Semantic Mapping fixes تؤثر على existing code | Low | Medium | راجع Phase 8 كجزء من Exit Gate |
-| Governance docs تتعارض مع الحقيقة | Medium | Medium | وثّق في Phase 5، لا تعدل في هذه المرحلة |
+| Governance docs تتعارض مع الحقيقة | Medium | Medium | وثّق في Phase 3، لا تعدل في هذه المرحلة |
+| Decision/Strategic Reasoning تتسرب فيها knowledge gaps | Medium | High | راجع Phase 9 كجزء من Exit Gate |
 
 ---
 
 ## Out of Scope
 
-هذه الخطة **لا تشمل**:
+### Plan Mode (Current)
+هذه الخطة **لا تشمل** الآن:
 
 - Code implementation
 - Provider implementation
@@ -787,19 +1855,31 @@ Phase 12: Final Closure
 - Data file creation
 - BI redesign
 - Avatar modification
+- Market ranking studies
+- Provider count expansion beyond ceiling
+
+### Execution Mode (Later)
+عند الانتقال إلى Execution، تبقى خارج النطاق دائماً:
+
 - Multi-Agent reopening
 - Knowledge Graph reopening
 - Architecture redesign
-- Market ranking studies
-- Provider count expansion beyond ceiling
+- Avatar redesign
+- BI redesign
+
+إلا عند وجود Contract Conflict / Real Defect / Security Issue / Production-Critical Defect مثبت.
+
+**ملاحظة:** Out of Scope ينطبق على Plan Mode الحالي فقط. مراحل التنفيذ اللاحقة ستتضمن أعمالاً مثل:
+- Provider activation
+- Targeted provider repair
+- Credential configuration
+- Data updates
+- Research/Evidence/BI corrections
+- Decision/Reasoning corrections
+عندما تكون هذه الأعمال معتمدة داخل الخطة.
 
 ---
 
 ```text
-MASTER REMEDIATION PLAN = READY
-
-No implementation started.
-No new provider authorized.
-No closed architecture reopened.
-Execution starts only after explicit transition to Code.
+Plan reviewed for cross-phase consistency. Ready for explicit transition to Execution after owner approval.
 ```

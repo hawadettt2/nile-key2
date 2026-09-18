@@ -39,7 +39,7 @@ def _registry():
     registry = SourceRegistry()
     for source in [
         Source(source_id="trade", name="Trade", source_type="external_trade_intelligence"),
-        Source(source_id="logistics", name="Logistics", source_type="external_logistics_intelligence"),
+        Source(source_id="logistics", name="Logistics", source_type="external_logistics_intelligence", metadata={"capabilities": ["logistics_market_execution"]}),
         Source(source_id="reg", name="Regulations", source_type="regulation"),
     ]:
         registry.register(SourceRegistration(source=source))

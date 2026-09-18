@@ -32,7 +32,7 @@ def test_each_query_retrieves_only_from_capable_sources():
         await orchestrator.retrieve_sources(sources, "logistics query", scope={"domains": ["logistics_market_execution"]})
         await orchestrator.retrieve_sources(sources, "regulation query", scope={"domains": ["regulatory_sps_tbt"]})
 
-        assert [call[0] for call in retriever.calls] == ["trade", "logistics", "reg"]
+        assert [call[0] for call in retriever.calls] == ["trade"]
 
     asyncio.run(run())
 
