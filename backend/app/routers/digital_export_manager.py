@@ -565,6 +565,13 @@ async def create_mission(
         except Exception:
             raise
 
+        if business_answer is not None:
+            provenance = getattr(business_answer, "provenance", None) or {}
+            coverage = provenance.get("coverage") or {}
+            unsupported_dimensions = coverage.get("unsupported_dimensions") or []
+            if unsupported_dimensions:
+                execution_output["degraded"] = True
+
         intent_content = ResponseBuilder.build(
             mission=mission,
             decision=decision,

@@ -18,6 +18,7 @@ class ResponseBuilder:
             "completed": "mission_completed",
             "failed": "mission_failed",
             "pending_approval": "approval_required",
+            "partial": "mission_partial",
         }
         return mapping.get(status, "mission_unknown")
 
@@ -25,6 +26,8 @@ class ResponseBuilder:
     def _build_outcome(chosen_path: str, status: str, result: Optional[Dict[str, Any]]) -> str:
         if status == "completed":
             return f"{chosen_path} completed successfully"
+        if status == "partial":
+            return f"{chosen_path} completed with limitations"
         if status == "failed":
             return f"{chosen_path} failed"
         if status == "pending_approval":
@@ -56,6 +59,8 @@ class ResponseBuilder:
     def _build_suggested_actions(status: str, chosen_path: str) -> List[str]:
         if status == "completed":
             return ["view_result", "create_another"]
+        if status == "partial":
+            return ["view_result", "review_limitations"]
         if status == "failed":
             return ["retry", "view_error"]
         if status == "pending_approval":
@@ -88,6 +93,13 @@ class ResponseBuilder:
         progress = cls._build_progress(goal, plan)
         policy_hints = cls._build_policy_hints(autonomy_policy)
         suggested_actions = cls._build_suggested_actions(status, chosen_path)
+
+        if business_answer:
+            coverage = (business_answer.get("provenance") or {}).get("coverage") or {}
+            if coverage.get("unsupported_dimensions"):
+                outcome = f"{chosen_path} completed with limitations"
+                if status == "completed":
+                    suggested_actions = ["view_result", "review_limitations"]
 
         content: Dict[str, Any] = {
             "outcome": outcome,

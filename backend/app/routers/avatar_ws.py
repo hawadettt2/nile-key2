@@ -408,6 +408,13 @@ async def execute_text_intent(text: str, session_id: str, user_id: int) -> Dict[
         except Exception:
             raise
 
+        if business_answer is not None:
+            provenance = getattr(business_answer, "provenance", None) or {}
+            coverage = provenance.get("coverage") or {}
+            unsupported_dimensions = coverage.get("unsupported_dimensions") or []
+            if unsupported_dimensions:
+                execution_output["degraded"] = True
+
         intent_content = ResponseBuilder.build(
             mission=mission,
             decision=decision,

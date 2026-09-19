@@ -122,12 +122,12 @@ class CoverageBuilder:
         has_empty = empty_sources > 0
         missing_dimensions = sorted(all_fact_dimensions - dimensions_with_evidence)
 
-        if has_successful_evidence and not has_failed and not has_empty and not missing_dimensions:
-            coverage_level = "adequate"
-        elif has_successful_evidence and (has_failed or has_empty or missing_dimensions):
+        if not has_successful_evidence:
+            coverage_level = "insufficient"
+        elif has_failed or has_empty or missing_dimensions or unsupported_dimensions:
             coverage_level = "partial"
         else:
-            coverage_level = "insufficient"
+            coverage_level = "adequate"
 
         dimensions_covered = sorted(dimensions_with_evidence)
 
@@ -150,6 +150,11 @@ class CoverageBuilder:
             )
 
         unsupported_dimensions = sorted(set(unsupported_dimensions or []))
+
+        if unsupported_dimensions:
+            limitations.append(
+                f"Coverage is partial because the following required dimensions have no capable source: {', '.join(unsupported_dimensions)}."
+            )
 
         return BusinessIntelligenceCoverage(
             coverage_level=coverage_level,
