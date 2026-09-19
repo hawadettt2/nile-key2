@@ -56,6 +56,121 @@ class SecurityHeadersMiddleware:
         await self.app(scope, receive, send_with_headers)
 
 
+def _log_provider_readiness() -> None:
+    """Log provider readiness status based on environment configuration."""
+    from app.core.config import settings
+    
+    print("\n[READINESS] Provider Configuration Status:")
+    print("=" * 80)
+    
+    providers = [
+        {
+            "name": "UN Comtrade",
+            "source_id": "un-comtrade",
+            "required": [],
+            "optional": ["UN_COMTRADE_API_KEY"],
+            "base_url": settings.UN_COMTRADE_BASE_URL,
+            "note": "Preview API works without API key",
+        },
+        {
+            "name": "World Bank LPI",
+            "source_id": "worldbank-lpi",
+            "required": [],
+            "optional": ["WORLDBANK_LPI_BASE_URL"],
+            "base_url": settings.WORLDBANK_LPI_BASE_URL,
+            "note": "Open API, no credentials required",
+        },
+        {
+            "name": "FAOSTAT",
+            "source_id": "faostat",
+            "required": ["FAOSTAT_BASE_URL", "FAOSTAT_USER", "FAOSTAT_PASSWORD"],
+            "optional": [],
+            "base_url": settings.FAOSTAT_BASE_URL,
+            "note": "JWT authentication required",
+        },
+        {
+            "name": "TradeData",
+            "source_id": "tradedata",
+            "required": ["TRADEDATA_API_KEY", "TRADEDATA_BASE_URL"],
+            "optional": [],
+            "base_url": settings.TRADEDATA_BASE_URL,
+            "note": "Commercial API",
+        },
+        {
+            "name": "Moaah",
+            "source_id": "moaah",
+            "required": ["MOAAH_API_KEY", "MOAAH_BASE_URL"],
+            "optional": [],
+            "base_url": settings.MOAAH_BASE_URL,
+            "note": "Commercial API",
+        },
+        {
+            "name": "ZATCA",
+            "source_id": "zatca",
+            "required": ["ZATCA_API_KEY", "ZATCA_BASE_URL"],
+            "optional": [],
+            "base_url": settings.ZATCA_BASE_URL,
+            "note": "Open Data APIs",
+        },
+        {
+            "name": "GCC-Stat",
+            "source_id": "gccstat",
+            "required": ["GCCSTAT_API_KEY", "GCCSTAT_BASE_URL"],
+            "optional": [],
+            "base_url": settings.GCCSTAT_BASE_URL,
+            "note": "Open Data Portal",
+        },
+        {
+            "name": "Regulations",
+            "source_id": "regulations",
+            "required": ["REGULATIONS_FILE_PATH"],
+            "optional": [],
+            "base_url": None,
+            "note": "Local JSON data file",
+        },
+    ]
+    
+    for provider in providers:
+        name = provider["name"]
+        required = provider["required"]
+        optional = provider["optional"]
+        base_url = provider["base_url"]
+        note = provider["note"]
+        
+        missing_required = []
+        for var in required:
+            value = getattr(settings, var, None)
+            if not value:
+                missing_required.append(var)
+        
+        missing_optional = []
+        for var in optional:
+            value = getattr(settings, var, None)
+            if not value:
+                missing_optional.append(var)
+        
+        if not missing_required and not missing_optional:
+            status = "READY"
+        elif missing_required:
+            status = "NOT_CONFIGURED"
+        else:
+            status = "PARTIAL"
+        
+        if status == "READY":
+            print(f"  [READY] {name:20s} | {note}")
+        elif status == "PARTIAL":
+            print(f"  [PARTIAL] {name:20s} | Missing optional: {', '.join(missing_optional)}")
+        else:
+            missing_str = ", ".join(missing_required)
+            print(f"  [BLOCKED] {name:20s} | Missing: {missing_str}")
+            if base_url:
+                print(f"             Base URL: {base_url}")
+            print(f"             Action: Set {missing_str} in .env to activate")
+    
+    print("=" * 80)
+    print("[READINESS] End of provider status report\n")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -67,6 +182,8 @@ async def lifespan(app: FastAPI):
     print("[STARTUP] Starting Digital Export Manager API...")
     init_db()
     print("[SUCCESS] Database initialized")
+
+    _log_provider_readiness()
 
     # Register LLM provider
     try:
