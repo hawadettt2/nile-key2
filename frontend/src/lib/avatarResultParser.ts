@@ -397,13 +397,32 @@ function extractBusinessAnswerFields(
   };
 }
 
-function mapIntentTypeToDisplayLabel(intentType: string): string {
+function mapIntentTypeToDisplayLabel(intentType: string, hasLimitations = false): string {
   const normalized = intentType.toLowerCase();
-  if (normalized.includes('completed')) return 'مكتملة';
+  if (normalized.includes('completed')) {
+    return hasLimitations ? 'مكتملة مع قيود' : 'مكتملة';
+  }
   if (normalized.includes('failed')) return 'فشلت';
   if (normalized.includes('approval')) return 'تتطلب موافقة';
   if (normalized.includes('unknown')) return 'غير معروف';
   return intentType || 'غير معروف';
+}
+
+function hasBusinessLimitations(businessAnswer: ParsedAvatarResult['businessAnswer']): boolean {
+  if (!businessAnswer) return false;
+  
+  const hasTopLevelLimitations = Array.isArray(businessAnswer.limitations) && businessAnswer.limitations.length > 0;
+  
+  const coverage = businessAnswer.provenance && typeof businessAnswer.provenance === 'object'
+    ? (businessAnswer.provenance as Record<string, unknown>)
+    : null;
+  const coverageLevel = coverage?.coverage_level as string | undefined;
+  const unsupportedDimensions = coverage?.unsupported_dimensions as string[] | undefined;
+  
+  const hasPartialCoverage = coverageLevel === 'partial' || coverageLevel === 'insufficient';
+  const hasUnsupportedDimensions = Array.isArray(unsupportedDimensions) && unsupportedDimensions.length > 0;
+  
+  return hasTopLevelLimitations || hasPartialCoverage || hasUnsupportedDimensions;
 }
 
 export function parseIntentContent(raw: string): ParsedAvatarResult {
@@ -488,7 +507,7 @@ export function parseIntentContent(raw: string): ParsedAvatarResult {
     intentType,
     missionStatus,
     suggestedActions,
-    statusLabel: mapIntentTypeToDisplayLabel(intentType),
+    statusLabel: mapIntentTypeToDisplayLabel(intentType, hasBusinessLimitations(businessAnswerFields.businessAnswer)),
     goal,
     outcome,
     summary,
