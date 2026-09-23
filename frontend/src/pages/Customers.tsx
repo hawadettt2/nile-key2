@@ -394,23 +394,23 @@ export function Customers() {
         </select>
         <select value={dataStatusFilter} onChange={(e) => setDataStatusFilter(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm">
           <option value="">{t('customer.dataStatus') || 'Data Status'}</option>
-          <option value="raw">Raw</option>
-          <option value="normalized">Normalized</option>
-          <option value="verified">Verified</option>
-          <option value="enriched">Enriched</option>
+          <option value="raw">{t('customer.raw') || 'Raw'}</option>
+          <option value="normalized">{t('customer.normalized') || 'Normalized'}</option>
+          <option value="verified">{t('customer.verified') || 'Verified'}</option>
+          <option value="enriched">{t('customer.enriched') || 'Enriched'}</option>
         </select>
         <select value={crmStatusFilter} onChange={(e) => setCrmStatusFilter(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm">
           <option value="">{t('customer.crmStatus') || 'CRM Status'}</option>
-          <option value="prospect">Prospect</option>
-          <option value="active_customer">Active Customer</option>
-          <option value="inactive">Inactive</option>
+          <option value="prospect">{t('customer.prospect') || 'Prospect'}</option>
+          <option value="active_customer">{t('customer.activeCustomer') || 'Active Customer'}</option>
+          <option value="inactive">{t('customer.inactive') || 'Inactive'}</option>
         </select>
         <select value={activityStatusFilter} onChange={(e) => setActivityStatusFilter(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm">
           <option value="">{t('customer.activityStatus') || 'Activity Status'}</option>
-          <option value="unknown">Unknown</option>
-          <option value="observed_active">Active Importer</option>
-          <option value="dormant">Dormant</option>
-          <option value="not_observed">Not Observed</option>
+          <option value="unknown">{t('customer.unknown') || 'Unknown'}</option>
+          <option value="observed_active">{t('customer.activeImporter') || 'Active Importer'}</option>
+          <option value="dormant">{t('customer.dormant') || 'Dormant'}</option>
+          <option value="not_observed">{t('customer.notObserved') || 'Not Observed'}</option>
         </select>
         <input value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()} placeholder={t('common.search')} className="flex-1 min-w-[200px] px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
         <button onClick={load} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg transition-colors"><Search size={16} /></button>
