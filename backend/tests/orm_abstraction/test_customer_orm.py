@@ -38,6 +38,9 @@ def _init_db(db_path):
                     contact_person TEXT,
                     email TEXT,
                     phone TEXT,
+                    mobile TEXT,
+                    whatsapp TEXT,
+                    website TEXT,
                     address TEXT,
                     city TEXT,
                     country TEXT NOT NULL,
@@ -46,6 +49,13 @@ def _init_db(db_path):
                     category TEXT,
                     notes TEXT,
                     status TEXT DEFAULT 'active',
+                    data_status TEXT DEFAULT 'raw',
+                    verification_status TEXT DEFAULT 'unverified',
+                    crm_status TEXT DEFAULT 'prospect',
+                    activity_status TEXT DEFAULT 'unknown',
+                    activity_window_start TIMESTAMP,
+                    activity_window_end TIMESTAMP,
+                    activity_window_label TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     created_by INTEGER
                 )
@@ -61,6 +71,81 @@ def _init_db(db_path):
                     entity_id INTEGER,
                     details TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS customer_source_batches (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    source_type TEXT NOT NULL,
+                    source_format TEXT,
+                    source_name TEXT,
+                    source_reference TEXT,
+                    source_url TEXT,
+                    file_name TEXT,
+                    row_count INTEGER,
+                    success_count INTEGER,
+                    skip_count INTEGER,
+                    error_count INTEGER,
+                    status TEXT DEFAULT 'preview',
+                    mapping_metadata TEXT,
+                    imported_at TIMESTAMP,
+                    imported_by INTEGER,
+                    expires_at TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS customer_raw_records (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    batch_id INTEGER NOT NULL,
+                    sheet_name TEXT,
+                    row_number INTEGER,
+                    raw_data TEXT NOT NULL,
+                    normalized_customer_id INTEGER,
+                    validation_errors TEXT,
+                    conflict_resolution TEXT,
+                    conflict_details TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (batch_id) REFERENCES customer_source_batches(id)
+                )
+                """
+            )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS customer_products (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id INTEGER NOT NULL,
+                    raw_record_id INTEGER,
+                    product_description TEXT,
+                    hs_code TEXT,
+                    hs_code_description TEXT,
+                    quantity REAL,
+                    unit TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(id),
+                    FOREIGN KEY (raw_record_id) REFERENCES customer_raw_records(id)
+                )
+                """
+            )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS customer_evidence (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    customer_id INTEGER NOT NULL,
+                    raw_record_id INTEGER,
+                    evidence_type TEXT NOT NULL,
+                    evidence_data TEXT,
+                    observed_at TIMESTAMP,
+                    activity_window_start TIMESTAMP,
+                    activity_window_end TIMESTAMP,
+                    activity_window_label TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(id),
+                    FOREIGN KEY (raw_record_id) REFERENCES customer_raw_records(id)
                 )
                 """
             )

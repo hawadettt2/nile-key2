@@ -97,6 +97,21 @@ export const getCustomer = (id: number) => api.get(`/api/v1/customers/${id}`);
 export const createCustomer = (data: Record<string, unknown>) => api.post('/api/v1/customers', data);
 export const updateCustomer = (id: number, data: Record<string, unknown>) => api.put(`/api/v1/customers/${id}`, data);
 export const deleteCustomer = (id: number) => api.delete(`/api/v1/customers/${id}`);
+export const getCustomerCountries = () => api.get('/api/v1/customers/countries');
+export const getCustomerSourceBatches = (params?: Record<string, unknown>) => api.get('/api/v1/customers/source-batches', { params });
+export const listCustomerProducts = (customerId: number) => api.get(`/api/v1/customers/${customerId}/products`);
+export const createCustomerProduct = (customerId: number, data: Record<string, unknown>) => api.post(`/api/v1/customers/${customerId}/products`, data);
+export const deleteCustomerProduct = (customerId: number, productId: number) => api.delete(`/api/v1/customers/${customerId}/products/${productId}`);
+export const listCustomerEvidence = (customerId: number) => api.get(`/api/v1/customers/${customerId}/evidence`);
+export const createCustomerEvidence = (customerId: number, data: Record<string, unknown>) => api.post(`/api/v1/customers/${customerId}/evidence`, data);
+export const importPreview = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post('/api/v1/customers/import/preview', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+};
+export const importReview = (data: { batch_id: number; field_mapping: Record<string, string>; selected_sheets?: string[] }) => api.post('/api/v1/customers/import/review', data);
+export const importConfirm = (data: { batch_id: number; field_mapping: Record<string, string>; duplicate_policy: string; selected_sheets?: string[] }) => api.post('/api/v1/customers/import/confirm', data);
+export const importCancel = (batchId: number) => api.post(`/api/v1/customers/import/cancel?batch_id=${batchId}`);
 export const importCustomers = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);

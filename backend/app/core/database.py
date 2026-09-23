@@ -198,6 +198,70 @@ def _register_core_schemas(conn: sqlite3.Connection) -> None:
         "notes": "TEXT",
         "status": "TEXT DEFAULT 'active'",
         "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "mobile": "TEXT",
+        "whatsapp": "TEXT",
+        "website": "TEXT",
+        "data_status": "TEXT DEFAULT 'raw'",
+        "verification_status": "TEXT DEFAULT 'unverified'",
+        "crm_status": "TEXT DEFAULT 'prospect'",
+        "activity_status": "TEXT DEFAULT 'unknown'",
+        "activity_window_start": "TIMESTAMP",
+        "activity_window_end": "TIMESTAMP",
+        "activity_window_label": "TEXT",
+    })
+    registry.register_table("customer_source_batches", {
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "source_type": "TEXT NOT NULL",
+        "source_format": "TEXT",
+        "source_name": "TEXT",
+        "source_reference": "TEXT",
+        "source_url": "TEXT",
+        "file_name": "TEXT",
+        "row_count": "INTEGER",
+        "success_count": "INTEGER",
+        "skip_count": "INTEGER",
+        "error_count": "INTEGER",
+        "status": "TEXT DEFAULT 'preview'",
+        "mapping_metadata": "TEXT",
+        "imported_at": "TIMESTAMP",
+        "imported_by": "INTEGER",
+        "expires_at": "TIMESTAMP",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    })
+    registry.register_table("customer_raw_records", {
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "batch_id": "INTEGER NOT NULL",
+        "sheet_name": "TEXT",
+        "row_number": "INTEGER",
+        "raw_data": "TEXT NOT NULL",
+        "normalized_customer_id": "INTEGER",
+        "validation_errors": "TEXT",
+        "conflict_resolution": "TEXT",
+        "conflict_details": "TEXT",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    })
+    registry.register_table("customer_products", {
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "customer_id": "INTEGER NOT NULL",
+        "raw_record_id": "INTEGER",
+        "product_description": "TEXT",
+        "hs_code": "TEXT",
+        "hs_code_description": "TEXT",
+        "quantity": "REAL",
+        "unit": "TEXT",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    })
+    registry.register_table("customer_evidence", {
+        "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "customer_id": "INTEGER NOT NULL",
+        "raw_record_id": "INTEGER",
+        "evidence_type": "TEXT NOT NULL",
+        "evidence_data": "TEXT",
+        "observed_at": "TIMESTAMP",
+        "activity_window_start": "TIMESTAMP",
+        "activity_window_end": "TIMESTAMP",
+        "activity_window_label": "TEXT",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
     })
     registry.ensure_schema(conn, "suppliers")
     registry.ensure_schema(conn, "customers")
@@ -250,7 +314,17 @@ def _ensure_customers_schema(c: sqlite3.Cursor):
         "category": "TEXT",
         "notes": "TEXT",
         "updated_at": "TIMESTAMP",
-        "created_by": "INTEGER"
+        "created_by": "INTEGER",
+        "mobile": "TEXT",
+        "whatsapp": "TEXT",
+        "website": "TEXT",
+        "data_status": "TEXT DEFAULT 'raw'",
+        "verification_status": "TEXT DEFAULT 'unverified'",
+        "crm_status": "TEXT DEFAULT 'prospect'",
+        "activity_status": "TEXT DEFAULT 'unknown'",
+        "activity_window_start": "TIMESTAMP",
+        "activity_window_end": "TIMESTAMP",
+        "activity_window_label": "TEXT",
     })
 
 
@@ -638,10 +712,124 @@ def _create_tables(c: sqlite3.Cursor):
             category TEXT,
             notes TEXT,
             status TEXT DEFAULT 'active',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            mobile TEXT,
+            whatsapp TEXT,
+            website TEXT,
+            data_status TEXT DEFAULT 'raw',
+            verification_status TEXT DEFAULT 'unverified',
+            crm_status TEXT DEFAULT 'prospect',
+            activity_status TEXT DEFAULT 'unknown',
+            activity_window_start TIMESTAMP,
+            activity_window_end TIMESTAMP,
+            activity_window_label TEXT
         )
     """)
     _ensure_customers_schema(c)
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS customer_source_batches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_type TEXT NOT NULL,
+            source_format TEXT,
+            source_name TEXT,
+            source_reference TEXT,
+            source_url TEXT,
+            file_name TEXT,
+            row_count INTEGER,
+            success_count INTEGER,
+            skip_count INTEGER,
+            error_count INTEGER,
+            status TEXT DEFAULT 'preview',
+            mapping_metadata TEXT,
+            imported_at TIMESTAMP,
+            imported_by INTEGER,
+            expires_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS customer_raw_records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            batch_id INTEGER NOT NULL,
+            sheet_name TEXT,
+            row_number INTEGER,
+            raw_data TEXT NOT NULL,
+            normalized_customer_id INTEGER,
+            validation_errors TEXT,
+            conflict_resolution TEXT,
+            conflict_details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (batch_id) REFERENCES customer_source_batches(id)
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS customer_products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER NOT NULL,
+            raw_record_id INTEGER,
+            product_description TEXT,
+            hs_code TEXT,
+            hs_code_description TEXT,
+            quantity REAL,
+            unit TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (customer_id) REFERENCES customers(id),
+            FOREIGN KEY (raw_record_id) REFERENCES customer_raw_records(id)
+        )
+    """)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS customer_evidence (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            customer_id INTEGER NOT NULL,
+            raw_record_id INTEGER,
+            evidence_type TEXT NOT NULL,
+            evidence_data TEXT,
+            observed_at TIMESTAMP,
+            activity_window_start TIMESTAMP,
+            activity_window_end TIMESTAMP,
+            activity_window_label TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (customer_id) REFERENCES customers(id),
+            FOREIGN KEY (raw_record_id) REFERENCES customer_raw_records(id)
+        )
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customers_country
+        ON customers(country)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customers_data_status
+        ON customers(data_status)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customers_verification_status
+        ON customers(verification_status)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customers_crm_status
+        ON customers(crm_status)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customers_activity_status
+        ON customers(activity_status)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customer_raw_records_batch_id
+        ON customer_raw_records(batch_id)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customer_raw_records_normalized_customer_id
+        ON customer_raw_records(normalized_customer_id)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customer_products_customer_id
+        ON customer_products(customer_id)
+    """)
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_customer_evidence_customer_id
+        ON customer_evidence(customer_id)
+    """)
 
     # ========== جدول الشحنات ==========
     c.execute("""
