@@ -228,6 +228,7 @@
     "noActivity": "No Activity",
     "activeImporter": "Active Importer",
     "dormant": "Dormant",
+    "notObserved": "Not Observed",
     "shipment": "Shipment",
     "activity": "Activity",
     "sourceSpecific": "Source Specific",
