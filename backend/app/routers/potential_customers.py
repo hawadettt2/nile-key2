@@ -14,8 +14,11 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '..'
 router = APIRouter(prefix="/api/v1/potential-customers", tags=["Potential Customers"])
 
 GOOGLE_DRIVE_API_KEY = os.environ.get("GOOGLE_DRIVE_API_KEY")
+GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON")
 ROOT_FOLDER_ID = "1x0yx_x9QYtSNim2a7Loy4mjrHCu7Z8zQ"
 GOOGLE_DRIVE_API_BASE = "https://www.googleapis.com/drive/v3"
+
+_ACCESS_TOKEN = None
 
 
 class ExcelFileResponse(BaseModel):
@@ -60,14 +63,37 @@ class ExcelContentResponse(BaseModel):
     rows: List[dict]
 
 
+def _get_access_token() -> Optional[str]:
+    global _ACCESS_TOKEN
+    if _ACCESS_TOKEN:
+        return _ACCESS_TOKEN
+    if not GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON or not os.path.exists(GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON):
+        return None
+    from google.oauth2 import service_account
+    from google.auth.transport.requests import Request as GoogleAuthRequest
+    scopes = ["https://www.googleapis.com/auth/drive.readonly"]
+    credentials = service_account.Credentials.from_service_account_file(
+        GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON,
+        scopes=scopes,
+    )
+    credentials.refresh(GoogleAuthRequest())
+    _ACCESS_TOKEN = credentials.token
+    return _ACCESS_TOKEN
+
+
 def _drive_get(path: str, params: Optional[dict] = None) -> dict:
-    if not GOOGLE_DRIVE_API_KEY:
-        raise RuntimeError("GOOGLE_DRIVE_API_KEY is not configured on the server.")
+    if not GOOGLE_DRIVE_API_KEY and not _get_access_token():
+        raise RuntimeError("GOOGLE_DRIVE_API_KEY or GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON is not configured on the server.")
     url = f"{GOOGLE_DRIVE_API_BASE}/{path}"
     params = dict(params or {})
-    params["key"] = GOOGLE_DRIVE_API_KEY
     params["fields"] = "nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, webViewLink, webContentLink)"
-    response = requests.get(url, params=params, timeout=30)
+    headers = {}
+    access_token = _get_access_token()
+    if access_token:
+        headers["Authorization"] = f"Bearer {access_token}"
+    else:
+        params["key"] = GOOGLE_DRIVE_API_KEY
+    response = requests.get(url, params=params, headers=headers, timeout=30)
     if response.status_code != 200:
         raise RuntimeError(f"Google Drive API error: {response.status_code} - {response.text}")
     return response.json()
