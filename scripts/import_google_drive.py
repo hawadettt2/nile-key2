@@ -4,9 +4,8 @@ Import Potential Customers data from Google Drive.
 This script attempts to import real data from the Google Drive folder:
 https://drive.google.com/drive/folders/1x0yx_x9QYtSNim2a7Loy4mjrHCu7Z8zQ?usp=drive_link
 
-It requires one of:
-- GOOGLE_SERVICE_ACCOUNT_JSON: path to service account JSON key file
-- GOOGLE_OAUTH_CREDENTIALS_JSON: path to OAuth client secrets JSON
+It requires:
+- GOOGLE_DRIVE_API_KEY environment variable
 
 Output: JSON file with the folder structure and file metadata.
 """
@@ -16,8 +15,21 @@ import os
 import sys
 from typing import Any
 
+try:
+    from dotenv import load_dotenv
+except Exception:  # pragma: no cover
+    load_dotenv = None
+
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "backend", "app", "routers", "potential_customers_data.json")
 FOLDER_ID = "1x0yx_x9QYtSNim2a7Loy4mjrHCu7Z8zQ"
+
+
+def _ensure_env_loaded() -> None:
+    if load_dotenv is None:
+        return
+    for candidate in [os.path.join(os.path.dirname(__file__), "..", ".env"), os.path.join(os.path.dirname(__file__), "..", "backend", ".env")]:
+        if os.path.exists(candidate):
+            load_dotenv(candidate, override=False)
 
 
 def try_gspread_import() -> Any:
@@ -58,19 +70,15 @@ def with_service_account(folder_id: str) -> Any:
     return gc, folder_id
 
 
-def with_oauth(folder_id: str) -> Any:
-    build_mod, Credentials, Request = try_googleapiclient_import() or (None, None, None)
+def with_api_key(folder_id: str) -> Any:
+    build_mod, _, _ = try_googleapiclient_import() or (None, None, None)
     if build_mod is None:
-        raise RuntimeError("google-api-python-client is not installed. Install it to use OAuth.")
+        raise RuntimeError("google-api-python-client is not installed. Install it to use API key auth.")
 
-    json_path = os.environ.get("GOOGLE_OAUTH_CREDENTIALS_JSON")
-    if not json_path or not os.path.exists(json_path):
-        raise RuntimeError("GOOGLE_OAUTH_CREDENTIALS_JSON is not set or file does not exist.")
-
-    creds = Credentials.from_authorized_user_file(json_path)
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    drive = build_mod("drive", "v3", credentials=creds)
+    api_key = os.environ.get("GOOGLE_DRIVE_API_KEY")
+    if not api_key:
+        raise RuntimeError("GOOGLE_DRIVE_API_KEY is not set.")
+    drive = build_mod("drive", "v3", developerKey=api_key, cache_discovery=False)
     return drive, folder_id
 
 
@@ -128,26 +136,8 @@ def list_files_in_folder(drive_client: Any, folder_id: str) -> list[dict[str, An
     return files
 
 
-def build_index_with_gspread(folder_id: str) -> dict[str, Any]:
-    gc, folder_id = with_service_account(folder_id)
-    drive = gc
-    countries = list_countries_from_drive(drive, folder_id)
-    total_files = 0
-    for country in countries:
-        files = list_files_in_folder(drive, country["id"])
-        country["file_count"] = len(files)
-        country["files"] = files
-        total_files += len(files)
-    return {
-        "countries": countries,
-        "total_countries": len(countries),
-        "total_files": total_files,
-        "source": "google-drive",
-    }
-
-
-def build_index_with_oauth(folder_id: str) -> dict[str, Any]:
-    drive, folder_id = with_oauth(folder_id)
+def build_index_with_api_key(folder_id: str) -> dict[str, Any]:
+    drive, folder_id = with_api_key(folder_id)
     countries = list_countries_from_drive(drive, folder_id)
     total_files = 0
     for country in countries:
@@ -164,17 +154,13 @@ def build_index_with_oauth(folder_id: str) -> dict[str, Any]:
 
 
 def main() -> int:
+    _ensure_env_loaded()
     print(f"[drive] Attempting to import from Google Drive folder: {FOLDER_ID}")
     try:
-        data = build_index_with_gspread(FOLDER_ID)
+        data = build_index_with_api_key(FOLDER_ID)
     except Exception as exc:
-        print(f"[drive] gspread path failed: {exc}")
-        try:
-            data = build_index_with_oauth(FOLDER_ID)
-        except Exception as exc2:
-            print(f"[drive] OAuth path failed: {exc2}")
-            print("[drive] Cannot access Google Drive with available credentials.")
-            return 2
+        print(f"[drive] API key path failed: {exc}")
+        return 2
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -184,3 +170,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

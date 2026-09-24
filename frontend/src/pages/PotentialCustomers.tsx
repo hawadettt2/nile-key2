@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   listPotentialCustomerCountries,
+  getPotentialCustomerFileContent,
   type PotentialCustomerCountry,
+  type PotentialCustomerExcelContent,
 } from '@/services/api';
 import {
   FolderOpen,
@@ -28,7 +30,7 @@ function formatDate(value?: string): string {
   return date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-type ViewMode = 'countries' | 'country-detail';
+type ViewMode = 'countries' | 'country-detail' | 'file-content';
 
 export function PotentialCustomers() {
   const { t, i18n } = useTranslation();
@@ -38,6 +40,11 @@ export function PotentialCustomers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openFileId, setOpenFileId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<PotentialCustomerCountry['files'][number] | null>(null);
+  const [excelContent, setExcelContent] = useState<PotentialCustomerExcelContent | null>(null);
+  const [activeSheet, setActiveSheet] = useState<string | null>(null);
+  const [contentLoading, setContentLoading] = useState<boolean>(false);
+  const [contentError, setContentError] = useState<string | null>(null);
 
   const loadCountries = async () => {
     setLoading(true);
@@ -70,6 +77,28 @@ export function PotentialCustomers() {
     setView('countries');
     setSelectedCountry(null);
     setOpenFileId(null);
+    setSelectedFile(null);
+    setExcelContent(null);
+    setActiveSheet(null);
+    setContentError(null);
+  };
+
+  const loadFileContent = async (file: PotentialCustomerCountry['files'][number]) => {
+    setSelectedFile(file);
+    setContentLoading(true);
+    setContentError(null);
+    setExcelContent(null);
+    setActiveSheet(null);
+    try {
+      const res = await getPotentialCustomerFileContent(file.id);
+      const data = res.data;
+      setExcelContent(data);
+      setActiveSheet(data.active_sheet || data.sheets[0]?.name || null);
+    } catch (err: any) {
+      setContentError(err?.response?.data?.detail || 'Failed to load Excel content.');
+    } finally {
+      setContentLoading(false);
+    }
   };
 
   if (loading) {
@@ -157,6 +186,12 @@ export function PotentialCustomers() {
                   >
                     {openFileId === file.id ? 'Hide Details' : 'Details'}
                   </button>
+                  <button
+                    onClick={() => loadFileContent(file)}
+                    className="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg transition-colors"
+                  >
+                    Open
+                  </button>
                   {file.view_url && (
                     <a
                       href={file.view_url}
@@ -165,7 +200,7 @@ export function PotentialCustomers() {
                       className="inline-flex items-center gap-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg transition-colors"
                     >
                       <ExternalLink size={14} />
-                      Open
+                      Drive
                     </a>
                   )}
                 </div>
@@ -224,6 +259,79 @@ export function PotentialCustomers() {
           {selectedCountry.files.length === 0 && (
             <div className="bg-white rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
               {t('common.noData') || 'No files found for this country.'}
+            </div>
+          )}
+
+          {contentError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+              {contentError}
+            </div>
+          )}
+
+          {contentLoading && (
+            <div className="flex items-center justify-center py-12 text-sm text-slate-500">
+              <Loader2 className="animate-spin mr-2" size={18} />
+              Loading Excel content...
+            </div>
+          )}
+
+          {!contentLoading && excelContent && (
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-slate-200">
+                <h3 className="font-semibold text-slate-900">{selectedFile?.name || excelContent.file_name}</h3>
+                <div className="flex items-center gap-2 overflow-x-auto">
+                  {excelContent.sheets.map((sheet) => (
+                    <button
+                      key={sheet.name}
+                      onClick={() => setActiveSheet(sheet.name)}
+                      className={`text-xs px-3 py-2 rounded-lg border transition-colors ${
+                        activeSheet === sheet.name
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      {sheet.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase">#</th>
+                      {activeSheet &&
+                        (() => {
+                          const headerRow = excelContent.rows[1] || {};
+                          const cols = Object.keys(headerRow);
+                          return cols.map((col) => (
+                            <th key={col} className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase whitespace-nowrap">
+                              {col}
+                            </th>
+                          ));
+                        })()}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {excelContent.rows.map((row: Record<string, string>, idx: number) => {
+                      const cells = Object.values(row);
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">{idx + 1}</td>
+                          {cells.map((cell, cellIdx) => (
+                            <td key={cellIdx} className="px-3 py-2 text-xs text-slate-700 whitespace-nowrap max-w-[320px] truncate">
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-3 text-xs text-slate-500 border-t border-slate-100">
+                {excelContent.rows.length} rows • {excelContent.sheets.length} sheets • sheet: {activeSheet || '-'}
+              </div>
             </div>
           )}
         </div>

@@ -269,5 +269,22 @@ export const listPotentialCustomerCountries = () =>
 export const getPotentialCustomerCountry = (countryId: string) =>
   api.get<PotentialCustomerCountry>(`/api/v1/potential-customers/countries/${encodeURIComponent(countryId)}`);
 
+export interface PotentialCustomerSheetMeta {
+  name: string;
+  row_count: number;
+  column_count: number;
+}
+
+export interface PotentialCustomerExcelContent {
+  file_id: string;
+  file_name: string;
+  sheets: PotentialCustomerSheetMeta[];
+  active_sheet: string | null;
+  rows: Record<string, string>[];
+}
+
+export const getPotentialCustomerFileContent = (fileId: string, sheet?: string) =>
+  api.get<PotentialCustomerExcelContent>(`/api/v1/potential-customers/files/${encodeURIComponent(fileId)}/content`, { params: sheet ? { sheet } : undefined });
+
 export default api;
 export { api };
