@@ -235,5 +235,38 @@ export const projectArchitectureLevel = (level: number) =>
 export const getArchitectureEvidence = (nodeId: string) =>
   api.get(`/api/v1/architecture-explorer/nodes/${encodeURIComponent(nodeId)}/evidence`);
 
+export interface PotentialCustomerFile {
+  id: string;
+  name: string;
+  source?: string;
+  sheet_count?: number;
+  row_count?: number;
+  size_bytes?: number;
+  download_url?: string;
+  view_url?: string;
+  created_time?: string;
+  modified_time?: string;
+}
+
+export interface PotentialCustomerCountry {
+  id: string;
+  name: string;
+  file_count: number;
+  files: PotentialCustomerFile[];
+}
+
+export interface PotentialCustomersIndex {
+  countries: PotentialCustomerCountry[];
+  total_countries: number;
+  total_files: number;
+  source: string;
+}
+
+export const listPotentialCustomerCountries = () =>
+  api.get<PotentialCustomersIndex>('/api/v1/potential-customers/countries');
+
+export const getPotentialCustomerCountry = (countryId: string) =>
+  api.get<PotentialCustomerCountry>(`/api/v1/potential-customers/countries/${encodeURIComponent(countryId)}`);
+
 export default api;
 export { api };

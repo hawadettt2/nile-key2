@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import {
   listCustomers,
   getCustomer,
@@ -11,7 +12,7 @@ import {
   listCustomerProducts,
   listCustomerEvidence,
 } from '@/services/api';
-import { Search, Plus, Pencil, Trash2, X, Upload, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, X, Upload, ChevronDown, ChevronRight, Loader2, Users } from 'lucide-react';
 
 interface Customer {
   id: number;
@@ -75,6 +76,7 @@ interface RawRecord {
 
 export function Customers() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [countryFilter, setCountryFilter] = useState('');
@@ -267,6 +269,9 @@ export function Customers() {
             <Upload size={16} /> {t('customer.importCSV')}
             <input type="file" accept=".csv" onChange={handleLegacyImport} className="hidden" />
           </label>
+          <button onClick={() => navigate('/potential-customers')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
+            <Users size={16} /> Potential Customers
+          </button>
           <button onClick={() => { setShowForm(true); setEditing(null); }} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
             <Plus size={16} /> {t('customer.addCustomer')}
           </button>

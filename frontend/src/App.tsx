@@ -26,6 +26,7 @@ import { TradeIntelligence } from '@/pages/TradeIntelligence';
 import { ExportReadiness } from '@/pages/ExportReadiness';
 import { ArchitectureExplorer } from '@/pages/ArchitectureExplorer';
 import { Avatar } from '@/pages/Avatar';
+import { PotentialCustomers } from '@/pages/PotentialCustomers';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -121,6 +122,7 @@ function App() {
           <Route path="trade-intelligence" element={<TradeIntelligence />} />
           <Route path="export-readiness" element={<ExportReadiness />} />
           <Route path="architecture-explorer" element={<ArchitectureExplorer />} />
+          <Route path="potential-customers" element={<PotentialCustomers />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -58,4 +58,11 @@ describe('Customers', () => {
     });
     expect(document.body).toBeDefined();
   });
+
+  test('renders potential customers button', async () => {
+    await act(async () => {
+      renderWithProviders(<Customers />);
+    });
+    expect(screen.getByText('Potential Customers')).toBeDefined();
+  });
 });
