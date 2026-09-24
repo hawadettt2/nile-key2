@@ -36,14 +36,20 @@ export function PotentialCustomers() {
   const [countries, setCountries] = useState<PotentialCustomerCountry[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<PotentialCustomerCountry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [openFileId, setOpenFileId] = useState<string | null>(null);
 
   const loadCountries = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await listPotentialCustomerCountries();
       setCountries(res.data.countries || []);
-    } catch {
+      if (res.data.error) {
+        setError(res.data.error);
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Failed to load potential customers.');
       setCountries([]);
     } finally {
       setLoading(false);
@@ -72,6 +78,24 @@ export function PotentialCustomers() {
         <div className="flex items-center gap-2 text-slate-500">
           <Loader2 className="animate-spin" size={20} />
           <span>{t('common.loading') || 'Loading...'}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div dir={i18n.language === 'ar' ? 'rtl' : 'ltr'} className="max-w-3xl mx-auto mt-10">
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-sm">
+          <h2 className="text-lg font-semibold mb-2">Potential Customers data unavailable</h2>
+          <p className="mb-2">Real data import from Google Drive is required to use this page.</p>
+          <p className="mb-2">Error: {error}</p>
+          <p className="text-xs text-red-600">
+            To enable real data import, provide Google Drive credentials via one of:
+            <br />- GOOGLE_SERVICE_ACCOUNT_JSON environment variable
+            <br />- GOOGLE_OAUTH_CREDENTIALS_JSON environment variable
+            <br />Then run: python scripts/import_google_drive.py
+          </p>
         </div>
       </div>
     );

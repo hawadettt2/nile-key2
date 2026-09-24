@@ -260,6 +260,7 @@ export interface PotentialCustomersIndex {
   total_countries: number;
   total_files: number;
   source: string;
+  error?: string;
 }
 
 export const listPotentialCustomerCountries = () =>
