@@ -628,6 +628,24 @@ def import_preview(file: io.BytesIO, filename: str, current_user: dict) -> dict:
         conn.close()
 
 
+def _apply_field_mapping(raw_data: dict, field_mapping: Dict[str, str] | None) -> dict:
+    if not field_mapping:
+        return raw_data
+    mapped: dict = {}
+    for target_key, source_key in field_mapping.items():
+        if source_key and source_key in raw_data:
+            mapped[target_key] = raw_data[source_key]
+        else:
+            mapped[target_key] = None
+    return mapped
+
+
+def _filter_by_sheets(raw: dict, selected_sheets: Any) -> bool:
+    if not selected_sheets or not isinstance(selected_sheets, (list, tuple, set)):
+        return True
+    return raw.get("sheet_name") in selected_sheets
+
+
 def import_review(request: ImportConfirmRequest, current_user: dict) -> dict:
     """Validate batch and return conflicts without creating customers."""
     conn = get_db()
@@ -649,7 +667,10 @@ def import_review(request: ImportConfirmRequest, current_user: dict) -> dict:
         errors = []
         conflicts = []
         for raw in raw_rows:
+            if not _filter_by_sheets(raw, request.selected_sheets):
+                continue
             raw_data = parse_json(raw["raw_data"], {})
+            raw_data = _apply_field_mapping(raw_data, request.field_mapping)
             try:
                 _normalize_customer_from_row(raw_data, request.batch_id)
             except ValueError as exc:
@@ -699,7 +720,10 @@ def import_confirm(request: ImportConfirmRequest, current_user: dict) -> dict:
 
         with session.transaction():
             for raw in raw_rows:
+                if not _filter_by_sheets(raw, request.selected_sheets):
+                    continue
                 raw_data = parse_json(raw["raw_data"], {})
+                raw_data = _apply_field_mapping(raw_data, request.field_mapping)
                 try:
                     normalized = _normalize_customer_from_row(raw_data, request.batch_id)
                 except ValueError as exc:

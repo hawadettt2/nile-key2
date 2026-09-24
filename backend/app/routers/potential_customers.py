@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional, List
 import os
+from dotenv import load_dotenv
 import io
 import requests
 from openpyxl import load_workbook
 
 from app.routers.auth import get_current_user
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env'))
 
 router = APIRouter(prefix="/api/v1/potential-customers", tags=["Potential Customers"])
 
