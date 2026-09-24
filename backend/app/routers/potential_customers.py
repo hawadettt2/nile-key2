@@ -69,16 +69,19 @@ def _get_access_token() -> Optional[str]:
         return _ACCESS_TOKEN
     if not GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON or not os.path.exists(GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON):
         return None
-    from google.oauth2 import service_account
-    from google.auth.transport.requests import Request as GoogleAuthRequest
-    scopes = ["https://www.googleapis.com/auth/drive.readonly"]
-    credentials = service_account.Credentials.from_service_account_file(
-        GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON,
-        scopes=scopes,
-    )
-    credentials.refresh(GoogleAuthRequest())
-    _ACCESS_TOKEN = credentials.token
-    return _ACCESS_TOKEN
+    try:
+        from google.oauth2 import service_account
+        from google.auth.transport.requests import Request as GoogleAuthRequest
+        scopes = ["https://www.googleapis.com/auth/drive.readonly"]
+        credentials = service_account.Credentials.from_service_account_file(
+            GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON,
+            scopes=scopes,
+        )
+        credentials.refresh(GoogleAuthRequest())
+        _ACCESS_TOKEN = credentials.token
+        return _ACCESS_TOKEN
+    except Exception:
+        return None
 
 
 def _drive_get(path: str, params: Optional[dict] = None) -> dict:
