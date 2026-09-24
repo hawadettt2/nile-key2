@@ -246,7 +246,8 @@
     "importSuccess": "Import completed successfully",
     "importFailed": "Import failed",
     "sheetSelection": "Select Sheet",
-    "noSheetsFound": "No sheets found"
+    "noSheetsFound": "No sheets found",
+    "unknown": "Unknown"
   },
   "shipment": {
     "title": "Shipments",

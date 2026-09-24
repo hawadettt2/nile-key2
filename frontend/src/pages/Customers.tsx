@@ -7,15 +7,11 @@ import {
   updateCustomer,
   deleteCustomer,
   importCustomers,
-  importPreview,
-  importReview,
-  importConfirm,
-  importCancel,
   getCustomerCountries,
   listCustomerProducts,
   listCustomerEvidence,
 } from '@/services/api';
-import { Search, Plus, Pencil, Trash2, X, Upload, ChevronDown, ChevronRight, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, X, Upload, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 
 interface Customer {
   id: number;
@@ -77,19 +73,6 @@ interface RawRecord {
   conflict_resolution?: string;
 }
 
-interface PreviewResponse {
-  batch_id: number;
-  file_name: string;
-  sheet_name?: string;
-  total_rows: number;
-  preview_rows: Array<{ row_number: number; sheet_name?: string; raw: Record<string, unknown> }>;
-  detected_columns: string[];
-  target_fields: Array<{ key: string; label_en: string; label_ar: string; required: boolean }>;
-  sheets?: Array<{ name: string; preview_rows: Array<{ row_number: number; raw: Record<string, unknown> }>; row_count?: number }>;
-}
-
-type WizardStep = 'upload' | 'select' | 'map' | 'validate' | 'review' | 'confirm';
-
 export function Customers() {
   const { t, i18n } = useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -126,20 +109,9 @@ export function Customers() {
   const [detailBatches, setDetailBatches] = useState<SourceBatch[]>([]);
   const [detailRawRecords, setDetailRawRecords] = useState<RawRecord[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
-  const [wizardStep, setWizardStep] = useState<WizardStep>('upload');
-  const [wizardFile, setWizardFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<PreviewResponse | null>(null);
-  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
-  const [duplicatePolicy, setDuplicatePolicy] = useState('skip');
-  const [importing, setImporting] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, _setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedSheets, setSelectedSheets] = useState<string[]>([]);
-  const [conflicts, setConflicts] = useState<Array<{ row_number: number; sheet_name?: string; candidates: Array<{ customer: Customer; match_type: string }> }>>([]);
-  const [reviewErrors, setReviewErrors] = useState<Array<{ row_number: number; sheet_name?: string; error: string }>>([]);
-  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: Array<{ row: number; error: string }> } | null>(null);
   const [expandedRaw, setExpandedRaw] = useState<number | null>(null);
 
   const load = async () => {
@@ -242,89 +214,6 @@ export function Customers() {
     }
   };
 
-  const startWizard = () => {
-    setShowWizard(true);
-    setWizardStep('upload');
-    setWizardFile(null);
-    setPreview(null);
-    setFieldMapping({});
-    setDuplicatePolicy('skip');
-    setSelectedSheets([]);
-    setConflicts([]);
-    setReviewErrors([]);
-    setImportResult(null);
-  };
-
-  const handleWizardUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.toLowerCase().split('.').pop() || '';
-    if (ext !== 'csv' && ext !== 'xlsx') {
-      alert(t('customer.importFailed') || 'Unsupported format');
-      return;
-    }
-    setWizardFile(file);
-    try {
-      const res = await importPreview(file);
-      setPreview(res.data as PreviewResponse);
-      setFieldMapping({});
-      setSelectedSheets([]);
-      setWizardStep('select');
-    } catch {
-      alert(t('common.error'));
-    }
-  };
-
-  const handleWizardReview = async () => {
-    if (!preview) return;
-    setImporting(true);
-    try {
-      const res = await importReview({
-        batch_id: preview.batch_id,
-        field_mapping: fieldMapping,
-        selected_sheets: selectedSheets.length > 0 ? selectedSheets : undefined,
-      });
-      setConflicts((res.data as any)?.conflicts || []);
-      setReviewErrors((res.data as any)?.errors || []);
-      setWizardStep('review');
-    } catch {
-      alert(t('common.error'));
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  const handleWizardConfirm = async () => {
-    if (!preview) return;
-    setImporting(true);
-    try {
-      const res = await importConfirm({
-        batch_id: preview.batch_id,
-        field_mapping: fieldMapping,
-        duplicate_policy: duplicatePolicy,
-        selected_sheets: selectedSheets.length > 0 ? selectedSheets : undefined,
-      });
-      setImportResult(res.data as { imported: number; skipped: number; errors: Array<{ row: number; error: string }> });
-      setWizardStep('confirm');
-    } catch {
-      alert(t('common.error'));
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  const handleWizardCancel = async () => {
-    if (!preview) return;
-    try {
-      await importCancel(preview.batch_id);
-      setShowWizard(false);
-      setPreview(null);
-      setImportResult(null);
-    } catch {
-      alert(t('common.error'));
-    }
-  };
-
   const openEdit = (c: Customer) => {
     setEditing(c);
     setForm({
@@ -374,9 +263,6 @@ export function Customers() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t('customer.title')}</h1>
         <div className="flex gap-2">
-          <button onClick={startWizard} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
-            <Upload size={16} /> {t('customer.importWizard') || 'Import Wizard'}
-          </button>
           <label className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium cursor-pointer transition-colors">
             <Upload size={16} /> {t('customer.importCSV')}
             <input type="file" accept=".csv" onChange={handleLegacyImport} className="hidden" />
@@ -657,181 +543,6 @@ export function Customers() {
                 </section>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {showWizard && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowWizard(false)}>
-          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h2 className="text-xl font-semibold">{t('customer.importWizard') || 'Import Wizard'}</h2>
-              <button onClick={() => setShowWizard(false)} className="text-slate-400 hover:text-slate-600"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-6">
-              {wizardStep === 'upload' && (
-                <div>
-                  <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
-                    <FileSpreadsheet className="mx-auto mb-3 text-slate-400" size={40} />
-                    <p className="text-sm text-slate-600 mb-3">{t('customer.uploadStep') || 'Upload CSV or XLSX file'}</p>
-                    <label className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer inline-flex items-center gap-2">
-                      <Upload size={16} /> {t('customer.uploadStep') || 'Choose File'}
-                      <input type="file" accept=".csv,.xlsx" onChange={handleWizardUpload} className="hidden" />
-                    </label>
-                    {wizardFile && <div className="mt-3 text-sm text-slate-600">{wizardFile.name}</div>}
-                  </div>
-                </div>
-              )}
-
-              {wizardStep === 'select' && preview && (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.sheetSelection') || 'Select Data'}</h3>
-                  {preview.sheets && preview.sheets.length > 0 ? (
-                    <div className="space-y-2 mb-4">
-                      {preview.sheets.map((sheet) => (
-                        <label key={sheet.name} className="flex items-center gap-2 border border-slate-200 rounded-lg p-3 text-sm cursor-pointer hover:bg-slate-50">
-                          <input
-                            type="checkbox"
-                            checked={selectedSheets.includes(sheet.name)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedSheets([...selectedSheets, sheet.name]);
-                              } else {
-                                setSelectedSheets(selectedSheets.filter(s => s !== sheet.name));
-                              }
-                            }}
-                          />
-                          <span className="font-medium text-slate-700">{sheet.name}</span>
-                          <span className="text-slate-500">({sheet.row_count || preview.total_rows} rows)</span>
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-slate-600 mb-4">{t('customer.preview') || 'Preview'}: {preview.total_rows} rows • {preview.detected_columns.length} columns</div>
-                  )}
-                  <div className="space-y-2 mb-4">
-                    {preview.preview_rows.map((row) => (
-                      <div key={row.row_number} className="border border-slate-200 rounded-lg p-3 text-xs bg-slate-50">
-                        <div className="font-medium text-slate-700 mb-1">Row {row.row_number} {row.sheet_name ? `• ${row.sheet_name}` : ''}</div>
-                        <pre className="whitespace-pre-wrap break-words text-slate-700">{JSON.stringify(row.raw, null, 2)}</pre>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <button onClick={handleWizardCancel} className="px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50">{t('common.cancel')}</button>
-                    <button onClick={() => setWizardStep('map')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">{t('customer.mapStep') || 'Map Fields'}</button>
-                  </div>
-                </div>
-              )}
-
-              {wizardStep === 'map' && preview && (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.fieldMapping') || 'Field Mapping'}</h3>
-                  <div className="space-y-2 mb-4">
-                    {preview.target_fields.map((field) => (
-                      <div key={field.key} className="flex items-center gap-3">
-                        <label className="w-40 text-sm text-slate-700 text-right">{i18n.language === 'ar' ? field.label_ar : field.label_en}</label>
-                        <select
-                          value={fieldMapping[field.key] || ''}
-                          onChange={(e) => setFieldMapping({ ...fieldMapping, [field.key]: e.target.value })}
-                          className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm"
-                        >
-                          <option value="">-- Ignore --</option>
-                          {preview.detected_columns.map((col) => <option key={col} value={col}>{col}</option>)}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => setWizardStep('select')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50">Back</button>
-                    <button onClick={() => setWizardStep('validate')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">{t('customer.reviewStep') || 'Review & Confirm'}</button>
-                  </div>
-                </div>
-              )}
-
-              {wizardStep === 'validate' && (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.validationErrors') || 'Validation'}</h3>
-                  <div className="text-sm text-slate-600 mb-4">{t('customer.duplicatePolicy') || 'Duplicate Policy'}:</div>
-                  <select value={duplicatePolicy} onChange={(e) => setDuplicatePolicy(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm mb-4">
-                    <option value="skip">Skip</option>
-                    <option value="create_new">Create New</option>
-                    <option value="merge">Merge</option>
-                    <option value="error">Error</option>
-                  </select>
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => setWizardStep('map')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50">Back</button>
-                    <button onClick={handleWizardReview} disabled={importing} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 inline-flex items-center gap-2">
-                      {importing && <Loader2 className="animate-spin" size={16} />}
-                      {importing ? t('customer.reviewing') || 'Reviewing...' : t('customer.reviewConflicts') || 'Review Conflicts'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {wizardStep === 'review' && (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.reviewConflicts') || 'Review Conflicts'}</h3>
-                  {reviewErrors.length === 0 && conflicts.length === 0 ? (
-                    <div className="text-sm text-emerald-700 mb-4">{t('customer.noConflicts') || 'No conflicts detected. You can proceed to confirm.'}</div>
-                  ) : (
-                    <div className="space-y-3 mb-4">
-                      {reviewErrors.map((err, idx) => (
-                        <div key={`err-${idx}`} className="border border-red-200 rounded-lg p-3 text-sm text-red-700">
-                          Row {err.row_number} {err.sheet_name ? `• ${err.sheet_name}` : ''}: {err.error}
-                        </div>
-                      ))}
-                      {conflicts.map((conflict, idx) => (
-                        <div key={`conflict-${idx}`} className="border border-amber-200 rounded-lg p-3 text-sm">
-                          <div className="font-medium text-slate-700 mb-1">Row {conflict.row_number} {conflict.sheet_name ? `• ${conflict.sheet_name}` : ''}</div>
-                          <div className="text-slate-600">{t('customer.duplicateCandidates') || 'Duplicate candidates'}:</div>
-                          {conflict.candidates.map((candidate, cidx) => (
-                            <div key={cidx} className="ml-4 text-xs text-slate-500">
-                              {candidate.match_type}: {candidate.customer.name} / {candidate.customer.country}
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => setWizardStep('validate')} className="px-4 py-2 border border-slate-300 rounded-lg text-sm hover:bg-slate-50">Back</button>
-                    <button onClick={handleWizardConfirm} disabled={importing} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 inline-flex items-center gap-2">
-                      {importing && <Loader2 className="animate-spin" size={16} />}
-                      {importing ? t('customer.importing') || 'Importing...' : t('customer.confirmImport') || 'Confirm Import'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {wizardStep === 'confirm' && importResult && (
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.importSummary') || 'Import Summary'}</h3>
-                  <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
-                    <div className="border border-slate-200 rounded-lg p-3 text-center">
-                      <div className="text-lg font-semibold text-emerald-700">{importResult.imported}</div>
-                      <div className="text-slate-500">{t('customer.importedCount') || 'Imported'}</div>
-                    </div>
-                    <div className="border border-slate-200 rounded-lg p-3 text-center">
-                      <div className="text-lg font-semibold text-amber-700">{importResult.skipped}</div>
-                      <div className="text-slate-500">{t('customer.skippedCount') || 'Skipped'}</div>
-                    </div>
-                    <div className="border border-slate-200 rounded-lg p-3 text-center">
-                      <div className="text-lg font-semibold text-red-700">{importResult.errors.length}</div>
-                      <div className="text-slate-500">{t('customer.errorCount') || 'Errors'}</div>
-                    </div>
-                  </div>
-                  {importResult.errors.length > 0 && (
-                    <div className="border border-red-200 rounded-lg p-3 text-sm text-red-700 mb-4">
-                      {importResult.errors.map((err) => <div key={err.row}>Row {err.row}: {err.error}</div>)}
-                    </div>
-                  )}
-                  <div className="flex justify-end">
-                    <button onClick={() => { setShowWizard(false); setPreview(null); setImportResult(null); }} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700">{t('common.save') || 'Close'}</button>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
