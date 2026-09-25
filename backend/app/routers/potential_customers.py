@@ -106,7 +106,7 @@ def _list_countries() -> List[CountryFolderResponse]:
     data = _drive_get(
         "files",
         params={
-            "q": f"'{ROOT_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+            "q": f"'{ROOT_FOLDER_ID}' in parents and trashed=false",
             "pageSize": 100,
         },
     )
