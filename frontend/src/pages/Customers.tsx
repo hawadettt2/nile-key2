@@ -270,7 +270,7 @@ export function Customers() {
             <input type="file" accept=".csv" onChange={handleLegacyImport} className="hidden" />
           </label>
           <button onClick={() => navigate('/potential-customers')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
-            <Users size={16} /> Potential Customers
+            <Users size={16} /> العملاء المحتملين
           </button>
           <button onClick={() => { setShowForm(true); setEditing(null); }} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors">
             <Plus size={16} /> {t('customer.addCustomer')}

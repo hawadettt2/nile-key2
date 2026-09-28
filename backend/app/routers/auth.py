@@ -41,9 +41,11 @@ security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)):
-    token = request.cookies.get(settings.ACCESS_TOKEN_COOKIE_NAME)
-    if not token and credentials:
+    token = None
+    if credentials and credentials.credentials:
         token = credentials.credentials
+    else:
+        token = request.cookies.get(settings.ACCESS_TOKEN_COOKIE_NAME)
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     if _is_token_blacklisted(token):

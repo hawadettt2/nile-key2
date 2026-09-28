@@ -63,6 +63,6 @@ describe('Customers', () => {
     await act(async () => {
       renderWithProviders(<Customers />);
     });
-    expect(screen.getByText('Potential Customers')).toBeDefined();
+    expect(screen.getByText('العملاء المحتملين')).toBeDefined();
   });
 });
