@@ -7,6 +7,7 @@ class CustomerBase(BaseModel):
     name: str
     name_en: Optional[str] = None
     contact_person: Optional[str] = None
+    job_title: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     mobile: Optional[str] = None
@@ -17,18 +18,27 @@ class CustomerBase(BaseModel):
     country: str
     tax_id: Optional[str] = None
     import_license: Optional[str] = None
+    commercial_registration: Optional[str] = None
     category: Optional[str] = None
     notes: Optional[str] = None
 
 
 class CustomerCreate(CustomerBase):
-    pass
+    source_type: Optional[str] = None
+    source_format: Optional[str] = None
+    source_name: Optional[str] = None
+    source_reference: Optional[str] = None
+    source_url: Optional[str] = None
+    raw_record: Optional[Dict[str, Any]] = None
+    products: Optional[List[Dict[str, Any]]] = None
+    evidence: Optional[List[Dict[str, Any]]] = None
 
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
     name_en: Optional[str] = None
     contact_person: Optional[str] = None
+    job_title: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     mobile: Optional[str] = None
@@ -39,6 +49,7 @@ class CustomerUpdate(BaseModel):
     country: Optional[str] = None
     tax_id: Optional[str] = None
     import_license: Optional[str] = None
+    commercial_registration: Optional[str] = None
     category: Optional[str] = None
     notes: Optional[str] = None
     status: Optional[str] = None

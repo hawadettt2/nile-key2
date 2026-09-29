@@ -68,6 +68,7 @@ def list_customers(
         activity_status=activity_status,
         skip=skip,
         limit=limit,
+        current_user=current_user,
     )
 
 
@@ -88,7 +89,7 @@ def list_source_batches(
 @router.get("/{customer_id}", response_model=CustomerDetail)
 def get_customer(customer_id: int, current_user: dict = Depends(get_current_user)):
     try:
-        return _get_customer(customer_id=customer_id)
+        return _get_customer(customer_id=customer_id, current_user=current_user)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 

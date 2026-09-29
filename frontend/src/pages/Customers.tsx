@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
 import {
   listCustomers,
   getCustomer,
@@ -91,6 +92,7 @@ export function Customers() {
     name: '',
     name_en: '',
     contact_person: '',
+    job_title: '',
     email: '',
     phone: '',
     mobile: '',
@@ -101,8 +103,13 @@ export function Customers() {
     country: '',
     tax_id: '',
     import_license: '',
+    commercial_registration: '',
     category: '',
+    crm_status: '',
+    verification_status: '',
+    activity_status: '',
     notes: '',
+    source_url: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [detailCustomer, setDetailCustomer] = useState<Customer | null>(null);
@@ -115,6 +122,11 @@ export function Customers() {
   const [pageSize, _setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [expandedRaw, setExpandedRaw] = useState<number | null>(null);
+  const [pendingSource, setPendingSource] = useState<Record<string, unknown> | null>(null);
+  const [formProducts, setFormProducts] = useState<{ product_description: string; hs_code: string }[]>([{ product_description: '', hs_code: '' }]);
+
+  const user = useAuthStore((s) => s.user);
+  const canViewInternal = !!(user?.role && ['owner', 'manager', 'staff'].includes(user.role));
 
   const load = async () => {
     setLoading(true);
@@ -146,18 +158,90 @@ export function Customers() {
     getCustomerCountries().then((list) => setCountries(list.data || []));
   }, []);
 
+  useEffect(() => {
+    if (location.pathname !== '/customers') return;
+    let cancelled = false;
+    try {
+      const raw = sessionStorage.getItem('potentialCustomerForm');
+      const sourceRaw = sessionStorage.getItem('potentialCustomerSourceRow');
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (cancelled) return;
+      setEditing(null);
+      setForm({
+        name: data.name || '',
+        name_en: data.name_en || '',
+        contact_person: data.contact_person || '',
+        job_title: data.job_title || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        mobile: data.mobile || '',
+        whatsapp: data.whatsapp || '',
+        website: data.website || '',
+        address: data.address || '',
+        city: data.city || '',
+        country: data.country || '',
+        tax_id: data.tax_id || '',
+        import_license: data.import_license || '',
+        commercial_registration: data.commercial_registration || '',
+        category: data.category || '',
+        crm_status: data.crm_status || 'prospect',
+        verification_status: data.verification_status || 'unverified',
+        activity_status: data.activity_status || 'unknown',
+        notes: data.notes || '',
+        source_url: data.source_url || '',
+      });
+      setFormProducts([{ product_description: '', hs_code: '' }]);
+      let parsedSource: Record<string, string> | null = null;
+      if (sourceRaw) {
+        try {
+          parsedSource = JSON.parse(sourceRaw);
+        } catch {
+          parsedSource = null;
+        }
+      }
+      setPendingSource(parsedSource);
+      setShowForm(true);
+      sessionStorage.removeItem('potentialCustomerForm');
+      sessionStorage.removeItem('potentialCustomerSourceRow');
+    } catch {
+      // ignore parse/storage errors
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
     try {
-      if (editing) await updateCustomer(editing.id, form); else await createCustomer(form);
+      const cleanedProducts = formProducts
+        .map((p) => ({
+          product_description: p.product_description.trim(),
+          hs_code: p.hs_code.trim(),
+        }))
+        .filter((p) => p.product_description || p.hs_code);
+      const basePayload: Record<string, unknown> = {
+        ...form,
+        commercial_registration: form.commercial_registration || undefined,
+        job_title: form.job_title || undefined,
+        source_url: form.source_url || undefined,
+      };
+      const payload = pendingSource
+        ? { ...basePayload, raw_record: pendingSource, source_type: 'potential_customer', source_format: 'xlsx', source_name: 'Potential Customers', products: cleanedProducts.length ? cleanedProducts : undefined }
+        : { ...basePayload, products: cleanedProducts.length ? cleanedProducts : undefined };
+      if (editing) await updateCustomer(editing.id, basePayload); else await createCustomer(payload);
       setShowForm(false);
       setEditing(null);
+      setPendingSource(null);
       setForm({
-        name: '', name_en: '', contact_person: '', email: '', phone: '', mobile: '', whatsapp: '', website: '',
-        address: '', city: '', country: '', tax_id: '', import_license: '', category: '', notes: '',
+        name: '', name_en: '', contact_person: '', job_title: '', email: '', phone: '', mobile: '', whatsapp: '', website: '',
+        address: '', city: '', country: '', tax_id: '', import_license: '', commercial_registration: '', category: '',
+        crm_status: '', verification_status: '', activity_status: '', notes: '', source_url: '',
       });
+      setFormProducts([{ product_description: '', hs_code: '' }]);
       load();
     } catch {
       alert(t('common.error'));
@@ -222,6 +306,7 @@ export function Customers() {
       name: c.name,
       name_en: c.name_en || '',
       contact_person: c.contact_person || '',
+      job_title: (c as any)?.job_title || '',
       email: c.email || '',
       phone: c.phone || '',
       mobile: c.mobile || '',
@@ -232,9 +317,15 @@ export function Customers() {
       country: c.country,
       tax_id: c.tax_id || '',
       import_license: c.import_license || '',
+      commercial_registration: (c as any)?.commercial_registration || '',
       category: c.category || '',
+      crm_status: c.crm_status || '',
+      verification_status: c.verification_status || '',
+      activity_status: c.activity_status || '',
       notes: c.notes || '',
+      source_url: '',
     });
+    setFormProducts([{ product_description: '', hs_code: '' }]);
     setShowForm(true);
   };
 
@@ -313,68 +404,217 @@ export function Customers() {
             <h3 className="text-lg font-semibold">{editing ? t('customer.editCustomer') : t('customer.addCustomer')}</h3>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
           </div>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.name')} <span className="text-red-500 ml-1">*</span></label>
-              <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.nameEn') || 'Name (EN)'}</label>
-              <input value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.contact')}</label>
-              <input value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.email')}</label>
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.phone')}</label>
-              <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.mobile') || 'Mobile'}</label>
-              <input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.whatsapp') || 'WhatsApp'}</label>
-              <input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.website') || 'Website'}</label>
-              <input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.address') || 'Address'}</label>
-              <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.city')}</label>
-              <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.country')} <span className="text-red-500 ml-1">*</span></label>
-              <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.taxId') || 'Tax ID'}</label>
-              <input value={form.tax_id} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.importLicense') || 'Import License'}</label>
-              <input value={form.import_license} onChange={(e) => setForm({ ...form, import_license: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.category')}</label>
-              <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.notes') || 'Notes'}</label>
-              <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm w-full" />
-            </div>
-            <div className="md:col-span-2">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.name')} <span className="text-red-500 ml-1">*</span></label>
+                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.nameEn') || 'Name (EN)'}</label>
+                <input value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">الموقع</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.country')} <span className="text-red-500 ml-1">*</span></label>
+                  <input required value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.city')}</label>
+                  <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.address') || 'Address'}</label>
+                  <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">التواصل</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.phone')}</label>
+                  <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.mobile') || 'Mobile'}</label>
+                  <input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.whatsapp') || 'WhatsApp'}</label>
+                  <input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.email')}</label>
+                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.website') || 'Website'}</label>
+                  <input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">الشخص المسؤول</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.contact')}</label>
+                  <input value={form.contact_person} onChange={(e) => setForm({ ...form, contact_person: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div className="md:col-start-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">المسمى الوظيفي</label>
+                  <input value={form.job_title} onChange={(e) => setForm({ ...form, job_title: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">البيانات القانونية</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">السجل التجاري</label>
+                  <input value={form.commercial_registration} onChange={(e) => setForm({ ...form, commercial_registration: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.taxId') || 'Tax ID'}</label>
+                  <input value={form.tax_id} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.importLicense') || 'Import License'}</label>
+                  <input value={form.import_license} onChange={(e) => setForm({ ...form, import_license: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.category')}</label>
+                  <input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-semibold text-slate-500 uppercase">المنتجات المستوردة / المطلوبة</h4>
+                <button
+                  type="button"
+                  onClick={() => setFormProducts((prev) => [...prev, { product_description: '', hs_code: '' }])}
+                  className="inline-flex items-center gap-1 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <Plus size={14} />
+                  إضافة منتج
+                </button>
+              </div>
+              <div className="space-y-3">
+                {formProducts.map((product, index) => (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start bg-slate-50 border border-slate-200 rounded-lg p-3">
+                    <div className="md:col-span-6">
+                      <label className="block text-xs font-medium text-slate-600 mb-1">اسم المنتج</label>
+                      <input
+                        value={product.product_description}
+                        onChange={(e) => {
+                          const next = [...formProducts];
+                          next[index] = { ...next[index], product_description: e.target.value };
+                          setFormProducts(next);
+                        }}
+                        className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm w-full"
+                      />
+                    </div>
+                    <div className="md:col-span-4">
+                      <label className="block text-xs font-medium text-slate-600 mb-1">الكود الخاص به</label>
+                      <input
+                        value={product.hs_code}
+                        onChange={(e) => {
+                          const next = [...formProducts];
+                          next[index] = { ...next[index], hs_code: e.target.value };
+                          setFormProducts(next);
+                        }}
+                        className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm w-full"
+                      />
+                    </div>
+                    <div className="md:col-span-2 flex items-end">
+                      <button
+                        type="button"
+                        onClick={() => setFormProducts((prev) => prev.filter((_, i) => i !== index))}
+                        className="w-full inline-flex items-center justify-center gap-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-3 py-2 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={14} />
+                        حذف
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {formProducts.length === 0 && (
+                  <div className="text-xs text-slate-500">لا توجد منتجات مضافة.</div>
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h4 className="text-xs font-semibold text-slate-500 uppercase mb-3">المصدر</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">رابط المصدر — Source URL</label>
+                  <input
+                    type="url"
+                    value={form.source_url}
+                    onChange={(e) => setForm({ ...form, source_url: e.target.value })}
+                    placeholder="https://..."
+                    className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm w-full"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {canViewInternal && (
+              <section>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+                  <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                    هذه الحالات داخلية خاصة بموظفي الشركة والمستخدمين المصرح لهم فقط.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.crmStatus') || 'CRM Status'}</label>
+                      <select value={form.crm_status} onChange={(e) => setForm({ ...form, crm_status: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        <option value="prospect">{t('customer.prospect') || 'Prospect'}</option>
+                        <option value="active_customer">{t('customer.activeCustomer') || 'Active Customer'}</option>
+                        <option value="inactive">{t('customer.inactive') || 'Inactive'}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.verificationStatus') || 'Verification Status'}</label>
+                      <select value={form.verification_status} onChange={(e) => setForm({ ...form, verification_status: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        <option value="unverified">{t('customer.unverified') || 'Unverified'}</option>
+                        <option value="pending">{t('customer.pending') || 'Pending'}</option>
+                        <option value="verified">{t('customer.verified') || 'Verified'}</option>
+                        <option value="rejected">{t('customer.rejected') || 'Rejected'}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.activityStatus') || 'Activity Status'}</label>
+                      <select value={form.activity_status} onChange={(e) => setForm({ ...form, activity_status: e.target.value })} className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                        <option value="unknown">{t('customer.unknown') || 'Unknown'}</option>
+                        <option value="observed_active">{t('customer.activeImporter') || 'Active Importer'}</option>
+                        <option value="dormant">{t('customer.dormant') || 'Dormant'}</option>
+                        <option value="not_observed">{t('customer.notObserved') || 'Not Observed'}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.notes') || 'Notes'}</label>
+                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm w-full" />
+              </div>
+            </section>
+
+            <div className="flex items-center gap-3">
               <button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
                 {submitting && <Loader2 className="animate-spin" size={16} />}
                 {submitting ? t('common.saving') : t('common.save')}

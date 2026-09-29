@@ -32,8 +32,8 @@ def _customer_row_to_response(row: dict) -> dict:
     response = {}
     for key in [
         "id", "email", "phone", "mobile", "whatsapp", "website",
-        "address", "city", "country", "tax_id", "import_license", "category",
-        "notes", "status", "data_status", "verification_status", "crm_status",
+        "address", "city", "country", "tax_id", "import_license", "commercial_registration",
+        "category", "job_title", "notes", "status", "data_status", "verification_status", "crm_status",
         "activity_status", "activity_window_label", "created_at", "updated_at", "created_by"
     ]:
         response[key] = row.get(key)
@@ -54,6 +54,18 @@ def _build_customer_detail(row: dict, products: list, evidence: list, batches: l
     return base
 
 
+_INTERNAL_STATUS_KEYS = {"crm_status", "verification_status", "activity_status"}
+
+
+def _hide_internal_statuses(customers: list[dict], current_user: Optional[dict] = None):
+    allowed_roles = {"owner", "manager", "staff"}
+    if current_user and current_user.get("role") in allowed_roles:
+        return
+    for customer in customers:
+        for key in _INTERNAL_STATUS_KEYS:
+            customer[key] = None
+
+
 def list_customers(
     search: Optional[str] = None,
     status: Optional[str] = None,
@@ -65,6 +77,7 @@ def list_customers(
     activity_status: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
+    current_user: Optional[dict] = None,
 ) -> list[dict]:
     from app.services.base import build_list_query
 
@@ -90,12 +103,14 @@ def list_customers(
         )
         session = DatabaseSession(conn)
         rows = session.fetch_all(query, tuple(params))
-        return [_customer_row_to_response(dict(r)) for r in rows]
+        result = [_customer_row_to_response(dict(r)) for r in rows]
+        _hide_internal_statuses(result, current_user)
+        return result
     finally:
         conn.close()
 
 
-def get_customer(customer_id: int) -> dict:
+def get_customer(customer_id: int, current_user: Optional[dict] = None) -> dict:
     conn = get_db()
     try:
         session = DatabaseSession(conn)
@@ -128,7 +143,7 @@ def get_customer(customer_id: int) -> dict:
                 f"SELECT id, source_type, source_format, source_name, source_reference, source_url, file_name, row_count, success_count, skip_count, error_count, status, imported_at, imported_by, created_at FROM customer_source_batches WHERE id IN ({placeholders})",
                 tuple(batch_ids),
             )
-        return _build_customer_detail(
+        base = _build_customer_detail(
             dict(row),
             [dict(p) for p in products],
             [dict(e) for e in evidence],
@@ -148,11 +163,16 @@ def get_customer(customer_id: int) -> dict:
                 for r in raw_records
             ],
         )
+        _hide_internal_statuses([base], current_user)
+        return base
     finally:
         conn.close()
 
 
 def create_customer(data: CustomerCreate, current_user: dict) -> dict:
+    import json
+    from app.core.database import DatabaseSession, get_db
+
     conn = get_db()
     try:
         session = DatabaseSession(conn)
@@ -163,6 +183,7 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
                     "name": data.name,
                     "name_en": data.name_en,
                     "contact_person": data.contact_person,
+                    "job_title": data.job_title,
                     "email": data.email,
                     "phone": data.phone,
                     "mobile": data.mobile,
@@ -173,6 +194,7 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
                     "country": data.country,
                     "tax_id": data.tax_id,
                     "import_license": data.import_license,
+                    "commercial_registration": data.commercial_registration,
                     "category": data.category,
                     "notes": data.notes,
                     "status": "active",
@@ -184,6 +206,69 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
                     "created_by": current_user["id"],
                 },
             )
+
+            batch_id = None
+            if data.source_type or data.source_name or data.raw_record:
+                batch_id = session.insert(
+                    "customer_source_batches",
+                    {
+                        "source_type": data.source_type or "manual",
+                        "source_format": data.source_format or "xlsx",
+                        "source_name": data.source_name or "Potential Customers",
+                        "source_reference": data.source_reference,
+                        "source_url": data.source_url,
+                        "file_name": data.source_name or "potential_customers",
+                        "row_count": 1,
+                        "success_count": 1,
+                        "skip_count": 0,
+                        "error_count": 0,
+                        "status": "imported",
+                        "imported_at": now_iso(),
+                        "imported_by": current_user["id"],
+                    },
+                )
+
+            if data.raw_record:
+                session.insert(
+                    "customer_raw_records",
+                    {
+                        "batch_id": batch_id,
+                        "sheet_name": "potential_customers",
+                        "row_number": 1,
+                        "raw_data": json.dumps(data.raw_record, ensure_ascii=False),
+                        "normalized_customer_id": customer_id,
+                        "validation_errors": None,
+                        "conflict_resolution": "created",
+                        "conflict_details": None,
+                    },
+                )
+
+            if data.products:
+                for product in data.products:
+                    session.insert(
+                        "customer_products",
+                        {
+                            "customer_id": customer_id,
+                            "product_description": product.get("product_description") or product.get("Product Description") or product.get("product"),
+                            "hs_code": product.get("hs_code") or product.get("HS Code"),
+                            "hs_code_description": product.get("hs_code_description") or product.get("HS Code Description"),
+                            "quantity": product.get("quantity") or product.get("Quantity"),
+                            "unit": product.get("unit") or product.get("Unit"),
+                        },
+                    )
+
+            if data.evidence:
+                for ev in data.evidence:
+                    session.insert(
+                        "customer_evidence",
+                        {
+                            "customer_id": customer_id,
+                            "evidence_type": ev.get("evidence_type") or ev.get("Type") or "source_row",
+                            "evidence_data": json.dumps(ev, ensure_ascii=False),
+                            "observed_at": ev.get("observed_at") or ev.get("Date") or now_iso(),
+                        },
+                    )
+
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="customer", entity_id=customer_id, details=data.name),
@@ -486,6 +571,7 @@ def _normalize_customer_from_row(row: dict, source_batch_id: int) -> dict:
         "name": name.strip(),
         "name_en": row.get("name_en"),
         "contact_person": row.get("contact_person") or row.get("contact_name"),
+        "job_title": row.get("job_title"),
         "email": row.get("email"),
         "phone": row.get("phone"),
         "mobile": row.get("mobile"),
@@ -496,6 +582,7 @@ def _normalize_customer_from_row(row: dict, source_batch_id: int) -> dict:
         "country": country.strip(),
         "tax_id": row.get("tax_id"),
         "import_license": row.get("import_license"),
+        "commercial_registration": row.get("commercial_registration"),
         "category": row.get("category"),
         "notes": row.get("notes"),
         "status": "active",

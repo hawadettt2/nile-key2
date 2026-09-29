@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import {
   listPotentialCustomerCountries,
   getPotentialCustomerFileContent,
@@ -28,6 +29,7 @@ import {
   Mail,
   ChevronLeft,
   X,
+  UserPlus,
 } from 'lucide-react';
 
 const ARABIC_HEADERS: Record<string, string> = {
@@ -612,6 +614,7 @@ type ViewMode = 'countries' | 'country-detail' | 'file-content';
 
 export function PotentialCustomers() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>('countries');
   const [countries, setCountries] = useState<PotentialCustomerCountry[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<PotentialCustomerCountry | null>(null);
@@ -1320,25 +1323,64 @@ export function PotentialCustomers() {
 
                     return (
                       <>
-                        <DialogHeader>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <DialogTitle className="text-lg font-semibold text-slate-900">{companyValue}</DialogTitle>
-                              {contactReady ? (
-                                <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                                  <CheckCircle size={14} />
-                                  جاهز للتواصل
-                                </span>
-                              ) : (
-                                <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
-                                  بيانات غير مكتملة للتواصل
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-slate-500">
-                                {selectedDisplayIndex + 1} / {displayRows.length}
-                              </span>
+                         <DialogHeader>
+                           <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-3">
+                               <DialogTitle className="text-lg font-semibold text-slate-900">{companyValue}</DialogTitle>
+                               {contactReady ? (
+                                 <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                                   <CheckCircle size={14} />
+                                   جاهز للتواصل
+                                 </span>
+                               ) : (
+                                 <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                                   بيانات غير مكتملة للتواصل
+                                 </span>
+                               )}
+                             </div>
+                             <div className="flex items-center gap-2">
+                                 <button
+                                   onClick={() => {
+                                     const safeForm: Record<string, string> = {
+                                       name: companyValue !== '—' ? companyValue : '',
+                                       name_en: companyValue !== '—' ? companyValue : '',
+                                       contact_person: '',
+                                       job_title: '',
+                                       email: emailValue !== '—' ? emailValue : '',
+                                       phone: mobileValue !== '—' ? mobileValue : '',
+                                       mobile: mobileValue !== '—' ? mobileValue : '',
+                                       whatsapp: whatsAppValue !== '—' ? whatsAppValue : '',
+                                       website: websiteValue !== '—' ? websiteValue : '',
+                                       address: addressValue !== '—' ? addressValue : '',
+                                       city: '',
+                                       country: '',
+                                       tax_id: '',
+                                       import_license: '',
+                                       commercial_registration: '',
+                                       category: '',
+                                       crm_status: 'prospect',
+                                       verification_status: 'unverified',
+                                       activity_status: 'unknown',
+                                       notes: '',
+                                       source_url: '',
+                                     };
+                                     try {
+                                       sessionStorage.setItem('potentialCustomerForm', JSON.stringify(safeForm));
+                                       sessionStorage.setItem('potentialCustomerSourceRow', JSON.stringify(mappedRow));
+                                     } catch {
+                                       // ignore storage failure
+                                     }
+                                     navigate('/customers');
+                                   }}
+                                   className="inline-flex items-center gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                                   type="button"
+                                 >
+                                   <UserPlus size={14} />
+                                   إضافة عميل
+                                 </button>
+                               <span className="text-xs text-slate-500">
+                                 {selectedDisplayIndex + 1} / {displayRows.length}
+                               </span>
                               <button
                                 onClick={handlePrev}
                                 disabled={selectedDisplayIndex === 0}
