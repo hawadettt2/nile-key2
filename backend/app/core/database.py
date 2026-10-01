@@ -26,8 +26,8 @@ def get_db_connection():
     """
     db_path = settings.DATABASE_URL.replace("sqlite:///", "")
     if not os.path.isabs(db_path):
-        db_path = str(Path(__file__).resolve().parent.parent.parent.parent / db_path)
-    
+        db_path = str(Path(__file__).resolve().parent.parent.parent / db_path)
+
     conn = sqlite3.connect(
         db_path,
         check_same_thread=False,  # ضروري لـ FastAPI (multi-threaded)
@@ -54,7 +54,7 @@ def get_db():
     """Return a raw SQLite connection for existing router code."""
     db_path = settings.DATABASE_URL.replace("sqlite:///", "")
     if not os.path.isabs(db_path):
-        db_path = str(Path(__file__).resolve().parent.parent.parent.parent / db_path)
+        db_path = str(Path(__file__).resolve().parent.parent.parent / db_path)
     conn = sqlite3.connect(
         db_path,
         check_same_thread=False,
