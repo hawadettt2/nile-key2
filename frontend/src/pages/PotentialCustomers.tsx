@@ -726,7 +726,8 @@ export function PotentialCustomers() {
     try {
       const res = await api.get('/api/v1/customers/check-source', { params: { company_name: trimmedName } });
       return res.data?.exists === true;
-    } catch {
+    } catch (error) {
+      console.error('checkCustomerAdded failed:', error);
       return false;
     }
   };
@@ -856,52 +857,6 @@ export function PotentialCustomers() {
 
     loadSheetContent();
   }, [selectedFile?.id, activeSheet]);
-
-    useEffect(() => {
-      if (selectedDisplayIndex === null || !displayRows[selectedDisplayIndex]) return;
-      const item = displayRows[selectedDisplayIndex];
-
-      const mapped = item.row;
-    const detectedHeader = excelContent ? detectHeaderRow(excelContent.rows) : null;
-    const headerRow = detectedHeader?.row || excelContent?.rows?.[0] || {};
-    const columnNameMap: Record<string, string> = {};
-    Object.entries(headerRow).forEach(([key, value]) => {
-      columnNameMap[key] = String(value ?? '');
-    });
-    const mapRowKeys = (row: Record<string, string>) => {
-      const keys = Object.keys(row);
-      const allNumeric = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
-      if (allNumeric) {
-        const mapped: Record<string, string> = {};
-        Object.entries(row).forEach(([key, value]) => {
-          mapped[columnNameMap[key] || key] = value;
-        });
-        return mapped;
-      }
-
-      const numericKeys = keys.filter((k) => /^\d+$/.test(k));
-      if (numericKeys.length === 0) return row;
-
-      const mapped: Record<string, string> = {};
-      Object.entries(row).forEach(([key, value]) => {
-        if (key === '__excel_row__') {
-          mapped[key] = value;
-          return;
-        }
-        mapped[columnNameMap[key] || key] = value;
-      });
-      return mapped;
-    };
-    const mappedRow = mapRowKeys(mapped);
-
-    const companyAliases = FIELD_ALIASES.company.map((a) => normalizeColumnName(a));
-    const companyKey = Object.keys(mappedRow).find((k) => companyAliases.includes(normalizeColumnName(k)));
-    const companyValue = companyKey ? String(mappedRow[companyKey] ?? '').trim() : '';
-
-    checkCustomerAdded(companyValue || undefined).then((exists) => {
-      setModalIsCustomerAdded(exists);
-    });
-  }, [selectedDisplayIndex, displayRows, excelContent, selectedCountry]);
 
   useEffect(() => {
     if (selectedDisplayIndex === null || !displayRows[selectedDisplayIndex]) return;
