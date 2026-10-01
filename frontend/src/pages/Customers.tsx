@@ -113,6 +113,7 @@ export function Customers() {
     source_url: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
   const [detailCustomer, setDetailCustomer] = useState<Customer | null>(null);
   const [detailProducts, setDetailProducts] = useState<Product[]>([]);
   const [detailEvidence, setDetailEvidence] = useState<Evidence[]>([]);
@@ -234,6 +235,13 @@ export function Customers() {
     if (submitting) return;
     setSubmitting(true);
     try {
+      // Validate required fields for new customer creation
+      if (!editing && (!form.name_en || !form.name_en.trim())) {
+        setFormError(t('customer.nameEnRequired') || 'اسم الشركة باللغة الإنجليزية مطلوب');
+        setSubmitting(false);
+        return;
+      }
+      setFormError('');
       const cleanedProducts = formProducts
         .map((p) => ({
           product_description: p.product_description.trim(),
@@ -437,6 +445,11 @@ export function Customers() {
             <h3 className="text-lg font-semibold">{editing ? t('customer.editCustomer') : t('customer.addCustomer')}</h3>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600"><X size={18} /></button>
           </div>
+          {formError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
+              {formError}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -444,8 +457,8 @@ export function Customers() {
                 <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.nameEn') || 'Name (EN)'}</label>
-                <input value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('customer.nameEn') || 'Name (EN)'} {!editing && <span className="text-red-500 ml-1">*</span>}</label>
+                <input required={!editing} value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
               </div>
             </section>
 
@@ -665,19 +678,21 @@ export function Customers() {
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.name')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.contact')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.country')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.dataStatus') || 'Data Status'}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.crmStatus') || 'CRM Status'}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.activityStatus') || 'Activity Status'}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('common.actions')}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.name')}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.createdBy') || 'أضيف بواسطة'}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.contact')}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.country')}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.dataStatus') || 'Data Status'}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.crmStatus') || 'CRM Status'}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.activityStatus') || 'Activity Status'}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {customers.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => openDetail(c)}>
                     <td className="px-4 py-3 text-sm font-medium text-slate-900">{c.name}</td>
+                    <td className="px-4 py-3 text-sm text-slate-600">{c.created_by_full_name || '-'}</td>
                     <td className="px-4 py-3 text-sm text-slate-600">{c.contact_person || '-'} {c.email ? `(${c.email})` : ''}</td>
                     <td className="px-4 py-3 text-sm text-slate-600">{c.country}</td>
                     <td className="px-4 py-3">{statusBadge(c.data_status)}</td>
@@ -733,11 +748,14 @@ export function Customers() {
                     <div><span className="text-slate-500">{t('customer.city')}: </span>{detailCustomer.city || '-'}</div>
                     <div><span className="text-slate-500">{t('customer.country')}: </span>{detailCustomer.country}</div>
                     <div><span className="text-slate-500">{t('customer.taxId') || 'Tax ID'}: </span>{detailCustomer.tax_id || '-'}</div>
-                    <div><span className="text-slate-500">{t('customer.importLicense') || 'Import License'}: </span>{detailCustomer.import_license || '-'}</div>
-                    {(detailCustomer as any).created_by_full_name && (
-                      <div><span className="text-slate-500">أضيف بواسطة: </span>{(detailCustomer as any).created_by_full_name}</div>
-                    )}
-                  </div>
+                     <div><span className="text-slate-500">{t('customer.importLicense') || 'Import License'}: </span>{detailCustomer.import_license || '-'}</div>
+                     <div className="flex items-center gap-2">
+                       <span className="text-slate-500">أضيف بواسطة: </span>
+                       <span className="text-sm font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
+                         {(detailCustomer as any).created_by_full_name || '-'}
+                       </span>
+                     </div>
+                   </div>
                 </section>
 
                 <section>

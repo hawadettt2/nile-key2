@@ -172,7 +172,10 @@ def create_evidence(customer_id: int, data: dict, current_user: dict = Depends(r
 
 @router.post("/", response_model=IdResponse)
 def create_customer(data: CustomerCreate, current_user: dict = Depends(require_role(["owner", "manager", "sales"]))):
-    return _create_customer(data=data, current_user=current_user)
+    try:
+        return _create_customer(data=data, current_user=current_user)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.put("/{customer_id}", response_model=MessageResponse)

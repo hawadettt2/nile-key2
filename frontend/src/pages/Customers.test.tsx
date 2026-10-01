@@ -102,6 +102,7 @@ describe('Customers', () => {
 
     const textboxes = within(formContainer).getAllByRole('textbox');
     fireEvent.change(textboxes[0], { target: { value: 'Test Corp' } });
+    fireEvent.change(textboxes[1], { target: { value: 'Test Corp EN' } });
     fireEvent.change(textboxes[2], { target: { value: 'UAE' } });
 
     const comboboxes = within(formContainer).getAllByRole('combobox');

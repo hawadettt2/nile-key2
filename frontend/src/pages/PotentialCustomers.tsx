@@ -735,8 +735,10 @@ export function PotentialCustomers() {
   const displayRows = useMemo(() => {
     if (!excelContent || !excelContent.rows?.length) return [];
 
-    const useTranslated = arabicMode && !isTranslating && translatedRows && translatedRows.length === excelContent.rows.length;
-    const sourceRows = useTranslated ? translatedRows : excelContent.rows;
+    const useTranslated = arabicMode && translatedRows && translatedRows.length > 0;
+    const sourceRows = useTranslated
+      ? excelContent.rows.map((row, idx) => (translatedRows[idx] != null ? translatedRows[idx] : row))
+      : excelContent.rows;
 
     const detectedHeader = detectHeaderRow(excelContent.rows);
     const headerRow = detectedHeader?.row || excelContent.rows[0] || {};
@@ -914,8 +916,11 @@ export function PotentialCustomers() {
     const translateAll = async () => {
       setIsTranslating(true);
       try {
-        const translated = await Promise.all(
-          excelContent.rows.map(async (row) => {
+        // Translate all rows concurrently (controlled by CONCURRENCY), but update
+        // the display progressively as each row finishes, so translations appear
+        // immediately instead of waiting for the entire file.
+        await Promise.all(
+          excelContent.rows.map(async (row, idx) => {
             const newRow: Record<string, string> = {};
             for (const [key, value] of Object.entries(row)) {
               if (key === '__excel_row__') {
@@ -924,10 +929,14 @@ export function PotentialCustomers() {
               }
               newRow[key] = await translateCellValueAsync(value);
             }
-            return newRow;
+            // Update the display row by row as translations arrive.
+            setTranslatedRows((prev) => {
+              const next = [...(prev ?? [])];
+              next[idx] = newRow;
+              return next;
+            });
           })
         );
-        setTranslatedRows(translated);
       } catch (error) {
         console.error('Translation error:', error);
       } finally {

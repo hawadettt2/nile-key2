@@ -181,6 +181,13 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
     conn = get_db()
     try:
         session = DatabaseSession(conn)
+
+        # name (Arabic) and name_en (English) are required when creating a new customer
+        if not data.name or not data.name_en:
+            raise ValueError("Both name (Arabic) and name_en (English) are required")
+        if not str(data.name).strip() or not str(data.name_en).strip():
+            raise ValueError("Both name (Arabic) and name_en (English) are required")
+
         with session.transaction():
             customer_id = session.insert(
                 "customers",
@@ -603,7 +610,13 @@ def _normalize_customer_from_row(row: dict, source_batch_id: int) -> dict:
     }
 
 
-def _create_customer_from_normalized(session: DatabaseSession, normalized: dict, current_user: dict) -> int:
+def _create_customer_from_normalized(session: DatabaseSession, normalized: dict, current_user: dict) -> Optional[int]:
+    name = normalized.get("name") or ""
+    name_en = normalized.get("name_en") or ""
+    if not name.strip() or not name_en.strip():
+        # Cannot create a customer without both Arabic and English names
+        return None
+
     data = dict(normalized)
     data.pop("raw_data", None)
     data["created_by"] = current_user.get("id")
@@ -835,6 +848,7 @@ def import_confirm(request: ImportConfirmRequest, current_user: dict) -> dict:
                 candidates = _detect_duplicate_candidates(session, raw_data, request.batch_id)
                 customer_id = None
                 conflict_resolution = "created"
+                name_validation_error = False
 
                 if candidates:
                     high_confidence = [c for c in candidates if c["match_type"] in {"tax_id_or_license", "email", "phone", "website"}]
@@ -855,6 +869,8 @@ def import_confirm(request: ImportConfirmRequest, current_user: dict) -> dict:
                             conflict_resolution = "skipped"
                         elif request.duplicate_policy == "create_new":
                             customer_id = _create_customer_from_normalized(session, normalized, current_user)
+                            if customer_id is None:
+                                name_validation_error = True
                             conflict_resolution = "created"
                         elif request.duplicate_policy == "merge" and candidates:
                             customer_id = candidates[0]["customer"]["id"]
@@ -866,10 +882,26 @@ def import_confirm(request: ImportConfirmRequest, current_user: dict) -> dict:
                             conflict_resolution = "error"
                         else:
                             customer_id = _create_customer_from_normalized(session, normalized, current_user)
+                            if customer_id is None:
+                                name_validation_error = True
                             conflict_resolution = "created"
                 else:
                     customer_id = _create_customer_from_normalized(session, normalized, current_user)
+                    if customer_id is None:
+                        name_validation_error = True
                     conflict_resolution = "created"
+
+                if name_validation_error:
+                    errors.append({"row": raw["row_number"], "sheet": raw["sheet_name"], "error": "missing_name_and_name_en"})
+                    session.update(
+                        "customer_raw_records",
+                        raw["id"],
+                        {
+                            "validation_errors": json.dumps(["missing_name_and_name_en"], ensure_ascii=False),
+                            "conflict_resolution": "error",
+                        },
+                    )
+                    continue
 
                 if customer_id:
                     imported += 1
@@ -962,6 +994,8 @@ def import_customers(file: io.BytesIO, filename: str, current_user: dict) -> dic
                 except ValueError:
                     continue
                 customer_id = _create_customer_from_normalized(session, normalized, current_user)
+                if customer_id is None:
+                    continue
                 imported += 1
         return {"message": f"Imported {imported} customers successfully", "count": imported}
     finally:

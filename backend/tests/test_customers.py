@@ -51,6 +51,7 @@ def test_get_customer_authorized(client):
     _, token = _register_and_login(client, role="owner")
     create_resp = client.post("/api/v1/customers/", json={
         "name": "Test Customer",
+        "name_en": "Test Customer EN",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     customer_id = create_resp.json()["id"]
@@ -70,6 +71,7 @@ def test_create_customer_with_owner_role(client):
     _, token = _register_and_login(client, role="owner")
     response = client.post("/api/v1/customers/", json={
         "name": "Test Customer",
+        "name_en": "Test Customer EN",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
@@ -82,6 +84,7 @@ def test_create_customer_with_staff_role_forbidden(client):
     _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/customers/", json={
         "name": "Test Customer",
+        "name_en": "Test Customer EN",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
@@ -92,6 +95,7 @@ def test_update_customer_with_manager_role(client):
     _, token = _register_and_login(client, role="manager")
     create_resp = client.post("/api/v1/customers/", json={
         "name": "Test Customer",
+        "name_en": "Test Customer EN",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     customer_id = create_resp.json()["id"]
@@ -106,17 +110,18 @@ def test_delete_customer_with_owner_role(client):
     _, token = _register_and_login(client, role="owner")
     create_resp = client.post("/api/v1/customers/", json={
         "name": "Test Customer",
+        "name_en": "Test Customer EN",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     customer_id = create_resp.json()["id"]
     response = client.delete(f"/api/v1/customers/{customer_id}", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
-    assert "deactivated" in response.json().get("message", "").lower()
+    assert "deleted" in response.json().get("message", "").lower()
 
 
 def test_import_customers_with_sales_role(client):
     _, token = _register_and_login(client, role="sales")
-    csv_content = "name,country,email\nImport Customer,Egypt,import@example.com\n"
+    csv_content = "name,name_en,country,email\nImport Customer,Import Customer EN,Egypt,import@example.com\n"
     response = client.post(
         "/api/v1/customers/import",
         files={"file": ("customers.csv", csv_content, "text/csv")},
@@ -126,3 +131,46 @@ def test_import_customers_with_sales_role(client):
     data = response.json()
     assert "message" in data
     assert "count" in data
+
+
+def test_create_customer_without_english_name_returns_400(client):
+    _, token = _register_and_login(client, role="owner")
+    response = client.post("/api/v1/customers/", json={
+        "name": "Test Customer",
+        "country": "Egypt",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "name_en" in response.json().get("detail", "")
+
+
+def test_create_customer_without_arabic_name_returns_400(client):
+    _, token = _register_and_login(client, role="owner")
+    response = client.post("/api/v1/customers/", json={
+        "name": "",
+        "name_en": "Test Customer EN",
+        "country": "Egypt",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "name" in response.json().get("detail", "")
+
+
+def test_create_customer_with_empty_english_name_returns_400(client):
+    _, token = _register_and_login(client, role="owner")
+    response = client.post("/api/v1/customers/", json={
+        "name": "Test Customer",
+        "name_en": "",
+        "country": "Egypt",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 400
+    assert "name_en" in response.json().get("detail", "")
+
+
+def test_create_customer_with_both_names_succeeds(client):
+    _, token = _register_and_login(client, role="owner")
+    response = client.post("/api/v1/customers/", json={
+        "name": "Test Customer",
+        "name_en": "Test Customer EN",
+        "country": "Egypt",
+    }, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json().get("message") == "Customer created successfully"
