@@ -42,6 +42,7 @@ def _customer_row_to_response(row: dict) -> dict:
     response["name_en"] = row.get("name_en")
     response["activity_window_start"] = row.get("activity_window_start")
     response["activity_window_end"] = row.get("activity_window_end")
+    response["created_by_full_name"] = row.get("created_by_full_name")
     return response
 
 
@@ -101,6 +102,7 @@ def list_customers(
             limit=limit,
             offset=skip,
         )
+        query = query.replace("SELECT * FROM customers", "SELECT customers.*, users.full_name as created_by_full_name FROM customers LEFT JOIN users ON customers.created_by = users.id")
         session = DatabaseSession(conn)
         rows = session.fetch_all(query, tuple(params))
         result = [_customer_row_to_response(dict(r)) for r in rows]
@@ -114,7 +116,10 @@ def get_customer(customer_id: int, current_user: Optional[dict] = None) -> dict:
     conn = get_db()
     try:
         session = DatabaseSession(conn)
-        row = session.fetch_one("SELECT * FROM customers WHERE id = ?", (customer_id,))
+        row = session.fetch_one(
+            "SELECT c.*, u.full_name as created_by_full_name FROM customers c LEFT JOIN users u ON c.created_by = u.id WHERE c.id = ?",
+            (customer_id,),
+        )
         if not row:
             raise ValueError("Customer not found")
         products = session.fetch_all(
@@ -309,14 +314,16 @@ def delete_customer(customer_id: int, current_user: dict) -> dict:
     try:
         session = DatabaseSession(conn)
         with session.transaction():
-            updated = session.update("customers", customer_id, {"status": "inactive"})
-        if not updated:
-            return {"message": "No changes"}
+            session.execute("DELETE FROM customer_evidence WHERE customer_id = ?", (customer_id,))
+            session.execute("DELETE FROM customer_products WHERE customer_id = ?", (customer_id,))
+            deleted = session.execute("DELETE FROM customers WHERE id = ?", (customer_id,)).rowcount
+        if not deleted:
+            return {"message": "Customer not found"}
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="delete", entity_type="customer", entity_id=customer_id),
         )
-        return {"message": "Customer deactivated successfully"}
+        return {"message": "Customer deleted successfully"}
     finally:
         conn.close()
 

@@ -186,7 +186,7 @@ def update_customer(customer_id: int, data: CustomerUpdate, current_user: dict =
 
 
 @router.delete("/{customer_id}", response_model=MessageResponse)
-def delete_customer(customer_id: int, current_user: dict = Depends(require_role(["owner", "manager"]))):
+def delete_customer(customer_id: int, current_user: dict = Depends(require_role(["owner"]))):
     try:
         return _delete_customer(customer_id=customer_id, current_user=current_user)
     except ValueError as exc:

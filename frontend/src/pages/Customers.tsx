@@ -38,6 +38,7 @@ interface Customer {
   crm_status?: string;
   activity_status?: string;
   activity_window_label?: string;
+  created_by_full_name?: string | null;
 }
 
 interface Product {
@@ -685,7 +686,9 @@ export function Customers() {
                     <td className="px-4 py-3">
                       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => openEdit(c)} className="text-blue-600 hover:text-blue-700"><Pencil size={14} /></button>
-                        <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-700"><Trash2 size={14} /></button>
+                        {user?.role === 'owner' && (
+                          <button onClick={() => handleDelete(c.id)} className="text-red-600 hover:text-red-700"><Trash2 size={14} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -731,6 +734,9 @@ export function Customers() {
                     <div><span className="text-slate-500">{t('customer.country')}: </span>{detailCustomer.country}</div>
                     <div><span className="text-slate-500">{t('customer.taxId') || 'Tax ID'}: </span>{detailCustomer.tax_id || '-'}</div>
                     <div><span className="text-slate-500">{t('customer.importLicense') || 'Import License'}: </span>{detailCustomer.import_license || '-'}</div>
+                    {(detailCustomer as any).created_by_full_name && (
+                      <div><span className="text-slate-500">أضيف بواسطة: </span>{(detailCustomer as any).created_by_full_name}</div>
+                    )}
                   </div>
                 </section>
 

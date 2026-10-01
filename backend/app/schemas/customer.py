@@ -188,6 +188,7 @@ class Customer(CustomerBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
     created_by: Optional[int] = None
+    created_by_full_name: Optional[str] = None
 
     class Config:
         from_attributes = True
