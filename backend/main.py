@@ -1,8 +1,15 @@
 ﻿"""
 Digital Export Manager API v1.0
-Digital Export Manager â€” Intelligent Operating Platform for export operations
-FastAPI Backend â€” Entry Point
+Digital Export Manager — Intelligent Operating Platform for export operations
+FastAPI Backend — Entry Point
 """
+
+from pathlib import Path
+from dotenv import load_dotenv
+
+ROOT_ENV = Path(__file__).resolve().parent.parent / ".env"
+if ROOT_ENV.exists():
+    load_dotenv(dotenv_path=ROOT_ENV)
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI

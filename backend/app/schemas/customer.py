@@ -29,6 +29,8 @@ class CustomerCreate(CustomerBase):
     source_name: Optional[str] = None
     source_reference: Optional[str] = None
     source_url: Optional[str] = None
+    source_sheet_name: Optional[str] = None
+    source_row_number: Optional[int] = None
     raw_record: Optional[Dict[str, Any]] = None
     products: Optional[List[Dict[str, Any]]] = None
     evidence: Optional[List[Dict[str, Any]]] = None

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   listPotentialCustomerCountries,
   getPotentialCustomerFileContent,
+  api,
   type PotentialCustomerCountry,
   type PotentialCustomerExcelContent,
 } from '@/services/api';
@@ -601,6 +602,25 @@ function detectHeaderRow(rows: Record<string, string>[]): { index: number; row: 
   return null;
 }
 
+const COUNTRY_ALIASES: Record<string, string> = {
+  'الإمارات': 'UAE',
+  'السعودية': 'KSA',
+  'قطر': 'Qatar',
+  'الكويت': 'Kuwait',
+  'البحرين': 'Bahrain',
+  'عمان': 'Oman',
+  'العراق': 'Iraq',
+  'الأردن': 'Jordan',
+  'لبنان': 'Lebanon',
+  'مصر': 'Egypt',
+};
+
+const getCanonicalCountry = (country: string | null | undefined): string | undefined => {
+  if (!country) return undefined;
+  const trimmed = country.trim();
+  return COUNTRY_ALIASES[trimmed] || trimmed;
+};
+
 const SMART_FILTER_LABELS: Record<SmartFilterKey, string> = {
   company: 'اسم الشركة',
   mobile: 'الموبايل',
@@ -640,8 +660,9 @@ export function PotentialCustomers() {
     whatsApp: false,
     website: false,
   });
-  const [selectedDisplayIndex, setSelectedDisplayIndex] = useState<number | null>(null);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
+    const [selectedDisplayIndex, setSelectedDisplayIndex] = useState<number | null>(null);
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+    const [modalIsCustomerAdded, setModalIsCustomerAdded] = useState(false);
 
   const loadCountries = async () => {
     setLoading(true);
@@ -663,6 +684,12 @@ export function PotentialCustomers() {
   useEffect(() => {
     loadCountries();
   }, []);
+
+  useEffect(() => {
+    if (selectedDisplayIndex === null) {
+      setModalIsCustomerAdded(false);
+    }
+  }, [selectedDisplayIndex]);
 
   const openCountry = async (country: PotentialCustomerCountry) => {
     setSelectedCountry(country);
@@ -693,6 +720,17 @@ export function PotentialCustomers() {
     setSelectedDisplayIndex(null);
   };
 
+  const checkCustomerAdded = async (companyName?: string | null) => {
+    const trimmedName = companyName?.trim();
+    if (!trimmedName) return false;
+    try {
+      const res = await api.get('/api/v1/customers/check-source', { params: { company_name: trimmedName } });
+      return res.data?.exists === true;
+    } catch {
+      return false;
+    }
+  };
+
   const displayRows = useMemo(() => {
     if (!excelContent || !excelContent.rows?.length) return [];
 
@@ -711,10 +749,23 @@ export function PotentialCustomers() {
     const mapRowKeys = (row: Record<string, string>) => {
       const keys = Object.keys(row);
       const allNumeric = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
-      if (!allNumeric) return row;
+      if (allNumeric) {
+        const mapped: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          mapped[columnNameMap[key] || key] = value;
+        });
+        return mapped;
+      }
+
+      const numericKeys = keys.filter((k) => /^\d+$/.test(k));
+      if (numericKeys.length === 0) return row;
 
       const mapped: Record<string, string> = {};
       Object.entries(row).forEach(([key, value]) => {
+        if (key === '__excel_row__') {
+          mapped[key] = value;
+          return;
+        }
         mapped[columnNameMap[key] || key] = value;
       });
       return mapped;
@@ -806,6 +857,99 @@ export function PotentialCustomers() {
     loadSheetContent();
   }, [selectedFile?.id, activeSheet]);
 
+    useEffect(() => {
+      if (selectedDisplayIndex === null || !displayRows[selectedDisplayIndex]) return;
+      const item = displayRows[selectedDisplayIndex];
+
+      const mapped = item.row;
+    const detectedHeader = excelContent ? detectHeaderRow(excelContent.rows) : null;
+    const headerRow = detectedHeader?.row || excelContent?.rows?.[0] || {};
+    const columnNameMap: Record<string, string> = {};
+    Object.entries(headerRow).forEach(([key, value]) => {
+      columnNameMap[key] = String(value ?? '');
+    });
+    const mapRowKeys = (row: Record<string, string>) => {
+      const keys = Object.keys(row);
+      const allNumeric = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
+      if (allNumeric) {
+        const mapped: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          mapped[columnNameMap[key] || key] = value;
+        });
+        return mapped;
+      }
+
+      const numericKeys = keys.filter((k) => /^\d+$/.test(k));
+      if (numericKeys.length === 0) return row;
+
+      const mapped: Record<string, string> = {};
+      Object.entries(row).forEach(([key, value]) => {
+        if (key === '__excel_row__') {
+          mapped[key] = value;
+          return;
+        }
+        mapped[columnNameMap[key] || key] = value;
+      });
+      return mapped;
+    };
+    const mappedRow = mapRowKeys(mapped);
+
+    const companyAliases = FIELD_ALIASES.company.map((a) => normalizeColumnName(a));
+    const companyKey = Object.keys(mappedRow).find((k) => companyAliases.includes(normalizeColumnName(k)));
+    const companyValue = companyKey ? String(mappedRow[companyKey] ?? '').trim() : '';
+
+    checkCustomerAdded(companyValue || undefined).then((exists) => {
+      setModalIsCustomerAdded(exists);
+    });
+  }, [selectedDisplayIndex, displayRows, excelContent, selectedCountry]);
+
+  useEffect(() => {
+    if (selectedDisplayIndex === null || !displayRows[selectedDisplayIndex]) return;
+
+    const item = displayRows[selectedDisplayIndex];
+
+    const mapped = item.row;
+    const detectedHeader = excelContent ? detectHeaderRow(excelContent.rows) : null;
+    const headerRow = detectedHeader?.row || excelContent?.rows?.[0] || {};
+    const columnNameMap: Record<string, string> = {};
+    Object.entries(headerRow).forEach(([key, value]) => {
+      columnNameMap[key] = String(value ?? '');
+    });
+    const mapRowKeys = (row: Record<string, string>) => {
+      const keys = Object.keys(row);
+      const allNumeric = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
+      if (allNumeric) {
+        const mapped: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          mapped[columnNameMap[key] || key] = value;
+        });
+        return mapped;
+      }
+
+      const numericKeys = keys.filter((k) => /^\d+$/.test(k));
+      if (numericKeys.length === 0) return row;
+
+      const mapped: Record<string, string> = {};
+      Object.entries(row).forEach(([key, value]) => {
+        if (key === '__excel_row__') {
+          mapped[key] = value;
+          return;
+        }
+        mapped[columnNameMap[key] || key] = value;
+      });
+      return mapped;
+    };
+    const mappedRow = mapRowKeys(mapped);
+
+    const companyAliases = FIELD_ALIASES.company.map((a) => normalizeColumnName(a));
+    const companyKey = Object.keys(mappedRow).find((k) => companyAliases.includes(normalizeColumnName(k)));
+    const companyValue = companyKey ? String(mappedRow[companyKey] ?? '').trim() : '';
+
+    checkCustomerAdded(companyValue || undefined).then((exists) => {
+      setModalIsCustomerAdded(exists);
+    });
+  }, [selectedDisplayIndex, displayRows, excelContent, selectedCountry]);
+
   useEffect(() => {
     if (!excelContent || !arabicMode) {
       setTranslatedRows([]);
@@ -819,6 +963,10 @@ export function PotentialCustomers() {
           excelContent.rows.map(async (row) => {
             const newRow: Record<string, string> = {};
             for (const [key, value] of Object.entries(row)) {
+              if (key === '__excel_row__') {
+                newRow[key] = value;
+                continue;
+              }
               newRow[key] = await translateCellValueAsync(value);
             }
             return newRow;
@@ -1258,9 +1406,23 @@ export function PotentialCustomers() {
                     const mapRowKeys = (row: Record<string, string>) => {
                       const keys = Object.keys(row);
                       const allNumeric = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
-                      if (!allNumeric) return row;
+                      if (allNumeric) {
+                        const mapped: Record<string, string> = {};
+                        Object.entries(row).forEach(([key, value]) => {
+                          mapped[columnNameMap[key] || key] = value;
+                        });
+                        return mapped;
+                      }
+
+                      const numericKeys = keys.filter((k) => /^\d+$/.test(k));
+                      if (numericKeys.length === 0) return row;
+
                       const mapped: Record<string, string> = {};
                       Object.entries(row).forEach(([key, value]) => {
+                        if (key === '__excel_row__') {
+                          mapped[key] = value;
+                          return;
+                        }
                         mapped[columnNameMap[key] || key] = value;
                       });
                       return mapped;
@@ -1338,46 +1500,57 @@ export function PotentialCustomers() {
                                  </span>
                                )}
                              </div>
-                             <div className="flex items-center gap-2">
-                                 <button
-                                   onClick={() => {
-                                     const safeForm: Record<string, string> = {
-                                       name: companyValue !== '—' ? companyValue : '',
-                                       name_en: companyValue !== '—' ? companyValue : '',
-                                       contact_person: '',
-                                       job_title: '',
-                                       email: emailValue !== '—' ? emailValue : '',
-                                       phone: mobileValue !== '—' ? mobileValue : '',
-                                       mobile: mobileValue !== '—' ? mobileValue : '',
-                                       whatsapp: whatsAppValue !== '—' ? whatsAppValue : '',
-                                       website: websiteValue !== '—' ? websiteValue : '',
-                                       address: addressValue !== '—' ? addressValue : '',
-                                       city: '',
-                                       country: '',
-                                       tax_id: '',
-                                       import_license: '',
-                                       commercial_registration: '',
-                                       category: '',
-                                       crm_status: 'prospect',
-                                       verification_status: 'unverified',
-                                       activity_status: 'unknown',
-                                       notes: '',
-                                       source_url: '',
-                                     };
-                                     try {
-                                       sessionStorage.setItem('potentialCustomerForm', JSON.stringify(safeForm));
-                                       sessionStorage.setItem('potentialCustomerSourceRow', JSON.stringify(mappedRow));
-                                     } catch {
-                                       // ignore storage failure
-                                     }
-                                     navigate('/customers');
-                                   }}
-                                   className="inline-flex items-center gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors"
-                                   type="button"
-                                 >
-                                   <UserPlus size={14} />
-                                   إضافة عميل
-                                 </button>
+                               <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => {
+                                          const excelRow = (mappedRow as any)?.__excel_row__;
+                                          const safeForm: Record<string, string> = {
+                                            name: companyValue !== '—' ? companyValue : '',
+                                            name_en: companyValue !== '—' ? companyValue : '',
+                                            contact_person: '',
+                                            job_title: '',
+                                            email: emailValue !== '—' ? emailValue : '',
+                                            phone: mobileValue !== '—' ? mobileValue : '',
+                                            mobile: mobileValue !== '—' ? mobileValue : '',
+                                            whatsapp: whatsAppValue !== '—' ? whatsAppValue : '',
+                                            website: websiteValue !== '—' ? websiteValue : '',
+                                            address: addressValue !== '—' ? addressValue : '',
+                                            city: '',
+                                            country: selectedCountry?.name || '',
+                                            tax_id: '',
+                                            import_license: '',
+                                            commercial_registration: '',
+                                            category: '',
+                                            crm_status: 'prospect',
+                                            verification_status: 'unverified',
+                                            activity_status: 'unknown',
+                                            notes: '',
+                                            source_url: '',
+                                          };
+                                          try {
+                                            sessionStorage.setItem('potentialCustomerForm', JSON.stringify(safeForm));
+                                            sessionStorage.setItem('potentialCustomerSourceRow', JSON.stringify(mappedRow));
+                                            if (excelRow) {
+                                              sessionStorage.setItem('potentialCustomerExcelRow', String(excelRow));
+                                            }
+                                            if (selectedFile?.id) {
+                                              sessionStorage.setItem('potentialCustomerFileId', selectedFile.id);
+                                            }
+                                            if (activeSheet) {
+                                              sessionStorage.setItem('potentialCustomerSheetName', activeSheet);
+                                            }
+                                          } catch {
+                                            // ignore storage failure
+                                          }
+                                          navigate('/customers');
+                                        }}
+                                        disabled={modalIsCustomerAdded}
+                                        className={modalIsCustomerAdded ? 'inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg cursor-not-allowed opacity-100' : 'inline-flex items-center gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors'}
+                                        type="button"
+                                      >
+                                        <UserPlus size={14} />
+                                        {modalIsCustomerAdded ? 'تمت إضافة العميل' : 'إضافة عميل'}
+                                      </button>
                                <span className="text-xs text-slate-500">
                                  {selectedDisplayIndex + 1} / {displayRows.length}
                                </span>

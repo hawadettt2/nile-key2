@@ -124,6 +124,9 @@ export function Customers() {
   const [expandedRaw, setExpandedRaw] = useState<number | null>(null);
   const [pendingSource, setPendingSource] = useState<Record<string, unknown> | null>(null);
   const [formProducts, setFormProducts] = useState<{ product_description: string; hs_code: string }[]>([{ product_description: '', hs_code: '' }]);
+  const [pendingExcelRow, setPendingExcelRow] = useState<number | null>(null);
+  const [pendingFileId, setPendingFileId] = useState<string | null>(null);
+  const [pendingSheetName, setPendingSheetName] = useState<string | null>(null);
 
   const user = useAuthStore((s) => s.user);
   const canViewInternal = !!(user?.role && ['owner', 'manager', 'staff'].includes(user.role));
@@ -201,9 +204,22 @@ export function Customers() {
         }
       }
       setPendingSource(parsedSource);
+      try {
+        const excelRowRaw = sessionStorage.getItem('potentialCustomerExcelRow');
+        const fileIdRaw = sessionStorage.getItem('potentialCustomerFileId');
+        const sheetNameRaw = sessionStorage.getItem('potentialCustomerSheetName');
+        setPendingExcelRow(excelRowRaw ? parseInt(excelRowRaw, 10) : null);
+        setPendingFileId(fileIdRaw);
+        setPendingSheetName(sheetNameRaw);
+      } catch {
+        // ignore
+      }
       setShowForm(true);
       sessionStorage.removeItem('potentialCustomerForm');
       sessionStorage.removeItem('potentialCustomerSourceRow');
+      sessionStorage.removeItem('potentialCustomerExcelRow');
+      sessionStorage.removeItem('potentialCustomerFileId');
+      sessionStorage.removeItem('potentialCustomerSheetName');
     } catch {
       // ignore parse/storage errors
     }
@@ -228,14 +244,30 @@ export function Customers() {
         commercial_registration: form.commercial_registration || undefined,
         job_title: form.job_title || undefined,
         source_url: form.source_url || undefined,
+        source_reference: pendingFileId || undefined,
+        source_sheet_name: pendingSheetName || undefined,
+        source_row_number: pendingExcelRow || undefined,
       };
       const payload = pendingSource
         ? { ...basePayload, raw_record: pendingSource, source_type: 'potential_customer', source_format: 'xlsx', source_name: 'Potential Customers', products: cleanedProducts.length ? cleanedProducts : undefined }
         : { ...basePayload, products: cleanedProducts.length ? cleanedProducts : undefined };
       if (editing) await updateCustomer(editing.id, basePayload); else await createCustomer(payload);
+      if (!editing && pendingFileId && pendingSheetName && pendingExcelRow) {
+        try {
+          const raw = sessionStorage.getItem('customerAddedRows');
+          const set = raw ? new Set(JSON.parse(raw)) : new Set<string>();
+          set.add(`${pendingFileId}:${pendingSheetName}:${pendingExcelRow}`);
+          sessionStorage.setItem('customerAddedRows', JSON.stringify(Array.from(set)));
+        } catch {
+          // ignore
+        }
+      }
       setShowForm(false);
       setEditing(null);
       setPendingSource(null);
+      setPendingExcelRow(null);
+      setPendingFileId(null);
+      setPendingSheetName(null);
       setForm({
         name: '', name_en: '', contact_person: '', job_title: '', email: '', phone: '', mobile: '', whatsapp: '', website: '',
         address: '', city: '', country: '', tax_id: '', import_license: '', commercial_registration: '', category: '',

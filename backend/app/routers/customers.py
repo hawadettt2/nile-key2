@@ -43,6 +43,59 @@ from app.services.customer import (
 router = APIRouter(prefix="/api/v1/customers", tags=["Customers"])
 
 
+@router.get("/check-source")
+def check_customer_source(
+    file_id: Optional[str] = Query(default=None),
+    sheet_name: Optional[str] = Query(default=None),
+    row_number: Optional[int] = Query(default=None),
+    country: Optional[str] = Query(default=None),
+    company_name: Optional[str] = Query(default=None),
+    current_user: dict = Depends(get_current_user),
+):
+    from app.services.customer import get_db
+    conn = get_db()
+    try:
+        cursor = conn.cursor()
+
+        if file_id and sheet_name and row_number:
+            cursor.execute(
+                """
+                SELECT cr.id
+                FROM customer_raw_records cr
+                JOIN customer_source_batches sb ON cr.batch_id = sb.id
+                WHERE sb.source_reference = ?
+                  AND cr.sheet_name = ?
+                  AND cr.row_number = ?
+                LIMIT 1
+                """,
+                (file_id, sheet_name, row_number),
+            )
+            if cursor.fetchone():
+                return {"exists": True}
+
+        if company_name:
+            cursor.execute(
+                """
+                SELECT id
+                FROM customers
+                WHERE (
+                    LOWER(TRIM(name)) = LOWER(TRIM(?))
+                    OR LOWER(TRIM(name_en)) = LOWER(TRIM(?))
+                )
+                LIMIT 1
+                """,
+                (company_name, company_name),
+            )
+            if cursor.fetchone():
+                return {"exists": True}
+
+        return {"exists": False}
+    except Exception:
+        return {"exists": False}
+    finally:
+        conn.close()
+
+
 @router.get("/", response_model=list[Customer])
 def list_customers(
     search: Optional[str] = None,
@@ -92,8 +145,6 @@ def get_customer(customer_id: int, current_user: dict = Depends(get_current_user
         return _get_customer(customer_id=customer_id, current_user=current_user)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
-
-
 @router.get("/{customer_id}/products", response_model=list[CustomerProductResponse])
 def list_products(customer_id: int, current_user: dict = Depends(get_current_user)):
     return _list_products(customer_id=customer_id)

@@ -233,8 +233,8 @@ def create_customer(data: CustomerCreate, current_user: dict) -> dict:
                     "customer_raw_records",
                     {
                         "batch_id": batch_id,
-                        "sheet_name": "potential_customers",
-                        "row_number": 1,
+                        "sheet_name": data.source_sheet_name or "potential_customers",
+                        "row_number": data.source_row_number,
                         "raw_data": json.dumps(data.raw_record, ensure_ascii=False),
                         "normalized_customer_id": customer_id,
                         "validation_errors": None,
