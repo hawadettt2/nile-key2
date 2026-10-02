@@ -336,6 +336,56 @@ async function translateToArabic(text: string): Promise<string> {
   }
 }
 
+async function translateToEnglish(text: string): Promise<string> {
+  const trimmed = String(text).trim();
+  if (!trimmed) return text;
+
+  const cacheKey = trimmed.toLowerCase();
+  if (TRANSLATION_CACHE.has(cacheKey)) return TRANSLATION_CACHE.get(cacheKey)!;
+
+  const cellStr = String(text);
+  const isLink = /^https?:\/\//i.test(cellStr);
+  const isEmail = /^[^\s]+@[^\s]+\.[^\s]+$/.test(cellStr);
+  const isPhone = /^\+?\d[\d\s\-()]{7,}$/.test(trimmed);
+  if (isLink || isEmail || isPhone) return cellStr;
+  if (/^[\d\s.,:\-+%$/]+$/.test(trimmed)) return cellStr;
+  if (/^[A-Z0-9\-]{3,}$/i.test(trimmed) && trimmed === trimmed.toUpperCase()) return cellStr;
+
+  if (TEXTUAL_TRANSLATIONS[trimmed]) {
+    TRANSLATION_CACHE.set(cacheKey, TEXTUAL_TRANSLATIONS[trimmed]);
+    return TEXTUAL_TRANSLATIONS[trimmed];
+  }
+
+  if (TRANSLATION_CACHE.size > 500) TRANSLATION_CACHE.clear();
+
+  const task = async (): Promise<string> => {
+    try {
+      // Detect source language: Arabic text → translate Arabic→English, otherwise English→English (identity).
+      const source = /[^\u0000-\u007F]/.test(trimmed) ? 'ar' : 'en';
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=en&dt=t&q=${encodeURIComponent(trimmed)}`;
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (response.ok) {
+        const data = await response.json();
+        const translated = data[0]?.map((item: any) => item[0]).join('') || trimmed;
+        const final = translated || trimmed;
+        TRANSLATION_CACHE.set(cacheKey, final);
+        return final;
+      }
+    } catch {
+      // ignore translation failures
+    }
+    return trimmed;
+  };
+
+  const promise = enqueueTranslation(task);
+  IN_FLIGHT.set(cacheKey, promise);
+  try {
+    return await promise;
+  } finally {
+    IN_FLIGHT.delete(cacheKey);
+  }
+}
+
 function shouldTranslate(value: string): boolean {
   if (!value) return false;
   const trimmed = String(value).trim();
@@ -635,6 +685,12 @@ type ViewMode = 'countries' | 'country-detail' | 'file-content';
 export function PotentialCustomers() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const isUnmounted = useRef(false);
+  useEffect(() => {
+    return () => {
+      isUnmounted.current = true;
+    };
+  }, []);
   const [view, setView] = useState<ViewMode>('countries');
   const [countries, setCountries] = useState<PotentialCustomerCountry[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<PotentialCustomerCountry | null>(null);
@@ -663,6 +719,7 @@ export function PotentialCustomers() {
     const [selectedDisplayIndex, setSelectedDisplayIndex] = useState<number | null>(null);
     const [copiedField, setCopiedField] = useState<string | null>(null);
     const [modalIsCustomerAdded, setModalIsCustomerAdded] = useState(false);
+    const [isAddingCustomer, setIsAddingCustomer] = useState(false);
 
   const loadCountries = async () => {
     setLoading(true);
@@ -1465,56 +1522,80 @@ export function PotentialCustomers() {
                                )}
                              </div>
                                <div className="flex items-center gap-2">
-                                      <button
-                                        onClick={() => {
-                                          const excelRow = (mappedRow as any)?.__excel_row__;
-                                          const safeForm: Record<string, string> = {
-                                            name: companyValue !== '—' ? companyValue : '',
-                                            name_en: companyValue !== '—' ? companyValue : '',
-                                            contact_person: '',
-                                            job_title: '',
-                                            email: emailValue !== '—' ? emailValue : '',
-                                            phone: mobileValue !== '—' ? mobileValue : '',
-                                            mobile: mobileValue !== '—' ? mobileValue : '',
-                                            whatsapp: whatsAppValue !== '—' ? whatsAppValue : '',
-                                            website: websiteValue !== '—' ? websiteValue : '',
-                                            address: addressValue !== '—' ? addressValue : '',
-                                            city: '',
-                                            country: selectedCountry?.name || '',
-                                            tax_id: '',
-                                            import_license: '',
-                                            commercial_registration: '',
-                                            category: '',
-                                            crm_status: 'prospect',
-                                            verification_status: 'unverified',
-                                            activity_status: 'unknown',
-                                            notes: '',
-                                            source_url: '',
-                                          };
-                                          try {
-                                            sessionStorage.setItem('potentialCustomerForm', JSON.stringify(safeForm));
-                                            sessionStorage.setItem('potentialCustomerSourceRow', JSON.stringify(mappedRow));
-                                            if (excelRow) {
-                                              sessionStorage.setItem('potentialCustomerExcelRow', String(excelRow));
-                                            }
-                                            if (selectedFile?.id) {
-                                              sessionStorage.setItem('potentialCustomerFileId', selectedFile.id);
-                                            }
-                                            if (activeSheet) {
-                                              sessionStorage.setItem('potentialCustomerSheetName', activeSheet);
-                                            }
-                                          } catch {
-                                            // ignore storage failure
-                                          }
-                                          navigate('/customers');
-                                        }}
-                                        disabled={modalIsCustomerAdded}
-                                        className={modalIsCustomerAdded ? 'inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg cursor-not-allowed opacity-100' : 'inline-flex items-center gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors'}
-                                        type="button"
-                                      >
-                                        <UserPlus size={14} />
-                                        {modalIsCustomerAdded ? 'تمت إضافة العميل' : 'إضافة عميل'}
-                                      </button>
+<button
+  onClick={async () => {
+    if (modalIsCustomerAdded) return;
+    setIsAddingCustomer(true);
+    const excelRow = (mappedRow as any)?.__excel_row__;
+    
+    // Build the customer name fields based on the source company name's language.
+    // name = Arabic name, name_en = English name — never the same text in both fields.
+    let name = '';
+    let name_en = '';
+    if (companyValue !== '—') {
+      const isArabicSource = /[^\u0000-\u007F]/.test(companyValue);
+      if (isArabicSource) {
+        // Arabic source: keep the Arabic name in name, translate to English for name_en
+        name = companyValue;
+        name_en = await translateToEnglish(companyValue);
+      } else {
+        // English source: keep the English name in name_en, translate to Arabic for name
+        name_en = companyValue;
+        name = await translateToArabic(companyValue);
+      }
+    }
+    
+    const safeForm: Record<string, string> = {
+      name,
+      name_en,
+      contact_person: '',
+      job_title: '',
+      email: emailValue !== '—' ? emailValue : '',
+      phone: mobileValue !== '—' ? mobileValue : '',
+      mobile: mobileValue !== '—' ? mobileValue : '',
+      whatsapp: whatsAppValue !== '—' ? whatsAppValue : '',
+      website: websiteValue !== '—' ? websiteValue : '',
+      address: addressValue !== '—' ? addressValue : '',
+      city: '',
+      country: selectedCountry?.name || '',
+      tax_id: '',
+      import_license: '',
+      commercial_registration: '',
+      category: '',
+      crm_status: 'prospect',
+      verification_status: 'unverified',
+      activity_status: 'unknown',
+      notes: '',
+      source_url: '',
+    };
+    try {
+      sessionStorage.setItem('potentialCustomerForm', JSON.stringify(safeForm));
+      sessionStorage.setItem('potentialCustomerSourceRow', JSON.stringify(mappedRow));
+      if (excelRow) {
+        sessionStorage.setItem('potentialCustomerExcelRow', String(excelRow));
+      }
+      if (selectedFile?.id) {
+        sessionStorage.setItem('potentialCustomerFileId', selectedFile.id);
+      }
+      if (activeSheet) {
+        sessionStorage.setItem('potentialCustomerSheetName', activeSheet);
+      }
+      navigate('/customers');
+    } catch {
+      // ignore storage failure
+    } finally {
+      if (!isUnmounted.current) {
+        setIsAddingCustomer(false);
+      }
+    }
+  }}
+  disabled={modalIsCustomerAdded || isAddingCustomer}
+  className={modalIsCustomerAdded || isAddingCustomer ? 'inline-flex items-center gap-1 text-xs bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg cursor-not-allowed opacity-100' : 'inline-flex items-center gap-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors'}
+  type="button"
+>
+  {isAddingCustomer ? <span className="text-xs font-medium">جاري التحضير...</span> : <UserPlus size={14} />}
+  {isAddingCustomer ? 'جاري التحضير...' : modalIsCustomerAdded ? 'تمت إضافة العميل' : 'إضافة عميل'}
+</button>
                                <span className="text-xs text-slate-500">
                                  {selectedDisplayIndex + 1} / {displayRows.length}
                                </span>

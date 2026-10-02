@@ -679,7 +679,7 @@ export function Customers() {
               <thead className="bg-slate-50">
                 <tr>
                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.name')}</th>
-                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.createdBy') || 'أضيف بواسطة'}</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">أضيف بواسطة</th>
                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.contact')}</th>
                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.country')}</th>
                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">{t('customer.dataStatus') || 'Data Status'}</th>
@@ -737,6 +737,12 @@ export function Customers() {
               <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600" /></div>
             ) : (
               <div className="p-6 space-y-6">
+                {(detailCustomer as any).created_by_full_name && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <span className="text-sm font-medium text-emerald-900">أضيف بواسطة:</span>
+                    <span className="text-sm font-semibold text-emerald-700">{(detailCustomer as any).created_by_full_name}</span>
+                  </div>
+                )}
                 <section>
                   <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.name') || 'Company'}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -749,14 +755,8 @@ export function Customers() {
                     <div><span className="text-slate-500">{t('customer.country')}: </span>{detailCustomer.country}</div>
                     <div><span className="text-slate-500">{t('customer.taxId') || 'Tax ID'}: </span>{detailCustomer.tax_id || '-'}</div>
                      <div><span className="text-slate-500">{t('customer.importLicense') || 'Import License'}: </span>{detailCustomer.import_license || '-'}</div>
-                     <div className="flex items-center gap-2">
-                       <span className="text-slate-500">أضيف بواسطة: </span>
-                       <span className="text-sm font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
-                         {(detailCustomer as any).created_by_full_name || '-'}
-                       </span>
-                     </div>
                    </div>
-                </section>
+                 </section>
 
                 <section>
                   <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3">{t('customer.contact') || 'Contacts'}</h3>
