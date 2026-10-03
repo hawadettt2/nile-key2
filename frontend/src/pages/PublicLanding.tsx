@@ -12,11 +12,14 @@ export function PublicLanding() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900" dir={isArabic ? 'rtl' : 'ltr'}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between py-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-lg">NK</span>
             </div>
-            <span className="text-white font-bold text-xl">{t('app.name')}</span>
+            <div className="flex flex-col">
+              <span className="text-white font-bold text-xl">{isArabic ? 'مفتاح النيل' : 'Nile Key'}</span>
+              <span className="text-slate-300 text-xs">{isArabic ? 'منصة رقمية للتصدير' : 'Digital Export Platform'}</span>
+            </div>
           </div>
           <div className="flex gap-3">
             <LanguageSwitcher />
@@ -36,15 +39,54 @@ export function PublicLanding() {
         </header>
 
         <main className="py-20 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            {isArabic ? 'مفتاح النيل للاستثمار والتجارة الدولية' : 'Nile Key for Investment & International Trade'}
-          </h1>
-          <p className="text-xl text-slate-300 mb-4 max-w-3xl mx-auto">
-            {t('landing.hero.subtitle')}
-          </p>
-          <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
-            {t('landing.hero.description')}
-          </p>
+          <div dir={isArabic ? 'rtl' : 'ltr'}>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              {isArabic ? (
+                <>
+                  <span className="block">شركة مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م)</span>
+                  <span className="block">Nile Key for Investment and International Trade LLC</span>
+                </>
+              ) : (
+                <>
+                  <span className="block">Nile Key for Investment and International Trade LLC</span>
+                  <span className="block">شركة مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م)</span>
+                </>
+              )}
+            </h1>
+            <p className="text-lg text-slate-300 mb-4 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'شركة مفتاح النيل للاستثمار والتجارة الدولية هي شركة مصرية ذات مسؤولية محدودة، مرخصة من الهيئة العامة للاستثمار والمناطق الحرة.' : 'Nile Key for Investment and International Trade LLC is an Egyptian limited liability company, licensed by the General Authority for Investment and Free Zones.'}
+            </p>
+            <p className="text-lg text-slate-300 mb-4 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'هدف التأسيس هو إشهار جودة المنتج المصري من خضروات وفواكه ومنتجات المصانع الوطنية في الأسواق العالمية.' : 'The purpose of establishment is to showcase the quality of Egyptian products — vegetables, fruits, and national factory products — in global markets.'}
+            </p>
+            <p className="text-lg text-slate-300 mb-6 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'نركز على تسويق وتصدير المنتجات المصرية المختارة بعناية، وربط الموردين والمنتجين المصريين بالعملاء والمستوردين والشركاء الدوليين، من خلال منظومة متكاملة تجمع بين الخبرة التجارية، وإدارة عمليات التصدير، والحلول الرقمية الحديثة.' : 'We focus on marketing and exporting carefully selected Egyptian products, and connecting Egyptian suppliers and producers to clients, importers and international partners, through an integrated system combining commercial expertise, export process management, and modern digital solutions.'}
+            </p>
+
+            <h2 className="text-2xl font-bold text-white mb-4 mt-8">
+              {isArabic ? 'منصتنا الرقمية المتكاملة لإدارة عمليات التصدير المصرية' : 'Our Integrated Digital Platform for Managing Egyptian Export Operations'}
+            </h2>
+            <p className="text-lg text-slate-300 mb-4 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'طوّرنا منظومة Nile Key لتكون بيئة رقمية متكاملة لإدارة ومتابعة عمليات التجارة والتصدير، بدءًا من المنتج والمورد، مرورًا بالعميل والفاتورة والمستندات والشحن، ووصولًا إلى الميناء والأسواق العالمية.' : 'We have developed the Nile Key system to be an integrated digital environment for managing and monitoring trade and export operations — from the product and supplier, through the client, invoice, documents and shipment, and all the way to the port and global markets.'}
+            </p>
+            <p className="text-lg text-slate-300 mb-6 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'نهدف إلى جعل عمليات التصدير أكثر تنظيمًا ووضوحًا وكفاءة وموثوقية، مع تسهيل التنسيق بين مختلف الأطراف ذات الصلة، ودعم الإجراءات التجارية واللوجستية والجمركية ضمن منظومة رقمية واحدة.' : 'We aim to make export operations more organized, clear, efficient and reliable, by facilitating coordination among all relevant parties and supporting commercial, logistical and customs procedures within a single digital system.'}
+            </p>
+
+            <h2 className="text-2xl font-bold text-white mb-4 mt-8">
+              {isArabic ? 'من المزرعة أو المصنع المصري إلى الميناء والأسواق العالمية' : 'From the Egyptian Farm or Factory to the Port and Global Markets'}
+            </h2>
+            <p className="text-lg text-slate-300 mb-4 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'نؤمن بأن المنتج المصري يمتلك القدرة على المنافسة عالميًا متى وجد الشريك التجاري المناسب، والتسويق الصحيح، والإدارة الدقيقة، والالتزام بالجودة والمواصفات ومتطلبات الأسواق المستهدفة.' : 'We believe that the Egyptian product is capable of competing globally whenever the right business partner, proper marketing, precise management, and commitment to quality, specifications, and target market requirements are in place.'}
+            </p>
+            <p className="text-lg text-slate-300 mb-6 max-w-4xl mx-auto leading-relaxed">
+              {isArabic ? 'لذلك لا يقتصر دورنا على تنفيذ عملية التصدير، بل نعمل على بناء منظومة متكاملة تهدف إلى إيصال المنتج المصري المناسب إلى السوق المناسب، وبالطريقة المناسبة، وبناء علاقات تجارية طويلة الأمد مع العملاء والشركاء الدوليين.' : 'Therefore, our role does not stop at executing the export process, but we work to build an integrated system aimed at delivering the right Egyptian product to the right market, in the right way, and building long-term commercial relationships with clients and international partners.'}
+            </p>
+
+            <h2 className="text-2xl font-bold text-white mb-4 mt-8">
+              {isArabic ? 'نحن شريكك الاستراتيجي في التجارة العالمية' : 'We Are Your Strategic Partner in Global Trade'}
+            </h2>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/login">
               <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">

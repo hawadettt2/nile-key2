@@ -15,10 +15,10 @@ function renderWithProviders(ui: React.ReactElement) {
 }
 
 describe('PublicLanding', () => {
-  test('renders company name and tagline', () => {
+  test('renders company name and intro sections', () => {
     renderWithProviders(<PublicLanding />);
     expect(screen.getByText('Nile Key')).toBeDefined();
-    expect(screen.getByText('The integrated digital platform for managing Egyptian export operations')).toBeDefined();
+    expect(screen.getByText('Our Integrated Digital Platform for Managing Egyptian Export Operations')).toBeDefined();
   });
 
   test('renders Login and Register CTAs linking to /login', () => {
