@@ -14,14 +14,15 @@ export function PublicLanding() {
       <PublicNavbar />
 
       <main>
-        {/* Hero Section */}
+        {/* Hero Section - Concept 1: Premium Corporate Hero */}
         <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
           <img
             src="/assets/hero-export.jpg"
-            alt="Egyptian export - fields, factories, and global markets"
+            alt=""
+            aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-[#001f24]/70" />
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
               {t('public.home.heroTitle')}
@@ -29,7 +30,7 @@ export function PublicLanding() {
             <p className="text-xl sm:text-2xl text-emerald-400 mb-4">
               {t('public.home.heroSubtitle')}
             </p>
-            <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-10">
+            <p className="text-lg text-slate-200 max-w-3xl mx-auto mb-10">
               {t('public.home.heroDescription')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

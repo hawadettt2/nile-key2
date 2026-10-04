@@ -29,8 +29,9 @@ export function PublicNavbar() {
                 <span className="text-white font-bold text-lg">NK</span>
               </div>
               <div className="hidden sm:flex flex-col">
-                <span className="text-white font-bold text-lg leading-tight">{isArabic ? 'مفتاح النيل' : 'Nile Key'}</span>
-                <span className="text-slate-300 text-xs leading-tight">{isArabic ? 'المنصة الرقمية للتصدير' : 'Digital Export Platform'}</span>
+                <span className="text-white font-bold text-lg leading-tight">مفتاح النيل</span>
+                <span className="text-white font-bold text-lg leading-tight">Nile Key</span>
+                <span className="text-slate-300 text-xs leading-tight">Digital Export Platform</span>
               </div>
             </Link>
           </div>
