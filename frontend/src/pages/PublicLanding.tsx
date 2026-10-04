@@ -295,37 +295,29 @@ export function PublicLanding() {
                     <div className="text-[10px] text-slate-400">
                       {isArabic ? 'الشحنات' : 'Shipments'}
                     </div>
-                    <div className="mt-1 text-lg font-bold text-white">1,284</div>
-                    <div className="mt-1 text-[10px] text-emerald-300">
-                      +12% {isArabic ? 'هذا الشهر' : 'this month'}
-                    </div>
+                    <div className="mt-2 h-1.5 w-10 rounded-full bg-emerald-400/80" />
+                    <div className="mt-2 h-1.5 w-6 rounded-full bg-emerald-300/60" />
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <div className="text-[10px] text-slate-400">
                       {isArabic ? 'الفواتير' : 'Invoices'}
                     </div>
-                    <div className="mt-1 text-lg font-bold text-white">384</div>
-                    <div className="mt-1 text-[10px] text-emerald-300">
-                      +5% {isArabic ? 'هذا الشهر' : 'this month'}
-                    </div>
+                    <div className="mt-2 h-1.5 w-8 rounded-full bg-emerald-400/80" />
+                    <div className="mt-2 h-1.5 w-5 rounded-full bg-emerald-300/60" />
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <div className="text-[10px] text-slate-400">
                       {isArabic ? 'الجمرك' : 'Customs'}
                     </div>
-                    <div className="mt-1 text-lg font-bold text-white">96%</div>
-                    <div className="mt-1 text-[10px] text-emerald-300">
-                      {isArabic ? 'مكتمل' : 'completed'}
-                    </div>
+                    <div className="mt-2 h-1.5 w-7 rounded-full bg-emerald-400/80" />
+                    <div className="mt-2 h-1.5 w-4 rounded-full bg-emerald-300/60" />
                   </div>
                   <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <div className="text-[10px] text-slate-400">
                       {isArabic ? 'الذكاء' : 'Intelligence'}
                     </div>
-                    <div className="mt-1 text-lg font-bold text-white">42</div>
-                    <div className="mt-1 text-[10px] text-emerald-300">
-                      {isArabic ? 'فرص جديدة' : 'new opportunities'}
-                    </div>
+                    <div className="mt-2 h-1.5 w-9 rounded-full bg-emerald-400/80" />
+                    <div className="mt-2 h-1.5 w-5 rounded-full bg-emerald-300/60" />
                   </div>
                 </div>
                 <div className="mt-4 h-24 rounded-xl border border-white/10 bg-white/[0.02]" />
