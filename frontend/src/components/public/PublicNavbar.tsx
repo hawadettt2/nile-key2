@@ -6,8 +6,7 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { useState } from 'react';
 
 export function PublicNavbar() {
-  const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
@@ -20,86 +19,91 @@ export function PublicNavbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#002f32]/95 backdrop-blur-md">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">NK</span>
-              </div>
-              <div className="hidden sm:flex flex-col">
-                <span className="text-white font-bold text-lg leading-tight">مفتاح النيل</span>
-                <span className="text-white font-bold text-lg leading-tight">Nile Key</span>
-                <span className="text-slate-300 text-xs leading-tight">Digital Export Platform</span>
-              </div>
-            </Link>
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 font-bold text-white">
+              NK
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-white font-bold text-base leading-tight">Nile Key</span>
+              <span className="text-slate-400 text-[10px] leading-tight tracking-wide">
+                Digital Export Platform
+              </span>
+            </div>
+          </Link>
 
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-7">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className="text-slate-300 hover:text-emerald-400 transition-colors text-sm font-medium"
+                className="text-sm font-medium text-slate-300 transition-colors hover:text-emerald-400"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2">
             <LanguageSwitcher />
             <Link to="/login">
-              <Button variant="ghost" className="text-white hover:text-emerald-400">
-                <LogIn size={18} className="ms-2" />
-                {t('public.cta.signIn')}
+              <Button
+                variant="ghost"
+                className="text-white hover:text-emerald-400 hover:bg-white/5"
+              >
+                <LogIn size={16} />
+                <span className="ms-2 text-sm">{t('public.cta.signIn')}</span>
               </Button>
             </Link>
             <Link to="/login">
-              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                <UserPlus size={18} className="ms-2" />
-                {t('public.cta.createAccount')}
+              <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
+                <UserPlus size={16} />
+                <span className="ms-2 text-sm">{t('public.cta.createAccount')}</span>
               </Button>
             </Link>
           </div>
 
           <button
-            className="lg:hidden text-white p-2"
+            className="lg:hidden rounded-md p-2 text-slate-300 hover:text-white hover:bg-white/5"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
         {mobileOpen && (
-          <div className="lg:hidden py-4 border-t border-white/10">
-            <nav className="flex flex-col gap-3">
+          <div className="lg:hidden border-t border-white/10 pb-4 pt-3">
+            <nav className="flex flex-col gap-1">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="text-slate-300 hover:text-emerald-400 transition-colors text-sm font-medium py-2"
+                  className="rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-emerald-400"
                   onClick={() => setMobileOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-3 border-t border-white/10">
+              <div className="mt-3 flex flex-col gap-2 border-t border-white/10 pt-3">
                 <div className="flex justify-center">
                   <LanguageSwitcher />
                 </div>
                 <Link to="/login" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" className="text-white hover:text-emerald-400 w-full">
-                    <LogIn size={18} className="ms-2" />
-                    {t('public.cta.signIn')}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-white hover:text-emerald-400 hover:bg-white/5"
+                  >
+                    <LogIn size={16} />
+                    <span className="ms-2 text-sm">{t('public.cta.signIn')}</span>
                   </Button>
                 </Link>
                 <Link to="/login" onClick={() => setMobileOpen(false)}>
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white w-full">
-                    <UserPlus size={18} className="ms-2" />
-                    {t('public.cta.createAccount')}
+                  <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
+                    <UserPlus size={16} />
+                    <span className="ms-2 text-sm">{t('public.cta.createAccount')}</span>
                   </Button>
                 </Link>
               </div>

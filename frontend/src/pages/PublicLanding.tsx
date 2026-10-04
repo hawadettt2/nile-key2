@@ -3,10 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
-  ArrowUpRight,
   Building2,
   FileText,
-  Globe2,
   Package,
   ShieldCheck,
   Ship,
@@ -15,36 +13,12 @@ import {
 } from 'lucide-react';
 import { PublicNavbar } from '@/components/public/PublicNavbar';
 
-type ReferenceVisualProps = {
-  className?: string;
-  width: number;
-  shiftX: number;
-  shiftY: number;
-  overlay?: string;
-};
+const HERO_BG = '/assets/hero-export.jpg';
 
-function ReferenceVisual({
-  className = '',
-  width,
-  shiftX,
-  shiftY,
-  overlay,
-}: ReferenceVisualProps) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      <img
-        src="/design-reference/concept1.png"
-        alt=""
-        aria-hidden="true"
-        className="absolute max-w-none select-none"
-        style={{
-          width: `${width}%`,
-          left: 0,
-          top: 0,
-          transform: `translate(${shiftX}%, ${shiftY}%)`,
-        }}
-      />
-      {overlay && <div className={`absolute inset-0 ${overlay}`} aria-hidden="true" />}
+    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+      {children}
     </div>
   );
 }
@@ -53,21 +27,21 @@ export function PublicLanding() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
 
-  const products = [
+  const PRODUCTS = [
     {
       title: t('public.products.vegetablesTitle'),
       description: t('public.products.vegetablesDesc'),
-      shiftX: 0,
+      image: '/assets/products/vegetables.jpg',
     },
     {
       title: t('public.products.fruitsTitle'),
       description: t('public.products.fruitsDesc'),
-      shiftX: -33.333,
+      image: '/assets/products/fruits.jpg',
     },
     {
       title: t('public.products.factoryTitle'),
       description: t('public.products.factoryDesc'),
-      shiftX: -66.666,
+      image: '/assets/products/factory.jpg',
     },
   ];
 
@@ -131,27 +105,23 @@ export function PublicLanding() {
 
       <main>
         {/* Concept 1 — Hero */}
-        <section className="bg-[#00383b]">
-          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-7 sm:px-6 sm:py-10 lg:grid-cols-[0.93fr_1.07fr] lg:gap-10 lg:px-8 lg:py-12">
-            <div className="order-2 lg:order-1">
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300 sm:text-xs">
+        <section className="border-b border-white/10 bg-[#002f32]">
+          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_1fr] lg:gap-10 lg:px-8 lg:py-20">
+            <div>
+              <SectionLabel>
                 {isArabic ? 'منتجات مصرية • أسواق عالمية' : 'Egyptian Products • Global Markets'}
-              </div>
-
+              </SectionLabel>
               <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
                 Nile Key
               </h1>
-
               <div className="mt-2 max-w-2xl text-base font-semibold leading-7 text-white sm:text-lg">
                 {t('public.home.heroTitle')}
               </div>
-
               <p className="mt-4 max-w-xl text-sm leading-7 text-emerald-100 sm:text-base">
                 {isArabic
                   ? 'إحضار المنتجات المصرية المتميزة إلى الأسواق العالمية من خلال حلول تجارية ورقمية موثوقة.'
                   : 'Bringing premium Egyptian products to global markets through trusted trade and digital solutions.'}
               </p>
-
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link to="/products">
                   <Button size="lg" className="bg-emerald-400 px-6 font-semibold text-slate-950 hover:bg-emerald-300">
@@ -171,24 +141,23 @@ export function PublicLanding() {
                 </Link>
               </div>
             </div>
-
-            <ReferenceVisual
-              className="order-1 h-[275px] rounded-[1.8rem] border border-white/10 bg-[#002a2d] shadow-2xl sm:h-[340px] lg:order-2 lg:h-[380px]"
-              width={210}
-              shiftX={-48}
-              shiftY={-5}
-              overlay="bg-gradient-to-l from-transparent via-[#002e31]/15 to-[#002e31]/35"
-            />
+            <div className="hidden lg:block">
+              <img
+                src={HERO_BG}
+                alt={isArabic ? 'شحنات التصدير' : 'Export shipments'}
+                className="h-[320px] w-full rounded-[1.8rem] border border-white/10 object-cover shadow-2xl"
+              />
+            </div>
           </div>
         </section>
 
         {/* Concept 1 — Our Company */}
         <section className="border-t border-white/10 bg-[#002f32]">
-          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_0.62fr] lg:gap-12 lg:px-8 lg:py-14">
+          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:px-8 lg:py-14">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+              <SectionLabel>
                 {isArabic ? 'عن الشركة' : 'OUR COMPANY'}
-              </div>
+              </SectionLabel>
               <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
                 {t('public.home.companySummaryTitle')}
               </h2>
@@ -211,14 +180,13 @@ export function PublicLanding() {
                 </Button>
               </Link>
             </div>
-
-            <ReferenceVisual
-              className="h-[230px] rounded-[1.5rem] border border-white/10 bg-[#053b3d] shadow-xl sm:h-[270px]"
-              width={200}
-              shiftX={-54}
-              shiftY={-25}
-              overlay="bg-gradient-to-t from-[#002f32]/25 to-transparent"
-            />
+            <div className="hidden lg:block">
+              <img
+                src="/assets/about-egypt.jpg"
+                alt={isArabic ? 'مصر' : 'Egypt'}
+                className="h-[280px] w-full rounded-[1.5rem] border border-white/10 object-cover shadow-xl"
+              />
+            </div>
           </div>
         </section>
 
@@ -227,9 +195,9 @@ export function PublicLanding() {
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+                <SectionLabel>
                   {isArabic ? 'المنتجات الرئيسية' : 'KEY PRODUCTS'}
-                </div>
+                </SectionLabel>
                 <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
                   {isArabic ? 'منتجات مصرية مميزة' : 'Premium Egyptian Products'}
                 </h2>
@@ -244,15 +212,16 @@ export function PublicLanding() {
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-3">
-              {products.map((product) => (
+              {PRODUCTS.map((product) => (
                 <Link key={product.title} to="/products" className="group">
                   <article className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition duration-200 group-hover:-translate-y-1 group-hover:border-emerald-300/30">
-                    <ReferenceVisual
-                      className="aspect-[1.43/1] bg-[#053b3d]"
-                      width={300}
-                      shiftX={product.shiftX}
-                      shiftY={-39}
-                    />
+                    <div className="aspect-[1.43/1] overflow-hidden bg-[#053b3d]">
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+                      />
+                    </div>
                     <div className="border-t border-white/10 bg-[#053b3d] p-4">
                       <h3 className="font-semibold text-white">{product.title}</h3>
                       <p className="mt-1 text-xs leading-5 text-slate-400">{product.description}</p>
@@ -306,19 +275,18 @@ export function PublicLanding() {
 
         {/* Concept 1 — Digital Platform */}
         <section className="border-t border-white/10 bg-[#00383b]">
-          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[0.86fr_1.14fr] lg:gap-12 lg:px-8 lg:py-14">
-            <ReferenceVisual
-              className="mx-auto h-[245px] w-full max-w-[520px] rounded-[1.5rem] border border-white/10 bg-[#002a2d]"
-              width={250}
-              shiftX={-5}
-              shiftY={-59}
-              overlay="bg-gradient-to-r from-transparent via-transparent to-[#00383b]/65"
-            />
-
+          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:px-8 lg:py-14">
+            <div className="hidden lg:block">
+              <img
+                src="/assets/services/services-bg.jpg"
+                alt={isArabic ? 'المنصة الرقمية' : 'Digital platform'}
+                className="h-[300px] w-full rounded-[1.5rem] border border-white/10 object-cover"
+              />
+            </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+              <SectionLabel>
                 {isArabic ? 'المنصة الرقمية' : 'DIGITAL PLATFORM'}
-              </div>
+              </SectionLabel>
               <h2 className="mt-2 text-3xl font-bold leading-tight sm:text-4xl">
                 {t('public.home.platformTitle')}
               </h2>
@@ -358,11 +326,11 @@ export function PublicLanding() {
         {/* Concept 1 — Global Markets */}
         <section className="relative overflow-hidden border-t border-white/10 bg-[#00383b]">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
-            <div className="grid items-center gap-8 lg:grid-cols-[1.05fr_0.65fr] lg:gap-12">
+            <div className="grid items-center gap-8 lg:grid-cols-[1fr_1fr] lg:gap-12">
               <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+                <SectionLabel>
                   {isArabic ? 'الأسواق العالمية' : 'OUR PRESENCE IN GLOBAL MARKETS'}
-                </div>
+                </SectionLabel>
                 <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
                   {isArabic
                     ? 'حضورنا في الأسواق العالمية'
@@ -372,14 +340,7 @@ export function PublicLanding() {
                   {isArabic ? 'منتجات مصرية بجودة موثوقة حول العالم.' : 'Egyptian products. Worldwide.'}
                 </p>
               </div>
-
-              <ReferenceVisual
-                className="h-[185px] rounded-[1.6rem] border border-emerald-300/10 bg-[#002a2d]"
-                width={190}
-                shiftX={-45}
-                shiftY={-70}
-                overlay="bg-gradient-to-l from-transparent to-[#00383b]/35"
-              />
+              <div className="hidden lg:block" aria-hidden="true" />
             </div>
 
             <div className="mt-8 grid grid-cols-3 border-t border-white/10">
@@ -401,9 +362,9 @@ export function PublicLanding() {
         <section className="border-t border-slate-200/10 bg-slate-50">
           <div className="mx-auto grid max-w-7xl lg:grid-cols-2">
             <div className="p-7 sm:p-9 lg:p-10">
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
+              <SectionLabel>
                 {isArabic ? 'شركاء عالميون موثوقون' : 'TRUSTED GLOBAL PARTNERS'}
-              </div>
+              </SectionLabel>
               <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 text-sm font-bold text-slate-600">
                 <span>SGS</span>
                 <span>ISO</span>
@@ -413,17 +374,11 @@ export function PublicLanding() {
             </div>
 
             <div className="relative min-h-[220px] overflow-hidden bg-[#0a2528]">
-              <ReferenceVisual
-                className="absolute inset-0"
-                width={205}
-                shiftX={-52}
-                shiftY={-81}
-                overlay="bg-gradient-to-l from-[#002d31]/15 via-[#002d31]/45 to-[#071b1e]/70"
-              />
+              <div className="absolute inset-0 bg-gradient-to-l from-[#002d31]/15 via-[#002d31]/45 to-[#071b1e]/70" />
               <div className="relative z-10 p-7 text-white sm:p-9 lg:p-10">
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+                <SectionLabel>
                   {isArabic ? 'شريكك في التصدير' : 'YOUR STRATEGIC PARTNER'}
-                </div>
+                </SectionLabel>
                 <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
                   {isArabic ? 'لننطلق معًا نحو الأسواق العالمية' : "Let's Grow Together"}
                 </h2>

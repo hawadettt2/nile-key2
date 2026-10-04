@@ -20,16 +20,13 @@ import {
   FileSpreadsheet,
   ExternalLink,
   ChevronRight,
+  ChevronLeft,
   Globe,
   Loader2,
   ArrowLeft,
   Search,
   Copy,
   CheckCircle,
-  Phone,
-  Mail,
-  ChevronLeft,
-  X,
   UserPlus,
 } from 'lucide-react';
 
@@ -122,7 +119,6 @@ const ARABIC_HEADERS: Record<string, string> = {
   'Other Charges': 'رسوم أخرى',
   'Grand Total': 'الإجمالي الكلي',
   'Remarks': 'ملاحظات',
-  'Status': 'الحالة',
   'Action': 'إجراء',
 };
 
@@ -164,7 +160,6 @@ const TEXTUAL_TRANSLATIONS: Record<string, string> = {
   'Value': 'القيمة',
   'Period': 'الفترة',
   'Scope': 'النطاق',
-  'Rule': 'القاعدة',
   'Meaning': 'المعنى',
   'Market universe': 'الكون السوقي',
   'Free extraction ceiling': 'سقف الاستخراج المجاني',
@@ -222,7 +217,6 @@ const TEXTUAL_TRANSLATIONS: Record<string, string> = {
   'Direct URLs preserved in workbook.': 'روابط مباشرة محفوظة في الملف.',
   'Dataset count': 'عدد مجموعات البيانات',
   'Jordan Fresh-Produce Buyer Extraction — Public Web Evidence': 'استخراج بيانات مشتري الخضار الطازجة الأردنية — أدلة ويب عامة',
-  'Actual public buyer observations; may include same company across products.': 'ملاحظات مشترين عامة فعلية؛ قد تشمل نفس الشركة عبر منتجات مختلفة.',
   'README': 'التعريف',
   'Market_Metrics': 'مؤشرات السوق',
   'Buyer_Observations': 'ملاحظات المشترين',
@@ -422,15 +416,6 @@ function translateCellValue(value: string): string {
   if (ARABIC_HEADERS[normalized]) return ARABIC_HEADERS[normalized];
 
   return normalized;
-}
-
-function translateSheetName(name: string): string {
-  if (!name) return name;
-  const normalized = name.trim();
-  if (ARABIC_HEADERS[normalized]) return ARABIC_HEADERS[normalized];
-  if (TEXTUAL_TRANSLATIONS[normalized]) return TEXTUAL_TRANSLATIONS[normalized];
-  if (TRANSLATION_CACHE.has(normalized)) return TRANSLATION_CACHE.get(normalized)!;
-  return name;
 }
 
 async function translateCellValueAsync(value: string): Promise<string> {
@@ -652,25 +637,6 @@ function detectHeaderRow(rows: Record<string, string>[]): { index: number; row: 
   return null;
 }
 
-const COUNTRY_ALIASES: Record<string, string> = {
-  'الإمارات': 'UAE',
-  'السعودية': 'KSA',
-  'قطر': 'Qatar',
-  'الكويت': 'Kuwait',
-  'البحرين': 'Bahrain',
-  'عمان': 'Oman',
-  'العراق': 'Iraq',
-  'الأردن': 'Jordan',
-  'لبنان': 'Lebanon',
-  'مصر': 'Egypt',
-};
-
-const getCanonicalCountry = (country: string | null | undefined): string | undefined => {
-  if (!country) return undefined;
-  const trimmed = country.trim();
-  return COUNTRY_ALIASES[trimmed] || trimmed;
-};
-
 const SMART_FILTER_LABELS: Record<SmartFilterKey, string> = {
   company: 'اسم الشركة',
   mobile: 'الموبايل',
@@ -837,7 +803,7 @@ export function PotentialCustomers() {
     if (activeFilters.length > 0 && sourceRows.length === excelContent.rows.length) {
       const dataStartIndex = detectedHeader ? headerRowIndex + 1 : 1;
       const dataRows = sourceRows.slice(dataStartIndex);
-      result = dataRows.filter((row, i) => {
+      result = dataRows.filter((_, i) => {
         const originalRow = excelContent.rows[dataStartIndex + i];
         const mappedRow = mapRowKeys(originalRow);
         return rowMatchesSmartFilter(mappedRow, Object.fromEntries(activeFilters) as SmartFilters);
@@ -1485,12 +1451,12 @@ export function PotentialCustomers() {
 
                      const otherFields = allRowFields.filter((field) => !contactFieldKeys.has(field.key));
 
-                     const handleCopy = async (value: string, fieldKey: string) => {
-                       if (!value || value === '—') return;
-                       await navigator.clipboard.writeText(value);
-                       setCopiedField(fieldKey);
-                       setTimeout(() => setCopiedField(null), 1500);
-                     };
+                      const handleCopy = async (value: string | undefined, fieldKey: string | undefined) => {
+                        if (!value || value === '—' || !fieldKey) return;
+                        await navigator.clipboard.writeText(value);
+                        setCopiedField(fieldKey);
+                        setTimeout(() => setCopiedField(null), 1500);
+                      };
 
                     const handlePrev = () => {
                       if (selectedDisplayIndex !== null && selectedDisplayIndex > 0) {
