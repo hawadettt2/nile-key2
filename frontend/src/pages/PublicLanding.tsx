@@ -98,20 +98,20 @@ export function PublicLanding() {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden bg-[#002f32] text-white"
+      className="min-h-screen overflow-x-hidden bg-white text-slate-900"
       dir={isArabic ? 'rtl' : 'ltr'}
     >
       <PublicNavbar />
 
       <main>
-        {/* Concept 1 — Hero */}
+        {/* Hero */}
         <section className="border-b border-white/10 bg-[#002f32]">
           <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_1fr] lg:gap-10 lg:px-8 lg:py-20">
             <div>
               <SectionLabel>
                 {isArabic ? 'منتجات مصرية • أسواق عالمية' : 'Egyptian Products • Global Markets'}
               </SectionLabel>
-              <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Nile Key
               </h1>
               <div className="mt-2 max-w-2xl text-base font-semibold leading-7 text-white sm:text-lg">
@@ -145,35 +145,35 @@ export function PublicLanding() {
               <img
                 src={HERO_BG}
                 alt={isArabic ? 'شحنات التصدير' : 'Export shipments'}
-                className="h-[320px] w-full rounded-[1.8rem] border border-white/10 object-cover shadow-2xl"
+                className="h-[420px] w-full rounded-[1.8rem] border border-white/10 object-cover shadow-2xl"
               />
             </div>
           </div>
         </section>
 
-        {/* Concept 1 — Our Company */}
-        <section className="border-t border-white/10 bg-[#002f32]">
+        {/* Our Company */}
+        <section className="border-t border-slate-200/60 bg-white">
           <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:px-8 lg:py-14">
             <div>
               <SectionLabel>
                 {isArabic ? 'عن الشركة' : 'OUR COMPANY'}
               </SectionLabel>
-              <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
                 {t('public.home.companySummaryTitle')}
               </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-200">
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600">
                 {t('public.home.companySummaryP1')}
               </p>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
                 {t('public.home.companySummaryP2')}
               </p>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
                 {t('public.home.companySummaryP3')}
               </p>
               <Link to="/about" className="mt-6 inline-flex">
                 <Button
                   variant="outline"
-                  className="border-emerald-300/50 bg-transparent text-emerald-200 hover:bg-emerald-300/10 hover:text-white"
+                  className="border-emerald-300/50 bg-transparent text-emerald-700 hover:bg-emerald-300/10 hover:text-emerald-900"
                 >
                   {t('public.cta.learnMore')}
                   <ArrowRight size={17} className="ms-2" />
@@ -184,13 +184,13 @@ export function PublicLanding() {
               <img
                 src="/assets/about-egypt.jpg"
                 alt={isArabic ? 'مصر' : 'Egypt'}
-                className="h-[280px] w-full rounded-[1.5rem] border border-white/10 object-cover shadow-xl"
+                className="h-[340px] w-full rounded-[1.5rem] border border-slate-200 object-cover shadow-xl"
               />
             </div>
           </div>
         </section>
 
-        {/* Concept 1 — Premium Egyptian Products */}
+        {/* Premium Egyptian Products */}
         <section className="border-t border-white/10 bg-[#00383b]">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
             <div className="flex items-end justify-between gap-4">
@@ -198,7 +198,7 @@ export function PublicLanding() {
                 <SectionLabel>
                   {isArabic ? 'المنتجات الرئيسية' : 'KEY PRODUCTS'}
                 </SectionLabel>
-                <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+                <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
                   {isArabic ? 'منتجات مصرية مميزة' : 'Premium Egyptian Products'}
                 </h2>
               </div>
@@ -233,61 +233,109 @@ export function PublicLanding() {
           </div>
         </section>
 
-        {/* Concept 1 — The Export Journey */}
-        <section className="border-t border-white/10 bg-[#002f32]">
+        {/* The Export Journey */}
+        <section className="border-t border-slate-200/60 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
-            <div className="mb-7">
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+            <div className="mb-10">
+              <SectionLabel>
                 {isArabic ? 'رحلة التصدير' : 'THE EXPORT JOURNEY'}
-              </div>
-              <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+              </SectionLabel>
+              <h2 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
                 {isArabic
                   ? 'من المزرعة أو المصنع إلى الأسواق العالمية'
                   : 'From farm or factory to global markets'}
               </h2>
-              <p className="mt-2 text-sm text-slate-300">
+              <p className="mt-2 text-sm text-slate-600">
                 {isArabic ? 'بجودة موثوقة في كل خطوة.' : 'With quality at every step.'}
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {journeySteps.map(({ icon: Icon, title, description }, index) => (
-                <div key={title} className="relative">
-                  <article className="h-full rounded-2xl border border-white/10 bg-white/[0.025] p-4 text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-300/10 text-emerald-300">
+            <div className="relative">
+              <div className="hidden sm:block">
+                <div className="absolute top-6 start-0 end-0 h-px bg-emerald-200" aria-hidden="true" />
+              </div>
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-5 sm:gap-6">
+                {journeySteps.map(({ icon: Icon, title, description }, index) => (
+                  <div key={title} className="relative flex flex-col items-center text-center">
+                    <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700">
                       <Icon size={20} />
                     </div>
-                    <div className="mt-3 text-[10px] font-bold text-emerald-300">0{index + 1}</div>
-                    <h3 className="mt-1 text-sm font-semibold">{title}</h3>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
-                  </article>
-
-                  {index < journeySteps.length - 1 && (
-                    <div className="pointer-events-none absolute -end-3 top-1/2 hidden -translate-y-1/2 text-emerald-300 lg:block">
-                      <ArrowRight size={15} />
-                    </div>
-                  )}
-                </div>
-              ))}
+                    <div className="mt-4 text-[10px] font-bold text-emerald-700">0{index + 1}</div>
+                    <h3 className="mt-1 text-sm font-semibold text-slate-900">{title}</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">{description}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Concept 1 — Digital Platform */}
+        {/* Digital Platform */}
         <section className="border-t border-white/10 bg-[#00383b]">
           <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:px-8 lg:py-14">
             <div className="hidden lg:block">
-              <img
-                src="/assets/services/services-bg.jpg"
-                alt={isArabic ? 'المنصة الرقمية' : 'Digital platform'}
-                className="h-[300px] w-full rounded-[1.5rem] border border-white/10 object-cover"
-              />
+              <div className="h-[360px] w-full rounded-[1.5rem] border border-white/10 bg-[#002a2d] p-5 shadow-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
+                      {isArabic ? 'لوحة التحكم' : 'Dashboard'}
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-white">
+                      {isArabic ? 'نظرة عامة' : 'Overview'}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <div className="h-2 w-2 rounded-full bg-emerald-300/50" />
+                    <div className="h-2 w-2 rounded-full bg-emerald-300/50" />
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="text-[10px] text-slate-400">
+                      {isArabic ? 'الشحنات' : 'Shipments'}
+                    </div>
+                    <div className="mt-1 text-lg font-bold text-white">1,284</div>
+                    <div className="mt-1 text-[10px] text-emerald-300">
+                      +12% {isArabic ? 'هذا الشهر' : 'this month'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="text-[10px] text-slate-400">
+                      {isArabic ? 'الفواتير' : 'Invoices'}
+                    </div>
+                    <div className="mt-1 text-lg font-bold text-white">384</div>
+                    <div className="mt-1 text-[10px] text-emerald-300">
+                      +5% {isArabic ? 'هذا الشهر' : 'this month'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="text-[10px] text-slate-400">
+                      {isArabic ? 'الجمرك' : 'Customs'}
+                    </div>
+                    <div className="mt-1 text-lg font-bold text-white">96%</div>
+                    <div className="mt-1 text-[10px] text-emerald-300">
+                      {isArabic ? 'مكتمل' : 'completed'}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="text-[10px] text-slate-400">
+                      {isArabic ? 'الذكاء' : 'Intelligence'}
+                    </div>
+                    <div className="mt-1 text-lg font-bold text-white">42</div>
+                    <div className="mt-1 text-[10px] text-emerald-300">
+                      {isArabic ? 'فرص جديدة' : 'new opportunities'}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 h-24 rounded-xl border border-white/10 bg-white/[0.02]" />
+              </div>
             </div>
             <div>
               <SectionLabel>
                 {isArabic ? 'المنصة الرقمية' : 'DIGITAL PLATFORM'}
               </SectionLabel>
-              <h2 className="mt-2 text-3xl font-bold leading-tight sm:text-4xl">
+              <h2 className="mt-2 text-3xl font-bold leading-tight text-white sm:text-4xl">
                 {t('public.home.platformTitle')}
               </h2>
               <p className="mt-4 text-sm leading-7 text-slate-200 sm:text-base">
@@ -305,7 +353,7 @@ export function PublicLanding() {
                         <Icon size={17} />
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold">{title}</h3>
+                        <h3 className="text-sm font-semibold text-white">{title}</h3>
                         <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
                       </div>
                     </div>
@@ -323,49 +371,81 @@ export function PublicLanding() {
           </div>
         </section>
 
-        {/* Concept 1 — Global Markets */}
-        <section className="relative overflow-hidden border-t border-white/10 bg-[#00383b]">
-          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
-            <div className="grid items-center gap-8 lg:grid-cols-[1fr_1fr] lg:gap-12">
-              <div>
-                <SectionLabel>
-                  {isArabic ? 'الأسواق العالمية' : 'OUR PRESENCE IN GLOBAL MARKETS'}
-                </SectionLabel>
-                <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
-                  {isArabic
-                    ? 'حضورنا في الأسواق العالمية'
-                    : 'Our Presence in Global Markets'}
-                </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
-                  {isArabic ? 'منتجات مصرية بجودة موثوقة حول العالم.' : 'Egyptian products. Worldwide.'}
-                </p>
+        {/* Global Markets */}
+        <section className="border-t border-slate-200/60 bg-white">
+          <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-[1fr_1fr] lg:gap-12 lg:px-8 lg:py-14">
+            <div>
+              <SectionLabel>
+                {isArabic ? 'الأسواق العالمية' : 'OUR PRESENCE IN GLOBAL MARKETS'}
+              </SectionLabel>
+              <h2 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+                {isArabic
+                  ? 'حضورنا في الأسواق العالمية'
+                  : 'Our Presence in Global Markets'}
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                {isArabic ? 'منتجات مصرية بجودة موثوقة حول العالم.' : 'Egyptian products. Worldwide.'}
+              </p>
+              <div className="mt-6 grid grid-cols-3 gap-4">
+                {[
+                  ['50+', isArabic ? 'دولة' : 'Countries'],
+                  ['200+', isArabic ? 'شريكًا تجاريًا' : 'Business Partners'],
+                  ['100%', isArabic ? 'التزام بالجودة' : 'Commitment to Quality'],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
+                    <div className="text-2xl font-bold text-slate-900 sm:text-3xl">{value}</div>
+                    <div className="mt-1 text-xs text-slate-600">{label}</div>
+                  </div>
+                ))}
               </div>
-              <div className="hidden lg:block" aria-hidden="true" />
             </div>
-
-            <div className="mt-8 grid grid-cols-3 border-t border-white/10">
-              {[
-                ['50+', isArabic ? 'دولة' : 'Countries'],
-                ['200+', isArabic ? 'شريكًا تجاريًا' : 'Business Partners'],
-                ['100%', isArabic ? 'التزام بالجودة' : 'Commitment to Quality'],
-              ].map(([value, label]) => (
-                <div key={label} className="border-e border-white/10 p-5 text-center last:border-e-0">
-                  <div className="text-2xl font-bold sm:text-3xl">{value}</div>
-                  <div className="mt-1 text-xs text-slate-400">{label}</div>
-                </div>
-              ))}
+            <div className="hidden lg:block">
+              <div className="relative h-[340px] w-full overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50">
+                <svg
+                  viewBox="0 0 600 340"
+                  className="h-full w-full"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <circle cx="120" cy="120" r="5" fill="#10b981" />
+                  <circle cx="280" cy="90" r="5" fill="#10b981" />
+                  <circle cx="420" cy="130" r="5" fill="#10b981" />
+                  <circle cx="180" cy="220" r="5" fill="#10b981" />
+                  <circle cx="360" cy="240" r="5" fill="#10b981" />
+                  <circle cx="500" cy="180" r="5" fill="#10b981" />
+                  <circle cx="80" cy="170" r="4" fill="#34d399" />
+                  <circle cx="220" cy="150" r="4" fill="#34d399" />
+                  <circle cx="320" cy="180" r="4" fill="#34d399" />
+                  <circle cx="460" cy="220" r="4" fill="#34d399" />
+                  <circle cx="540" cy="140" r="4" fill="#34d399" />
+                  <circle cx="150" cy="270" r="4" fill="#34d399" />
+                  <line x1="120" y1="120" x2="280" y2="90" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="280" y1="90" x2="420" y2="130" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="420" y1="130" x2="500" y2="180" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="120" y1="120" x2="80" y2="170" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="120" y1="120" x2="180" y2="220" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="280" y1="90" x2="220" y2="150" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="280" y1="90" x2="320" y2="180" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="420" y1="130" x2="360" y2="240" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="420" y1="130" x2="460" y2="220" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="500" y1="180" x2="460" y2="220" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="180" y1="220" x2="360" y2="240" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="180" y1="220" x2="150" y2="270" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                  <line x1="360" y1="240" x2="460" y2="220" stroke="#10b981" strokeWidth="1.2" opacity="0.35" />
+                </svg>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Concept 1 — Trusted Partners / CTA */}
-        <section className="border-t border-slate-200/10 bg-slate-50">
+        {/* Trusted Partners / CTA */}
+        <section className="border-t border-slate-200/60 bg-white">
           <div className="mx-auto grid max-w-7xl lg:grid-cols-2">
-            <div className="p-7 sm:p-9 lg:p-10">
+            <div className="border-e border-slate-200 p-7 sm:p-9 lg:p-10">
               <SectionLabel>
                 {isArabic ? 'شركاء عالميون موثوقون' : 'TRUSTED GLOBAL PARTNERS'}
               </SectionLabel>
-              <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 text-sm font-bold text-slate-600">
+              <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-4 text-sm font-bold text-slate-700">
                 <span>SGS</span>
                 <span>ISO</span>
                 <span>HACCP</span>
@@ -379,7 +459,7 @@ export function PublicLanding() {
                 <SectionLabel>
                   {isArabic ? 'شريكك في التصدير' : 'YOUR STRATEGIC PARTNER'}
                 </SectionLabel>
-                <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
+                <h2 className="mt-3 text-2xl font-bold text-white sm:text-3xl">
                   {isArabic ? 'لننطلق معًا نحو الأسواق العالمية' : "Let's Grow Together"}
                 </h2>
                 <p className="mt-2 max-w-md text-sm leading-6 text-slate-300">
@@ -398,12 +478,12 @@ export function PublicLanding() {
           </div>
         </section>
 
-        {/* Concept 1 — Footer */}
+        {/* Footer */}
         <footer className="border-t border-white/10 bg-[#002f32]">
           <div className="mx-auto grid max-w-7xl gap-8 px-4 py-9 sm:px-6 md:grid-cols-4 lg:px-8">
             <div className="md:col-span-1">
               <Link to="/" className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 font-bold">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 font-bold text-white">
                   NK
                 </div>
                 <div>
