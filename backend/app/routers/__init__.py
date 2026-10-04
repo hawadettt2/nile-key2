@@ -10,6 +10,7 @@ from .eta import router
 from .users import router as users_router
 from .roles import router as roles_router
 from .digital_export_manager import router as digital_export_manager_router
+from .contact import router as contact_router
 
 __all__ = [
     "auth",
@@ -24,4 +25,5 @@ __all__ = [
     "users_router",
     "roles_router",
     "digital_export_manager_router",
+    "contact_router",
 ]

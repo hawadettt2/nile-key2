@@ -286,5 +286,8 @@ export interface PotentialCustomerExcelContent {
 export const getPotentialCustomerFileContent = (fileId: string, sheet?: string) =>
   api.get<PotentialCustomerExcelContent>(`/api/v1/potential-customers/files/${encodeURIComponent(fileId)}/content`, { params: sheet ? { sheet } : undefined });
 
+export const submitContact = (data: { name: string; email: string; subject: string; message: string }) =>
+  api.post('/api/v1/contact', data);
+
 export default api;
 export { api };

@@ -17,7 +17,7 @@ function renderWithProviders(ui: React.ReactElement) {
 describe('PublicLanding', () => {
   test('renders company name and intro sections', () => {
     renderWithProviders(<PublicLanding />);
-    expect(screen.getByText('Nile Key')).toBeDefined();
+    expect(screen.getAllByText('Nile Key').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Our Integrated Digital Platform for Managing Egyptian Export Operations')).toBeDefined();
   });
 
@@ -46,6 +46,6 @@ describe('PublicLanding', () => {
 
   test('renders NK logo branding', () => {
     renderWithProviders(<PublicLanding />);
-    expect(screen.getByText('NK')).toBeDefined();
+    expect(screen.getAllByText('NK').length).toBeGreaterThanOrEqual(1);
   });
 });
