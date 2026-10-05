@@ -94,15 +94,15 @@ export function PublicLanding() {
         </section>
 
         {/* 4-Item Feature Band */}
-        <section className="bg-white py-16">
+        <section className="bg-[#002f32] py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {features.map(({ icon: Icon, title }) => (
                 <div key={title} className="flex flex-col items-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500 text-emerald-600">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500 text-emerald-300">
                     <Icon size={20} />
                   </div>
-                  <div className="mt-3 text-sm font-semibold text-slate-900">{title}</div>
+                  <div className="mt-3 text-sm font-semibold text-white">{title}</div>
                 </div>
               ))}
             </div>
