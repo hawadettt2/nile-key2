@@ -1,33 +1,89 @@
 ## VISUAL SOURCE OF TRUTH OVERRIDE — APPROVED CONCEPT 1
 
-**الأولوية القصوى للتصميم البصري:** هذا القسم يصحح أي تعارض بصري في بقية هذه الخطة، ويعلو عليها جميعًا في كل ما يخص PublicHome.
+**الأولوية القصوى:** هذه المواصفة هي المصدر الحاكم للتصميم البصري لـ PublicHome وتعلو على كل ما يليها في الخطة عند أي تعارض.
 
-**المصدر البصري الوحيد:** frontend/public/design-reference/concept1.png = **Concept 1 الفعلي** (اللوحة اليسرى فقط من ملف المفاهيم).
-الصور المرجعية الأخرى، وConcept 2، وConcept 3، وأي Blueprint سابق ناتج عن دمجها **ليست مصادر تصميم بديلة**.
+**Concept 1 المقصود هو اللوحة اليسرى فقط** من المرجع البصري: frontend/public/design-reference/concept1.png.
+لا تُستخدم Concept 2 أو Concept 3 أو أي Blueprint سابق كمرجع بصري.
 
-**التكوين الفعلي لـ PublicHome حسب Concept 1:**
-1. Navbar فوق الـHero.
-2. Hero واحد كبير **Full-bleed photographic background** داخل القسم، وليس عمود Text/Image 45/55. الصورة هي الخلفية الرئيسية للـHero وتغطي المشهد.
-3. داخل الـHero: eyebrow، عنوان "Bringing the Best of Egypt to the World"، وصف قصير، وزران فقط: **Get Started** و **Learn More**.
-4. أسفل الـHero مباشرة Feature Band داكن واحد يحتوي 4 عناصر متساوية:
-   - Premium Egyptian Products
-   - Global Markets
-   - Trusted Partnerships
-   - Digital Solutions
-5. Our Company: قسم فاتح، نص يسار + صورة مصرية يمين.
-6. Premium Egyptian Products: قسم فاتح، 3 صور/عناصر متساوية: Vegetables، Fruits، Factory Products، مع رابط **View All Products**.
-7. Closing Global CTA/Banner: قسم داكن بصري بصورة/مشهد عالمي للتصدير، بعنوان **From Egyptian Fields and Factories to Global Markets** ووصف **Quality. Trust. Sustainable Growth.**
-8. Footer داكن.
+### PublicHome — التكوين النهائي
+التكوين الفعلي هو:
+**Navbar → Hero → 4-Item Feature Band → Our Company → Premium Egyptian Products → Global Closing Banner → Footer**
 
-**بالتالي PublicHome لا يحتوي على هذه الأقسام المنفصلة:** The Export Journey، Digital Platform، Global Markets بإحصائيات، Trusted Partners / CTA split. هذه العناصر من Concept 2/3 أو من Blueprint سابق وليست أجزاء من Concept 1.
+لا توجد أقسام مستقلة في PublicHome باسم:
+**The Export Journey / Digital Platform / Global Markets / Trusted Partners / CTA split**.
 
-**قيود تنفيذ حاسمة:**
-- لا تعاد صياغة Concept 1 إلى 45/55 columns أو 9-section homepage.
-- لا تستخدم Concept 2 أو Concept 3 كمرجع بصري.
+### Hero
+- Hero **full-bleed photographic background** يغطي القسم بالكامل، وليس 45/55 text/image.
+- الأصل التشغيلي للـHero: /assets/hero-export.jpg كصورة خلفية ممتدة.
+- النص فوق الصورة في الجهة اليسرى في LTR، وفي RTL يحترم الاتجاه.
+- المحتوى: eyebrow + العنوان الرئيسي + وصف قصير.
+- **CTA بالضبط 2:** Get Started و Learn More.
+- لا Sign In ولا Create Account داخل Hero.
+- لا صورة مستقلة في عمود منفصل.
+- لا gradient.
+
+### Feature Band
+بعد Hero مباشرة شريط داكن واحد متصل، يحتوي **4 عناصر متساوية فقط**:
+1. Premium Egyptian Products
+2. Global Markets
+3. Trusted Partnerships
+4. Digital Solutions
+- لكل عنصر أيقونة دائرية صغيرة + عنوان.
+- لا بطاقات كبيرة ولا إحصائيات.
+
+### Our Company
+- سطح فاتح.
+- نص يسار + صورة مصرية يمين في LTR.
+- عنوان Concept 1: **More Than a Trading Company / We Are Your Global Partner**.
+- فقرة واحدة مختصرة مبنية فقط من المحتوى المؤسسي الموجود فعليًا في المشروع.
+- CTA واحد: **Learn More**.
+- الصورة: /assets/about-egypt.jpg.
+- الصورة كبيرة وواضحة، rounded corners، بدون thumbnail treatment.
+
+### Premium Egyptian Products
+- سطح فاتح.
+- عنوان: **Premium Egyptian Products**.
+- 3 عناصر متساوية بصور كبيرة: Vegetables / Fruits / Factory Products.
+- العنوان ووصف قصير أسفل كل صورة.
+- رابط واحد: **View All Products** → /products.
+- لا أزرار لكل بطاقة.
+- لا Dark/Glass cards؛ المعالجة البصرية تكون أقرب إلى Concept 1: صورة + نص على سطح فاتح.
+
+### Global Closing Banner
+- قسم داكن بصري قبل الـFooter مباشرة.
+- يحتوي على Visual عالمي/Globe واضح في الجهة اليمنى، مبني بـSVG/CSS فقط.
+- النص:
+  **From Egyptian Fields and Factories to Global Markets**
+  + **Quality. Trust. Sustainable Growth.**
+- لا إحصائيات.
+- لا CTA.
+- لا قسم Global Markets مستقل.
+
+### Footer
+- Footer داكن.
+- **4 أعمدة على Desktop:** 
+  1) Logo + Brand + Digital Export Platform
+  2) Quick Links
+  3) Contact Us
+  4) Follow Us
+- لا عمود Services منفصل.
+- لا عمود خامس.
+- Tablet = 2 أعمدة، Mobile = عمود واحد.
+
+### قواعد حاسمة
+- لا تُنشأ 9 وحدات PublicHome من Blueprint السابق.
+- لا 45/55 Hero.
+- لا Timeline في Home.
+- لا Dashboard في Home.
+- لا Global Markets statistics section في Home.
+- لا 50/50 Trusted Partners / CTA split.
 - concept1.png مرجع فقط ولا يُستخدم Runtime.
-- الأصول التشغيلية فقط من جدول الأصول المسموحة في هذه الخطة.
-- أي نص غير ظاهر/غير مستمد من المحتوى الحالي لا يُخترع.
-- إذا تعارض أي نص لاحق في هذه الخطة مع هذا القسم، **هذا القسم هو الحاكم**.
+- الأصول التشغيلية من frontend/public/assets/ فقط.
+- لا اختراع محتوى أو أرقام أو بيانات.
+- أي نص لاحق في الخطة يناقض هذه المواصفة **يُهمل** ويُتبع هذا القسم.
+
+**Build/QA:** النجاح لا يعتمد على Build فقط؛ يجب التحقق بصريًا من أن Home الناتج يطابق اللوحة اليسرى من Concept 1 في التكوين، الأحجام النسبية، ترتيب العناصر، الصور، الألوان، والانتقالات، دون إدخال عناصر من Concept 2/3.
+
 
 ---
 
