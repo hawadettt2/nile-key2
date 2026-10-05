@@ -678,6 +678,26 @@
       "copyright": "© 2026 Nile Key for Investment & International Trade. All rights reserved.",
       "companyName": "Nile Key for Investment and International Trade LLC",
       "tagline": "Digital Export Platform"
+    },
+    "concept1": {
+      "heroEyebrow": "EGYPTIAN EXPORTS • GLOBAL MARKETS",
+      "heroTitle": "Bringing the Best of Egypt to the World",
+      "heroDescription": "Connecting Egyptian suppliers and producers to global markets through integrated trade and digital solutions.",
+      "featureBand": {
+        "premiumProducts": "Premium Egyptian Products",
+        "globalMarkets": "Global Markets",
+        "trustedPartnerships": "Trusted Partnerships",
+        "digitalSolutions": "Digital Solutions"
+      },
+      "ourCompany": {
+        "title": "More Than a Trading Company",
+        "subtitle": "We Are Your Global Partner",
+        "description": "Nile Key is an Egyptian limited liability company licensed by the General Authority for Investment and Free Zones, focused on showcasing the quality of Egyptian products in global markets."
+      },
+      "closingBanner": {
+        "title": "From Egyptian Fields and Factories to Global Markets",
+        "subtitle": "Quality. Trust. Sustainable Growth."
+      }
     }
   }
 }

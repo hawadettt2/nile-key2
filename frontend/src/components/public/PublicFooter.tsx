@@ -42,20 +42,7 @@ export function PublicFooter() {
             </ul>
           </div>
 
-          {/* Column 3: Services */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
-              {isArabic ? 'الخدمات' : 'Services'}
-            </h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.exportManagement')}</Link></li>
-              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.tradeServices')}</Link></li>
-              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.digitalPlatform')}</Link></li>
-              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.shipmentManagement')}</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 4: Contact + Social */}
+          {/* Column 3: Contact Us */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
               {isArabic ? 'تواصل معنا' : 'Contact Us'}
@@ -65,7 +52,14 @@ export function PublicFooter() {
               <li>info@nilekey.com</li>
               <li>+20 10 0000 0000</li>
             </ul>
-            <div className="mt-4 flex gap-2 text-xs text-slate-400">
+          </div>
+
+          {/* Column 4: Follow Us */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+              {isArabic ? 'تابعنا' : 'Follow Us'}
+            </h3>
+            <div className="mt-3 flex gap-2 text-xs text-slate-400">
               <span className="rounded-full border border-white/10 px-2.5 py-1">in</span>
               <span className="rounded-full border border-white/10 px-2.5 py-1">f</span>
               <span className="rounded-full border border-white/10 px-2.5 py-1">◎</span>

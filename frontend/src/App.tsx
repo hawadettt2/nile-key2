@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Layout } from '@/components/layout/Layout';
 import { Login } from '@/pages/Login';
 import { PublicLanding } from '@/pages/PublicLanding';
 import { PublicAbout } from '@/pages/PublicAbout';
@@ -33,7 +32,6 @@ import { ArchitectureExplorer } from '@/pages/ArchitectureExplorer';
 import { Avatar } from '@/pages/Avatar';
 import { PotentialCustomers } from '@/pages/PotentialCustomers';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,27 +66,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function RoleRedirect() {
-  const user = useAuthStore((s) => s.user);
-  const navigate = useNavigate();
-  const location = useLocation();
-  useEffect(() => {
-    if (!user) return;
-    const role = user.role;
-    let target = '/dashboard';
-    if (['owner', 'manager'].includes(role)) target = '/digital-export-manager';
-    else if (role === 'sales') target = '/customers';
-    else if (role === 'admin_staff') target = '/documents';
-    else if (role === 'accountant') target = '/invoices';
-    else if (role === 'logistics') target = '/shipments';
-    else if (['supplier', 'customer'].includes(role)) target = '/profile';
-    if (location.pathname === '/') navigate(target, { replace: true });
-  }, [user, navigate, location.pathname]);
-  return null;
-}
-
 function App() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const loadUser = useAuthStore((s) => s.loadUser);
 
   useEffect(() => {
@@ -102,33 +80,31 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={isAuthenticated ? <PrivateRoute><Layout /></PrivateRoute> : <PublicLanding />}>
-          <Route index element={<RoleRedirect />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="suppliers" element={<Suppliers />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="shipments" element={<Shipments />} />
-          <Route path="invoices" element={<Invoices />} />
-          <Route path="customs" element={<Customs />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="resources" element={<Resources />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="avatar" element={<Avatar />} />
-          <Route path="digital-export-manager" element={<DEMLanding />} />
-          <Route path="digital-export-manager/sessions" element={<DEMSessions />} />
-          <Route path="digital-export-manager/sessions/:sessionId" element={<DEMSessionDetail />} />
-          <Route path="digital-export-manager/missions" element={<DEMMissions />} />
-          <Route path="digital-export-manager/missions/new" element={<DEMMissionComposer />} />
-          <Route path="digital-export-manager/missions/:missionId" element={<DEMMissionDetail />} />
-          <Route path="digital-export-manager/approvals" element={<DEMApprovals />} />
-          <Route path="digital-export-manager/tools" element={<DEMTools />} />
-          <Route path="knowledge-graph" element={<KnowledgeGraph />} />
-          <Route path="trade-intelligence" element={<TradeIntelligence />} />
-          <Route path="export-readiness" element={<ExportReadiness />} />
-          <Route path="architecture-explorer" element={<ArchitectureExplorer />} />
-          <Route path="potential-customers" element={<PotentialCustomers />} />
-        </Route>
+        <Route path="/" element={<PublicLanding />} />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/suppliers" element={<PrivateRoute><Suppliers /></PrivateRoute>} />
+        <Route path="/customers" element={<PrivateRoute><Customers /></PrivateRoute>} />
+        <Route path="/shipments" element={<PrivateRoute><Shipments /></PrivateRoute>} />
+        <Route path="/invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} />
+        <Route path="/customs" element={<PrivateRoute><Customs /></PrivateRoute>} />
+        <Route path="/documents" element={<PrivateRoute><Documents /></PrivateRoute>} />
+        <Route path="/resources" element={<PrivateRoute><Resources /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+        <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
+        <Route path="/avatar" element={<PrivateRoute><Avatar /></PrivateRoute>} />
+        <Route path="/digital-export-manager" element={<PrivateRoute><DEMLanding /></PrivateRoute>} />
+        <Route path="/digital-export-manager/sessions" element={<PrivateRoute><DEMSessions /></PrivateRoute>} />
+        <Route path="/digital-export-manager/sessions/:sessionId" element={<PrivateRoute><DEMSessionDetail /></PrivateRoute>} />
+        <Route path="/digital-export-manager/missions" element={<PrivateRoute><DEMMissions /></PrivateRoute>} />
+        <Route path="/digital-export-manager/missions/new" element={<PrivateRoute><DEMMissionComposer /></PrivateRoute>} />
+        <Route path="/digital-export-manager/missions/:missionId" element={<PrivateRoute><DEMMissionDetail /></PrivateRoute>} />
+        <Route path="/digital-export-manager/approvals" element={<PrivateRoute><DEMApprovals /></PrivateRoute>} />
+        <Route path="/digital-export-manager/tools" element={<PrivateRoute><DEMTools /></PrivateRoute>} />
+        <Route path="/knowledge-graph" element={<PrivateRoute><KnowledgeGraph /></PrivateRoute>} />
+        <Route path="/trade-intelligence" element={<PrivateRoute><TradeIntelligence /></PrivateRoute>} />
+        <Route path="/export-readiness" element={<PrivateRoute><ExportReadiness /></PrivateRoute>} />
+        <Route path="/architecture-explorer" element={<PrivateRoute><ArchitectureExplorer /></PrivateRoute>} />
+        <Route path="/potential-customers" element={<PrivateRoute><PotentialCustomers /></PrivateRoute>} />
         <Route path="/about" element={<PublicAbout />} />
         <Route path="/products" element={<PublicProducts />} />
         <Route path="/services" element={<PublicServices />} />
