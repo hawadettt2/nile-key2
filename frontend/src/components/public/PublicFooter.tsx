@@ -1,51 +1,75 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Globe } from 'lucide-react';
 
 export function PublicFooter() {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
 
   return (
-    <footer className="bg-slate-900 border-t border-white/10 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-[#001a1c] border-t border-white/10 py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-8 lg:gap-12">
+          {/* Column 1: Logo + Brand + Tagline */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">NK</span>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 font-bold text-white">
+                NK
               </div>
-              <div className="flex flex-col">
-                <span className="text-white font-bold text-lg leading-tight">{isArabic ? 'مفتاح النيل' : 'Nile Key'}</span>
-                <span className="text-slate-300 text-xs leading-tight">{isArabic ? 'المنصة الرقمية للتصدير' : 'Digital Export Platform'}</span>
+              <div>
+                <div className="font-bold leading-tight text-white">{isArabic ? 'مفتاح النيل' : 'Nile Key'}</div>
+                <div className="text-[10px] text-slate-400">{isArabic ? 'المنصة الرقمية للتصدير' : 'Digital Export Platform'}</div>
               </div>
-            </div>
-            <p className="text-slate-400 text-sm">
+            </Link>
+            <p className="mt-4 text-sm text-slate-400">
               {isArabic
                 ? 'شركة مفتاح النيل للاستثمار والتجارة الدولية - شريكك الاستراتيجي في التجارة العالمية.'
                 : 'Nile Key for Investment and International Trade - Your strategic partner in global trade.'}
             </p>
           </div>
 
+          {/* Column 2: Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">{isArabic ? 'روابط سريعة' : 'Quick Links'}</h3>
-            <ul className="space-y-2">
-              <li><Link to="/about" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">{t('public.nav.about')}</Link></li>
-              <li><Link to="/products" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">{t('public.nav.products')}</Link></li>
-              <li><Link to="/services" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">{t('public.nav.services')}</Link></li>
-              <li><Link to="/markets" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">{t('public.nav.markets')}</Link></li>
-              <li><Link to="/contact" className="text-slate-400 hover:text-emerald-400 transition-colors text-sm">{t('public.nav.contact')}</Link></li>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+              {isArabic ? 'روابط سريعة' : 'Quick Links'}
+            </h3>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-400">
+              <li><Link to="/" className="hover:text-white transition-colors">{t('public.nav.home')}</Link></li>
+              <li><Link to="/about" className="hover:text-white transition-colors">{t('public.nav.about')}</Link></li>
+              <li><Link to="/products" className="hover:text-white transition-colors">{t('public.nav.products')}</Link></li>
+              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.nav.services')}</Link></li>
+              <li><Link to="/markets" className="hover:text-white transition-colors">{t('public.nav.markets')}</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition-colors">{t('public.nav.contact')}</Link></li>
             </ul>
           </div>
 
+          {/* Column 3: Services */}
           <div>
-            <h3 className="text-white font-semibold mb-4">{isArabic ? 'تواصل معنا' : 'Contact'}</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li className="flex items-center gap-2">
-                <Globe size={16} className="text-emerald-400" />
-                {t('public.contact.locationText')}
-              </li>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+              {isArabic ? 'الخدمات' : 'Services'}
+            </h3>
+            <ul className="mt-3 space-y-2 text-sm text-slate-400">
+              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.exportManagement')}</Link></li>
+              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.tradeServices')}</Link></li>
+              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.digitalPlatform')}</Link></li>
+              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.services.shipmentManagement')}</Link></li>
             </ul>
+          </div>
+
+          {/* Column 4: Contact + Social */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+              {isArabic ? 'تواصل معنا' : 'Contact Us'}
+            </h3>
+            <ul className="mt-3 space-y-2 text-sm text-slate-400">
+              <li>{t('public.contact.locationText')}</li>
+              <li>info@nilekey.com</li>
+              <li>+20 10 0000 0000</li>
+            </ul>
+            <div className="mt-4 flex gap-2 text-xs text-slate-400">
+              <span className="rounded-full border border-white/10 px-2.5 py-1">in</span>
+              <span className="rounded-full border border-white/10 px-2.5 py-1">f</span>
+              <span className="rounded-full border border-white/10 px-2.5 py-1">◎</span>
+            </div>
           </div>
         </div>
 

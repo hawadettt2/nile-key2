@@ -4,7 +4,7 @@ import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { PublicFooter } from '@/components/public/PublicFooter';
 import { Button } from '@/components/ui/button';
 import { submitContact } from '@/services/api';
-import { Globe } from 'lucide-react';
+import { Globe, Mail, Phone } from 'lucide-react';
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -81,20 +81,16 @@ export function PublicContact() {
 
       <main>
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              {t('public.contact.title')}
-            </h1>
-            <p className="text-xl text-slate-300">
-              {t('public.contact.subtitle')}
-            </p>
+        <section className="bg-[#002f32] py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl font-bold text-white mb-4">{t('public.contact.title')}</h1>
+            <p className="text-base text-slate-300">{t('public.contact.subtitle')}</p>
           </div>
         </section>
 
         {/* Contact Section */}
-        <section className="py-20 bg-slate-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-slate-900 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* Contact Info */}
               <div className="lg:col-span-1">
@@ -107,6 +103,28 @@ export function PublicContact() {
                       <div>
                         <h3 className="text-white font-semibold mb-1">{t('public.contact.locationTitle')}</h3>
                         <p className="text-slate-400">{t('public.contact.locationText')}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="text-emerald-400 mt-1">
+                        <Mail size={24} />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold mb-1">{t('public.contact.emailTitle')}</h3>
+                        <p className="text-slate-400">info@nilekey.com</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="text-emerald-400 mt-1">
+                        <Phone size={24} />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold mb-1">{t('public.contact.phoneTitle')}</h3>
+                        <p className="text-slate-400">+20 10 0000 0000</p>
                       </div>
                     </div>
                   </div>

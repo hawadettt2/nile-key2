@@ -561,7 +561,12 @@
       "companySummaryP3": "We focus on marketing and exporting carefully selected Egyptian products, and connecting Egyptian suppliers and producers to clients, importers and international partners, through an integrated system combining commercial expertise, export process management, and modern digital solutions.",
       "platformTitle": "Our Integrated Digital Platform for Managing Egyptian Export Operations",
       "platformP1": "We have developed the Nile Key system to be an integrated digital environment for managing and monitoring trade and export operations — from the product and supplier, through the client, invoice, documents and shipment, and all the way to the port and global markets.",
-      "platformP2": "We aim to make export operations more organized, clear, efficient and reliable, by facilitating coordination among all relevant parties and supporting commercial, logistical and customs procedures within a single digital system."
+      "platformP2": "We aim to make export operations more organized, clear, efficient and reliable, by facilitating coordination among all relevant parties and supporting commercial, logistical and customs procedures within a single digital system.",
+      "trustZoneTitle": "Trusted Partner",
+      "trustZoneText": "Egyptian quality products trusted globally.",
+      "trustedTitle": "Let's Grow Together",
+      "trustedDescription": "Partner with Nile Key for export management and global market access.",
+      "trustedCta": "Contact Us"
     },
     "about": {
       "title": "About Us",
@@ -610,11 +615,21 @@
       "whyChooseTitle": "Why Choose Nile Key",
       "whyChooseP1": "Integrated system combining commercial expertise, export management, and modern digital solutions.",
       "whyChooseP2": "Commitment to quality, reliability, and long-term commercial relationships.",
-      "whyChooseP3": "Egyptian company with deep understanding of local products and global market requirements."
+      "whyChooseP3": "Egyptian company with deep understanding of local products and global market requirements.",
+      "iconExportManagement": "Workflow",
+      "iconTradeServices": "Handshake",
+      "iconDigitalPlatform": "LayoutDashboard",
+      "iconShipmentManagement": "Truck",
+      "iconInvoicingDocuments": "FileText",
+      "iconCustomsProcedures": "ClipboardCheck",
+      "iconPartnerNetwork": "Network"
     },
     "markets": {
       "title": "Markets",
       "subtitle": "From Egyptian Fields and Factories to Global Markets",
+      "statCountries": "Countries",
+      "statPartners": "Business Partners",
+      "statQuality": "Commitment to Quality",
       "journeyTitle": "Your Export Journey",
       "step1Title": "Farm / Factory",
       "step1Desc": "Sourcing quality products from Egyptian farms and national factories.",
@@ -627,8 +642,7 @@
       "step5Title": "Port & Delivery",
       "step5Desc": "Efficient port handling and timely delivery to the destination.",
       "step6Title": "Global Markets",
-      "step6Desc": "Reaching customers and markets worldwide with Egyptian quality products.",
-      "ctaJourney": "Start Your Export Journey"
+      "step6Desc": "Reaching customers and markets worldwide with Egyptian quality products."
     },
     "contact": {
       "title": "Contact Us",

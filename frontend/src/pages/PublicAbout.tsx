@@ -13,38 +13,27 @@ export function PublicAbout() {
       <PublicNavbar />
 
       <main>
-        {/* Hero / Title Section */}
-        <section className="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              {t('public.about.title')}
-            </h1>
-            <p className="text-xl text-slate-300">
-              {t('public.about.subtitle')}
-            </p>
+        {/* Title Section */}
+        <section className="bg-[#002f32] py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl font-bold text-white">{t('public.about.title')}</h1>
+            <p className="mt-2 text-base text-slate-300">{t('public.about.subtitle')}</p>
           </div>
         </section>
 
         {/* Who We Are */}
-        <section className="py-20 bg-slate-900">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <section className="bg-slate-900 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-6">
-                  {isArabic ? 'من نحن' : 'Who We Are'}
-                </h2>
+                <h2 className="text-4xl font-bold text-white mb-6">{t('public.home.companySummaryTitle')}</h2>
                 <div className="space-y-4 text-slate-300">
-                  <p className="text-lg">
-                    <span className="text-emerald-400 font-semibold">{t('public.about.companyNameEn')}</span>
-                    <br />
-                    <span className="text-emerald-400 font-semibold">{t('public.about.companyNameAr')}</span>
-                  </p>
-                  <p>{t('public.about.companyType')}</p>
-                  <p>{t('public.about.license')}</p>
-                  <p>{t('public.about.purpose')}</p>
+                  <p>{t('public.home.companySummaryP1')}</p>
+                  <p>{t('public.home.companySummaryP2')}</p>
+                  <p>{t('public.home.companySummaryP3')}</p>
                 </div>
               </div>
-              <div className="aspect-square bg-slate-800 rounded-2xl overflow-hidden">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-800">
                 <img
                   src="/assets/about-egypt.jpg"
                   alt={isArabic ? 'مشهد مصري' : 'Egyptian scene'}
@@ -55,49 +44,58 @@ export function PublicAbout() {
           </div>
         </section>
 
-        {/* Mission */}
-        <section className="py-20 bg-slate-800">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-emerald-400 mb-8 text-center">
-              {t('public.about.missionTitle')}
-            </h2>
-            <div className="space-y-6 text-slate-300 text-lg leading-relaxed">
-              <p>{t('public.about.missionP1')}</p>
-              <p>{t('public.about.missionP2')}</p>
-              <p>{t('public.about.missionP3')}</p>
+        {/* Mission/Vision */}
+        <section className="bg-slate-800 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div className="order-2 lg:order-1">
+                <h2 className="text-4xl font-bold text-emerald-400 mb-8">{t('public.about.missionTitle')}</h2>
+                <div className="space-y-6 text-slate-300">
+                  <p>{t('public.about.missionP1')}</p>
+                  <p>{t('public.about.missionP2')}</p>
+                  <p>{t('public.about.missionP3')}</p>
+                </div>
+              </div>
+              <div className="order-1 lg:order-2">
+                <img
+                  src="/assets/about-egypt.jpg"
+                  alt={isArabic ? 'مشهد مصري' : 'Egyptian scene'}
+                  className="w-full aspect-[4/3] object-cover rounded-2xl"
+                />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Vision */}
-        <section className="py-20 bg-slate-900">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-emerald-400 mb-8">
-              {t('public.about.visionTitle')}
-            </h2>
-            <p className="text-xl text-slate-300 leading-relaxed">
-              {t('public.about.visionText')}
-            </p>
+        {/* Position as international trade partner */}
+        <section className="bg-slate-900 py-20">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl font-bold text-white mb-6">{t('public.home.trustedTitle')}</h2>
+            <p className="text-lg text-slate-300 mb-8">{t('public.home.trustedDescription')}</p>
+            <Link to="/contact">
+              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">{t('public.cta.contactUs')}</Button>
+            </Link>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="py-20 bg-slate-800">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-8">
-              {isArabic ? 'انضم إلينا في رحلة التصدير' : 'Join Us on the Export Journey'}
-            </h2>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/products">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">
-                  {t('public.cta.exploreProducts')}
-                </Button>
-              </Link>
-              <Link to="/contact">
-                <Button size="lg" variant="outline" className="border-white text-black hover:bg-white/10 hover:text-emerald-500 px-8">
-                  {t('public.cta.contactUs')}
-                </Button>
-              </Link>
+        {/* Quick Overview */}
+        <section className="bg-slate-800 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-4xl font-bold text-white mb-12 text-center">{isArabic ? 'لمحة سريعة' : 'Quick Overview'}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-300 mb-2">{isArabic ? 'الاسم' : 'Company Name'}</h3>
+                <p className="text-white font-semibold">{t('public.about.companyNameEn')}</p>
+                <p className="text-slate-400 text-sm mt-1">{t('public.about.companyNameAr')}</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-300 mb-2">{isArabic ? 'الرخصة' : 'License'}</h3>
+                <p className="text-white">{t('public.about.license')}</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-300 mb-2">{isArabic ? 'هدف التأسيس' : 'Purpose'}</h3>
+                <p className="text-slate-300 text-sm">{t('public.about.purpose')}</p>
+              </div>
             </div>
           </div>
         </section>
