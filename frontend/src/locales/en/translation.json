@@ -549,21 +549,32 @@
       "contact": "Contact"
     },
     "home": {
-      "heroTitle": "Nile Key for Investment and International Trade LLC",
-      "heroSubtitle": "From Egyptian Fields and Factories to Global Markets",
+      "heroEyebrow": "EGYPTIAN PRODUCTS • GLOBAL MARKETS",
+      "heroTitle": "Nile Key",
+      "heroCorporateAr": "شركة مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م)",
+      "heroCorporateEn": "Nile Key for Investment and International Trade LLC",
       "heroDescription": "We connect suppliers, customers, and logistics partners in one digital ecosystem enabling shipment tracking, invoice management, and streamlined customs procedures.",
-      "ctaSignIn": "Sign In",
-      "ctaCreateAccount": "Create Account",
-      "ctaExploreProducts": "Explore Products",
+      "ourCompanyEyebrow": "OUR COMPANY",
+      "ourCompanyTitle": "Our Company",
+      "ourCompanyText": "Nile Key is an Egyptian limited liability company, licensed by the General Authority for Investment and Free Zones, focused on showcasing the quality of Egyptian products — vegetables, fruits, and national factory products — in global markets.",
+      "productsEyebrow": "KEY PRODUCTS",
+      "productsTitle": "Premium Egyptian Products",
+      "viewAllProducts": "View All Products",
+      "journeyTitle": "The Export Journey",
+      "journeyDescription": "From Egyptian Fields and Factories to Global Markets",
+      "platformEyebrow": "DIGITAL PLATFORM",
+      "platformTitleLine1": "Our Integrated Digital Platform",
+      "platformTitleLine2": "for Export Operations",
+      "platformShortDesc": "An integrated digital environment for managing and monitoring trade and export operations — from the product and supplier, through the client, invoice, documents and shipment, to the port and global markets.",
+      "marketsEyebrow": "GLOBAL MARKETS",
+      "marketsTitle": "Our Presence in Global Markets",
+      "marketsSubtitle": "From Egyptian Fields and Factories to Global Markets",
+      "trustedByTitle": "Trusted by Global Partners",
       "companySummaryTitle": "We are Your Strategic Partner in Global Trade",
       "companySummaryP1": "Nile Key for Investment and International Trade LLC is an Egyptian limited liability company, licensed by the General Authority for Investment and Free Zones.",
       "companySummaryP2": "The purpose of establishment is to showcase the quality of Egyptian products — vegetables, fruits, and national factory products — in global markets.",
       "companySummaryP3": "We focus on marketing and exporting carefully selected Egyptian products, and connecting Egyptian suppliers and producers to clients, importers and international partners, through an integrated system combining commercial expertise, export process management, and modern digital solutions.",
-      "platformTitle": "Our Integrated Digital Platform for Managing Egyptian Export Operations",
       "platformP1": "We have developed the Nile Key system to be an integrated digital environment for managing and monitoring trade and export operations — from the product and supplier, through the client, invoice, documents and shipment, and all the way to the port and global markets.",
-      "platformP2": "We aim to make export operations more organized, clear, efficient and reliable, by facilitating coordination among all relevant parties and supporting commercial, logistical and customs procedures within a single digital system.",
-      "trustZoneTitle": "Trusted Partner",
-      "trustZoneText": "Egyptian quality products trusted globally.",
       "trustedTitle": "Let's Grow Together",
       "trustedDescription": "Partner with Nile Key for export management and global market access.",
       "trustedCta": "Contact Us"
@@ -678,26 +689,6 @@
       "copyright": "© 2026 Nile Key for Investment & International Trade. All rights reserved.",
       "companyName": "Nile Key for Investment and International Trade LLC",
       "tagline": "Digital Export Platform"
-    },
-    "concept1": {
-      "heroEyebrow": "EGYPTIAN EXPORTS • GLOBAL MARKETS",
-      "heroTitle": "Bringing the Best of Egypt to the World",
-      "heroDescription": "Connecting Egyptian suppliers and producers to global markets through integrated trade and digital solutions.",
-      "featureBand": {
-        "premiumProducts": "Premium Egyptian Products",
-        "globalMarkets": "Global Markets",
-        "trustedPartnerships": "Trusted Partnerships",
-        "digitalSolutions": "Digital Solutions"
-      },
-      "ourCompany": {
-        "title": "More Than a Trading Company",
-        "subtitle": "We Are Your Global Partner",
-        "description": "Nile Key is an Egyptian limited liability company licensed by the General Authority for Investment and Free Zones, focused on showcasing the quality of Egyptian products in global markets."
-      },
-      "closingBanner": {
-        "title": "From Egyptian Fields and Factories to Global Markets",
-        "subtitle": "Quality. Trust. Sustainable Growth."
-      }
     }
   }
 }

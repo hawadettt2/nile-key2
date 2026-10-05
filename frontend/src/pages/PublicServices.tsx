@@ -57,22 +57,22 @@ export function PublicServices() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900" dir={isArabic ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-[#022F32] text-white" dir={isArabic ? 'rtl' : 'ltr'}>
       <PublicNavbar />
 
       <main>
         {/* Hero Section */}
-        <section className="bg-[#002f32] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">{t('public.services.title')}</h1>
-            <p className="text-base text-slate-300">{t('public.services.subtitle')}</p>
+        <section className="w-full bg-[#022F32]">
+          <div className="mx-auto w-[min(92vw,1280px)] py-14 text-center md:py-20">
+            <h1 className="text-3xl font-bold text-white lg:text-[34px]">{t('public.services.title')}</h1>
+            <p className="mt-3 text-base text-white/70">{t('public.services.subtitle')}</p>
           </div>
         </section>
 
         {/* Services Grid */}
-        <section className="bg-slate-900 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="w-full bg-[#043B3E]">
+          <div className="mx-auto w-[min(92vw,1280px)] py-14 md:py-20">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {services.map((service, index) => (
                 <ServiceCard
                   key={index}
@@ -85,47 +85,49 @@ export function PublicServices() {
           </div>
         </section>
 
-        {/* Why Choose Nile Key */}
-        <section className="bg-slate-800 relative py-20">
-          <img
-            src="/assets/services/services-bg.jpg"
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-            aria-hidden="true"
-          />
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-            <h2 className="text-4xl font-bold text-emerald-400 mb-12 text-center">{t('public.services.whyChooseTitle')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+        {/* Why Choose Nile Key — solid dark surface (services-bg.jpg is a forbidden composite screenshot) */}
+        <section className="w-full bg-[#022F32]">
+          <div className="mx-auto w-[min(92vw,1280px)] py-14 md:py-20">
+            <h2 className="text-3xl font-bold text-white lg:text-[34px]">
+              {t('public.services.whyChooseTitle')}
+            </h2>
+            <div className="mt-12 grid gap-8 md:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="text-emerald-400 mt-1">
+                  <div className="text-[#19D8B0] mt-1">
                     <ClipboardCheck size={24} />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-lg mb-2">{isArabic ? 'منظومة متكاملة' : 'Integrated System'}</h3>
-                    <p className="text-slate-300">{t('public.services.whyChooseP1')}</p>
+                    <h3 className="text-lg font-semibold text-white">
+                      {isArabic ? 'منظومة متكاملة' : 'Integrated System'}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-white/60">{t('public.services.whyChooseP1')}</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="text-emerald-400 mt-1">
+                  <div className="text-[#19D8B0] mt-1">
                     <ClipboardCheck size={24} />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-lg mb-2">{isArabic ? 'التزام بالجودة' : 'Commitment to Quality'}</h3>
-                    <p className="text-slate-300">{t('public.services.whyChooseP2')}</p>
+                    <h3 className="text-lg font-semibold text-white">
+                      {isArabic ? 'الالتزام بالجودة' : 'Commitment to Quality'}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-white/60">{t('public.services.whyChooseP2')}</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="text-emerald-400 mt-1">
+                  <div className="text-[#19D8B0] mt-1">
                     <ClipboardCheck size={24} />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold text-lg mb-2">{isArabic ? 'فهم عميق للسوق' : 'Deep Market Understanding'}</h3>
-                    <p className="text-slate-300">{t('public.services.whyChooseP3')}</p>
+                    <h3 className="text-lg font-semibold text-white">
+                      {isArabic ? 'فهم عميق للسوق' : 'Deep Market Understanding'}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-white/60">{t('public.services.whyChooseP3')}</p>
                   </div>
                 </div>
               </div>
@@ -134,12 +136,16 @@ export function PublicServices() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-slate-900 py-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl font-bold text-white mb-8">{isArabic ? 'جاهز للبدء؟' : 'Ready to Get Started?'}</h2>
-            <div className="flex justify-center">
+        <section className="w-full bg-[#043B3E]">
+          <div className="mx-auto w-[min(92vw,1280px)] py-14 text-center md:py-20">
+            <h2 className="text-3xl font-bold text-white lg:text-[34px]">
+              {isArabic ? 'جاهز للبدء؟' : 'Ready to Get Started?'}
+            </h2>
+            <div className="mt-8 flex justify-center">
               <Link to="/contact">
-                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">{t('public.cta.contactUs')}</Button>
+                <Button className="h-12 rounded-full bg-[#19D8B0] px-8 text-base font-semibold text-[#022F32] hover:bg-[#19D8B0]/90">
+                  {t('public.cta.contactUs')}
+                </Button>
               </Link>
             </div>
           </div>

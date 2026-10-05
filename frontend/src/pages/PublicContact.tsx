@@ -4,7 +4,7 @@ import { PublicNavbar } from '@/components/public/PublicNavbar';
 import { PublicFooter } from '@/components/public/PublicFooter';
 import { Button } from '@/components/ui/button';
 import { submitContact } from '@/services/api';
-import { Globe, Mail, Phone } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -48,6 +48,9 @@ export function PublicContact() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // G12 RESOLVED: wired to the existing approved endpoint POST /contact
+  // (backend/app/routers/contact.py:18, mounted in backend/main.py:659)
+  // via submitContact (frontend/src/services/api.ts:289-290). No new backend created.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -76,56 +79,32 @@ export function PublicContact() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900" dir={isArabic ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-[#022F32] text-white" dir={isArabic ? 'rtl' : 'ltr'}>
       <PublicNavbar />
 
       <main>
         {/* Hero Section */}
-        <section className="bg-[#002f32] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">{t('public.contact.title')}</h1>
-            <p className="text-base text-slate-300">{t('public.contact.subtitle')}</p>
+        <section className="w-full bg-[#022F32]">
+          <div className="mx-auto w-[min(92vw,1280px)] py-14 text-center md:py-20">
+            <h1 className="text-3xl font-bold text-white lg:text-[34px]">{t('public.contact.title')}</h1>
+            <p className="mt-3 text-base text-white/70">{t('public.contact.subtitle')}</p>
           </div>
         </section>
 
         {/* Contact Section */}
-        <section className="bg-slate-900 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              {/* Contact Info */}
+        <section className="w-full bg-[#043B3E]">
+          <div className="mx-auto w-[min(92vw,1280px)] py-14 md:py-20">
+            <div className="grid gap-12 lg:grid-cols-3">
+              {/* Contact Info — only data existing in the project (location: Egypt). Fake email/phone removed. */}
               <div className="lg:col-span-1">
-                <div className="space-y-6">
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="text-emerald-400 mt-1">
-                        <Globe size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold mb-1">{t('public.contact.locationTitle')}</h3>
-                        <p className="text-slate-400">{t('public.contact.locationText')}</p>
-                      </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="text-[#19D8B0] mt-1">
+                      <Globe size={24} />
                     </div>
-                  </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="text-emerald-400 mt-1">
-                        <Mail size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold mb-1">{t('public.contact.emailTitle')}</h3>
-                        <p className="text-slate-400">info@nilekey.com</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="text-emerald-400 mt-1">
-                        <Phone size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold mb-1">{t('public.contact.phoneTitle')}</h3>
-                        <p className="text-slate-400">+20 10 0000 0000</p>
-                      </div>
+                    <div>
+                      <h3 className="font-semibold text-white">{t('public.contact.locationTitle')}</h3>
+                      <p className="mt-1 text-sm text-white/60">{t('public.contact.locationText')}</p>
                     </div>
                   </div>
                 </div>
@@ -134,21 +113,21 @@ export function PublicContact() {
               {/* Contact Form */}
               <div className="lg:col-span-2">
                 {status === 'success' ? (
-                  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
-                    <h3 className="text-2xl font-bold text-emerald-400 mb-4">{t('public.contact.successTitle')}</h3>
-                    <p className="text-slate-300 mb-6">{t('public.contact.successText')}</p>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
+                    <h3 className="text-2xl font-bold text-[#19D8B0]">{t('public.contact.successTitle')}</h3>
+                    <p className="mt-4 text-base leading-7 text-white/70">{t('public.contact.successText')}</p>
                     <Button
                       onClick={() => setStatus('idle')}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="mt-6 rounded-full bg-[#19D8B0] px-8 text-base font-semibold text-[#022F32] hover:bg-[#19D8B0]/90"
                     >
                       {isArabic ? 'إرسال رسالة أخرى' : 'Send Another Message'}
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
+                  <form onSubmit={handleSubmit} className="rounded-2xl border border-white/10 bg-white/5 p-8">
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-white font-medium mb-2">
+                        <label className="block font-medium text-white mb-2">
                           {t('public.contact.nameLabel')} <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -156,13 +135,15 @@ export function PublicContact() {
                           value={formData.name}
                           onChange={handleChange('name')}
                           placeholder={t('public.contact.namePlaceholder')}
-                          className={`w-full px-4 py-3 bg-slate-800 border ${errors.name ? 'border-red-400' : 'border-white/10'} rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500`}
+                          className={`w-full rounded-xl border bg-[#022F32] px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-[#19D8B0] ${
+                            errors.name ? 'border-red-400' : 'border-white/10'
+                          }`}
                         />
-                        {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
+                        {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
                       </div>
 
                       <div>
-                        <label className="block text-white font-medium mb-2">
+                        <label className="block font-medium text-white mb-2">
                           {t('public.contact.emailLabel')} <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -170,13 +151,15 @@ export function PublicContact() {
                           value={formData.email}
                           onChange={handleChange('email')}
                           placeholder={t('public.contact.emailPlaceholder')}
-                          className={`w-full px-4 py-3 bg-slate-800 border ${errors.email ? 'border-red-400' : 'border-white/10'} rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500`}
+                          className={`w-full rounded-xl border bg-[#022F32] px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-[#19D8B0] ${
+                            errors.email ? 'border-red-400' : 'border-white/10'
+                          }`}
                         />
-                        {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email}</p>}
+                        {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
                       </div>
 
                       <div>
-                        <label className="block text-white font-medium mb-2">
+                        <label className="block font-medium text-white mb-2">
                           {t('public.contact.subjectLabel')} <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -184,13 +167,15 @@ export function PublicContact() {
                           value={formData.subject}
                           onChange={handleChange('subject')}
                           placeholder={t('public.contact.subjectPlaceholder')}
-                          className={`w-full px-4 py-3 bg-slate-800 border ${errors.subject ? 'border-red-400' : 'border-white/10'} rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500`}
+                          className={`w-full rounded-xl border bg-[#022F32] px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-[#19D8B0] ${
+                            errors.subject ? 'border-red-400' : 'border-white/10'
+                          }`}
                         />
-                        {errors.subject && <p className="text-red-400 text-sm mt-1">{errors.subject}</p>}
+                        {errors.subject && <p className="mt-1 text-sm text-red-400">{errors.subject}</p>}
                       </div>
 
                       <div>
-                        <label className="block text-white font-medium mb-2">
+                        <label className="block font-medium text-white mb-2">
                           {t('public.contact.messageLabel')} <span className="text-red-400">*</span>
                         </label>
                         <textarea
@@ -198,22 +183,24 @@ export function PublicContact() {
                           onChange={handleChange('message')}
                           placeholder={t('public.contact.messagePlaceholder')}
                           rows={6}
-                          className={`w-full px-4 py-3 bg-slate-800 border ${errors.message ? 'border-red-400' : 'border-white/10'} rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 resize-vertical`}
+                          className={`w-full rounded-xl border bg-[#022F32] px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:border-[#19D8B0] resize-vertical ${
+                            errors.message ? 'border-red-400' : 'border-white/10'
+                          }`}
                         />
-                        {errors.message && <p className="text-red-400 text-sm mt-1">{errors.message}</p>}
+                        {errors.message && <p className="mt-1 text-sm text-red-400">{errors.message}</p>}
                       </div>
 
                       <Button
                         type="submit"
                         disabled={status === 'submitting'}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 text-lg"
+                        className="w-full rounded-full bg-[#19D8B0] py-3 text-lg font-semibold text-[#022F32] hover:bg-[#19D8B0]/90"
                       >
                         {status === 'submitting' ? t('public.contact.sendingButton') : t('public.contact.sendButton')}
                       </Button>
 
                       {status === 'error' && (
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                          <p className="text-red-400 text-sm">{t('public.contact.errorText')}</p>
+                        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                          <p className="text-sm text-red-400">{t('public.contact.errorText')}</p>
                         </div>
                       )}
                     </div>
