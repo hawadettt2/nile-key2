@@ -1,3 +1,36 @@
+## VISUAL SOURCE OF TRUTH OVERRIDE — APPROVED CONCEPT 1
+
+**الأولوية القصوى للتصميم البصري:** هذا القسم يصحح أي تعارض بصري في بقية هذه الخطة، ويعلو عليها جميعًا في كل ما يخص PublicHome.
+
+**المصدر البصري الوحيد:** frontend/public/design-reference/concept1.png = **Concept 1 الفعلي** (اللوحة اليسرى فقط من ملف المفاهيم).
+الصور المرجعية الأخرى، وConcept 2، وConcept 3، وأي Blueprint سابق ناتج عن دمجها **ليست مصادر تصميم بديلة**.
+
+**التكوين الفعلي لـ PublicHome حسب Concept 1:**
+1. Navbar فوق الـHero.
+2. Hero واحد كبير **Full-bleed photographic background** داخل القسم، وليس عمود Text/Image 45/55. الصورة هي الخلفية الرئيسية للـHero وتغطي المشهد.
+3. داخل الـHero: eyebrow، عنوان "Bringing the Best of Egypt to the World"، وصف قصير، وزران فقط: **Get Started** و **Learn More**.
+4. أسفل الـHero مباشرة Feature Band داكن واحد يحتوي 4 عناصر متساوية:
+   - Premium Egyptian Products
+   - Global Markets
+   - Trusted Partnerships
+   - Digital Solutions
+5. Our Company: قسم فاتح، نص يسار + صورة مصرية يمين.
+6. Premium Egyptian Products: قسم فاتح، 3 صور/عناصر متساوية: Vegetables، Fruits، Factory Products، مع رابط **View All Products**.
+7. Closing Global CTA/Banner: قسم داكن بصري بصورة/مشهد عالمي للتصدير، بعنوان **From Egyptian Fields and Factories to Global Markets** ووصف **Quality. Trust. Sustainable Growth.**
+8. Footer داكن.
+
+**بالتالي PublicHome لا يحتوي على هذه الأقسام المنفصلة:** The Export Journey، Digital Platform، Global Markets بإحصائيات، Trusted Partners / CTA split. هذه العناصر من Concept 2/3 أو من Blueprint سابق وليست أجزاء من Concept 1.
+
+**قيود تنفيذ حاسمة:**
+- لا تعاد صياغة Concept 1 إلى 45/55 columns أو 9-section homepage.
+- لا تستخدم Concept 2 أو Concept 3 كمرجع بصري.
+- concept1.png مرجع فقط ولا يُستخدم Runtime.
+- الأصول التشغيلية فقط من جدول الأصول المسموحة في هذه الخطة.
+- أي نص غير ظاهر/غير مستمد من المحتوى الحالي لا يُخترع.
+- إذا تعارض أي نص لاحق في هذه الخطة مع هذا القسم، **هذا القسم هو الحاكم**.
+
+---
+
 # خطة تنفيذ الواجهة العامة لموقع Nile Key
 
 ## 1. الصفحات والمسارات العامة المطلوبة
