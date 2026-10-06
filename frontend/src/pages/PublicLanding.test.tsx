@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, test } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { PublicLanding } from '@/pages/PublicLanding';
 import { I18nextProvider } from 'react-i18next';
@@ -7,81 +8,99 @@ import i18n from '@/lib/i18n';
 function renderWithProviders(ui: React.ReactElement) {
   return render(
     <BrowserRouter>
-      <I18nextProvider i18n={i18n}>
-        {ui}
-      </I18nextProvider>
-    </BrowserRouter>
+      <I18nextProvider i18n={i18n}>{ui}</I18nextProvider>
+    </BrowserRouter>,
   );
 }
 
 describe('PublicLanding', () => {
-  test('renders company name and hero identity', () => {
-    renderWithProviders(<PublicLanding />);
-    expect(screen.getAllByText('Nile Key').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('EGYPTIAN PRODUCTS • GLOBAL MARKETS')).toBeDefined();
-    expect(screen.getByText('شركة مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م)')).toBeDefined();
-    expect(screen.getByText('Nile Key for Investment and International Trade LLC')).toBeDefined();
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
   });
 
-  test('renders the final 7-section composition in order', () => {
+  test('renders the company identity and hero message', () => {
     renderWithProviders(<PublicLanding />);
-    expect(screen.getByText('Our Company')).toBeDefined();
-    expect(screen.getByText('Premium Egyptian Products')).toBeDefined();
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Nile Key for Investment and International Trade LLC' })).toBeDefined();
+    expect(screen.getByText('Bringing high-quality Egyptian products to global markets')).toBeDefined();
+    expect(screen.getAllByText('NK').length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('renders only the sections in the Arabic reference composition', () => {
+    renderWithProviders(<PublicLanding />);
+
+    expect(screen.getByText('Your Trusted Partner in International Trade')).toBeDefined();
     expect(screen.getByText('The Export Journey')).toBeDefined();
-    expect(screen.getByText('Our Integrated Digital Platform')).toBeDefined();
-    expect(screen.getByText('for Export Operations')).toBeDefined();
-    expect(screen.getByText('Our Presence in Global Markets')).toBeDefined();
-    expect(screen.getByText('Trusted by Global Partners')).toBeDefined();
-    expect(screen.getByText("Let's Grow Together")).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Our Integrated Digital Platform\s*for Egyptian Export Operations/ })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Your Strategic Partner in Global Trade' })).toBeDefined();
+    expect(screen.queryByRole('heading', { name: 'Premium Egyptian Products' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Our Presence in Global Markets' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Trusted by Global Partners' })).toBeNull();
   });
 
-  test('renders the 5 export journey steps', () => {
+  test('renders exactly four export journey stages in reference order', () => {
     renderWithProviders(<PublicLanding />);
-    // Both desktop (horizontal) and mobile (vertical) variants render in jsdom
-    expect(screen.getAllByText('Farm / Factory').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Packing & Quality').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Export Documents').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Shipping').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Port & Delivery').length).toBeGreaterThanOrEqual(1);
+
+    const journey = screen.getByText('The Export Journey').parentElement?.parentElement;
+    expect(journey).not.toBeNull();
+    const labels = [
+      'Egyptian Farms & Factories',
+      'Port',
+      'Transport & Shipping',
+      'Global Markets',
+    ];
+    for (const label of labels) {
+      expect(within(journey as HTMLElement).getAllByText(label).length).toBeGreaterThanOrEqual(1);
+    }
   });
 
-  test('renders the 3 approved global market statistics', () => {
+  test('renders six platform capabilities', () => {
     renderWithProviders(<PublicLanding />);
-    expect(screen.getByText('50+')).toBeDefined();
-    expect(screen.getByText('200+')).toBeDefined();
-    expect(screen.getByText('100%')).toBeDefined();
-    expect(screen.getByText('Countries')).toBeDefined();
-    expect(screen.getByText('Business Partners')).toBeDefined();
-    expect(screen.getByText('Commitment to Quality')).toBeDefined();
+
+    const featureTitles = [
+      'Invoicing & Payments',
+      'Shipment Management',
+      'Customer Management',
+      'Product Management',
+      'Reports & Analytics',
+      'Global Markets',
+    ];
+    for (const title of featureTitles) expect(screen.getByRole('heading', { name: title })).toBeDefined();
   });
 
-  test('renders Login and Create Account CTAs linking to /login', () => {
+  test('uses independent homepage image assets rather than reference or design-board crops', () => {
     renderWithProviders(<PublicLanding />);
-    const links = screen.getAllByRole('link');
-    const loginLinks = links.filter(link => link.getAttribute('href') === '/login');
+
+    const images = Array.from(document.querySelectorAll('main img'));
+    expect(images).toHaveLength(8);
+    expect(images.map((image) => image.getAttribute('src'))).toEqual([
+      '/assets/home/hero-port-said.jpg',
+      '/assets/home/hero-pyramids.jpg',
+      '/assets/home/hero-produce.jpg',
+      '/assets/home/company-cargo-ship.jpg',
+      '/assets/home/export-journey-panorama.jpg',
+      '/assets/home/company-cargo-ship.jpg',
+      '/assets/home/hero-produce.jpg',
+      '/assets/home/global-trade-cta.jpg',
+    ]);
+    expect(images.some((image) => image.getAttribute('src')?.includes('design-reference'))).toBe(false);
+  });
+
+  test('keeps both account actions linked to login', () => {
+    renderWithProviders(<PublicLanding />);
+
+    const loginLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/login');
     expect(loginLinks.length).toBeGreaterThanOrEqual(2);
   });
 
-  test('does not expose internal dashboard or ERP data', () => {
+  test('does not render fake account, shipment, or ERP records', () => {
     renderWithProviders(<PublicLanding />);
-    expect(screen.queryByText('Dashboard')).toBeNull();
+
+    expect(screen.queryByText('Alexandria')).toBeNull();
+    expect(screen.queryByText('Aswan')).toBeNull();
+    expect(screen.queryByText('Active')).toBeNull();
     expect(screen.queryByText('owner')).toBeNull();
-    expect(screen.queryByText('manager')).toBeNull();
     expect(screen.queryByText('supplier')).toBeNull();
     expect(screen.queryByText('customer')).toBeNull();
-  });
-
-  test('does not render the removed Feature Band or Global Closing Banner', () => {
-    renderWithProviders(<PublicLanding />);
-    expect(screen.queryByText('Shipment Management')).toBeNull();
-    expect(screen.queryByText('E-Invoicing')).toBeNull();
-    expect(screen.queryByText('Customs Clearance')).toBeNull();
-    expect(screen.queryByText('Bringing the Best of Egypt to the World')).toBeNull();
-    expect(screen.queryByText('More Than a Trading Company')).toBeNull();
-  });
-
-  test('renders NK logo branding', () => {
-    renderWithProviders(<PublicLanding />);
-    expect(screen.getAllByText('NK').length).toBeGreaterThanOrEqual(1);
   });
 });

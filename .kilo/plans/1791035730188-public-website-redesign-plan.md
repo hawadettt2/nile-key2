@@ -8,7 +8,7 @@
 
 | النوع | المصدر |
 |-------|--------|
-| **Visual Source of Truth** | `frontend/public/design-reference/concept1.png` (438 × 1199 PNG). منطقة الـRuntime تنتهي عند Footer تقريبًا عند y≈1148. المنطقة من y≈1150 حتى نهاية الصورة والتي تعرض `3. Full Homepage Concept` هي عنوان/شرح خارجي وتُتجاهل — ليست جزءًا من Runtime Home. |
+| **Visual Source of Truth** | `frontend/public/design-reference/nile-key-export-platform-homepage-ar.png` (1024 × 1536 PNG), the sole visual source for the homepage. `concept1.png` is no longer authoritative. |
 | **Content Source** | المحتوى النصي الموجود فعليًا في المشروع (`src/locales/en/translation.json`, `src/locales/ar/translation.json`, المحتوى المؤسسي الحالي). لا يُخترع محتوى. |
 | **Technical Constraint** | الكود والبنية الحالية (`App.tsx`, `PrivateRoute`, `Layout`, DEM, Backend). لا تُعاد هيكلتها. |
 

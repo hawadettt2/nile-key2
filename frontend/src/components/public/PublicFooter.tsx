@@ -1,72 +1,53 @@
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Linkedin, MessageCircle, Youtube } from 'lucide-react';
 
 export function PublicFooter() {
   const { t, i18n } = useTranslation();
-  const isArabic = i18n.language === 'ar';
+  const isArabic = i18n.language.startsWith('ar');
+  const links = [
+    { path: '/', label: t('public.nav.home') },
+    { path: '/about', label: t('public.nav.about') },
+    { path: '/products', label: t('public.nav.products') },
+    { path: '/markets', label: t('public.nav.markets') },
+    { path: '/services', label: t('public.nav.services') },
+    { path: '/contact', label: t('public.nav.contact') },
+  ];
 
   return (
-    <footer className="bg-[#022F32] border-t border-white/10 py-16">
-      <div className="mx-auto w-[min(92vw,1280px)]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-8 lg:gap-12">
-          {/* Column 1: Logo + Brand + Tagline */}
-          <div>
-            <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#19D8B0] font-bold text-[#022F32]">
-                NK
-              </div>
-              <div>
-                <div className="font-bold leading-tight text-white">{isArabic ? 'مفتاح النيل' : 'Nile Key'}</div>
-                <div className="text-[10px] text-white/50">{isArabic ? 'المنصة الرقمية للتصدير' : 'Digital Export Platform'}</div>
-              </div>
-            </Link>
-            <p className="mt-4 text-sm text-white/60">
-              {isArabic
-                ? 'شركة مفتاح النيل للاستثمار والتجارة الدولية - شريكك الاستراتيجي في التجارة العالمية.'
-                : 'Nile Key for Investment and International Trade - Your strategic partner in global trade.'}
-            </p>
-          </div>
+    <footer className="bg-[#022725] text-white" dir="ltr">
+      <div className="mx-auto w-[min(88vw,1200px)] py-5 sm:py-6">
+        <div className="flex flex-col items-center justify-between gap-5 sm:flex-row sm:gap-8">
+          <Link to="/" className="flex shrink-0 items-center gap-3" dir={isArabic ? 'rtl' : 'ltr'}>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#22bd75] to-[#0ca55f] text-sm font-extrabold text-white">NK</span>
+            <span className="flex flex-col">
+              <span className="text-sm font-bold leading-tight">{isArabic ? 'مفتاح النيل' : 'Nile Key'}</span>
+              <span className="mt-0.5 text-[9px] leading-tight text-white/60">{t('public.footer.tagline')}</span>
+            </span>
+          </Link>
 
-          {/* Column 2: Quick Links */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#19D8B0]">
-              {isArabic ? 'روابط سريعة' : 'Quick Links'}
-            </h3>
-            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/60">
-              <li><Link to="/" className="hover:text-white transition-colors">{t('public.nav.home')}</Link></li>
-              <li><Link to="/about" className="hover:text-white transition-colors">{t('public.nav.about')}</Link></li>
-              <li><Link to="/products" className="hover:text-white transition-colors">{t('public.nav.products')}</Link></li>
-              <li><Link to="/services" className="hover:text-white transition-colors">{t('public.nav.services')}</Link></li>
-              <li><Link to="/markets" className="hover:text-white transition-colors">{t('public.nav.markets')}</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition-colors">{t('public.nav.contact')}</Link></li>
+          <nav aria-label={isArabic ? 'روابط التذييل' : 'Footer navigation'}>
+            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" dir={isArabic ? 'rtl' : 'ltr'}>
+              {links.map(({ path, label }) => (
+                <li key={path}>
+                  <Link to={path} className="text-[11px] text-white/75 transition-colors hover:text-[#4ee58e] sm:text-xs">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
-
-          {/* Column 3: Contact Us — only data existing in the project (location: Egypt) */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#19D8B0]">
-              {isArabic ? 'تواصل معنا' : 'Contact Us'}
-            </h3>
-            <ul className="mt-3 space-y-2 text-sm text-white/60">
-              <li>{t('public.contact.locationText')}</li>
-            </ul>
-          </div>
-
-          {/* Column 4: Follow Us — G11 Asset Gap: no verified social platforms exist in the project or content source; no platforms invented, no fake glyphs */}
-          <div data-asset-gap="G11">
-            <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#19D8B0]">
-              {isArabic ? 'تابعنا' : 'Follow Us'}
-            </h3>
-            <div className="mt-3">
-              {/* G11 Gap: verified social platform links/assets required — none exist in the project; left empty intentionally (no invented platforms) */}
-            </div>
-          </div>
+          </nav>
         </div>
 
-        <div className="border-t border-white/10 mt-8 pt-8 text-center">
-          <p className="text-white/50 text-sm">
+        <div className="mt-4 flex flex-col-reverse items-center justify-between gap-3 border-t border-white/10 pt-3 sm:flex-row">
+          <p className="text-center text-[10px] leading-5 text-white/50 sm:text-left" dir={isArabic ? 'rtl' : 'ltr'}>
             {t('public.footer.copyright')}
           </p>
+          <div className="flex items-center gap-3 text-white/85" aria-hidden="true">
+            <Linkedin className="h-3.5 w-3.5" />
+            <Youtube className="h-4 w-4" />
+            <MessageCircle className="h-3.5 w-3.5" />
+          </div>
         </div>
       </div>
     </footer>
