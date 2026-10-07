@@ -27,7 +27,7 @@ type HomeFeature = {
 
 function PlatformMockup() {
   return (
-    <div className="relative mx-auto w-full max-w-[430px]" aria-hidden="true" dir="ltr">
+    <div className="relative mx-auto w-full max-w-[330px]" aria-hidden="true" dir="ltr">
       <div className="relative z-10 mx-auto w-[86%] rounded-t-[18px] border-[5px] border-[#073c39] bg-[#072d2d] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
         <div className="aspect-[2.5/1] overflow-hidden rounded-t-[9px] bg-[#f4f8f4] p-2 sm:p-3">
           <div className="flex h-full gap-2">
@@ -232,11 +232,11 @@ export function PublicLanding() {
       <PublicNavbar overlay />
 
       <main>
-        <section className="relative isolate min-h-[480px] overflow-hidden bg-[#022f30] lg:min-h-[400px]">
+        <section className="relative isolate min-h-[480px] overflow-hidden bg-[#022f30] lg:min-h-[334px]">
           <HeroTradeArtwork />
-          <div className="relative mx-auto grid min-h-[480px] w-[min(90vw,1280px)] items-center pt-16 lg:min-h-[400px] lg:grid-cols-2 lg:pt-16" dir="ltr">
+          <div className="relative mx-auto grid min-h-[480px] w-[min(86vw,1280px)] items-center pt-16 lg:min-h-[334px] lg:grid-cols-2 lg:pt-16" dir="ltr">
             <div className="hidden lg:block" aria-hidden="true" />
-            <div className={`max-w-[610px] py-10 ${isArabic ? 'text-right' : 'text-left'}`} dir={direction}>
+            <div className={`max-w-[610px] pt-16 pb-10 ${isArabic ? 'text-right' : 'text-left'}`} dir={direction}>
               <h1 className="text-2xl font-extrabold leading-[1.45] text-white sm:text-3xl lg:text-[32px]">
                 {isArabic ? t('public.home.heroCorporateAr') : t('public.home.heroCorporateEn')}
               </h1>
@@ -266,7 +266,7 @@ export function PublicLanding() {
         </section>
 
         <section className="border-t border-[#19b86f]/60 bg-[#003735]">
-          <div className="mx-auto grid w-[min(84vw,1160px)] gap-8 py-10 lg:min-h-[244px] lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-14 lg:py-7" dir="ltr">
+          <div className="mx-auto grid w-[min(84vw,1160px)] gap-8 py-10 lg:min-h-[243px] lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-14 lg:py-7" dir="ltr">
             <div dir={direction} className={isArabic ? 'text-right' : 'text-left'}>
               <p className="text-sm font-semibold tracking-wide text-[#4ee58e]">{t('public.home.ourCompanyEyebrow')}</p>
               <h2 className="mt-2 text-2xl font-extrabold leading-tight text-white sm:text-[28px]">
@@ -284,12 +284,12 @@ export function PublicLanding() {
                 ))}
               </div>
             </div>
-            <figure className="relative mx-auto w-full max-w-[460px] lg:my-3">
+            <figure className="relative w-full max-w-[350px] lg:my-3 lg:ml-auto">
               <div className="absolute -bottom-3 -left-3 h-full w-full rounded-lg border-l-[3px] border-b-[3px] border-[#19b86f]" aria-hidden="true" />
               <img
                 src="/assets/home/company-cargo-ship.jpg"
                 alt={t('public.home.companyImageAlt')}
-                className="relative aspect-[2/1] w-full rounded-lg object-cover"
+                className="relative aspect-[1.9/1] w-full rounded-lg object-cover"
                 loading="lazy"
               />
             </figure>
@@ -298,7 +298,7 @@ export function PublicLanding() {
 
         <section className="relative isolate overflow-hidden bg-[#f2f4ed] text-[#073a3a]">
           <ExportJourneyArtwork />
-          <div className="relative mx-auto grid w-[min(88vw,1200px)] gap-6 py-9 lg:min-h-[254px] lg:grid-cols-[0.72fr_1fr] lg:items-center lg:gap-8 lg:py-7" dir="ltr">
+          <div className="relative mx-auto grid w-[min(86vw,1200px)] gap-6 py-9 lg:min-h-[254px] lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8 lg:py-7" dir="ltr">
             <div className="hidden lg:block" aria-hidden="true" />
             <div dir={direction} className={isArabic ? 'text-right' : 'text-left'}>
               <p className="text-xs font-bold tracking-wide text-[#13955e]">{t('public.home.journeyTitle')}</p>
@@ -336,7 +336,7 @@ export function PublicLanding() {
         </section>
 
         <section className="bg-[#022f30]">
-          <div className="mx-auto w-[min(84vw,1160px)] py-5">
+          <div className="mx-auto w-[min(84vw,1160px)] py-4">
             <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12" dir="ltr">
               <div dir={direction} className={isArabic ? 'text-right' : 'text-left'}>
                 <p className="text-sm font-semibold tracking-wide text-[#4ee58e]">{t('public.home.platformEyebrow')}</p>
@@ -349,7 +349,9 @@ export function PublicLanding() {
                   {t('public.home.platformDescription')}
                 </p>
               </div>
-              <PlatformMockup />
+              <div className="lg:ml-auto">
+                <PlatformMockup />
+              </div>
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" dir={direction}>
@@ -358,7 +360,7 @@ export function PublicLanding() {
           </div>
         </section>
 
-        <section className="relative isolate flex min-h-[144px] items-center justify-center overflow-hidden bg-[#c8e0b0] px-5 py-6 text-center sm:min-h-[152px]">
+        <section className="relative isolate flex min-h-[141px] items-center justify-center overflow-hidden bg-[#c8e0b0] px-5 py-4 text-center sm:min-h-[141px]">
           <img
             src="/assets/home/global-trade-cta.jpg"
             alt=""

@@ -16,7 +16,7 @@ export function PublicFooter() {
 
   return (
     <footer className="bg-[#022725] text-white" dir="ltr">
-      <div className="mx-auto w-[min(88vw,1200px)] py-5 sm:py-6">
+      <div className="mx-auto w-[min(88vw,1200px)] py-4">
         <div className="flex flex-col items-center justify-between gap-5 sm:flex-row sm:gap-8">
           <Link to="/" className="flex shrink-0 items-center gap-3" dir={isArabic ? 'rtl' : 'ltr'}>
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#22bd75] to-[#0ca55f] text-sm font-extrabold text-white">NK</span>
