@@ -107,7 +107,7 @@ function PlatformMockup() {
 
 function FeatureTile({ icon: Icon, title, description }: HomeFeature) {
   return (
-    <article className="flex min-h-[78px] items-center gap-3 rounded-xl border border-[#0c6558]/60 bg-[#032f30]/30 px-3 py-3 sm:gap-4 sm:px-5">
+    <article className="flex min-h-[78px] items-center gap-2 rounded-xl border border-[#0c6558]/60 bg-[#032f30]/30 px-3 py-1.5 sm:gap-2 sm:px-4">
       <Icon className="h-7 w-7 shrink-0 text-[#4ee58e]" strokeWidth={1.8} aria-hidden="true" />
       <div className="min-w-0">
         <h3 className="text-sm font-bold leading-5 text-white sm:text-base">{title}</h3>
@@ -122,52 +122,13 @@ function HeroTradeArtwork() {
     <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
       <div className="absolute inset-0 bg-[#022f30]" />
       <img
-        src="/assets/home/hero-port-said.jpg"
+        src="/assets/home/hero-scene.png"
         alt=""
-        className="absolute bottom-0 left-[23%] h-[84%] w-[48%] object-cover object-center opacity-80"
-        style={{ maskImage: 'linear-gradient(90deg, transparent 0%, #000 13%, #000 83%, transparent 100%)' }}
+        className="absolute top-[65px] left-0 h-[337px] w-[495px] object-cover"
+        loading="eager"
       />
-      <img
-        src="/assets/home/hero-pyramids.jpg"
-        alt=""
-        className="absolute bottom-0 left-0 h-[92%] w-[42%] object-cover object-[62%_center]"
-        style={{ maskImage: 'linear-gradient(90deg, #000 0%, #000 68%, transparent 100%)' }}
-      />
-      <img
-        src="/assets/home/hero-produce.jpg"
-        alt=""
-        className="absolute bottom-0 left-0 h-[40%] w-[34%] object-cover object-center"
-        style={{ maskImage: 'linear-gradient(0deg, #000 0%, #000 72%, transparent 100%)' }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#022f30]/50 via-transparent to-[#022f30]/10" />
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#022f30]/25 to-[#022f30]" />
-      <svg
-        viewBox="0 0 640 300"
-        className="absolute left-[9%] top-[10%] h-[68%] w-[50%] text-[#47cb9b]/35"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <g fill="currentColor" opacity=".46">
-          <path d="m38 78 24-17 46-9 31 11 8 18-14 13-19 2-10 17-20-2-13 19-17-8-9-24-17-7z" />
-          <path d="m108 145 26-5 20 15-4 27-16 28-12 35-13-7-10-33-8-26z" />
-          <path d="m281 78 23-14 27 4 8 12-17 12-26-3z" />
-          <path d="m289 112 36-8 31 14 5 22-17 22-6 37-19 27-15-10-5-33-16-22-8-26z" />
-          <path d="m354 73 46-17 68 8 57 21 25 20-22 17-35-3-26 18-40-1-19-21-34-3-23-17z" />
-          <path d="m445 191 28-4 23 12-2 19-33 7-24-13z" />
-        </g>
-        <g fill="none" stroke="currentColor" strokeWidth="1.7">
-          <path d="M93 107Q215 8 331 98T509 124" />
-          <path d="M93 107Q234 204 350 134T509 124" />
-          <path d="M151 74Q302 216 454 106" />
-        </g>
-        <g fill="#72e5ac">
-          <circle cx="93" cy="107" r="4" />
-          <circle cx="331" cy="98" r="4" />
-          <circle cx="509" cy="124" r="4" />
-          <circle cx="350" cy="134" r="3" />
-        </g>
-      </svg>
-      <div className="absolute left-[24%] top-[19%] h-24 w-24 rounded-full bg-[#e3b95e]/25 blur-3xl" />
-      <div className="absolute inset-y-0 right-0 w-[55%] bg-gradient-to-l from-[#022f30] via-[#022f30]/90 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#022f30]/60 via-transparent to-[#022f30]/30" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#022f30]/40 to-[#022f30]" />
     </div>
   );
 }
@@ -228,34 +189,33 @@ export function PublicLanding() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#022f30] text-white" dir={direction}>
+    <div className="relative bg-[#022f30] text-white" dir={direction}>
       <PublicNavbar overlay />
 
       <main>
-        <section className="relative isolate min-h-[480px] overflow-hidden bg-[#022f30] lg:min-h-[334px]">
+        <section className="relative isolate min-h-[480px] overflow-hidden bg-[#022f30] lg:h-[402px] lg:min-h-[402px]">
           <HeroTradeArtwork />
-          <div className="relative mx-auto grid min-h-[480px] w-[min(86vw,1280px)] items-center pt-16 lg:min-h-[334px] lg:grid-cols-2 lg:pt-16" dir="ltr">
-            <div className="hidden lg:block" aria-hidden="true" />
-            <div className={`max-w-[610px] pt-16 pb-10 ${isArabic ? 'text-right' : 'text-left'}`} dir={direction}>
-              <h1 className="text-2xl font-extrabold leading-[1.45] text-white sm:text-3xl lg:text-[32px]">
+          <div className="relative mx-auto flex h-full w-[min(86vw,1280px)] items-center justify-start pl-[443px] lg:pl-[443px] lg:absolute lg:inset-0" dir="ltr">
+            <div className={`max-w-[448px] pt-[81px] ${isArabic ? 'text-right' : 'text-left'}`} dir={direction}>
+              <h1 className="text-xl font-extrabold leading-[1.4] text-white sm:text-2xl lg:text-[22px]">
                 {isArabic ? t('public.home.heroCorporateAr') : t('public.home.heroCorporateEn')}
               </h1>
-              <p className="mt-1 text-sm font-semibold text-white/90 sm:text-base lg:text-lg" dir="ltr">
+              <p className="mt-1 pl-[56px] text-[11px] font-semibold text-white/90 sm:text-xs lg:text-[12px]" dir="ltr">
                 {isArabic ? t('public.home.heroCorporateEn') : t('public.home.heroCorporateAr')}
               </p>
-              <p className="mt-5 text-lg font-extrabold leading-8 text-[#4ee58e] sm:text-xl lg:text-[22px]">
+              <p className="mt-10 pl-[73px] text-sm font-extrabold leading-6 text-[#4ee58e] sm:text-base lg:text-[16px]">
                 {t('public.home.heroMessage')}
               </p>
-              <p className="mt-3 text-sm leading-6 text-white/85 sm:text-[15px] sm:leading-7">
+              <p className="mt-2 pl-[69px] text-[11px] leading-5 text-white/85 sm:text-xs sm:leading-6">
                 {t('public.home.heroDescription')}
               </p>
-              <div className={`mt-6 flex flex-wrap gap-3 ${isArabic ? 'justify-end' : 'justify-start'}`} dir="ltr">
-                <Button asChild className="h-10 min-w-32 rounded-lg bg-white px-5 font-bold text-[#073a3a] hover:bg-white/90">
+              <div className={`mt-5 flex flex-wrap gap-2 ${isArabic ? 'justify-end' : 'justify-start'}`} dir="ltr">
+                <Button asChild className="h-8 min-w-32 rounded-md bg-white px-4 font-bold text-[#073a3a] hover:bg-white/90">
                   <Link to="/login" dir={direction}>
                     {t('public.cta.createAccount')}
                   </Link>
                 </Button>
-                <Button asChild className="h-10 min-w-32 rounded-lg bg-gradient-to-r from-[#19b86f] to-[#4ee58e] px-5 font-bold text-[#063934] hover:brightness-105">
+                <Button asChild className="h-8 min-w-32 rounded-md bg-gradient-to-r from-[#19b86f] to-[#4ee58e] px-4 font-bold text-[#063934] hover:brightness-105">
                   <Link to="/login" dir={direction}>
                     {t('public.cta.signIn')}
                   </Link>
@@ -266,16 +226,16 @@ export function PublicLanding() {
         </section>
 
         <section className="border-t border-[#19b86f]/60 bg-[#003735]">
-          <div className="mx-auto grid w-[min(84vw,1160px)] gap-8 py-10 lg:min-h-[243px] lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-14 lg:py-7" dir="ltr">
+          <div className="mx-auto grid w-[min(84vw,1160px)] gap-2 py-2 lg:min-h-[243px] lg:grid-cols-[1fr_0.92fr] lg:items-center lg:gap-2 lg:py-1" dir="ltr">
             <div dir={direction} className={isArabic ? 'text-right' : 'text-left'}>
               <p className="text-sm font-semibold tracking-wide text-[#4ee58e]">{t('public.home.ourCompanyEyebrow')}</p>
               <h2 className="mt-2 text-2xl font-extrabold leading-tight text-white sm:text-[28px]">
                 {t('public.home.ourCompanyTitle')}
               </h2>
-              <p className="mt-3 max-w-[580px] text-sm leading-6 text-white/75 sm:text-[15px] sm:leading-7">
+              <p className="mt-2 max-w-[580px] text-sm leading-6 text-white/75 sm:text-[15px] sm:leading-7">
                 {t('public.home.ourCompanyText')}
               </p>
-              <div className="mt-5 grid grid-cols-3 divide-x divide-[#19b86f]/35" dir="ltr">
+              <div className="mt-2 grid grid-cols-3 divide-x divide-[#19b86f]/35" dir="ltr">
                 {companyHighlights.map(({ icon: Icon, title }) => (
                   <div key={title} className="px-2 text-center" dir={direction}>
                     <Icon className="mx-auto h-6 w-6 text-[#4ee58e]" strokeWidth={1.8} aria-hidden="true" />
@@ -298,13 +258,13 @@ export function PublicLanding() {
 
         <section className="relative isolate overflow-hidden bg-[#f2f4ed] text-[#073a3a]">
           <ExportJourneyArtwork />
-          <div className="relative mx-auto grid w-[min(86vw,1200px)] gap-6 py-9 lg:min-h-[254px] lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-8 lg:py-7" dir="ltr">
+          <div className="relative mx-auto grid w-[min(86vw,1200px)] gap-2 py-0.5 lg:h-[254px] lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-3 lg:py-0.5" dir="ltr">
             <div className="hidden lg:block" aria-hidden="true" />
             <div dir={direction} className={isArabic ? 'text-right' : 'text-left'}>
               <p className="text-xs font-bold tracking-wide text-[#13955e]">{t('public.home.journeyTitle')}</p>
               <h2 className="mt-1 text-xl font-extrabold leading-tight sm:text-2xl">{t('public.home.journeyHeadline')}</h2>
               <p className="mt-2 text-xs leading-5 text-[#183d39]/90 sm:text-sm sm:leading-6">{t('public.home.journeyDescription')}</p>
-              <div className="mt-5 hidden items-start lg:flex" dir={direction}>
+              <div className="mt-3 hidden items-start lg:flex" dir={direction}>
                 {journeySteps.map(({ icon: Icon, title }, index) => (
                   <Fragment key={title}>
                     <div className="flex w-[22%] shrink-0 flex-col items-center text-center">
@@ -336,31 +296,31 @@ export function PublicLanding() {
         </section>
 
         <section className="bg-[#022f30]">
-          <div className="mx-auto w-[min(84vw,1160px)] py-4">
-            <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12" dir="ltr">
+          <div className="mx-auto w-[min(84vw,1160px)] py-1">
+            <div className="grid items-start gap-2 lg:grid-cols-[0.85fr_1.15fr] lg:gap-2" dir="ltr">
               <div dir={direction} className={isArabic ? 'text-right' : 'text-left'}>
                 <p className="text-sm font-semibold tracking-wide text-[#4ee58e]">{t('public.home.platformEyebrow')}</p>
-                <h2 className="mt-2 text-2xl font-extrabold leading-tight text-white sm:text-[28px]">
+                <h2 className="mt-0.5 text-2xl font-extrabold leading-tight text-white sm:text-[28px]">
                   <span>{t('public.home.platformTitleLine1')}</span>
                   <br />
                   <span>{t('public.home.platformTitleLine2')}</span>
                 </h2>
-                <p className="mt-3 max-w-[540px] text-sm leading-6 text-white/70 sm:text-[15px] sm:leading-7">
+                <p className="mt-0.5 max-w-[540px] text-sm leading-5 text-white/70 sm:text-[15px] sm:leading-6">
                   {t('public.home.platformDescription')}
                 </p>
               </div>
-              <div className="lg:ml-auto">
+              <div className="lg:col-start-2 lg:ml-[155px] lg:w-[330px]">
                 <PlatformMockup />
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3" dir={direction}>
+            <div className="mt-2 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3" dir={direction}>
               {features.map((feature) => <FeatureTile key={feature.title} {...feature} />)}
             </div>
           </div>
         </section>
 
-        <section className="relative isolate flex min-h-[141px] items-center justify-center overflow-hidden bg-[#c8e0b0] px-5 py-4 text-center sm:min-h-[141px]">
+        <section className="relative isolate flex min-h-[141px] items-center justify-center overflow-hidden bg-[#c8e0b0] px-5 py-3 text-center sm:min-h-[141px]">
           <img
             src="/assets/home/global-trade-cta.jpg"
             alt=""

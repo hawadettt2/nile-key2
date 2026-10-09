@@ -72,11 +72,9 @@ describe('PublicLanding', () => {
     renderWithProviders(<PublicLanding />);
 
     const images = Array.from(document.querySelectorAll('main img'));
-    expect(images).toHaveLength(8);
+    expect(images).toHaveLength(6);
     expect(images.map((image) => image.getAttribute('src'))).toEqual([
-      '/assets/home/hero-port-said.jpg',
-      '/assets/home/hero-pyramids.jpg',
-      '/assets/home/hero-produce.jpg',
+      '/assets/home/hero-scene.png',
       '/assets/home/company-cargo-ship.jpg',
       '/assets/home/export-journey-panorama.jpg',
       '/assets/home/company-cargo-ship.jpg',

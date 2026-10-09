@@ -35,9 +35,9 @@ export function PublicNavbar({ overlay = false }: PublicNavbarProps) {
         : 'sticky top-0 z-50 border-b border-white/10 bg-[#043B3E]/95 backdrop-blur-md'}
     >
       <div className="mx-auto w-[min(92vw,1280px)]">
-        <div className="flex h-14 items-center justify-between lg:h-[68px]">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#22bd75] to-[#0ca55f] font-bold text-white shadow-sm">
+        <div className="flex h-11 items-center justify-between lg:h-11">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#22bd75] to-[#0ca55f] font-bold text-white shadow-sm">
               NK
             </div>
             <div className="hidden flex-col sm:flex" dir={isArabic ? 'rtl' : 'ltr'}>
