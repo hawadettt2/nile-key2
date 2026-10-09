@@ -6,6 +6,7 @@ import i18n from '@/lib/i18n';
 import { useAuthStore } from '@/store/authStore';
 import { userEvent } from '@testing-library/user-event';
 import { waitFor } from '@testing-library/react';
+import { beforeEach } from 'vitest';
 
 const originalAuth = useAuthStore.getState();
 
@@ -18,6 +19,10 @@ function renderWithProviders(ui: React.ReactElement, { route = '/' } = {}) {
     </MemoryRouter>
   );
 }
+
+beforeEach(async () => {
+  await i18n.changeLanguage('en');
+});
 
 afterEach(() => {
   useAuthStore.setState(originalAuth);
