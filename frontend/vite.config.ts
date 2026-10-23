@@ -24,6 +24,7 @@ export default defineConfig({
     },
     watch: {
       usePolling: true,
+      interval: 100,
     },
   },
   build: {

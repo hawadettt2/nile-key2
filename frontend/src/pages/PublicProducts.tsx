@@ -10,9 +10,9 @@ export function PublicProducts() {
   const isArabic = i18n.language === 'ar';
 
   const products = [
-    { assetGap: 'G4', title: t('public.products.vegetablesTitle'), description: t('public.products.vegetablesDesc') },
-    { assetGap: 'G5', title: t('public.products.fruitsTitle'), description: t('public.products.fruitsDesc') },
-    { assetGap: 'G6', title: t('public.products.factoryTitle'), description: t('public.products.factoryDesc') },
+    { imageSrc: '/assets/products/vegetables.jpg', title: t('public.products.vegetablesTitle'), description: t('public.products.vegetablesDesc') },
+    { imageSrc: '/assets/products/fruits.jpg', title: t('public.products.fruitsTitle'), description: t('public.products.fruitsDesc') },
+    { imageSrc: '/assets/products/factory.jpg', title: t('public.products.factoryTitle'), description: t('public.products.factoryDesc') },
   ];
 
   return (
@@ -28,14 +28,14 @@ export function PublicProducts() {
           </div>
         </section>
 
-        {/* Products Grid — G4/G5/G6 Asset Gaps: no clean product photographs exist in the project */}
+        {/* Products Grid — real product photographs bound to assets/products/ */}
         <section className="w-full bg-[#043B3E]">
           <div className="mx-auto w-[min(92vw,1280px)] py-14 md:py-20">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => (
                 <ProductCard
                   key={product.title}
-                  assetGap={product.assetGap}
+                  imageSrc={product.imageSrc}
                   title={product.title}
                   description={product.description}
                 />

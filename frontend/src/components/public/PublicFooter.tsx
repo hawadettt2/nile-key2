@@ -30,7 +30,7 @@ export function PublicFooter() {
             <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" dir={isArabic ? 'rtl' : 'ltr'}>
               {links.map(({ path, label }) => (
                 <li key={path}>
-                  <Link to={path} className="text-[11px] text-white/75 transition-colors hover:text-[#4ee58e] sm:text-xs">
+                  <Link to={path} className="text-[11px] text-white/75 transition-colors hover:text-[#19D8B0] sm:text-xs">
                     {label}
                   </Link>
                 </li>
