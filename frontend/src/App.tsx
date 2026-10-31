@@ -1,13 +1,14 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Layout } from '@/components/layout/Layout';
-import { Login } from '@/pages/Login';
-import { PublicLanding } from '@/pages/PublicLanding';
-import { PublicAbout } from '@/pages/PublicAbout';
-import { PublicProducts } from '@/pages/PublicProducts';
-import { PublicServices } from '@/pages/PublicServices';
-import { PublicMarkets } from '@/pages/PublicMarkets';
-import { PublicContact } from '@/pages/PublicContact';
+const Login = lazy(() => import('@/pages/Login').then((m) => ({ default: m.Login })));
+const PublicLanding = lazy(() => import('@/pages/PublicLanding').then((m) => ({ default: m.PublicLanding })));
+const PublicAbout = lazy(() => import('@/pages/PublicAbout').then((m) => ({ default: m.PublicAbout })));
+const PublicProducts = lazy(() => import('@/pages/PublicProducts').then((m) => ({ default: m.PublicProducts })));
+const PublicServices = lazy(() => import('@/pages/PublicServices').then((m) => ({ default: m.PublicServices })));
+const PublicMarkets = lazy(() => import('@/pages/PublicMarkets').then((m) => ({ default: m.PublicMarkets })));
+const PublicContact = lazy(() => import('@/pages/PublicContact').then((m) => ({ default: m.PublicContact })));
 import { Dashboard } from '@/pages/Dashboard';
 import { Suppliers } from '@/pages/Suppliers';
 import { Customers } from '@/pages/Customers';
@@ -80,8 +81,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<PublicLanding />} />
+        <Route path="/login" element={<Suspense fallback={null}><Login /></Suspense>} />
+        <Route path="/" element={<Suspense fallback={null}><PublicLanding /></Suspense>} />
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/suppliers" element={<Suppliers />} />
@@ -108,11 +109,11 @@ function App() {
           <Route path="/architecture-explorer" element={<ArchitectureExplorer />} />
           <Route path="/potential-customers" element={<PotentialCustomers />} />
         </Route>
-        <Route path="/about" element={<PublicAbout />} />
-        <Route path="/products" element={<PublicProducts />} />
-        <Route path="/services" element={<PublicServices />} />
-        <Route path="/markets" element={<PublicMarkets />} />
-        <Route path="/contact" element={<PublicContact />} />
+        <Route path="/about" element={<Suspense fallback={null}><PublicAbout /></Suspense>} />
+        <Route path="/products" element={<Suspense fallback={null}><PublicProducts /></Suspense>} />
+        <Route path="/services" element={<Suspense fallback={null}><PublicServices /></Suspense>} />
+        <Route path="/markets" element={<Suspense fallback={null}><PublicMarkets /></Suspense>} />
+        <Route path="/contact" element={<Suspense fallback={null}><PublicContact /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
