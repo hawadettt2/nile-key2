@@ -17,8 +17,16 @@ export function Login() {
       const inputs = Array.from(form.querySelectorAll('input'));
       const username = (inputs[0] as HTMLInputElement)?.value ?? '';
       const password = (inputs[1] as HTMLInputElement)?.value ?? '';
+      if (!username.trim() || !password.trim()) {
+        alert('يرجى إدخال اسم المستخدم وكلمة المرور.');
+        return;
+      }
       await login(username, password);
-      if (useAuthStore.getState().isAuthenticated) navigate('/');
+      if (useAuthStore.getState().isAuthenticated) {
+        navigate('/');
+      } else {
+        alert(useAuthStore.getState().error || 'فشل تسجيل الدخول. تحقق من البيانات.');
+      }
     };
     form.addEventListener('submit', handler);
     return () => form.removeEventListener('submit', handler);

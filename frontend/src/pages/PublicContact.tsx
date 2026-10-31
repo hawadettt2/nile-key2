@@ -12,12 +12,19 @@ export function PublicContact() {
       const controls = Array.from(form.querySelectorAll('select, input, textarea'));
       // order: select(inquiry), name, email, phone, whatsapp, subject, message
       const getValue = (i: number) => (controls[i] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)?.value ?? '';
-      const payload = {
-        name: getValue(1),
-        email: getValue(2),
-        subject: getValue(5) || getValue(0),
-        message: getValue(6),
-      };
+      const name = getValue(1).trim();
+      const email = getValue(2).trim();
+      const subject = getValue(5).trim() || getValue(0);
+      const message = getValue(6).trim();
+      if (!name || !email || !message) {
+        alert('يرجى ملء الحقول المطلوبة (الاسم، البريد، الرسالة).');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('البريد الإلكتروني غير صحيح.');
+        return;
+      }
+      const payload = { name, email, subject, message };
       try {
         await submitContact(payload);
         alert('تم إرسال رسالتك بنجاح.');
