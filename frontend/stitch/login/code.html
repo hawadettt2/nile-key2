@@ -61,9 +61,9 @@ button, [role="button"] { cursor: pointer; }
 img, svg, video, canvas, audio, iframe, embed, object { display: block; vertical-align: middle; }
 img, video { max-width: 100%; height: auto; }
 [hidden]:where(:not([hidden="until-found"])) { display: none; }
-:root { --background: 0 0% 100%; --foreground: 222.2 84% 4.9%; --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%; --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%; --primary: 160 84% 39%; --primary-foreground: 210 40% 98%; --secondary: 210 40% 96.1%; --secondary-foreground: 222.2 47.4% 11.2%; --muted: 210 40% 96.1%; --muted-foreground: 215.4 16.3% 46.9%; --accent: 210 40% 96.1%; --accent-foreground: 222.2 47.4% 11.2%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%; --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%; --ring: 160 84% 39%; --radius: 0.75rem; }
+
 * { border-color: hsl(var(--border)); }
-body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); font-feature-settings: "rlig", "calt"; }
+body { margin: 0px; line-height: inherit; }
 .container { width: 100%; }
 @media (min-width: 640px) {
   .container { max-width: 640px; }
@@ -534,7 +534,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .bg-amber-100 { --tw-bg-opacity: 1; background-color: rgb(254 243 199 / var(--tw-bg-opacity, 1)); }
 .bg-amber-50 { --tw-bg-opacity: 1; background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1)); }
 .bg-amber-500 { --tw-bg-opacity: 1; background-color: rgb(245 158 11 / var(--tw-bg-opacity, 1)); }
-.bg-background { background-color: hsl(var(--background)); }
 .bg-black\/50 { background-color: rgba(0, 0, 0, 0.5); }
 .bg-black\/80 { background-color: rgba(0, 0, 0, 0.8); }
 .bg-blue-100 { --tw-bg-opacity: 1; background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1)); }
@@ -551,7 +550,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .bg-emerald-50 { --tw-bg-opacity: 1; background-color: rgb(236 253 245 / var(--tw-bg-opacity, 1)); }
 .bg-emerald-500 { --tw-bg-opacity: 1; background-color: rgb(16 185 129 / var(--tw-bg-opacity, 1)); }
 .bg-emerald-600 { --tw-bg-opacity: 1; background-color: rgb(5 150 105 / var(--tw-bg-opacity, 1)); }
-.bg-foreground { background-color: hsl(var(--foreground)); }
 .bg-indigo-600 { --tw-bg-opacity: 1; background-color: rgb(79 70 229 / var(--tw-bg-opacity, 1)); }
 .bg-muted { background-color: hsl(var(--muted)); }
 .bg-orange-500 { --tw-bg-opacity: 1; background-color: rgb(249 115 22 / var(--tw-bg-opacity, 1)); }
@@ -749,7 +747,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .text-emerald-600 { --tw-text-opacity: 1; color: rgb(5 150 105 / var(--tw-text-opacity, 1)); }
 .text-emerald-700 { --tw-text-opacity: 1; color: rgb(4 120 87 / var(--tw-text-opacity, 1)); }
 .text-emerald-900 { --tw-text-opacity: 1; color: rgb(6 78 59 / var(--tw-text-opacity, 1)); }
-.text-foreground { color: hsl(var(--foreground)); }
 .text-foreground\/50 { color: hsl(var(--foreground) / 0.5); }
 .text-green-600 { --tw-text-opacity: 1; color: rgb(22 163 74 / var(--tw-text-opacity, 1)); }
 .text-indigo-600 { --tw-text-opacity: 1; color: rgb(79 70 229 / var(--tw-text-opacity, 1)); }
@@ -821,7 +818,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .ring-red-100 { --tw-ring-opacity: 1; --tw-ring-color: rgb(254 226 226 / var(--tw-ring-opacity, 1)); }
 .ring-ring { --tw-ring-color: hsl(var(--ring)); }
 .ring-slate-200 { --tw-ring-opacity: 1; --tw-ring-color: rgb(226 232 240 / var(--tw-ring-opacity, 1)); }
-.ring-offset-background { --tw-ring-offset-color: hsl(var(--background)); }
 .filter { filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow); }
 .backdrop-blur { --tw-backdrop-blur: blur(8px); backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia); }
 .backdrop-blur-md { --tw-backdrop-blur: blur(12px); backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia); }
@@ -870,7 +866,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .file\:bg-transparent::file-selector-button { background-color: transparent; }
 .file\:text-sm::file-selector-button { font-size: 0.875rem; line-height: 1.25rem; }
 .file\:font-medium::file-selector-button { font-weight: 500; }
-.file\:text-foreground::file-selector-button { color: hsl(var(--foreground)); }
 .placeholder\:text-muted-foreground::placeholder { color: hsl(var(--muted-foreground)); }
 .placeholder\:text-slate-400::placeholder { --tw-text-opacity: 1; color: rgb(148 163 184 / var(--tw-text-opacity, 1)); }
 .placeholder\:text-white\/40::placeholder { color: rgba(255, 255, 255, 0.4); }
@@ -918,7 +913,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .hover\:text-blue-700:hover { --tw-text-opacity: 1; color: rgb(29 78 216 / var(--tw-text-opacity, 1)); }
 .hover\:text-emerald-600:hover { --tw-text-opacity: 1; color: rgb(5 150 105 / var(--tw-text-opacity, 1)); }
 .hover\:text-emerald-700:hover { --tw-text-opacity: 1; color: rgb(4 120 87 / var(--tw-text-opacity, 1)); }
-.hover\:text-foreground:hover { color: hsl(var(--foreground)); }
 .hover\:text-muted-foreground:hover { color: hsl(var(--muted-foreground)); }
 .hover\:text-primary-foreground:hover { color: hsl(var(--primary-foreground)); }
 .hover\:text-red-400:hover { --tw-text-opacity: 1; color: rgb(248 113 113 / var(--tw-text-opacity, 1)); }
@@ -957,7 +951,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .focus-visible\:ring-ring:focus-visible { --tw-ring-color: hsl(var(--ring)); }
 .focus-visible\:ring-ring\/50:focus-visible { --tw-ring-color: hsl(var(--ring) / 0.5); }
 .focus-visible\:ring-offset-2:focus-visible { --tw-ring-offset-width: 2px; }
-.focus-visible\:ring-offset-background:focus-visible { --tw-ring-offset-color: hsl(var(--background)); }
 .disabled\:pointer-events-none:disabled { pointer-events: none; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 .disabled\:opacity-50:disabled { opacity: 0.5; }
@@ -967,10 +960,8 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .group.toaster .group-\[\.toaster\]\:border-border { border-color: hsl(var(--border)); }
 .group.toast .group-\[\.toast\]\:bg-muted { background-color: hsl(var(--muted)); }
 .group.toast .group-\[\.toast\]\:bg-primary { background-color: hsl(var(--primary)); }
-.group.toaster .group-\[\.toaster\]\:bg-background { background-color: hsl(var(--background)); }
 .group.toast .group-\[\.toast\]\:text-muted-foreground { color: hsl(var(--muted-foreground)); }
 .group.toast .group-\[\.toast\]\:text-primary-foreground { color: hsl(var(--primary-foreground)); }
-.group.toaster .group-\[\.toaster\]\:text-foreground { color: hsl(var(--foreground)); }
 .group.toaster .group-\[\.toaster\]\:shadow-lg { --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
 .peer:disabled ~ .peer-disabled\:cursor-not-allowed { cursor: not-allowed; }
 .peer:disabled ~ .peer-disabled\:opacity-50 { opacity: 0.5; }
@@ -994,7 +985,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .data-\[swipe\=move\]\:translate-x-\[var\(--radix-toast-swipe-move-x\)\][data-swipe="move"] { --tw-translate-x: var(--radix-toast-swipe-move-x); transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
 .data-\[state\=checked\]\:border-primary[data-state="checked"] { border-color: hsl(var(--primary)); }
 .data-\[active\]\:bg-accent\/50[data-active] { background-color: hsl(var(--accent) / 0.5); }
-.data-\[state\=active\]\:bg-background[data-state="active"] { background-color: hsl(var(--background)); }
 .data-\[state\=checked\]\:bg-primary[data-state="checked"] { background-color: hsl(var(--primary)); }
 .data-\[state\=on\]\:bg-accent[data-state="on"] { background-color: hsl(var(--accent)); }
 .data-\[state\=open\]\:bg-accent[data-state="open"] { background-color: hsl(var(--accent)); }
@@ -1044,7 +1034,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .dark\:bg-input\/30:is(.dark *) { background-color: hsl(var(--input) / 0.3); }
 .dark\:focus-visible\:ring-destructive\/40:focus-visible:is(.dark *) { --tw-ring-color: hsl(var(--destructive) / 0.4); }
 .dark\:data-\[state\=checked\]\:bg-primary[data-state="checked"]:is(.dark *) { background-color: hsl(var(--primary)); }
-.dark\:data-\[state\=active\]\:text-foreground[data-state="active"]:is(.dark *) { color: hsl(var(--foreground)); }
 @media (min-width: 640px) {
   .sm\:bottom-0 { bottom: 0px; }
   .sm\:right-0 { right: 0px; }
@@ -1162,7 +1151,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 .\[\&\>svg\]\:size-3 > svg { width: 0.75rem; height: 0.75rem; }
 .\[\&\>svg\]\:text-amber-600 > svg { --tw-text-opacity: 1; color: rgb(217 119 6 / var(--tw-text-opacity, 1)); }
 .\[\&\>svg\]\:text-destructive > svg { color: hsl(var(--destructive)); }
-.\[\&\>svg\]\:text-foreground > svg { color: hsl(var(--foreground)); }
 .\[\&\>svg\~\*\]\:pl-7 > svg ~ * { padding-left: 1.75rem; }
 .\[\&\[data-state\=open\]\>svg\]\:rotate-180[data-state="open"] > svg { --tw-rotate: 180deg; transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
 .\[\&_\.recharts-cartesian-axis-tick_text\]\:fill-muted-foreground .recharts-cartesian-axis-tick text { fill: hsl(var(--muted-foreground)); }
