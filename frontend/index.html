@@ -10,18 +10,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      (function () {
-        // Stitch design canvas width — adjust this number until visual match is exact.
-        // Example: if design looks too large, increase this number; if too small, decrease it.
-        var STITCH_WIDTH = 1280;
-        function applyStitchScale() {
-          var scale = STITCH_WIDTH / window.innerWidth;
-          document.body.style.zoom = scale;
-        }
-        applyStitchScale();
-        window.addEventListener('resize', applyStitchScale);
-      })();
-    </script>
   </body>
 </html>
