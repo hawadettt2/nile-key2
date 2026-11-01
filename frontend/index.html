@@ -10,5 +10,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        const STITCH_WIDTH = 1280;
+        function applyStitchScale() {
+          const scale = Math.min(1, STITCH_WIDTH / window.innerWidth);
+          document.body.style.zoom = scale;
+        }
+        applyStitchScale();
+        window.addEventListener('resize', applyStitchScale);
+      })();
+    </script>
   </body>
 </html>
