@@ -1,3 +1,7 @@
+---
+description: Evidence-based forensic auditing. Examines project files, configurations, implementation consistency, and test evidence without modifying project files.
+mode: primary
+---
 # Forensic Audit Skill
 
 ## Objective

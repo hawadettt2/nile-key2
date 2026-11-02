@@ -1,3 +1,7 @@
+---
+description: Incident remediation after the root cause of a confirmed issue has been established. Applies a focused fix and verifies the result.
+mode: primary
+---
 # Incident Remediation Skill
 
 ## Objective
