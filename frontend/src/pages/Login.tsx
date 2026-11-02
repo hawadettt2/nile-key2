@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import StitchPage from '@/components/StitchPage';
 import stitchLogin from '../../stitch/login/code.html?raw';
+import { loginTranslations } from '@/locales/loginTranslations';
 
 export function Login() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export function Login() {
     return () => form.removeEventListener('submit', handler);
   }, [login, clearError, navigate]);
 
-  return <StitchPage raw={stitchLogin} onMount={onMount} />;
+  return <StitchPage raw={stitchLogin} translations={loginTranslations} onMount={onMount} />;
 }
 
 export default Login;

@@ -1,0 +1,50 @@
+// Auto-generated contact page translations (Arabic -> English)
+export const contactTranslations: Record<string, string> = {
+  "ويتم الرد والتواصل خلال 3 أيام عمل كحد أقصى.": "And replies and contact within 3 business days at most.",
+  "الأحد - الخميس 10:00 ص - 3:00 م": "Sunday - Thursday 10:00 AM - 3:00 PM",
+  "خدمة العملاء المباشر": "Direct customer service",
+  "Nile Key - منصة مفتاح النيل": "Nile Key - Nile Key Platform",
+  "© 2025 مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م). جميع الحقوق محفوظة.": "© 2025 Nile Key for Investment and International Trade LLC. All rights reserved.",
+  "إرسال الرسالة": "Send Message",
+  "إنشاء حساب": "Create Account",
+  "اتصل بنا": "Contact Us",
+  "استفسار عام": "General Inquiry",
+  "الأسواق": "Markets",
+  "الاسم الكامل": "Full Name",
+  "الخدمات": "Services",
+  "الرئيسية": "Home",
+  "الرسالة": "Message",
+  "القاهرة - م المطرية - أبراج بيت العز - مبنى ب إداري - مكتب 708": "Cairo - Al-Matariya - Beit Al-Ezz Towers - Building B (Administrative) - Office 708",
+  "القاهرة - ميدان الألف مسكن - 121 ش جسر السويس": "Cairo - Alf Maskan Square - 121 Gesr El Suez St.",
+  "المقر الإداري والتجاري": "Administrative & Commercial HQ",
+  "المقر الإداري والتجاري (الألف مسكن)": "Administrative & Commercial HQ (Alf Maskan)",
+  "المقر الرئيسي": "Main HQ",
+  "المقر الرئيسي (المطرية)": "Main HQ (Al-Matariya)",
+  "المنتجات": "Products",
+  "المنصة الرقمية للتصدير": "Digital Export Platform",
+  "الموضوع": "Subject",
+  "تسجيل الدخول": "Sign In",
+  "تصل رسالتك مباشرة لمنصة العمليات الرقمية ثم تحولها إلى القسم المختص تلقائياً،": "Your message reaches the digital operations platform directly, then is automatically routed to the relevant department.",
+  "تواصل الآن عبر WhatsApp": "Contact us now via WhatsApp",
+  "تواصل مع فريقنا": "Contact our team",
+  "توجيه رقمي ذكي:": "Smart digital routing:",
+  "خريطة رقمية حية": "Live digital map",
+  "رقم الهاتف": "Phone Number",
+  "رقم الواتساب": "WhatsApp Number",
+  "فتح في خرائط Google": "Open in Google Maps",
+  "لتنسيق الشحنات والاستفسارات التجارية الفورية": "For coordinating shipments and immediate commercial inquiries",
+  "مستورد أجنبي": "Foreign importer",
+  "مصنّع": "Manufacturer",
+  "مفتاح النيل": "Nile Key",
+  "من نحن": "About Us",
+  "مورد محلي": "Local supplier",
+  "نوع الاستفسار": "Inquiry type",
+  "يتم معالجة طلبك مباشرة عبر منصة مفتاح النيل الرقمية الذكية — الرد خلال 3 ايام عمل.": "Your request is processed directly through Nile Key's smart digital platform — response within 3 business days.",
+  "🕒 مواعيد العمل:": "🕒 Working hours:",
+};
+
+export function normalizeContactText(s: string): string {
+  const t = document.createElement('textarea');
+  t.innerHTML = s;
+  return t.value.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+}

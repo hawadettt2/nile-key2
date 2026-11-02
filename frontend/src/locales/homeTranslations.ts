@@ -1,0 +1,81 @@
+function htmlUnescape(s: string): string {
+  const t = document.createElement('textarea');
+  t.innerHTML = s;
+  return t.value;
+}
+
+// Auto-generated home page translations (Arabic -> English)
+export const homeTranslations: Record<string, string> = {
+  "خططنا وقررنا الجمع ما بين الخبرة التجارية وإدارة عمليات التصدير، والحلول الرقمية الذكية فى منظومة واحدة . صممت متوافقة مع المنظومة الرقمية الموحدة للدولة.": "We planned and decided to combine commercial expertise, export operations management, and smart digital solutions into one unified system, designed to be compatible with the state's unified digital system.",
+  "Nile Key - منصة مفتاح النيل": "Nile Key - Nile Key Platform",
+  "© 2025 مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م). جميع الحقوق محفوظة.": "© 2025 Nile Key for Investment and International Trade LLC. All rights reserved.",
+  "آمن": "Secure",
+  "إجمالي الشحنات": "Total Shipments",
+  "إدارة احترافية لعمليات التصدير": "Professional Export Operations Management",
+  "إنشاء حساب": "Create Account",
+  "إيصال المنتجات المصرية عالية الجودة إلى الأسواق العالمية": "Delivering High-Quality Egyptian Products to Global Markets",
+  "ابدأ رحلتك معنا": "Start Your Journey With Us",
+  "اتصل بنا": "Contact Us",
+  "الأسواق": "Markets",
+  "الأسواق العالمية": "Global Markets",
+  "الامتثال الدولي": "International Compliance",
+  "التخليص الجمركي والشحن": "Customs Clearance & Shipping",
+  "الحالة المباشرة": "Live Status",
+  "الخدمات": "Services",
+  "الرئيسية": "Home",
+  "المزارع والمصانع المصرية": "Egyptian Farms and Factories",
+  "المنتجات": "Products",
+  "المنصة الرقمية": "Digital Platform",
+  "المنصة الرقمية للتصدير": "Digital Export Platform",
+  "الموانئ البحرية والجوية": "Sea and Air Ports",
+  "النقل المبرد واللوجستي": "Cold Chain & Logistics",
+  "الوجهة الدولية": "International Destination",
+  "الوصول للمستهلك النهائي": "Final Consumer Delivery",
+  "بداية الإنتاج والفرز الدقيق": "Production Start & Precision Sorting",
+  "برتقال صيفي فاخر - NK-904": "Premium Summer Orange - NK-904",
+  "تبريد نشط": "Active Cooling",
+  "تخليص جمركي": "Customs Clearance",
+  "تسجيل الدخول": "Sign In",
+  "تمور المجدول الواحات - NK-711": "Medjool Dates (Oases) - NK-711",
+  "توفر منصتنا الرقمية أدوات متقدمة لإدارة جميع مراحل التصدير، من متابعة العملاء والمنتجات، إلى إدارة الشحنات والفواتير، مع تقارير وتحليلات دقيقة تدعم قراراتك التجارية.": "Our digital platform provides advanced tools to manage all stages of export, from tracking customers and products to managing shipments and invoices, with accurate reports and analytics to support your business decisions.",
+  "جبل علي (دبي)": "Jebel Ali (Dubai)",
+  "حاويات Reefer": "Reefer Containers",
+  "حاوية": "Container",
+  "حلول رقمية متكاملة": "Integrated Digital Solutions",
+  "خبرة تجارية عميقة": "Deep Commercial Expertise",
+  "رحلة التصدير": "The Export Journey",
+  "رسالتنا اثبات للمجتمع الدولى قدرة المنتج المصري على المنافسة القوية.": "Our message: proving to the international community the Egyptian product's strong competitive capability.",
+  "رقم الشحنة والمحصول": "Shipment & Crop Number",
+  "رمان وندرفل أسيوط - NK-520": "Wonderful Pomegranate (Assiut) - NK-520",
+  "سلاسل إمداد وحفظ متطورة": "Advanced Supply & Storage Chains",
+  "شركة مفتاح النيل للاستثمار والتجارة الدولية (ذ.م.م)": "Nile Key for Investment and International Trade LLC",
+  "شريكك الأستراتيجى الموثوق في التجارة الدولية": "Your Trusted Strategic Partner in International Trade",
+  "طن": "Tons",
+  "عمليات التصدير المصرية": "Egyptian Export Operations",
+  "عن الشركة": "About the Company",
+  "عوائد الصادرات": "Export Returns",
+  "في البحر (عبور)": "At Sea (In Transit)",
+  "كل مصنع وطني ومحطة تصدير مكودة تطمح للريادة الدولية: تفتح 'مفتاح النيل' باباً مباشراً نحو الأسواق العالمية عبر منصتنا الرقمية المتقدمة. يكرس فريقنا التسويقي واللوجستي خبراته لتوحيد الجهود معكم، لضمان وصول منتجاتكم المطابقة للمواصفات القياسية الدولية إلى كبرى السلاسل والمستوردين في الخارج، بأعلى كفاءة وأقل مخاطر تشغيلية.": "Every national factory and export station aspiring to international leadership: 'Nile Key' opens a direct door to global markets through our advanced digital platform. Our marketing and logistics team dedicates its expertise to uniting efforts with you, ensuring your products—compliant with international standards—reach major chains and importers abroad with maximum efficiency and minimal operational risk.",
+  "لدينا هدف محدد نعمل لتحقيقة هو أعلاء شعار المنتج الوطنى (صنع فى مصر) فى الاسواق العالمية للدول التى عقدت اتفاقيات تجارة دولية مع جمهورية مصر العربية.": "We have a specific goal we work to achieve: elevating the national product slogan 'Made in Egypt' in the global markets of countries that have signed international trade agreements with the Arab Republic of Egypt.",
+  "مؤمن بالكامل": "Fully Insured",
+  "متصل 24/7 | ميناء الإسكندرية": "Online 24/7 | Alexandria Port",
+  "مطابقة كاملة": "Full Compliance",
+  "مفتاح النيل": "Nile Key",
+  "مفتاح النيل شركة مصرية مسجلة ومرخصة من الهيئة العامة للأستثمار والمناطق الحرة.": "Nile Key is an Egyptian company registered and licensed by the General Authority for Investment and Free Zones.",
+  "مكتملة ومستلمة": "Completed & Received",
+  "من المزرعة أو المصنع المصري إلى الميناء والأسواق العالمية": "From the Egyptian Farm or Factory to the Port and Global Markets",
+  "من نحن": "About Us",
+  "منصة مفتاح النيل Live Hub": "Nile Key Live Hub Platform",
+  "منصتنا الرقمية المتكاملة لإدارة": "Our Integrated Digital Platform for",
+  "ميناء روتردام (هولندا)": "Port of Rotterdam (Netherlands)",
+  "نبدأ من قلب مصر، من المزارع والمصانع، ونرافق منتجاتنا في رحلتها إلى الميناء، ثم إلى الأسواق العالمية. نصل بها إلى عملائنا في مختلف دول العالم بأعلى معايير الجودة والكفاءة.": "We begin in the heart of Egypt, from farms and factories, and accompany our products on their journey to the port, then to global markets. We deliver them to our customers across the world with the highest standards of quality and efficiency.",
+  "نحن شركة مصرية متخصصة في التصدير والاستثمار والتجارة الدولية، نربط بين المنتج المصري والأسواق العالمية من خلال خبرة تجارية عميقة، وإدارة احترافية لعمليات التصدير، ومنصة رقمية متكاملة تضمن الكفاءة والشفافية في كل خطوة.": "We are an Egyptian company specialized in export, investment, and international trade, connecting Egyptian products with global markets through deep commercial expertise, professional export management, and an integrated digital platform that ensures efficiency and transparency at every step.",
+  "نحن ندعم شعار ~صنع فى مصر~": "We support the 'Made in Egypt' slogan",
+  "هامبورغ (ألمانيا)": "Hamburg (Germany)",
+};
+
+export const homeAttrTranslations: Record<string, Record<string, string>> = {"aria-label": {"روابط التذييل": "Footer links", "فتح القائمة": "Open menu"}, "alt": {"رحلة التصدير من المزرعة إلى الأسواق العالمية": "Export journey from farm to global markets", "سفينة حاويات في ميناء مصري": "Container ship at an Egyptian port", "بكل فخر صنع في مصر - علامة الجودة": "Proudly made in Egypt - quality mark"}};
+
+export function normalizeHomeText(s: string): string {
+  return htmlUnescape(s).replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+}

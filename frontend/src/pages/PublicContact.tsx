@@ -2,6 +2,7 @@ import React from 'react';
 import { submitContact } from '@/services/api';
 import StitchPage from '@/components/StitchPage';
 import stitchContact from '../../stitch/contact/code.html?raw';
+import { contactTranslations } from '@/locales/contactTranslations';
 
 export function PublicContact() {
   const onMount = React.useCallback((container: HTMLDivElement) => {
@@ -37,7 +38,7 @@ export function PublicContact() {
     return () => form.removeEventListener('submit', handler);
   }, []);
 
-  return <StitchPage raw={stitchContact} onMount={onMount} />;
+  return <StitchPage raw={stitchContact} translations={contactTranslations} onMount={onMount} />;
 }
 
 export default PublicContact;
