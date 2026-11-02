@@ -26,6 +26,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=sqlite:////app/data/nile_key.db
     volumes:
       - db-data:/app/data
       - ./docs:/docs:ro
