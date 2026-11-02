@@ -51,7 +51,6 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        reflect_tables(connection)
         context.configure(
             connection=connection,
             target_metadata=target_metadata,

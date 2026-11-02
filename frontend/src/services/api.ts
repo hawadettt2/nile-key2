@@ -83,7 +83,7 @@ export const register = (data: Record<string, string>) =>
   api.post('/api/v1/auth/register', data);
 export const getMe = () => api.get('/api/v1/auth/me');
 export const updateMe = (data: Record<string, unknown>) => api.put('/api/v1/auth/me', data);
-export const refreshToken = (data: Record<string, unknown>) =>
+export const refreshToken = (data: { refresh_token: string }) =>
   rawApi.post('/api/v1/auth/refresh', null, { headers: { Authorization: `Bearer ${data.refresh_token}` } });
 
 export const listSuppliers = (params?: Record<string, unknown>) => api.get('/api/v1/suppliers', { params });
