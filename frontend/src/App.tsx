@@ -75,6 +75,8 @@ function App() {
     const refreshToken = localStorage.getItem('refresh_token');
     if (refreshToken) {
       loadUser();
+    } else {
+      useAuthStore.setState({ isLoading: false });
     }
   }, [loadUser]);
 

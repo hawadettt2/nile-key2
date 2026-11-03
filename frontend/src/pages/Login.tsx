@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import StitchPage from '@/components/StitchPage';
 import stitchLogin from '../../stitch/login/code.html?raw';
@@ -7,7 +7,16 @@ import { loginTranslations } from '@/locales/loginTranslations';
 
 export function Login() {
   const navigate = useNavigate();
-  const { login, clearError } = useAuthStore();
+  const location = useLocation();
+  const { login, clearError, isAuthenticated } = useAuthStore();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      const _st = location.state as { from?: { pathname?: string } } | null;
+      const from = _st?.from?.pathname;
+      navigate(from && from !== '/login' ? from : '/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, location.state, navigate]);
 
   const onMount = React.useCallback((container: HTMLDivElement) => {
     const form = container.querySelector('form');
@@ -24,14 +33,16 @@ export function Login() {
       }
       await login(username, password);
       if (useAuthStore.getState().isAuthenticated) {
-        navigate('/');
+        const _st = location.state as { from?: { pathname?: string } } | null;
+        const from = _st?.from?.pathname;
+        navigate(from && from !== '/login' ? from : '/dashboard', { replace: true });
       } else {
         alert(useAuthStore.getState().error || 'فشل تسجيل الدخول. تحقق من البيانات.');
       }
     };
     form.addEventListener('submit', handler);
     return () => form.removeEventListener('submit', handler);
-  }, [login, clearError, navigate]);
+  }, [login, clearError, navigate, location.state]);
 
   return <StitchPage raw={stitchLogin} translations={loginTranslations} onMount={onMount} />;
 }

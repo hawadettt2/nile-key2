@@ -29,7 +29,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: typeof window !== 'undefined' && !!localStorage.getItem('refresh_token'),
   error: null,
   accessToken: typeof window !== 'undefined' ? localStorage.getItem('access_token') : null,
 
