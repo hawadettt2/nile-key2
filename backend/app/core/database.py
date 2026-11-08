@@ -188,6 +188,34 @@ def _register_core_schemas(conn: sqlite3.Connection) -> None:
         "notes": "TEXT",
         "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
         "created_by": "INTEGER",
+        "facility_type": "TEXT",
+        "station_code": "TEXT",
+        "province": "TEXT",
+        "parent_company_id": "INTEGER",
+        "data_status": "TEXT DEFAULT 'raw'",
+        "verification_status": "TEXT DEFAULT 'unverified'",
+        "updated_at": "TIMESTAMP",
+    })
+    registry.register_table("supplier_accreditations", {
+        "supplier_id": "INTEGER NOT NULL",
+        "source_type": "TEXT NOT NULL",
+        "accrediting_body": "TEXT",
+        "accreditation_number": "TEXT",
+        "scope": "TEXT",
+        "season": "TEXT",
+        "accreditation_date": "TEXT",
+        "validity_date": "TEXT",
+        "status": "TEXT DEFAULT 'unverified'",
+        "source_document": "TEXT",
+        "source_page": "TEXT",
+        "source_reference": "TEXT",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+        "created_by": "INTEGER",
+    })
+    registry.register_table("supplier_accreditation_crops", {
+        "accreditation_id": "INTEGER NOT NULL",
+        "crop_name": "TEXT NOT NULL",
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
     })
     registry.register_table("customers", {
         "name": "TEXT NOT NULL",
@@ -270,6 +298,8 @@ def _register_core_schemas(conn: sqlite3.Connection) -> None:
         "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
     })
     registry.ensure_schema(conn, "suppliers")
+    registry.ensure_schema(conn, "supplier_accreditations")
+    registry.ensure_schema(conn, "supplier_accreditation_crops")
     registry.ensure_schema(conn, "customers")
 
 
@@ -304,7 +334,13 @@ def _ensure_suppliers_schema(c: sqlite3.Cursor):
         "country": "TEXT",
         "commercial_registry": "TEXT",
         "updated_at": "TIMESTAMP",
-        "created_by": "INTEGER"
+        "created_by": "INTEGER",
+        "facility_type": "TEXT",
+        "station_code": "TEXT",
+        "province": "TEXT",
+        "parent_company_id": "INTEGER",
+        "data_status": "TEXT DEFAULT 'raw'",
+        "verification_status": "TEXT DEFAULT 'unverified'",
     })
 
 
@@ -650,6 +686,43 @@ def _ensure_documents_schema(c: sqlite3.Cursor):
     })
 
 
+def _migrate_supplier_accreditation_crops_season(c: sqlite3.Cursor):
+    """Migrate season from supplier_accreditation_crops to supplier_accreditations, then drop the redundant column."""
+    # Check if the crops table exists
+    table_exists = c.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='supplier_accreditation_crops'"
+    ).fetchone()
+    if not table_exists:
+        return
+    # Check if season column exists in crops table
+    cols = [r[1] for r in c.execute("PRAGMA table_info(supplier_accreditation_crops)").fetchall()]
+    if "season" not in cols:
+        return  # already migrated
+    # Migrate: for each accreditation with NULL/empty season, check crops' seasons
+    rows = c.execute(
+        "SELECT id, season FROM supplier_accreditations"
+    ).fetchall()
+    for acc_id, acc_season in rows:
+        if acc_season:
+            continue  # already has season
+        crop_seasons = c.execute(
+            "SELECT DISTINCT season FROM supplier_accreditation_crops WHERE accreditation_id = ? AND season IS NOT NULL AND season != ''",
+            (acc_id,),
+        ).fetchall()
+        distinct = set(r[0] for r in crop_seasons)
+        if len(distinct) == 1:
+            # all crops have the same season -> copy
+            c.execute("UPDATE supplier_accreditations SET season = ? WHERE id = ?", (distinct.pop(), acc_id))
+        elif len(distinct) > 1:
+            # conflict: cannot resolve without data loss; leave as-is (season stays NULL on accreditation)
+            pass
+    # Drop the redundant column (SQLite 3.35+ supports DROP COLUMN)
+    try:
+        c.execute("ALTER TABLE supplier_accreditation_crops DROP COLUMN season")
+    except Exception:
+        pass  # if drop fails, column remains (harmless, unused)
+
+
 def _create_tables(c: sqlite3.Cursor):
     """إنشاء كل جداول المشروع"""
     
@@ -698,10 +771,65 @@ def _create_tables(c: sqlite3.Cursor):
             certificates TEXT,
             status TEXT DEFAULT 'active',
             notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            facility_type TEXT,
+            station_code TEXT,
+            province TEXT,
+            parent_company_id INTEGER,
+            data_status TEXT DEFAULT 'raw',
+            verification_status TEXT DEFAULT 'unverified'
         )
     """)
     _ensure_suppliers_schema(c)
+
+    c.execute("""
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_suppliers_station_code
+        ON suppliers(station_code)
+        WHERE station_code IS NOT NULL AND station_code != ''
+    """)
+
+    # ========== جدول اعتمادات الموردين ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS supplier_accreditations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            supplier_id INTEGER NOT NULL,
+            source_type TEXT NOT NULL,
+            accrediting_body TEXT,
+            accreditation_number TEXT,
+            scope TEXT,
+            season TEXT,
+            accreditation_date TEXT,
+            validity_date TEXT,
+            status TEXT DEFAULT 'unverified',
+            source_document TEXT,
+            source_page TEXT,
+            source_reference TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_by INTEGER
+        )
+    """)
+
+    # ========== محاصيل الاعتماد ==========
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS supplier_accreditation_crops (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            accreditation_id INTEGER NOT NULL,
+            crop_name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    _migrate_supplier_accreditation_crops_season(c)
+
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_supplier_accreditation_crops_acc
+        ON supplier_accreditation_crops(accreditation_id)
+    """)
+
+    c.execute("""
+        CREATE INDEX IF NOT EXISTS idx_supplier_accreditation_crops_name
+        ON supplier_accreditation_crops(crop_name)
+    """)
 
     # ========== جدول العملاء (المستوردين) =======
     c.execute("""

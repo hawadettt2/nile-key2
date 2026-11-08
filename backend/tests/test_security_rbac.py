@@ -66,6 +66,7 @@ def test_owner_can_create_supplier():
         headers={"Authorization": f"Bearer {token}"},
         json={
             "name": "Test Supplier",
+        "facility_type": "company",
             "email": "supplier@test.com"
         }
     )

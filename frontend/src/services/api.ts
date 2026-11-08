@@ -91,6 +91,11 @@ export const getSupplier = (id: number) => api.get(`/api/v1/suppliers/${id}`);
 export const createSupplier = (data: Record<string, unknown>) => api.post('/api/v1/suppliers', data);
 export const updateSupplier = (id: number, data: Record<string, unknown>) => api.put(`/api/v1/suppliers/${id}`, data);
 export const deleteSupplier = (id: number) => api.delete(`/api/v1/suppliers/${id}`);
+export const listSupplierAccreditations = (supplierId: number) => api.get(`/api/v1/suppliers/${supplierId}/accreditations`);
+export const createSupplierAccreditation = (supplierId: number, data: Record<string, unknown>) => api.post(`/api/v1/suppliers/${supplierId}/accreditations`, data);
+export const updateSupplierAccreditation = (accreditationId: number, data: Record<string, unknown>) => api.put(`/api/v1/suppliers/accreditations/${accreditationId}`, data);
+export const verifySupplierAccreditation = (accreditationId: number) => api.post(`/api/v1/suppliers/accreditations/${accreditationId}/verify`, {});
+export const deleteSupplierAccreditation = (accreditationId: number) => api.delete(`/api/v1/suppliers/accreditations/${accreditationId}`);
 
 export const listCustomers = (params?: Record<string, unknown>) => api.get('/api/v1/customers', { params });
 export const getCustomer = (id: number) => api.get(`/api/v1/customers/${id}`);

@@ -51,6 +51,7 @@ def test_get_supplier_authorized(client):
     _, token = _register_and_login(client, role="owner")
     create_resp = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     supplier_id = create_resp.json()["id"]
@@ -70,6 +71,7 @@ def test_create_supplier_with_owner_role(client):
     _, token = _register_and_login(client, role="owner")
     response = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
@@ -82,6 +84,7 @@ def test_create_supplier_with_staff_role_forbidden(client):
     _, token = _register_and_login(client, role="staff")
     response = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
@@ -92,6 +95,7 @@ def test_update_supplier_with_manager_role(client):
     _, token = _register_and_login(client, role="manager")
     create_resp = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     supplier_id = create_resp.json()["id"]
@@ -106,6 +110,7 @@ def test_delete_supplier_with_owner_role(client):
     _, token = _register_and_login(client, role="owner")
     create_resp = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     supplier_id = create_resp.json()["id"]

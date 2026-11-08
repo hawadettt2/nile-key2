@@ -160,7 +160,8 @@ def test_error_response_category_maps_to_status_code(client):
 
 def test_analysis_is_audited(client):
     token = _register_and_login(client, "owner")
-    client.post("/api/v1/suppliers/", json={"name": "Audit Supplier", "country": "Egypt"}, headers=_auth_headers(token))
+    client.post("/api/v1/suppliers/", json={"name": "Audit Supplier",
+        "facility_type": "company", "country": "Egypt"}, headers=_auth_headers(token))
     response = client.post("/api/v1/trade-intelligence/suppliers/analyze", json={
         "supplier_id": 1,
         "analysis_type": "performance",
@@ -176,6 +177,7 @@ def test_analysis_does_not_modify_supplier(client):
     token = _register_and_login(client, "owner")
     create_resp = client.post("/api/v1/suppliers/", json={
         "name": "Immutable Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers=_auth_headers(token))
     supplier_id = create_resp.json()["id"]

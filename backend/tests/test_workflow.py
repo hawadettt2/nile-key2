@@ -180,6 +180,7 @@ def test_add_export_workflow_item_authorized(client):
 
     supplier_resp = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     assert supplier_resp.status_code == 200

@@ -51,6 +51,7 @@ def test_analyze_supplier_creates_supplier_then_analyzes(client):
     token, _ = _register_and_login(client, role="owner")
     create_resp = client.post("/api/v1/suppliers/", json={
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers={"Authorization": f"Bearer {token}"})
     supplier_id = create_resp.json()["id"]

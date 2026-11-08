@@ -41,6 +41,7 @@ def test_analyze_supplier_latency(client):
     token = _register_and_login(client, role="owner")
     client.post("/api/v1/suppliers/", json={
         "name": "Perf Supplier",
+        "facility_type": "company",
         "country": "Egypt",
     }, headers=_auth_headers(token))
 

@@ -45,7 +45,14 @@ def _init_db(db_path):
                     status TEXT DEFAULT 'active',
                     notes TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    created_by INTEGER
+                    created_by INTEGER,
+                    facility_type TEXT,
+                    station_code TEXT,
+                    province TEXT,
+                    parent_company_id INTEGER,
+                    data_status TEXT DEFAULT 'raw',
+                    verification_status TEXT DEFAULT 'unverified',
+                    updated_at TIMESTAMP
                 )
                 """
             )
@@ -84,6 +91,7 @@ def test_create_and_get_supplier(tmp_path):
         address="Cairo",
         city="Cairo",
         country="Egypt",
+        facility_type="company",
         tax_id="123",
         commercial_registry="456",
         certificates=["ISO"],
@@ -121,14 +129,14 @@ def test_list_suppliers(tmp_path):
             conn1.row_factory = sqlite3.Row
             conn1.execute("PRAGMA foreign_keys = ON")
             mock_get_db.return_value = conn1
-            create_supplier(SupplierCreate(name="S1", email="s1@example.com"), {"id": 1})
+            create_supplier(SupplierCreate(name="S1", email="s1@example.com", facility_type="company"), {"id": 1})
 
         with patch("app.services.supplier.get_db") as mock_get_db:
             conn2 = sqlite3.connect(db_path)
             conn2.row_factory = sqlite3.Row
             conn2.execute("PRAGMA foreign_keys = ON")
             mock_get_db.return_value = conn2
-            create_supplier(SupplierCreate(name="S2", email="s2@example.com"), {"id": 1})
+            create_supplier(SupplierCreate(name="S2", email="s2@example.com", facility_type="company"), {"id": 1})
 
         with patch("app.services.supplier.get_db") as mock_get_db:
             conn3 = sqlite3.connect(db_path)
@@ -150,7 +158,7 @@ def test_update_supplier(tmp_path):
         conn.execute("PRAGMA foreign_keys = ON")
         mock_get_db.return_value = conn
         with patch("app.services.supplier.log_audit"):
-            result = create_supplier(SupplierCreate(name="Old", email="old@example.com"), {"id": 1})
+            result = create_supplier(SupplierCreate(name="Old", email="old@example.com", facility_type="company"), {"id": 1})
     supplier_id = result["id"]
 
     with patch("app.services.supplier.get_db") as mock_get_db:
@@ -173,7 +181,7 @@ def test_delete_supplier(tmp_path):
         conn.execute("PRAGMA foreign_keys = ON")
         mock_get_db.return_value = conn
         with patch("app.services.supplier.log_audit"):
-            result = create_supplier(SupplierCreate(name="Del", email="del@example.com"), {"id": 1})
+            result = create_supplier(SupplierCreate(name="Del", email="del@example.com", facility_type="company"), {"id": 1})
     supplier_id = result["id"]
 
     with patch("app.services.supplier.get_db") as mock_get_db:

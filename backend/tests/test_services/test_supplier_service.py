@@ -16,6 +16,7 @@ def test_supplier_row_to_response_parses_certificates_json():
     row = {
         "id": 1,
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": None,
         "certificates": '["ISO", "HACCP"]',
     }
@@ -28,6 +29,7 @@ def test_supplier_row_to_response_handles_invalid_json():
     row = {
         "id": 1,
         "name": "Test Supplier",
+        "facility_type": "company",
         "country": "Egypt",
         "certificates": "not-json",
     }
@@ -94,6 +96,7 @@ def test_create_supplier_inserts_and_returns_created_supplier():
     mock_data = MagicMock()
     mock_data.model_dump.return_value = {
         "name": "Test Supplier",
+        "facility_type": "company",
         "name_en": None,
         "contact_person": None,
         "email": "test@example.com",
