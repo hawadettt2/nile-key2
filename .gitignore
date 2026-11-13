@@ -58,3 +58,63 @@ tests/e2e/evidence/test-results/
 
 # Vitest test artifacts
 test-results/
+
+# ---------------------------------------------------------------------------
+# Local supplier-audit tooling, artifacts and reports
+# Exact filenames only. Produced during the supplier Excel reconciliation
+# (2026-11). Kept on disk, not intended for version control.
+# ---------------------------------------------------------------------------
+
+# Excel extraction / audit intermediate outputs
+/AUDIT2_RESULTS.json
+/COMPARISON_RESULTS.json
+/DB_RECORDS.json
+/EXCEL_BY_SERIAL.json
+/EXCEL_CLEAN.json
+/EXCEL_FOR_COMPARE.json
+/EXCEL_FRESH.json
+/EXCEL_PARSED.json
+/EXCEL_READED.json
+/REVIEW1_OUT.txt
+/temp_line.txt
+
+# One-off audit scripts (local tooling; some reference machine paths)
+/audit1.py
+/audit3.py
+/build_excel_map.py
+/check_enc.py
+/check_json_bytes.py
+/check_logs.py
+/check_raw.py
+/check_raw_xml.py
+/check_serial153.py
+/check_trans.py
+/check_xlsx.py
+/check_xml.py
+/clean_extract.py
+/cleanup.py
+/compare.py
+/compare_full.py
+/debug_rows.py
+/dump_db.py
+/find_session.py
+/manual_decode.py
+/parse_excel.py
+/parse_xml.py
+/read_excel.py
+/read_fresh.py
+/review1.py
+/test_enc.py
+/test_unescape.py
+/verify_excel.py
+
+# Visual verification screenshots
+/suppliers-final-fixed.png
+/suppliers-final.png
+/suppliers-fixed.png
+
+# Arabic audit reports (local working copies)
+/تقرير_استيراد_الموردين_الجدد_البصل_الجاف.md
+/تقرير_التحليل_الforensic_الSuffix.md
+/تقرير_تحليل_ملف_البصل_الجاف.md
+/تقرير_تدقيق_جنائي_مقارنة_ملف_البصل_الجاف.md
