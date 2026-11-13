@@ -1,5 +1,18 @@
 # Nile Key Patch Workflow
 
+## Stage Ownership
+
+Each stage is owned by a command, an approval gate, or manual work:
+
+| Stage | Owner |
+|---|---|
+| Planning | Manual |
+| Investigation | `/forensic-audit` |
+| Repair Decision | Project owner approval |
+| Repair | `/incident-remediation` |
+| Verification | `/runtime-verification` |
+| Completion | Closure report + project owner approval (no commit) |
+
 ## Stage 1: Planning
 
 - Understand the Patch requirements and objectives.
@@ -10,6 +23,8 @@
 ↓
 
 ## Stage 2: Investigation
+
+Owned by `/forensic-audit`.
 
 - Inspect router endpoints and request handling.
 - Inspect schema definitions and type constraints.
@@ -29,6 +44,8 @@
 
 ## Stage 4: Repair
 
+Owned by `/incident-remediation`.
+
 - Modify only files inside current Patch scope.
 - Preserve backward compatibility at all times.
 - Avoid unrelated edits or opportunistic changes.
@@ -36,6 +53,8 @@
 ↓
 
 ## Stage 5: Verification
+
+Owned by `/runtime-verification`.
 
 - Execute endpoint verification for affected routes.
 - Compare expected vs actual behavior and responses.
@@ -52,6 +71,13 @@ Patch is COMPLETE only when:
 - No regressions detected
 - API contract preserved
 - Compatibility preserved
+- Project owner has approved closure
+
+**No commit is performed at Completion.** Closing a patch means the work is verified and accepted, not committed. Never commit unless the project owner explicitly asks (`.kilocode/NILE_KEY_RULES.md`, section 10).
+
+## Optional Post-Completion: Commit Readiness
+
+`/commit-verification` is an **optional** check that runs **only** after Completion and **only** on explicit user request. It is not part of the standard chain, and it reports readiness rather than committing.
 
 ## Common Failure Patterns
 

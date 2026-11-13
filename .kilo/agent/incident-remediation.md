@@ -1,6 +1,9 @@
 ---
 description: Incident remediation after the root cause of a confirmed issue has been established. Applies a focused fix and verifies the result.
-mode: primary
+mode: all
+permission:
+  edit: ask
+  task: deny
 ---
 # Incident Remediation Skill
 
@@ -20,5 +23,10 @@ Remediate a single incident with minimal, targeted changes.
 - One Incident at a Time: Complete current incident before next
 - No scope expansion
 
+## Boundaries
+- Every edit requires owner approval before it is applied.
+- Never delegate: do not spawn subagents.
+- Never commit. Completion is reported, not committed.
+
 ## Output
-Incident record, change diff, verification results, and commit hash.
+Incident record, change diff, verification results, and an explicit statement that no commit was made.

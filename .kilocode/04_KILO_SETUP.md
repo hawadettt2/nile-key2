@@ -1,3 +1,5 @@
+> **Status:** Historical environment snapshot. Verify against `~/.config/kilo/kilo.jsonc` before use.
+
 # Kilo Environment
 
 - **Kilo Version**: Latest
