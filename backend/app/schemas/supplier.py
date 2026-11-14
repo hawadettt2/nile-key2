@@ -22,6 +22,8 @@ class SupplierBase(BaseModel):
     parent_company_id: Optional[int] = None
     data_status: Optional[str] = "raw"
     verification_status: Optional[str] = "unverified"
+    source_serial: Optional[str] = None
+    activity: Optional[str] = None
 
 
 class SupplierCreate(SupplierBase):
@@ -48,6 +50,8 @@ class SupplierUpdate(BaseModel):
     parent_company_id: Optional[int] = None
     data_status: Optional[str] = None
     verification_status: Optional[str] = None
+    source_serial: Optional[str] = None
+    activity: Optional[str] = None
 
 
 class Supplier(SupplierBase):

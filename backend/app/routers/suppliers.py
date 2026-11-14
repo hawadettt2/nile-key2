@@ -31,7 +31,7 @@ def list_suppliers(
     crop: Optional[str] = None,
     season: Optional[str] = None,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 500,
     current_user: dict = Depends(get_current_user)
 ):
     return _list_suppliers(

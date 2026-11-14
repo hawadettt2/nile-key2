@@ -52,7 +52,9 @@ def _init_db(db_path):
                     parent_company_id INTEGER,
                     data_status TEXT DEFAULT 'raw',
                     verification_status TEXT DEFAULT 'unverified',
-                    updated_at TIMESTAMP
+                    updated_at TIMESTAMP,
+                    source_serial TEXT,
+                    activity TEXT
                 )
                 """
             )

@@ -58,7 +58,7 @@ def list_suppliers(
     crop: Optional[str] = None,
     season: Optional[str] = None,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 500,
 ) -> list[dict]:
     from app.services.base import build_list_query
 
@@ -87,6 +87,8 @@ def list_suppliers(
             filters=filters,
             search_fields=["name", "name_en", "email", "phone", "station_code", "province"],
             search=search,
+            limit=limit,
+            offset=skip,
         )
         if crop_clause:
             query = query.replace("WHERE 1=1", "WHERE 1=1" + crop_clause, 1)
@@ -153,6 +155,8 @@ def create_supplier(data: SupplierCreate, current_user: dict) -> dict:
                     "parent_company_id": payload.get("parent_company_id"),
                     "data_status": payload.get("data_status", "raw"),
                     "verification_status": payload.get("verification_status", "unverified"),
+                    "source_serial": payload.get("source_serial"),
+                    "activity": payload.get("activity"),
                 },
             )
         log_audit(

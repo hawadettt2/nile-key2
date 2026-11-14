@@ -195,6 +195,8 @@ def _register_core_schemas(conn: sqlite3.Connection) -> None:
         "data_status": "TEXT DEFAULT 'raw'",
         "verification_status": "TEXT DEFAULT 'unverified'",
         "updated_at": "TIMESTAMP",
+        "source_serial": "TEXT",
+        "activity": "TEXT",
     })
     registry.register_table("supplier_accreditations", {
         "supplier_id": "INTEGER NOT NULL",
