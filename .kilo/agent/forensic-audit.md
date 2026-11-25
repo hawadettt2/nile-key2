@@ -1,5 +1,5 @@
 ---
-description: Evidence-based forensic auditing. Examines project files, configurations, implementation consistency, and test evidence without modifying project files.
+description: يفحص الملفات والإعدادات واتساق التنفيذ وأدلة الاختبار دون تعديل.
 mode: primary
 permission:
   edit: deny

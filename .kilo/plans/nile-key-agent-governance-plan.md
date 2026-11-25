@@ -166,7 +166,7 @@ remote well-known → global (`~/.config/kilo/kilo.json`) → `KILO_CONFIG` → 
 
 1. **لا commit في أي مرحلة** إلا بطلب صريح من المالك.
 2. **الأرشيف للقراءة فقط** — لا تعديل داخل `.kilo/plans/archive/`.
-3. **لا ملفات بديلة** — `.kilo/agents/` (جمع) ممنوع.
+3. **ملفات الوكلاء** — `.kilo/agent/` (مفرد) هو المسار المعتمد لـ`forensic-audit` و`incident-remediation`. يُسمح حصريًا بـ`.kilo/agents/code-reviewer.md` (استثناء وحيد معتمد وفق `MASTER_PLAN.md`)؛ لا يُضاف أي وكيل آخر إلى `.kilo/agents/` دون موافقة مالك المشروع.
 4. **حفظ محتوى `04_KILO_SETUP.md`** — لا حذف أقسام.
 5. **`.kilo/kilo.jsonc` محلي** — لا يُستخدم كحامل إعداد مشترك.
 6. **الدليل أولًا** — كل تعديل يُسند إلى سطر/ملف.
@@ -380,7 +380,7 @@ remote well-known → global (`~/.config/kilo/kilo.json`) → `KILO_CONFIG` → 
    - الحقل المحدَّد فقط يُستبدل.
    - الترتيب بين `.kilo/kilo.json` و`.kilo/agent/*.md` **غير مثبت** — يُشار إليه كافتراض قابل للانقلاب.
 
-2. **حسم التعارض:** `.kilo/agent/*.md` يبقى canonical لمشروع Nile Key. الإصدارات العالمية (inline + `agents/`) تبقى للاستخدام العام ولا تُحذف. **منع `.kilo/agents/`.**
+2. **حسم التعارض:** `.kilo/agent/*.md` يبقى canonical لمشروع Nile Key. الإصدارات العالمية (inline + `agents/`) تبقى للاستخدام العام ولا تُحذف. **`.kilo/agents/` (جمع): استثناء وحيد معتمد لـ`code-reviewer.md` وفق `MASTER_PLAN.md`؛ لا يُضاف أي وكيل آخر دون موافقة مالك المشروع.**
 
 3. **مراجعة الصلاحيات النهائية (V6) — إلزامية قبل الاعتماد:**
 
@@ -422,7 +422,7 @@ remote well-known → global (`~/.config/kilo/kilo.json`) → `KILO_CONFIG` → 
 - سجل وكلاء.
 
 ### معايير التحقق
-- [ ] `Test-Path .kilo\agents` = False.
+- [ ] `.kilo/agents/` (جمع) يحتوي **حصريًا** على `code-reviewer.md` (الاستثناء المعتمد)؛ لا وكيل آخر. `.kilo/agent/` (مفرد) يبقى canonical لـ`forensic-audit` و`incident-remediation`.
 - [ ] كل وكيل في `.kilo/agent/` يملك `description` + `mode`.
 - [ ] `kilo.json` (الجذر) صالح JSON ويحتوي `permission` + `instructions`.
 - [ ] `.kilo/kilo.jsonc` **غير معدَّل** (لا صلاحيات فيه).
@@ -501,7 +501,8 @@ Select-String -Path .\kilo.json -Pattern "instructions"
 git status --short -- .kilo/plans/archive
 
 # 5. الوكلاء
-Test-Path .kilo\agents
+$items = @(Get-ChildItem -LiteralPath .kilo\agents -Force)
+$items.Count -eq 1 -and -not $items[0].PSIsContainer -and $items[0].Name -eq 'code-reviewer.md'
 Get-ChildItem .kilo\agent -File
 
 # 6. frontmatter
@@ -523,7 +524,7 @@ git log -1 --oneline
 | D4 | `.kilocode/SESSION_STATE.md` متوقف | **معتمد** |
 | D5 | `CURRENT_STATUS.md` **فهرس غير نهائي** | **معتمد** — V2 |
 | D6 | `.kilo/plans/archive/**` للقراءة فقط | **معتمد** |
-| D7 | `.kilo/agent/` (مفرد) canonical؛ `.kilo/agents/` (جمع) ممنوع | **معتمد** |
+| D7 | `.kilo/agent/` (مفرد) canonical؛ `.kilo/agents/` (جمع): استثناء وحيد معتمد لـ`code-reviewer.md`؛ لا وكيل آخر دون موافقة المالك | **معتمد** |
 | D8 | مهارة مشروع واحدة كحد أقصى في Phase 2 | **معتمد** |
 | D9 | تعارض `PLAN.md` ↔ `CURRENT_STATUS.md` | **مفتوح** |
 | D10 | `AGENTS.md` خارج النطاق الإلزامي (محمي) | **معتمد** — V7 |

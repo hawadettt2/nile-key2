@@ -1,5 +1,5 @@
 ---
-description: Incident remediation after the root cause of a confirmed issue has been established. Applies a focused fix and verifies the result.
+description: يعالج الحوادث بعد إثبات سببها الجذري ويتحقق من الإصلاح.
 mode: primary
 permission:
   edit: ask
