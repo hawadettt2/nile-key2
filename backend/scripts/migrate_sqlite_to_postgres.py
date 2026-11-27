@@ -1,17 +1,16 @@
 """
-SQLite -> PostgreSQL bounded migration utility.
+SQLite -> PostgreSQL (Neon) bounded migration utility.
 
-This script is intentionally bounded:
-- It does NOT migrate the current production SQLite database automatically.
-- It is a verifiable, testable mechanism intended to be run explicitly
-  during the approved migration window.
+Reads the approved SQLite backup (read-only), creates the approved schema from
+POSTGRES_SCHEMA.sql, copies all 40 tables with explicit column lists inside a
+single PostgreSQL transaction, verifies schema/data/relationships, then (only
+after successful verification) applies RESET_IDENTITY_SEQUENCES.sql and commits.
 
-Usage examples:
-  # Dry run against sample databases:
-  python backend/scripts/migrate_sqlite_to_postgres.py --sqlite-path /tmp/sample.sqlite --pg-url postgresql://nilekey:password@localhost:5432/nilekey_test --dry-run
-
-  # Actual migration (after explicit approval and backup):
-  python backend/scripts/migrate_sqlite_to_postgres.py --sqlite-path /tmp/sample.sqlite --pg-url postgresql://nilekey:password@localhost:5432/nilekey --verify
+Safety:
+- Never uses TRUNCATE / DROP / DELETE / upsert.
+- Never prints the connection URL or password.
+- Rolls back on any failure before commit.
+- setval is applied last (sequence changes are non-transactional in PostgreSQL).
 """
 
 from __future__ import annotations
@@ -22,8 +21,8 @@ import json
 import os
 import sqlite3
 import sys
-from dataclasses import dataclass
-from typing import Any
+from decimal import Decimal
+from pathlib import Path
 
 try:
     import psycopg2
@@ -31,235 +30,281 @@ try:
 except ImportError:
     psycopg2 = None  # type: ignore[assignment]
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SCHEMA_FILE = PROJECT_ROOT / ".kilo" / "plans" / "nile-key-neon-migration" / "POSTGRES_SCHEMA.sql"
+SEQ_FILE = PROJECT_ROOT / ".kilo" / "plans" / "nile-key-neon-migration" / "RESET_IDENTITY_SEQUENCES.sql"
 
-TABLES_IN_ORDER = [
-    "roles",
-    "users",
-    "suppliers",
-    "customers",
-    "hs_codes",
-    "documents",
-    "resources",
-    "shipments",
-    "invoices",
-    "eta_connectors",
-    "eta_logs",
-    "eta_log_documents",
-    "customs_declarations",
-    "shipping_providers",
-    "shipping_parcel_templates",
-    "shipping_labels",
-    "shipping_logs",
-    "contacts",
-    "addresses",
-    "notification_templates",
-    "notification_logs",
-    "notification_preferences",
-    "audit_logs",
-    "export_workflows",
-    "export_workflow_items",
-    "agent_sessions",
-    "agent_memory",
-    "agent_audit_logs",
-    "knowledge_nodes",
-    "knowledge_edges",
-    "token_blacklist",
+# FK-safe insertion order (all 40 tables).
+TABLE_ORDER = [
+    "roles", "users", "suppliers", "supplier_accreditations",
+    "supplier_accreditation_crops", "customers", "hs_codes",
+    "customer_source_batches", "customer_raw_records", "customer_products",
+    "customer_evidence", "contacts", "addresses", "shipments",
+    "shipping_providers", "shipping_parcel_templates", "shipping_labels",
+    "shipping_logs", "invoices", "customs_declarations", "eta_connectors",
+    "eta_logs", "eta_log_documents", "notification_templates",
+    "notification_logs", "notification_preferences", "audit_logs",
+    "export_workflows", "export_workflow_items", "documents", "resources",
+    "knowledge_nodes", "knowledge_edges", "agent_sessions", "agent_memory",
+    "agent_audit_logs", "agent_goals", "agent_plans", "token_blacklist",
+    "schema_migrations",
 ]
 
+# 19 foreign keys (child, child_col, parent, parent_col)
+FKS = [
+    ("token_blacklist", "user_id", "users", "id"),
+    ("agent_sessions", "user_id", "users", "id"),
+    ("agent_memory", "user_id", "users", "id"),
+    ("agent_memory", "session_id", "agent_sessions", "id"),
+    ("agent_audit_logs", "session_id", "agent_sessions", "id"),
+    ("agent_goals", "user_id", "users", "id"),
+    ("agent_goals", "session_id", "agent_sessions", "id"),
+    ("agent_plans", "user_id", "users", "id"),
+    ("agent_plans", "session_id", "agent_sessions", "id"),
+    ("agent_plans", "goal_id", "agent_goals", "goal_id"),
+    ("customer_raw_records", "batch_id", "customer_source_batches", "id"),
+    ("customer_products", "customer_id", "customers", "id"),
+    ("customer_products", "raw_record_id", "customer_raw_records", "id"),
+    ("customer_evidence", "customer_id", "customers", "id"),
+    ("customer_evidence", "raw_record_id", "customer_raw_records", "id"),
+    ("eta_log_documents", "eta_log_id", "eta_logs", "id"),
+    ("export_workflow_items", "workflow_id", "export_workflows", "id"),
+    ("knowledge_edges", "source_node_id", "knowledge_nodes", "id"),
+    ("knowledge_edges", "target_node_id", "knowledge_nodes", "id"),
+]
 
-@dataclass
-class VerificationResult:
-    table: str
-    sqlite_count: int
-    pg_count: int
-    sqlite_checksum: str
-    pg_checksum: str
-    passed: bool
-
-
-def _checksum(rows: list[tuple[Any, ...]]) -> str:
-    payload = json.dumps(rows, sort_keys=True, default=str).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
-
-
-def _fetch_all(conn: sqlite3.Connection, table: str) -> list[tuple[Any, ...]]:
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT * FROM {table}")
-    columns = [desc[0] for desc in cursor.description]
-    rows = cursor.fetchall()
-    return [tuple(row[col] for col in columns) for row in [dict(zip(columns, r)) for r in rows]]
-
-
-def _table_columns(conn: sqlite3.Connection, table: str) -> list[str]:
-    cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({table})")
-    return [row[1] for row in cursor.fetchall()]
-
-
-def migrate(
-    sqlite_path: str,
-    pg_url: str,
-    dry_run: bool = False,
-    verify: bool = False,
-) -> list[VerificationResult]:
-    if psycopg2 is None:
-        raise RuntimeError(
-            "psycopg2 is not installed. Install it with: pip install psycopg2-binary"
-        )
-
-    if not os.path.exists(sqlite_path):
-        raise FileNotFoundError(f"SQLite database not found: {sqlite_path}")
-
-    if dry_run:
-        print("[DRY RUN] No data will be written to PostgreSQL.")
-
-    sqlite_conn = sqlite3.connect(sqlite_path, check_same_thread=False)
-    sqlite_conn.row_factory = sqlite3.Row
-
-    pg_conn = psycopg2.connect(pg_url)
-    pg_conn.autocommit = False
-    pg_cursor = pg_conn.cursor()
-
-    results: list[VerificationResult] = []
-
-    try:
-        for table in TABLES_IN_ORDER:
-            print(f"[MIGRATE] Processing table: {table}")
-
-            columns = _table_columns(sqlite_conn, table)
-            if not columns:
-                print(f"[MIGRATE] Table {table} is empty or does not exist, skipping.")
-                continue
-
-            rows = _fetch_all(sqlite_conn, table)
-            sqlite_count = len(rows)
-            sqlite_checksum = _checksum(rows)
-
-            if dry_run:
-                print(f"[DRY RUN] {table}: {sqlite_count} rows, checksum {sqlite_checksum[:12]}...")
-                results.append(VerificationResult(
-                    table=table,
-                    sqlite_count=sqlite_count,
-                    pg_count=0,
-                    sqlite_checksum=sqlite_checksum,
-                    pg_checksum="",
-                    passed=False,
-                ))
-                continue
-
-            if not rows:
-                print(f"[MIGRATE] {table}: 0 rows, skipping insert.")
-                if verify:
-                    pg_cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                    pg_count = pg_cursor.fetchone()[0]
-                    results.append(VerificationResult(
-                        table=table,
-                        sqlite_count=0,
-                        pg_count=pg_count,
-                        sqlite_checksum=sqlite_checksum,
-                        pg_checksum="",
-                        passed=pg_count == 0,
-                    ))
-                continue
-
-            column_list = ", ".join(columns)
-            insert_sql = f"INSERT INTO {table} ({column_list}) VALUES %s"
-
-            # Clear destination table to allow idempotent re-runs within the same migration window.
-            pg_cursor.execute(f"TRUNCATE TABLE {table} CASCADE")
-
-            execute_values(pg_cursor, insert_sql, rows, page_size=500)
-
-            if verify:
-                pg_cursor.execute(f"SELECT COUNT(*) FROM {table}")
-                pg_count = pg_cursor.fetchone()[0]
-
-                pg_cursor.execute(f"SELECT * FROM {table}")
-                pg_rows = pg_cursor.fetchall()
-                pg_checksum = _checksum([tuple(r) for r in pg_rows])
-
-                passed = (sqlite_count == pg_count) and (sqlite_checksum == pg_checksum)
-                results.append(VerificationResult(
-                    table=table,
-                    sqlite_count=sqlite_count,
-                    pg_count=pg_count,
-                    sqlite_checksum=sqlite_checksum,
-                    pg_checksum=pg_checksum,
-                    passed=passed,
-                ))
-
-        if not dry_run:
-            pg_conn.commit()
-            print("[MIGRATE] Transaction committed.")
-
-    except Exception:
-        pg_conn.rollback()
-        raise
-    finally:
-        sqlite_conn.close()
-        pg_cursor.close()
-        pg_conn.close()
-
-    return results
+EXPECTED_SEQ = {
+    "roles": 8, "users": 1, "token_blacklist": 0, "suppliers": 163,
+    "supplier_accreditations": 115, "supplier_accreditation_crops": 325,
+    "customers": 1, "customer_source_batches": 1, "customer_raw_records": 1,
+    "customer_products": 0, "customer_evidence": 0, "contacts": 0,
+    "addresses": 0, "shipments": 0, "shipping_providers": 0,
+    "shipping_parcel_templates": 0, "shipping_labels": 0, "shipping_logs": 0,
+    "invoices": 0, "customs_declarations": 0, "hs_codes": 13,
+    "eta_connectors": 0, "eta_logs": 0, "eta_log_documents": 0,
+    "documents": 0, "resources": 18, "notification_templates": 0,
+    "notification_logs": 0, "notification_preferences": 0, "audit_logs": 1,
+    "export_workflows": 0, "export_workflow_items": 0, "agent_audit_logs": 2,
+    "schema_migrations": 1,
+}
 
 
-def print_results(results: list[VerificationResult]) -> bool:
-    all_passed = True
-    print("\n[VERIFICATION] Results:")
-    print(f"{'Table':<30} {'SQLite':>8} {'Postgres':>10} {'Checksum Match':>16} {'Status'}")
-    print("-" * 80)
-    for r in results:
-        status = "PASS" if r.passed else "FAIL"
-        if not r.passed:
-            all_passed = False
-        checksum_match = "YES" if r.sqlite_checksum == r.pg_checksum else "NO"
-        print(f"{r.table:<30} {r.sqlite_count:>8} {r.pg_count:>10} {checksum_match:>16} {status}")
-    print("-" * 80)
-    print(f"[VERIFICATION] Overall: {'PASS' if all_passed else 'FAIL'}")
-    return all_passed
+def qident(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+def norm(v):
+    if v is None:
+        return None
+    if isinstance(v, Decimal):
+        return round(float(v), 6)
+    if isinstance(v, float):
+        return round(v, 6)
+    if isinstance(v, bytes):
+        return v.decode("utf-8", "replace")
+    return v
+
+
+def table_columns_sqlite(cur, table: str):
+    cur.execute("PRAGMA table_info(%s)" % qident(table))
+    return [r[1] for r in cur.fetchall()]
+
+
+def pk_columns_sqlite(cur, table: str):
+    cur.execute("PRAGMA table_info(%s)" % qident(table))
+    rows = [r for r in cur.fetchall() if r[5]]
+    rows.sort(key=lambda r: r[5])
+    return [r[1] for r in rows]
+
+
+def checksum(cur, table: str, cols, pkcols) -> str:
+    select = ", ".join(qident(c) for c in cols)
+    cur.execute("SELECT %s FROM %s" % (select, qident(table)))
+    rows = cur.fetchall()
+    norm_rows = [[norm(x) for x in r] for r in rows]
+    idx = [cols.index(c) for c in pkcols] if pkcols else list(range(len(cols)))
+    norm_rows.sort(key=lambda r: tuple("" if r[i] is None else str(r[i]) for i in idx))
+    payload = json.dumps(norm_rows, ensure_ascii=False, default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Bounded SQLite -> PostgreSQL migration utility."
-    )
-    parser.add_argument(
-        "--sqlite-path",
-        required=True,
-        help="Path to the source SQLite database file.",
-    )
-    parser.add_argument(
-        "--pg-url",
-        required=True,
-        help="PostgreSQL connection URL (e.g. postgresql://user:pass@host:5432/dbname).",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Inspect counts and checksums without writing to PostgreSQL.",
-    )
-    parser.add_argument(
-        "--verify",
-        action="store_true",
-        help="Enable post-migration verification against PostgreSQL.",
-    )
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--sqlite-path", required=True)
+    args = ap.parse_args()
 
-    try:
-        results = migrate(
-            sqlite_path=args.sqlite_path,
-            pg_url=args.pg_url,
-            dry_run=args.dry_run,
-            verify=args.verify or args.dry_run,
-        )
-    except Exception as exc:
-        print(f"[ERROR] Migration failed: {exc}")
+    if psycopg2 is None:
+        print("RESULT ERROR psycopg2 not available")
+        return 1
+    url = os.environ.get("NEON_DATABASE_URL")
+    if not url:
+        print("RESULT ERROR NEON_DATABASE_URL missing")
         return 1
 
-    if results:
-        passed = print_results(results)
-        return 0 if passed else 1
+    sqlite_path = args.sqlite_path
+    if not os.path.exists(sqlite_path):
+        print("RESULT ERROR sqlite backup not found")
+        return 1
+    sha = hashlib.sha256(open(sqlite_path, "rb").read()).hexdigest()
+    print("SOURCE_SHA256", sha)
 
+    src = sqlite3.connect("file:%s?mode=ro" % sqlite_path, uri=True)
+    src.execute("PRAGMA query_only=ON")
+    scur = src.cursor()
+    integrity = scur.execute("PRAGMA integrity_check").fetchall()
+    fkcheck = scur.execute("PRAGMA foreign_key_check").fetchall()
+    print("SOURCE_INTEGRITY", integrity)
+    print("SOURCE_FKCHECK", fkcheck)
+    if integrity != [("ok",)] or fkcheck:
+        print("RESULT ROLLBACK source integrity failed")
+        src.close()
+        return 1
+
+    src_tables = [r[0] for r in scur.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+    if len(src_tables) != 40 or set(src_tables) != set(TABLE_ORDER):
+        print("RESULT ROLLBACK source table set mismatch", len(src_tables))
+        src.close()
+        return 1
+    src_counts = {}
+    for t in src_tables:
+        src_counts[t] = scur.execute("SELECT COUNT(*) FROM %s" % qident(t)).fetchone()[0]
+
+    pg = psycopg2.connect(url, connect_timeout=20)
+    pg.autocommit = False
+    pcur = pg.cursor()
+    try:
+        ddl = SCHEMA_FILE.read_text(encoding="utf-8")
+        pcur.execute(ddl)
+
+        for table in TABLE_ORDER:
+            cols = table_columns_sqlite(scur, table)
+            collist = ", ".join(qident(c) for c in cols)
+            pcur.execute("SELECT COUNT(*) FROM %s" % qident(table))
+            existing = pcur.fetchone()[0]
+            if existing != 0:
+                raise RuntimeError("destination table %s not empty (%d)" % (table, existing))
+            if src_counts.get(table, 0) == 0:
+                continue
+            scur.execute("SELECT %s FROM %s" % (collist, qident(table)))
+            rows = scur.fetchall()
+            insert_sql = "INSERT INTO %s (%s) VALUES %%s" % (qident(table), collist)
+            execute_values(pcur, insert_sql, rows, page_size=500)
+
+        # ---- verification before commit ----
+        pg_tables = [r[0] for r in pcur.execute(
+            "SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename") or pcur.fetchall()]
+        pg_col_count = pcur.execute(
+            "SELECT count(*) FROM information_schema.columns WHERE table_schema='public'") or pcur.fetchone()[0]
+        pk_count = pcur.execute(
+            "SELECT count(*) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace "
+            "WHERE c.contype='p' AND n.nspname='public'") or pcur.fetchone()[0]
+        fk_count = pcur.execute(
+            "SELECT count(*) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace "
+            "WHERE c.contype='f' AND n.nspname='public'") or pcur.fetchone()[0]
+        idx_total = pcur.execute("SELECT count(*) FROM pg_indexes WHERE schemaname='public'") or pcur.fetchone()[0]
+        print("VERIFY_TABLES", len(pg_tables))
+        print("VERIFY_COLUMNS", pg_col_count)
+        print("VERIFY_PK", pk_count)
+        print("VERIFY_FK", fk_count)
+        print("VERIFY_INDEXES_TOTAL", idx_total)
+
+        if len(pg_tables) != 40 or pg_col_count != 481 or pk_count != 40 or fk_count != 19:
+            raise RuntimeError("schema verification failed")
+
+        # data counts + checksums
+        mismatches = []
+        for table in TABLE_ORDER:
+            cols = table_columns_sqlite(scur, table)
+            pkcols = pk_columns_sqlite(scur, table)
+            pcur.execute("SELECT COUNT(*) FROM %s" % qident(table))
+            pg_count = pcur.fetchone()[0]
+            if pg_count != src_counts[table]:
+                mismatches.append((table, src_counts[table], pg_count))
+                continue
+            if src_counts[table] == 0:
+                continue
+            sc = checksum(scur, table, cols, pkcols)
+            pc = checksum(pcur, table, cols, pkcols)
+            if sc != pc:
+                mismatches.append((table, "checksum", sc[:12], pc[:12]))
+        print("VERIFY_COUNT_MISMATCHES", mismatches)
+        if mismatches:
+            raise RuntimeError("data verification failed")
+
+        # orphan checks
+        orphans = []
+        for child, ccol, parent, pcol in FKS:
+            pcur.execute(
+                "SELECT count(*) FROM %s c LEFT JOIN %s p ON c.%s = p.%s "
+                "WHERE c.%s IS NOT NULL AND p.%s IS NULL"
+                % (qident(child), qident(parent), qident(ccol), qident(pcol), qident(ccol), qident(pcol)))
+            n = pcur.fetchone()[0]
+            if n:
+                orphans.append((child, ccol, n))
+        print("VERIFY_ORPHANS", orphans)
+        if orphans:
+            raise RuntimeError("orphan rows detected")
+
+        # partial index definition
+        pcur.execute("SELECT indexdef FROM pg_indexes WHERE indexname='idx_suppliers_station_code'")
+        row = pcur.fetchone()
+        print("VERIFY_PARTIAL_INDEX", row[0] if row else None)
+
+        # ---- sequences last (non-transactional) ----
+        seq_sql = SEQ_FILE.read_text(encoding="utf-8")
+        pcur.execute(seq_sql)
+        seq_bad = []
+        for table, expected in EXPECTED_SEQ.items():
+            pcur.execute("SELECT pg_get_serial_sequence(%s, 'id')", (table,))
+            seqname = pcur.fetchone()[0]
+            pcur.execute("SELECT last_value, is_called FROM %s" % seqname)
+            last_value, is_called = pcur.fetchone()
+            want_last = max(expected, 1)
+            want_called = expected > 0
+            if last_value != want_last or is_called != want_called:
+                seq_bad.append((table, last_value, is_called, want_last, want_called))
+        print("VERIFY_SEQUENCES_BAD", seq_bad)
+        if seq_bad:
+            raise RuntimeError("sequence verification failed")
+
+        pg.commit()
+        print("TRANSACTION COMMIT")
+    except Exception as exc:
+        pg.rollback()
+        print("RESULT ROLLBACK", type(exc).__name__, str(exc)[:300])
+        src.close()
+        return 1
+
+    src.close()
+
+    # post-commit read-only persistence check
+    try:
+        pg2 = psycopg2.connect(url, connect_timeout=20)
+        pg2.autocommit = True
+        c2 = pg2.cursor()
+        c2.execute("SELECT count(*) FROM pg_tables WHERE schemaname='public'")
+        tcount = c2.fetchone()[0]
+        c2.execute("SELECT count(*) FROM information_schema.columns WHERE table_schema='public'")
+        ccount = c2.fetchone()[0]
+        c2.execute("SELECT count(*) FROM pg_constraint WHERE contype='f'")
+        fcount = c2.fetchone()[0]
+        c2.execute("SELECT count(*) FROM pg_indexes WHERE schemaname='public'")
+        icount = c2.fetchone()[0]
+        c2.execute("SELECT COUNT(*) FROM suppliers")
+        sup = c2.fetchone()[0]
+        c2.execute("SELECT COUNT(*) FROM supplier_accreditations")
+        acc = c2.fetchone()[0]
+        c2.execute("SELECT COUNT(*) FROM supplier_accreditation_crops")
+        crops = c2.fetchone()[0]
+        print("POSTCOMMIT_TABLES", tcount, "COLUMNS", ccount, "FK", fcount, "INDEXES", icount)
+        print("POSTCOMMIT_SUPPLIERS", sup, "ACCREDITATIONS", acc, "CROPS", crops)
+        pg2.close()
+    except Exception as exc:
+        print("POSTCOMMIT_ERROR", type(exc).__name__, str(exc)[:200])
+        return 1
+
+    print("MIGRATION_RESULT SUCCESS")
     return 0
 
 
