@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from datetime import datetime
 import os
-import sqlite3
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address

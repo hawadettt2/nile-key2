@@ -1,6 +1,5 @@
 from typing import Optional, Dict, Any, List
 from datetime import datetime
-import sqlite3
 import json
 
 from .schema import Goal

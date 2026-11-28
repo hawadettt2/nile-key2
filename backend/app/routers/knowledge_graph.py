@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
-import sqlite3
 
 from app.routers.auth import get_current_user, require_role
 from app.schemas.knowledge_graph import (
