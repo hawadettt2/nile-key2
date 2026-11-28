@@ -23,19 +23,13 @@ def get_db_connection():
     سياق إدارة الاتصال بقاعدة البيانات
     - يفتح الاتصال تلقائياً
     - يغلقه تلقائياً حتى لو حدث خطأ
+    - يختار المحرك من DATABASE_URL (SQLite افتراضياً، PostgreSQL عند ضبطه)
     """
-    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
-    if not os.path.isabs(db_path):
-        db_path = str(Path(__file__).resolve().parent.parent.parent / db_path)
+    from app.core import db_adapter
 
-    conn = sqlite3.connect(
-        db_path,
-        check_same_thread=False,  # ضروري لـ FastAPI (multi-threaded)
-        timeout=20.0,             # انتظار 20 ثانية قبل Timeout
-    )
-    conn.row_factory = sqlite3.Row  # للوصول للأعمدة بالاسم
-    conn.execute("PRAGMA foreign_keys = ON")  # تفعيل المفاتيح الأجنبية
-    
+    base_dir = str(Path(__file__).resolve().parent.parent.parent)
+    conn = db_adapter.create_connection(settings.DATABASE_URL, sqlite_base_dir=base_dir)
+
     try:
         yield conn
     except Exception:
@@ -51,18 +45,11 @@ def get_db_connection():
 # ========== تهيئة قاعدة البيانات ==========
 
 def get_db():
-    """Return a raw SQLite connection for existing router code."""
-    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
-    if not os.path.isabs(db_path):
-        db_path = str(Path(__file__).resolve().parent.parent.parent / db_path)
-    conn = sqlite3.connect(
-        db_path,
-        check_same_thread=False,
-        timeout=20.0,
-    )
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    """Return a DB connection (raw sqlite3 for SQLite, proxy for PostgreSQL)."""
+    from app.core import db_adapter
+
+    base_dir = str(Path(__file__).resolve().parent.parent.parent)
+    return db_adapter.create_connection(settings.DATABASE_URL, sqlite_base_dir=base_dir)
 
 
 def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict | None = None, extra_fields: dict[str, Any] | None = None) -> bool:
@@ -106,7 +93,7 @@ class DatabaseSession:
     without changing service-layer behavior.
     """
 
-    def __init__(self, conn: sqlite3.Connection):
+    def __init__(self, conn):
         self._conn = conn
 
     def execute(self, query: str, params: tuple = ()) -> sqlite3.Cursor:
