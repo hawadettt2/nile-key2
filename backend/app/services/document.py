@@ -2,6 +2,7 @@ from typing import Optional
 
 from app.schemas.document import DocumentCreate, DocumentUpdate
 from app.services.base import connection, parse_json, now_iso, execute_update
+from app.core.database import insert_returning_id
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 
@@ -72,9 +73,9 @@ def get_document(document_id: int) -> dict:
 
 def create_document(data: DocumentCreate, current_user: dict) -> dict:
     with connection() as conn:
-        cursor = conn.cursor()
         now = now_iso()
-        cursor.execute(
+        doc_id = insert_returning_id(
+            conn,
             """INSERT INTO documents (title, type, template_type, entity_type, entity_id,
                description, metadata, created_at, created_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -82,7 +83,6 @@ def create_document(data: DocumentCreate, current_user: dict) -> dict:
              data.entity_id, data.content, str(data.metadata) if data.metadata else "{}", now, current_user["id"])
         )
         conn.commit()
-        doc_id = cursor.lastrowid
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="document", entity_id=doc_id, details=data.title),
@@ -107,8 +107,8 @@ def upload_document(
     now = now_iso()
     stored_filename = f"{now}_{filename}"
     with connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
+        doc_id = insert_returning_id(
+            conn,
             """INSERT INTO documents (title, type, file_name, file_type, file_size, document_type,
                entity_type, entity_id, created_at, created_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -116,7 +116,6 @@ def upload_document(
              entity_type, entity_id, now, current_user["id"])
         )
         conn.commit()
-        doc_id = cursor.lastrowid
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="document", entity_id=doc_id, details=title or filename),

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 
-from app.core.database import get_db
+from app.core.database import get_db, insert_returning_id
 from app.routers.auth import get_current_user, require_role
 from app.schemas.role import RoleCreate, RoleUpdate, Role
 from app.schemas.common import MessageResponse, IdResponse
@@ -45,12 +45,12 @@ def create_role(data: RoleCreate, current_user: dict = Depends(require_role(["ow
     if cursor.fetchone():
         conn.close()
         raise HTTPException(status_code=400, detail="Role already exists")
-    cursor.execute(
+    role_id = insert_returning_id(
+        conn,
         "INSERT INTO roles (name, permissions, description) VALUES (?, ?, ?)",
         (data.name, data.permissions, data.description)
     )
     conn.commit()
-    role_id = cursor.lastrowid
     conn.close()
     return {"message": "Role created successfully", "id": role_id}
 

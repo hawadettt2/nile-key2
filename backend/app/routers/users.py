@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
 
-from app.core.database import get_db, execute_update
+from app.core.database import get_db, execute_update, insert_returning_id
 from app.core.security import get_password_hash, is_protected_owner, ensure_not_protected_owner
 from app.routers.auth import get_current_user, require_role
 from app.schemas.user import UserCreate, UserUpdate, User
@@ -73,13 +73,13 @@ def create_user(data: UserCreate, current_user: dict = Depends(require_role(["ow
         raise HTTPException(status_code=400, detail="Email or username already exists")
     hashed = get_password_hash(data.password)
     now = datetime.utcnow().isoformat()
-    cursor.execute(
+    user_id = insert_returning_id(
+        conn,
         """INSERT INTO users (email, username, full_name, password_hash, role, phone, company, is_active, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (data.email, data.username, data.full_name, hashed, data.role, data.phone, data.company, 1, now)
     )
     conn.commit()
-    user_id = cursor.lastrowid
     conn.close()
     return {"message": "User created successfully", "id": user_id}
 

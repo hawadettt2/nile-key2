@@ -12,6 +12,7 @@ from app.schemas.customs import (
     DeclarationCreateResponse,
 )
 from app.services.base import connection, now_iso, execute_update
+from app.core.database import insert_returning_id
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 
@@ -119,10 +120,10 @@ def get_declaration(declaration_id: int) -> dict:
 
 def create_declaration(data: CustomsDeclarationCreate, current_user: dict) -> dict:
     with connection() as conn:
-        cursor = conn.cursor()
         now = now_iso()
         decl_num = f"CD-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-        cursor.execute(
+        decl_id = insert_returning_id(
+            conn,
             """INSERT INTO customs_declarations (declaration_number, shipment_id, hs_code_id, origin_country,
                destination_country, total_value, currency, documents, status, created_at, created_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -131,7 +132,6 @@ def create_declaration(data: CustomsDeclarationCreate, current_user: dict) -> di
              str(data.documents) if data.documents else "[]", "draft", now, current_user["id"])
         )
         conn.commit()
-        decl_id = cursor.lastrowid
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="customs_declaration", entity_id=decl_id, details=decl_num),

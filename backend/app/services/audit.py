@@ -3,6 +3,7 @@ import logging
 from typing import Any, Optional
 
 from app.services.base import connection, now_iso, dumps_json, build_list_query
+from app.core.database import insert_returning_id
 from app.schemas.audit import AuditLogCreate
 
 logger = logging.getLogger("audit")
@@ -19,8 +20,8 @@ def log_audit(
     created_at = now_iso()
 
     with connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
+        log_id = insert_returning_id(
+            conn,
             """INSERT INTO audit_logs 
                (user_id, action, entity_type, entity_id, details, created_at, ip_address, user_agent, session_id)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -37,7 +38,6 @@ def log_audit(
             ),
         )
         conn.commit()
-        log_id = cursor.lastrowid
 
     logger.info("Audit log created: id=%s action=%s entity=%s:%s user=%s", log_id, data.action, data.entity_type, data.entity_id, user_id)
     return {"id": log_id, "message": "Audit log created successfully"}

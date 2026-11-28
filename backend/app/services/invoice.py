@@ -4,6 +4,7 @@ from typing import Optional
 
 from app.schemas.invoice import InvoiceCreate, InvoiceUpdate
 from app.services.base import connection, build_list_query, now_iso, execute_update
+from app.core.database import insert_returning_id
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 
@@ -61,7 +62,8 @@ def create_invoice(data: InvoiceCreate, current_user: dict) -> dict:
         tax = data.subtotal * (data.tax_rate / 100)
         total = data.subtotal + tax
         items_str = json.dumps([i.model_dump() for i in data.items])
-        cursor.execute(
+        inv_id = insert_returning_id(
+            conn,
             """INSERT INTO invoices (invoice_number, customer_id, supplier_id, shipment_id, subtotal, tax_rate,
                tax_amount, total, currency, issue_date, due_date, status, items, notes, created_at, created_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -71,7 +73,6 @@ def create_invoice(data: InvoiceCreate, current_user: dict) -> dict:
              data.notes, now, current_user["id"])
         )
         conn.commit()
-        inv_id = cursor.lastrowid
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="invoice", entity_id=inv_id, details=inv_num),

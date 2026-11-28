@@ -3,6 +3,7 @@ from typing import Optional
 
 from app.schemas.resource import ResourceCreate, ResourceUpdate
 from app.services.base import connection, now_iso, execute_update
+from app.core.database import insert_returning_id
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 
@@ -105,9 +106,9 @@ def get_resource(resource_id: int) -> dict:
 def create_resource(data: ResourceCreate, current_user: dict) -> dict:
     _validate_url(data.url)
     with connection() as conn:
-        cursor = conn.cursor()
         now = now_iso()
-        cursor.execute(
+        res_id = insert_returning_id(
+            conn,
             """INSERT INTO resources (title, title_ar, description, description_ar, resource_type, category,
                url, country, metadata, is_active, created_at, created_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -115,7 +116,6 @@ def create_resource(data: ResourceCreate, current_user: dict) -> dict:
              data.category or "other", data.url, data.country, str(data.metadata) if data.metadata else "{}", 1, now, current_user["id"])
         )
         conn.commit()
-        res_id = cursor.lastrowid
         log_audit(
             current_user=current_user,
             data=AuditLogCreate(action="create", entity_type="resource", entity_id=res_id, details=data.title),
