@@ -6,6 +6,7 @@
 
 import json
 import os
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -86,6 +87,34 @@ def execute_update(conn, table_name: str, record_id, data, coerce_fields: dict |
     return updated
 
 
+_SAFE_COLUMN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def insert_returning_id(conn, insert_sql: str, params: tuple = (), pk_column: str = "id"):
+    """Execute an INSERT and return the generated primary key.
+
+    - PostgreSQL: appends ``RETURNING <pk_column>`` and fetches the value.
+    - SQLite: executes the INSERT unchanged and returns ``cursor.lastrowid``.
+
+    The engine is detected from the actual connection object (via the
+    adapter), never assumed. No commit is performed here; transaction
+    handling stays with the caller.
+    """
+    if not isinstance(pk_column, str) or not _SAFE_COLUMN_RE.match(pk_column):
+        raise ValueError("Unsafe primary key column name: %r" % (pk_column,))
+
+    from app.core import db_adapter
+
+    if db_adapter.is_postgres(conn):
+        sql = insert_sql.strip().rstrip(";") + " RETURNING " + pk_column
+        cursor = conn.execute(sql, params)
+        row = cursor.fetchone()
+        return row[0] if row is not None else None
+
+    cursor = conn.execute(insert_sql, params)
+    return cursor.lastrowid
+
+
 class DatabaseSession:
     """Thin ORM-like wrapper over a raw sqlite3 connection.
 
@@ -109,11 +138,8 @@ class DatabaseSession:
     def insert(self, table: str, data: dict) -> int:
         columns = ", ".join(data.keys())
         placeholders = ", ".join(["?" for _ in data])
-        cursor = self.execute(
-            f"INSERT INTO {table} ({columns}) VALUES ({placeholders})",
-            tuple(data.values()),
-        )
-        return cursor.lastrowid
+        sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+        return insert_returning_id(self._conn, sql, tuple(data.values()), "id")
 
     def update(self, table: str, record_id: int, data: dict) -> bool:
         if not data:
