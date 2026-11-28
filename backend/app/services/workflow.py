@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from app.services.base import connection, now_iso
+from app.core.database import insert_returning_id
 from app.services.audit import log_audit
 from app.schemas.audit import AuditLogCreate
 from app.schemas.workflow import ExportWorkflowBase, ExportWorkflowUpdate, ExportWorkflowItemCreate
@@ -119,10 +120,10 @@ def get_workflow(workflow_id: int) -> dict:
 
 def create_workflow(data: ExportWorkflowBase, current_user: dict) -> dict:
     with connection() as conn:
-        cursor = conn.cursor()
         now = now_iso()
         workflow_number = _build_workflow_number()
-        cursor.execute(
+        workflow_id = insert_returning_id(
+            conn,
             """INSERT INTO export_workflows
                (workflow_number, state, customer_id, supplier_id, invoice_id,
                 customs_declaration_id, shipment_id, notes, created_at, updated_at, created_by)
@@ -142,7 +143,6 @@ def create_workflow(data: ExportWorkflowBase, current_user: dict) -> dict:
             ),
         )
         conn.commit()
-        workflow_id = cursor.lastrowid
 
         log_audit(
             current_user=current_user,
@@ -439,14 +439,14 @@ def add_workflow_item(data: ExportWorkflowItemCreate, current_user: dict) -> dic
             raise ValueError("Workflow not found")
 
         metadata = json.dumps(data.metadata) if data.metadata else None
-        cursor.execute(
+        item_id = insert_returning_id(
+            conn,
             """INSERT INTO export_workflow_items
                (workflow_id, entity_type, entity_id, metadata, created_at)
                VALUES (?, ?, ?, ?, ?)""",
             (data.workflow_id, data.entity_type, data.entity_id, metadata, now_iso()),
         )
         conn.commit()
-        item_id = cursor.lastrowid
 
         log_audit(
             current_user=current_user,
